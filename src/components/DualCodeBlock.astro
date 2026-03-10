@@ -1,0 +1,93 @@
+---
+import { normalizeDualCodeInput } from "../lib/code-example";
+
+interface Props {
+  python: string;
+  typescript: string;
+  title?: string;
+}
+
+const props = Astro.props as Props;
+const { python, typescript, title } = normalizeDualCodeInput(props);
+---
+
+<div class="dual-code-block">
+  {title && <h4 class="block-title">{title}</h4>}
+  <div class="code-container">
+    <div class="code-panel">
+      <div class="panel-header">
+        <span class="lang-badge python">Python</span>
+      </div>
+      <pre class="code"><code class="language-python">{python}</code></pre>
+    </div>
+    <div class="code-panel">
+      <div class="panel-header">
+        <span class="lang-badge typescript">TypeScript</span>
+      </div>
+      <pre class="code"><code class="language-typescript">{typescript}</code></pre>
+    </div>
+  </div>
+</div>
+
+<style>
+  .dual-code-block {
+    margin: var(--space-lg) 0;
+  }
+  
+  .block-title {
+    margin-bottom: var(--space-sm);
+    font-size: 1rem;
+    color: var(--color-text);
+  }
+  
+  .code-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+  
+  @media (max-width: 768px) {
+    .code-container {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  .code-panel {
+    background: var(--color-code-bg);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+  }
+  
+  .panel-header {
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .lang-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+  }
+  
+  .lang-badge.python {
+    background: #3776ab;
+    color: white;
+  }
+  
+  .lang-badge.typescript {
+    background: #3178c6;
+    color: white;
+  }
+  
+  .code {
+    margin: 0;
+    padding: var(--space-md);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+</style>
