@@ -1,0 +1,29 @@
+:root {
+  --color-bg: #ffffff;
+  --color-text: #1a1a2e;
+  --color-primary: #3b82f6;
+  --color-secondary: #6366f1;
+  --color-accent: #f59e0b;
+  --color-border: #e5e7eb;
+  --color-code-bg: #f8fafc;
+  --font-sans: system-ui, -apple-system, sans-serif;
+  --font-mono: "Fira Code", "Consolas", monospace;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 2rem;
+  --space-xl: 4rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 1rem;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0f172a;
+  --color-text: #e2e8f0;
+  --color-primary: #60a5fa;
+  --color-secondary: #818cf8;
+  --color-accent: #fbbf24;
+  --color-border: #334155;
+  --color-code-bg: #1e293b;
+}
