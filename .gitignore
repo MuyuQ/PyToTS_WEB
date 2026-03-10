@@ -2,3 +2,4 @@ node_modules/
 dist/
 .astro/
 nul
+node_modules/.astro/

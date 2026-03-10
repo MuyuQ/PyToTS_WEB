@@ -1,10 +1,11 @@
-import { defineCollection } from "astro:content";
-import { z } from "astro/zod";
-import { lessonSchema, algorithmSchema } from "./lib/frontmatter-schema";
+import { defineCollection, z } from "astro:content";
 
 const docs = defineCollection({
   type: "content",
-  schema: z.union([lessonSchema, algorithmSchema, z.object({ title: z.string(), description: z.string().optional() })]),
+  schema: z.object({
+    title: z.string(),
+    description: z.string().optional(),
+  }),
 });
 
 export const collections = { docs };
