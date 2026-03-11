@@ -102,6 +102,7 @@ Before submitting a PR, ensure:
 - [ ] `npm run typecheck` passes
 - [ ] `npm run test` passes
 - [ ] `npm run build` succeeds
+- [ ] `npm run linkcheck` passes
 - [ ] Commits follow the commit-per-slice rule
 
 ## Code Review

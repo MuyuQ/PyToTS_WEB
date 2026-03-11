@@ -32,6 +32,7 @@ npm run dev
 | `npm run lint` | Run ESLint |
 | `npm run typecheck` | Run TypeScript type checking |
 | `npm run test` | Run unit tests |
+| `npm run linkcheck` | Validate internal doc links |
 | `npm run check` | Run all checks |
 
 ## Project Structure
