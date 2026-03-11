@@ -1,0 +1,103 @@
+---
+title: 最大子数组和 (Maximum Subarray)
+kind: algorithm
+difficulty: medium
+tags: ["array", "dynamic-programming", "divide-and-conquer"]
+time_complexity: "O(n)"
+space_complexity: "O(1)"
+description: 找到一个具有最大和的连续子数组
+---
+
+## 问题描述
+
+给你一个整数数组 `nums`，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+
+## 思路分析
+
+使用 Kadane 算法（动态规划）：
+- 维护当前子数组和 `current_sum`
+- 如果 `current_sum < 0`，说明前面的子数组对后续无贡献，从当前元素重新开始
+- 更新全局最大和 `max_sum`
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，只需遍历一次数组
+- **空间复杂度**：O(1)，只使用常数额外空间
+
+## Python 实现
+
+```python
+def max_sub_array(nums: list[int]) -> int:
+    """
+    最大子数组和 - Python 实现 (Kadane算法)
+    
+    Args:
+        nums: 整数数组
+    
+    Returns:
+        最大子数组和
+    """
+    if not nums:
+        return 0
+    
+    max_sum = current_sum = nums[0]
+    
+    for num in nums[1:]:
+        # 如果当前和为负，从当前元素重新开始
+        current_sum = max(num, current_sum + num)
+        # 更新全局最大
+        max_sum = max(max_sum, current_sum)
+    
+    return max_sum
+
+
+# 测试用例
+print(max_sub_array([-2, 1, -3, 4, -1, 2, 1, -5, 4]))  # 6 ([4,-1,2,1])
+print(max_sub_array([1]))                              # 1
+print(max_sub_array([5, 4, -1, 7, 8]))                 # 23
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 最大子数组和 - TypeScript 实现 (Kadane算法)
+ * @param nums 整数数组
+ * @returns 最大子数组和
+ */
+function maxSubArray(nums: number[]): number {
+    if (nums.length === 0) {
+        return 0;
+    }
+    
+    let maxSum = nums[0];
+    let currentSum = nums[0];
+    
+    for (let i = 1; i < nums.length; i++) {
+        const num = nums[i];
+        // 如果当前和为负，从当前元素重新开始
+        currentSum = Math.max(num, currentSum + num);
+        // 更新全局最大
+        maxSum = Math.max(maxSum, currentSum);
+    }
+    
+    return maxSum;
+}
+
+// 测试用例
+console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]));  // 6
+console.log(maxSubArray([1]));                               // 1
+console.log(maxSubArray([5, 4, -1, 7, 8]));                  // 23
+```
+
+## 面试变体
+
+1. **返回子数组**：不只返回最大和，还要返回具体的子数组
+2. **环形数组**：数组是环形的，可以跨首尾
+3. **至少k个元素**：子数组必须包含至少k个元素
+
+## 常见错误
+
+1. 初始化 max_sum 为 0 而不是数组第一个元素（数组可能全为负数）
+2. 混淆 `current_sum = max(num, current_sum + num)` 和 `current_sum += num`
+3. 忘记处理空数组的边界情况

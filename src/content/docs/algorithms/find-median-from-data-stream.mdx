@@ -1,0 +1,192 @@
+---
+title: 数据流的中位数 (Find Median from Data Stream)
+kind: algorithm
+difficulty: hard
+tags: ["heap", "design", "data-stream"]
+time_complexity: "O(log n) for addNum, O(1) for findMedian"
+space_complexity: "O(n)"
+description: 实时计算数据流的中位数
+---
+
+## 问题描述
+
+中位数是有序整数列表中的中间值。如果列表的大小是偶数，则没有中间值，中位数是两个中间值的平均值。
+
+设计一个支持以下两种操作的数据结构：
+- `void addNum(int num)` - 从数据流中添加一个整数到数据结构中
+- `double findMedian()` - 返回目前所有元素的中位数
+
+## 思路分析
+
+双堆法：
+- 大顶堆 `small`：存储较小的一半数，堆顶是最大值
+- 小顶堆 `large`：存储较大的一半数，堆顶是最小值
+- 保持两个堆的大小平衡（相差不超过1）
+- 中位数：奇数时大顶堆的堆顶，偶数时两个堆顶的平均值
+
+## 复杂度分析
+
+- **时间复杂度**：`addNum` O(log n)，`findMedian` O(1)
+- **空间复杂度**：O(n)，存储所有元素
+
+## Python 实现
+
+```python
+import heapq
+
+class MedianFinder:
+    """
+    数据流的中位数 - Python 实现
+    """
+    
+    def __init__(self):
+        # 大顶堆（存储较小的一半，Python用负数模拟）
+        self.small = []
+        # 小顶堆（存储较大的一半）
+        self.large = []
+    
+    def addNum(self, num: int) -> None:
+        """添加数字"""
+        if not self.small or num <= -self.small[0]:
+            heapq.heappush(self.small, -num)
+        else:
+            heapq.heappush(self.large, num)
+        
+        # 保持平衡
+        if len(self.small) > len(self.large) + 1:
+            heapq.heappush(self.large, -heapq.heappop(self.small))
+        elif len(self.large) > len(self.small):
+            heapq.heappush(self.small, -heapq.heappop(self.large))
+    
+    def findMedian(self) -> float:
+        """查找中位数"""
+        if len(self.small) > len(self.large):
+            return -self.small[0]
+        return (-self.small[0] + self.large[0]) / 2.0
+
+
+# 测试用例
+mf = MedianFinder()
+mf.addNum(1)
+mf.addNum(2)
+print(mf.findMedian())  # 1.5
+mf.addNum(3)
+print(mf.findMedian())  # 2.0
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 简易堆实现（最小堆）
+ */
+class MinHeap {
+    private data: number[] = [];
+    
+    push(val: number): void {
+        this.data.push(val);
+        this.heapifyUp(this.data.length - 1);
+    }
+    
+    pop(): number | undefined {
+        if (this.data.length === 0) return undefined;
+        if (this.data.length === 1) return this.data.pop();
+        
+        const root = this.data[0];
+        this.data[0] = this.data.pop()!;
+        this.heapifyDown(0);
+        return root;
+    }
+    
+    peek(): number | undefined {
+        return this.data[0];
+    }
+    
+    size(): number {
+        return this.data.length;
+    }
+    
+    private heapifyUp(index: number): void {
+        while (index > 0) {
+            const parent = Math.floor((index - 1) / 2);
+            if (this.data[parent] <= this.data[index]) break;
+            [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
+            index = parent;
+        }
+    }
+    
+    private heapifyDown(index: number): void {
+        while (true) {
+            let smallest = index;
+            const left = 2 * index + 1;
+            const right = 2 * index + 2;
+            
+            if (left < this.data.length && this.data[left] < this.data[smallest]) {
+                smallest = left;
+            }
+            if (right < this.data.length && this.data[right] < this.data[smallest]) {
+                smallest = right;
+            }
+            
+            if (smallest === index) break;
+            [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
+            index = smallest;
+        }
+    }
+}
+
+/**
+ * 数据流的中位数 - TypeScript 实现
+ */
+class MedianFinder {
+    private small: MinHeap;  // 大顶堆（用负数存入小顶堆）
+    private large: MinHeap;  // 小顶堆
+    
+    constructor() {
+        this.small = new MinHeap();
+        this.large = new MinHeap();
+    }
+    
+    addNum(num: number): void {
+        if (this.small.size() === 0 || num <= -(this.small.peek() || 0)) {
+            this.small.push(-num);
+        } else {
+            this.large.push(num);
+        }
+        
+        // 保持平衡
+        if (this.small.size() > this.large.size() + 1) {
+            this.large.push(-(this.small.pop() || 0));
+        } else if (this.large.size() > this.small.size()) {
+            this.small.push(-(this.large.pop() || 0));
+        }
+    }
+    
+    findMedian(): number {
+        if (this.small.size() > this.large.size()) {
+            return -(this.small.peek() || 0);
+        }
+        return (-(this.small.peek() || 0) + (this.large.peek() || 0)) / 2;
+    }
+}
+
+// 测试用例
+const mf = new MedianFinder();
+mf.addNum(1);
+mf.addNum(2);
+console.log(mf.findMedian());  // 1.5
+mf.addNum(3);
+console.log(mf.findMedian());  // 2.0
+```
+
+## 面试变体
+
+1. **滑动窗口中位数**：固定大小的滑动窗口，求每个窗口的中位数
+2. **Top K问题**：求数据流中第 K 大的元素
+3. **频率统计**：按频率排序的数据流
+
+## 常见错误
+
+1. Python 中忘记用负数模拟大顶堆
+2. 堆平衡条件判断错误
+3. 偶数情况中位数计算错误（应该是平均不是中间值）

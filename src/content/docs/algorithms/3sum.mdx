@@ -1,0 +1,159 @@
+---
+title: 三数之和 (3Sum)
+kind: algorithm
+difficulty: medium
+tags: ["array", "two-pointers", "sorting"]
+time_complexity: "O(n²)"
+space_complexity: "O(1)" 
+description: 找出数组中所有和为0的三元组
+---
+
+## 问题描述
+
+给你一个整数数组 `nums`，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k`，同时还满足 `nums[i] + nums[j] + nums[k] == 0`。
+
+请你返回所有和为 `0` 且不重复的三元组。
+
+## 思路分析
+
+排序 + 双指针：
+1. 先对数组排序
+2. 固定一个数，然后用双指针在剩余部分找两数之和等于目标值
+3. 注意去重：跳过相同的数
+
+## 复杂度分析
+
+- **时间复杂度**：O(n²)，排序 O(n log n)，双指针遍历 O(n²)
+- **空间复杂度**：O(1)，不考虑输出数组，只使用常数空间
+
+## Python 实现
+
+```python
+def three_sum(nums: list[int]) -> list[list[int]]:
+    """
+    三数之和 - Python 实现
+    
+    Args:
+        nums: 整数数组
+    
+    Returns:
+        所有和为0的不重复三元组
+    """
+    nums.sort()
+    result = []
+    n = len(nums)
+    
+    for i in range(n - 2):
+        # 去重：跳过相同的第一个数
+        if i > 0 and nums[i] == nums[i - 1]:
+            continue
+        
+        # 剪枝
+        if nums[i] > 0:
+            break
+        
+        left, right = i + 1, n - 1
+        target = -nums[i]
+        
+        while left < right:
+            current_sum = nums[left] + nums[right]
+            
+            if current_sum == target:
+                result.append([nums[i], nums[left], nums[right]])
+                
+                # 去重：跳过相同的第二个数
+                while left < right and nums[left] == nums[left + 1]:
+                    left += 1
+                # 去重：跳过相同的第三个数
+                while left < right and nums[right] == nums[right - 1]:
+                    right -= 1
+                
+                left += 1
+                right -= 1
+            elif current_sum < target:
+                left += 1
+            else:
+                right -= 1
+    
+    return result
+
+
+# 测试用例
+print(three_sum([-1, 0, 1, 2, -1, -4]))  # [[-1,-1,2], [-1,0,1]]
+print(three_sum([0, 1, 1]))              # []
+print(three_sum([0, 0, 0]))              # [[0,0,0]]
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 三数之和 - TypeScript 实现
+ * @param nums 整数数组
+ * @returns 所有和为0的不重复三元组
+ */
+function threeSum(nums: number[]): number[][] {
+    nums.sort((a, b) => a - b);
+    const result: number[][] = [];
+    const n = nums.length;
+    
+    for (let i = 0; i < n - 2; i++) {
+        // 去重：跳过相同的第一个数
+        if (i > 0 && nums[i] === nums[i - 1]) {
+            continue;
+        }
+        
+        // 剪枝
+        if (nums[i] > 0) {
+            break;
+        }
+        
+        let left = i + 1;
+        let right = n - 1;
+        const target = -nums[i];
+        
+        while (left < right) {
+            const currentSum = nums[left] + nums[right];
+            
+            if (currentSum === target) {
+                result.push([nums[i], nums[left], nums[right]]);
+                
+                // 去重：跳过相同的第二个数
+                while (left < right && nums[left] === nums[left + 1]) {
+                    left++;
+                }
+                // 去重：跳过相同的第三个数
+                while (left < right && nums[right] === nums[right - 1]) {
+                    right--;
+                }
+                
+                left++;
+                right--;
+            } else if (currentSum < target) {
+                left++;
+            } else {
+                right--;
+            }
+        }
+    }
+    
+    return result;
+}
+
+// 测试用例
+console.log(threeSum([-1, 0, 1, 2, -1, -4]));  // [[-1,-1,2], [-1,0,1]]
+console.log(threeSum([0, 1, 1]));              // []
+console.log(threeSum([0, 0, 0]));              // [[0,0,0]]
+```
+
+## 面试变体
+
+1. **最接近的三数之和**：找到和最接近目标值的三元组
+2. **四数之和**：扩展到四个数
+3. **K数之和**：通用解法
+
+## 常见错误
+
+1. 忘记去重，导致结果中有重复的三元组
+2. 边界条件处理错误，如 `range(n - 2)` 写成 `range(n)`
+3. 排序后忘记处理原数组索引的问题

@@ -1,0 +1,64 @@
+---
+title: 迁移路径
+description: 面向有 Python 经验开发者的 TypeScript 迁移路线
+---
+
+import { CardGrid, Card } from "@astrojs/starlight/components";
+
+# 迁移路径
+
+适合已经有 Python 开发经验，希望系统迁移到 TypeScript 的工程师。
+
+## 课程列表
+
+<CardGrid stagger>
+  <Card title="1. 类型系统对比" icon="seti:typescript">
+    建立 Python 与 TypeScript 类型系统的映射
+
+    - 动态类型 vs 静态类型
+    - 联合类型与可选值
+    - 类型推断与类型注解
+
+    [开始学习 →](/paths/migration/types/)
+  </Card>
+
+  <Card title="2. 函数与参数" icon="seti:function">
+    掌握函数定义与参数处理的差异
+
+    - 默认参数
+    - 剩余参数
+    - 对象参数替代 kwargs
+
+    [开始学习 →](/paths/migration/functions/)
+  </Card>
+
+  <Card title="3. 异步编程" icon="seti:clock">
+    从 asyncio 迁移到 Promise/async-await
+
+    - 协程模型差异
+    - 并发控制
+    - 错误处理模式
+
+    [开始学习 →](/paths/migration/async/)
+  </Card>
+
+  <Card title="4. 模块与包管理" icon="seti:package">
+    理解 import/export 与 npm 生态
+
+    - ESM 与 CommonJS
+    - 包管理与依赖
+    - 项目组织方式
+
+    [开始学习 →](/paths/migration/modules/)
+  </Card>
+</CardGrid>
+
+## 学习建议
+
+1. 按顺序学习四节核心课，先建立类型心智再进入异步与模块。
+2. 每节课都把 Python 示例手动改写为 TypeScript，强化迁移肌肉记忆。
+3. 学完后立即进入 [算法练习](/algorithms/) 做双语实战。
+
+---
+
+**准备开始迁移？** 点击 [类型系统对比](/paths/migration/types/) 开始。

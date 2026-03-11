@@ -1,0 +1,520 @@
+---
+title: 设计模式实践
+kind: lesson
+level: advanced
+topic: design-patterns
+difficulty: hard
+prerequisites: ["classes-objects", "generics", "decorators"]
+python_tags: ["abc", "factory", "singleton", "observer", "adapter"]
+ts_tags: ["interface", "abstract", "factory", "singleton", "observer"]
+description: 用 TypeScript 实现常见设计模式，对比 Python 实现
+---
+
+# 设计模式实践
+
+## 场景与问题
+
+设计模式是解决常见软件设计问题的经过验证的解决方案。Python 和 TypeScript 都可以实现这些模式，但 TypeScript 的类型系统让模式实现更加明确和安全。
+
+## 1. 工厂模式
+
+### Python 实现
+
+```python
+from abc import ABC, abstractmethod
+from typing import Dict, Type
+
+class Animal(ABC):
+    @abstractmethod
+    def speak(self) -> str:
+        pass
+
+class Dog(Animal):
+    def speak(self) -> str:
+        return "Woof!"
+
+class Cat(Animal):
+    def speak(self) -> str:
+        return "Meow!"
+
+class AnimalFactory:
+    _animals: Dict[str, Type[Animal]] = {
+        "dog": Dog,
+        "cat": Cat
+    }
+    
+    @classmethod
+    def create(cls, animal_type: str) -> Animal:
+        if animal_type not in cls._animals:
+            raise ValueError(f"Unknown animal type: {animal_type}")
+        return cls._animals[animal_type]()
+
+# 使用
+dog = AnimalFactory.create("dog")
+print(dog.speak())  # Woof!
+```
+
+### TypeScript 实现
+
+```typescript
+interface Animal {
+    speak(): string;
+}
+
+class Dog implements Animal {
+    speak(): string {
+        return "Woof!";
+    }
+}
+
+class Cat implements Animal {
+    speak(): string {
+        return "Meow!";
+    }
+}
+
+type AnimalType = "dog" | "cat";
+
+class AnimalFactory {
+    private static animals: Record<AnimalType, new () => Animal> = {
+        dog: Dog,
+        cat: Cat
+    };
+    
+    static create(type: AnimalType): Animal {
+        const AnimalClass = this.animals[type];
+        if (!AnimalClass) {
+            throw new Error(`Unknown animal type: ${type}`);
+        }
+        return new AnimalClass();
+    }
+}
+
+// 使用
+const dog = AnimalFactory.create("dog");
+console.log(dog.speak());  // Woof!
+
+// 泛型工厂
+class GenericFactory<T> {
+    private registry = new Map<string, new () => T>();
+    
+    register(type: string, constructor: new () => T): void {
+        this.registry.set(type, constructor);
+    }
+    
+    create(type: string): T {
+        const Constructor = this.registry.get(type);
+        if (!Constructor) {
+            throw new Error(`Type ${type} not registered`);
+        }
+        return new Constructor();
+    }
+}
+```
+
+## 2. 观察者模式
+
+### Python 实现
+
+```python
+from typing import List, Callable, Any
+
+class Event:
+    def __init__(self):
+        self._listeners: List[Callable[..., None]] = []
+    
+    def subscribe(self, listener: Callable[..., None]) -> None:
+        self._listeners.append(listener)
+    
+    def unsubscribe(self, listener: Callable[..., None]) -> None:
+        self._listeners.remove(listener)
+    
+    def emit(self, *args, **kwargs) -> None:
+        for listener in self._listeners:
+            listener(*args, **kwargs)
+
+class UserService:
+    def __init__(self):
+        self.user_created = Event()
+        self.user_deleted = Event()
+    
+    def create_user(self, name: str) -> None:
+        print(f"Creating user: {name}")
+        self.user_created.emit(name)
+    
+    def delete_user(self, name: str) -> None:
+        print(f"Deleting user: {name}")
+        self.user_deleted.emit(name)
+
+# 使用
+service = UserService()
+service.user_created.subscribe(lambda name: print(f"Notification: {name} created"))
+service.create_user("Alice")
+```
+
+### TypeScript 实现
+
+```typescript
+type EventCallback<T> = (data: T) => void;
+
+class EventEmitter<T> {
+    private listeners: EventCallback<T>[] = [];
+    
+    subscribe(listener: EventCallback<T>): () => void {
+        this.listeners.push(listener);
+        // 返回取消订阅函数
+        return () => {
+            const index = this.listeners.indexOf(listener);
+            if (index > -1) {
+                this.listeners.splice(index, 1);
+            }
+        };
+    }
+    
+    emit(data: T): void {
+        this.listeners.forEach(listener => listener(data));
+    }
+}
+
+interface UserEvent {
+    name: string;
+    timestamp: Date;
+}
+
+class UserService {
+    readonly userCreated = new EventEmitter<UserEvent>();
+    readonly userDeleted = new EventEmitter<UserEvent>();
+    
+    createUser(name: string): void {
+        console.log(`Creating user: ${name}`);
+        this.userCreated.emit({ name, timestamp: new Date() });
+    }
+    
+    deleteUser(name: string): void {
+        console.log(`Deleting user: ${name}`);
+        this.userDeleted.emit({ name, timestamp: new Date() });
+    }
+}
+
+// 使用
+const service = new UserService();
+const unsubscribe = service.userCreated.subscribe(
+    ({ name }) => console.log(`Notification: ${name} created`)
+);
+
+service.createUser("Alice");
+unsubscribe();  // 取消订阅
+```
+
+## 3. 策略模式
+
+### Python 实现
+
+```python
+from abc import ABC, abstractmethod
+from typing import List
+
+class SortStrategy(ABC):
+    @abstractmethod
+    def sort(self, data: List[int]) -> List[int]:
+        pass
+
+class QuickSort(SortStrategy):
+    def sort(self, data: List[int]) -> List[int]:
+        if len(data) <= 1:
+            return data
+        pivot = data[len(data) // 2]
+        left = [x for x in data if x < pivot]
+        middle = [x for x in data if x == pivot]
+        right = [x for x in data if x > pivot]
+        return self.sort(left) + middle + self.sort(right)
+
+class MergeSort(SortStrategy):
+    def sort(self, data: List[int]) -> List[int]:
+        if len(data) <= 1:
+            return data
+        mid = len(data) // 2
+        left = self.sort(data[:mid])
+        right = self.sort(data[mid:])
+        return self._merge(left, right)
+    
+    def _merge(self, left: List[int], right: List[int]) -> List[int]:
+        result = []
+        i = j = 0
+        while i < len(left) and j < len(right):
+            if left[i] <= right[j]:
+                result.append(left[i])
+                i += 1
+            else:
+                result.append(right[j])
+                j += 1
+        result.extend(left[i:])
+        result.extend(right[j:])
+        return result
+
+class Sorter:
+    def __init__(self, strategy: SortStrategy):
+        self._strategy = strategy
+    
+    def sort(self, data: List[int]) -> List[int]:
+        return self._strategy.sort(data)
+    
+    def set_strategy(self, strategy: SortStrategy) -> None:
+        self._strategy = strategy
+
+# 使用
+sorter = Sorter(QuickSort())
+result = sorter.sort([3, 1, 4, 1, 5])
+print(result)  # [1, 1, 3, 4, 5]
+
+sorter.set_strategy(MergeSort())
+result = sorter.sort([3, 1, 4, 1, 5])
+print(result)  # [1, 1, 3, 4, 5]
+```
+
+### TypeScript 实现
+
+```typescript
+interface SortStrategy {
+    sort(data: number[]): number[];
+}
+
+class QuickSort implements SortStrategy {
+    sort(data: number[]): number[] {
+        if (data.length <= 1) return data;
+        
+        const pivot = data[Math.floor(data.length / 2)];
+        const left = data.filter(x => x < pivot);
+        const middle = data.filter(x => x === pivot);
+        const right = data.filter(x => x > pivot);
+        
+        return [...this.sort(left), ...middle, ...this.sort(right)];
+    }
+}
+
+class MergeSort implements SortStrategy {
+    sort(data: number[]): number[] {
+        if (data.length <= 1) return data;
+        
+        const mid = Math.floor(data.length / 2);
+        const left = this.sort(data.slice(0, mid));
+        const right = this.sort(data.slice(mid));
+        
+        return this.merge(left, right);
+    }
+    
+    private merge(left: number[], right: number[]): number[] {
+        const result: number[] = [];
+        let i = 0, j = 0;
+        
+        while (i < left.length && j < right.length) {
+            if (left[i] <= right[j]) {
+                result.push(left[i]);
+                i++;
+            } else {
+                result.push(right[j]);
+                j++;
+            }
+        }
+        
+        return [...result, ...left.slice(i), ...right.slice(j)];
+    }
+}
+
+class Sorter {
+    private strategy: SortStrategy;
+    
+    constructor(strategy: SortStrategy) {
+        this.strategy = strategy;
+    }
+    
+    sort(data: number[]): number[] {
+        return this.strategy.sort(data);
+    }
+    
+    setStrategy(strategy: SortStrategy): void {
+        this.strategy = strategy;
+    }
+}
+
+// 使用
+const sorter = new Sorter(new QuickSort());
+console.log(sorter.sort([3, 1, 4, 1, 5]));  // [1, 1, 3, 4, 5]
+
+sorter.setStrategy(new MergeSort());
+console.log(sorter.sort([3, 1, 4, 1, 5]));  // [1, 1, 3, 4, 5]
+```
+
+## 4. 适配器模式
+
+### Python 实现
+
+```python
+from abc import ABC, abstractmethod
+
+class OldPrinter:
+    def old_print(self, text: str) -> None:
+        print(f"Old: {text}")
+
+class NewPrinter:
+    def print(self, text: str) -> None:
+        print(f"New: {text}")
+
+class PrinterAdapter:
+    def __init__(self, printer: OldPrinter):
+        self._printer = printer
+    
+    def print(self, text: str) -> None:
+        self._printer.old_print(text)
+
+# 使用
+old_printer = OldPrinter()
+adapter = PrinterAdapter(old_printer)
+adapter.print("Hello")  # 统一使用 print 方法
+```
+
+### TypeScript 实现
+
+```typescript
+interface Printer {
+    print(text: string): void;
+}
+
+class OldPrinter {
+    oldPrint(text: string): void {
+        console.log(`Old: ${text}`);
+    }
+}
+
+class NewPrinter implements Printer {
+    print(text: string): void {
+        console.log(`New: ${text}`);
+    }
+}
+
+class OldPrinterAdapter implements Printer {
+    private printer: OldPrinter;
+    
+    constructor(printer: OldPrinter) {
+        this.printer = printer;
+    }
+    
+    print(text: string): void {
+        this.printer.oldPrint(text);
+    }
+}
+
+// 使用
+function printDocument(printer: Printer, text: string): void {
+    printer.print(text);
+}
+
+const oldPrinter = new OldPrinter();
+const adapter = new OldPrinterAdapter(oldPrinter);
+printDocument(adapter, "Hello");  // 统一接口
+
+const newPrinter = new NewPrinter();
+printDocument(newPrinter, "World");  // 同样的接口
+```
+
+## 差异与优势
+
+| 特性 | Python | TypeScript |
+|------|--------|-----------|
+| 接口定义 | ABC/Protocol | interface |
+| 类型检查 | 运行时 | 编译时 |
+| 泛型支持 | 有限 | 完整 |
+| 抽象类 | ABC | abstract class |
+| 实现灵活性 | 高（鸭子类型） | 中等（需实现接口） |
+
+## 练习
+
+将以下 Python 单例模式转换为 TypeScript：
+
+```python
+class Singleton:
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+    
+    def __init__(self):
+        self.value = 0
+
+# 测试
+a = Singleton()
+b = Singleton()
+print(a is b)  # True
+```
+
+<details>
+<summary>答案</summary>
+
+```typescript
+class Singleton {
+    private static instance: Singleton;
+    value: number = 0;
+    
+    private constructor() {}
+    
+    static getInstance(): Singleton {
+        if (!Singleton.instance) {
+            Singleton.instance = new Singleton();
+        }
+        return Singleton.instance;
+    }
+}
+
+// 测试
+const a = Singleton.getInstance();
+const b = Singleton.getInstance();
+console.log(a === b);  // true
+
+// 或者使用装饰器
+function singleton<T extends new (...args: any[]) => {}>(constructor: T) {
+    let instance: any;
+    return class extends constructor {
+        constructor(...args: any[]) {
+            if (instance) {
+                return instance;
+            }
+            super(...args);
+            instance = this;
+        }
+    };
+}
+
+@singleton
+class Config {
+    apiUrl = "https://api.example.com";
+}
+
+const config1 = new Config();
+const config2 = new Config();
+console.log(config1 === config2);  // true
+```
+</details>
+
+## 面试追问
+
+1. **什么时候使用工厂模式而不是直接实例化？**
+   - 答：当创建逻辑复杂、需要根据不同条件创建不同类型、或者需要将创建和使用分离时。
+
+2. **观察者模式和发布-订阅模式有什么区别？**
+   - 答：观察者模式中观察者和被观察者直接通信；发布-订阅模式通过消息中心解耦。
+
+3. **策略模式的优势是什么？**
+   - 答：避免大量条件语句，易于扩展新算法，算法可以独立变化。
+
+---
+
+**恭喜你完成了进阶路径！** 🎉
+
+你已经掌握了 TypeScript 的高级特性。现在可以：
+- 参与开源项目
+- 构建大型应用
+- 准备技术面试
+
+[返回学习路径首页](/paths/)

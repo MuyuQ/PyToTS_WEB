@@ -1,0 +1,247 @@
+---
+title: LRU 缓存 (LRU Cache)
+kind: algorithm
+difficulty: medium
+tags: ["hash-table", "linked-list", "design"]
+time_complexity: "O(1) for get and put"
+space_complexity: "O(capacity)"
+description: 实现一个 LRU (最近最少使用) 缓存机制
+---
+
+## 问题描述
+
+请你设计并实现一个 `LRUCache` 类：
+
+- `LRUCache(int capacity)` 以**正整数**作为容量 `capacity` 初始化 LRU 缓存
+- `int get(int key)` 如果关键字 `key` 存在于缓存中，则返回关键字的值，否则返回 `-1`
+- `void put(int key, int value)` 如果关键字 `key` 已经存在，则变更其数据值 `value`；如果不存在，则向缓存中插入该组 `key-value`。如果插入操作导致关键字数量超过 `capacity`，则应该**逐出**最久未使用的关键字。
+
+## 思路分析
+
+哈希表 + 双向链表：
+- 哈希表：`key -> 链表节点`，实现 O(1) 查找
+- 双向链表：维护使用顺序，头部是最近使用，尾部是最久未使用
+- `get` 操作：移动到头部
+- `put` 操作：已存在则更新并移动到头部；不存在则新建节点放到头部，超容量则删除尾部
+
+## 复杂度分析
+
+- **时间复杂度**：`get` 和 `put` 都是 O(1)
+- **空间复杂度**：O(capacity)，哈希表和链表
+
+## Python 实现
+
+```python
+class DLinkedNode:
+    """双向链表节点"""
+    def __init__(self, key=0, value=0):
+        self.key = key
+        self.value = value
+        self.prev = None
+        self.next = None
+
+class LRUCache:
+    """
+    LRU 缓存 - Python 实现
+    """
+    
+    def __init__(self, capacity: int):
+        self.cache = {}  # key -> node
+        self.capacity = capacity
+        self.size = 0
+        
+        # 伪头部和伪尾部节点
+        self.head = DLinkedNode()
+        self.tail = DLinkedNode()
+        self.head.next = self.tail
+        self.tail.prev = self.head
+    
+    def get(self, key: int) -> int:
+        """获取值，不存在返回-1"""
+        if key not in self.cache:
+            return -1
+        
+        node = self.cache[key]
+        self._moveToHead(node)
+        return node.value
+    
+    def put(self, key: int, value: int) -> None:
+        """插入或更新"""
+        if key not in self.cache:
+            # 新建节点
+            node = DLinkedNode(key, value)
+            self.cache[key] = node
+            self._addToHead(node)
+            self.size += 1
+            
+            if self.size > self.capacity:
+                # 删除尾部
+                removed = self._removeTail()
+                del self.cache[removed.key]
+                self.size -= 1
+        else:
+            # 更新值
+            node = self.cache[key]
+            node.value = value
+            self._moveToHead(node)
+    
+    def _addToHead(self, node):
+        """添加到头部"""
+        node.prev = self.head
+        node.next = self.head.next
+        self.head.next.prev = node
+        self.head.next = node
+    
+    def _removeNode(self, node):
+        """删除节点"""
+        node.prev.next = node.next
+        node.next.prev = node.prev
+    
+    def _moveToHead(self, node):
+        """移动到头部"""
+        self._removeNode(node)
+        self._addToHead(node)
+    
+    def _removeTail(self):
+        """删除尾部节点"""
+        node = self.tail.prev
+        self._removeNode(node)
+        return node
+
+
+# 测试用例
+cache = LRUCache(2)
+cache.put(1, 1)
+cache.put(2, 2)
+print(cache.get(1))    # 1
+print(cache.get(2))    # 2
+cache.put(3, 3)        # 逐出 key 1
+print(cache.get(1))    # -1
+print(cache.get(3))    # 3
+cache.put(4, 4)        # 逐出 key 2
+print(cache.get(2))    # -1
+print(cache.get(3))    # 3
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 双向链表节点
+ */
+class DLinkedNode {
+    key: number;
+    value: number;
+    prev: DLinkedNode | null;
+    next: DLinkedNode | null;
+    
+    constructor(key: number = 0, value: number = 0) {
+        this.key = key;
+        this.value = value;
+        this.prev = null;
+        this.next = null;
+    }
+}
+
+/**
+ * LRU 缓存 - TypeScript 实现
+ */
+class LRUCache {
+    private cache: Map<number, DLinkedNode>;
+    private capacity: number;
+    private size: number;
+    private head: DLinkedNode;
+    private tail: DLinkedNode;
+    
+    constructor(capacity: number) {
+        this.cache = new Map();
+        this.capacity = capacity;
+        this.size = 0;
+        
+        // 伪头部和伪尾部节点
+        this.head = new DLinkedNode();
+        this.tail = new DLinkedNode();
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+    }
+    
+    get(key: number): number {
+        const node = this.cache.get(key);
+        if (node === undefined) {
+            return -1;
+        }
+        this.moveToHead(node);
+        return node.value;
+    }
+    
+    put(key: number, value: number): void {
+        const node = this.cache.get(key);
+        if (node === undefined) {
+            // 新建节点
+            const newNode = new DLinkedNode(key, value);
+            this.cache.set(key, newNode);
+            this.addToHead(newNode);
+            this.size++;
+            
+            if (this.size > this.capacity) {
+                // 删除尾部
+                const removed = this.removeTail();
+                this.cache.delete(removed.key);
+                this.size--;
+            }
+        } else {
+            // 更新值
+            node.value = value;
+            this.moveToHead(node);
+        }
+    }
+    
+    private addToHead(node: DLinkedNode): void {
+        node.prev = this.head;
+        node.next = this.head.next;
+        this.head.next!.prev = node;
+        this.head.next = node;
+    }
+    
+    private removeNode(node: DLinkedNode): void {
+        if (node.prev) node.prev.next = node.next;
+        if (node.next) node.next.prev = node.prev;
+    }
+    
+    private moveToHead(node: DLinkedNode): void {
+        this.removeNode(node);
+        this.addToHead(node);
+    }
+    
+    private removeTail(): DLinkedNode {
+        const node = this.tail.prev!;
+        this.removeNode(node);
+        return node;
+    }
+}
+
+// 测试用例
+const cache = new LRUCache(2);
+cache.put(1, 1);
+cache.put(2, 2);
+console.log(cache.get(1));    // 1
+console.log(cache.get(2));    // 2
+cache.put(3, 3);              // 逐出 key 1
+console.log(cache.get(1));    // -1
+console.log(cache.get(3));    // 3
+cache.put(4, 4);              // 逐出 key 2
+console.log(cache.get(2));    // -1
+console.log(cache.get(3));    // 3
+```
+
+## 面试变体
+
+1. **LFU缓存**：最少使用次数的缓存淘汰策略
+2. **时间过期的缓存**：带有过期时间的缓存
+3. **线程安全的LRU**：多线程环境下的LRU实现
+
+## 常见错误
+
+1. 双向链表指针更新顺序错误
+2. 忘记更新 size
+3. 使用单链表导致删除操作 O(n)

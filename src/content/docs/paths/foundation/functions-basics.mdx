@@ -1,0 +1,254 @@
+---
+title: 函数基础
+kind: lesson
+level: foundation
+topic: functions-basics
+difficulty: easy
+prerequisites: ["variables", "control-flow", "data-structures"]
+python_tags: ["def", "return", "lambda"]
+ts_tags: ["function", "return", "arrow-function", "void"]
+description: 掌握 Python 和 TypeScript 的函数定义和调用差异
+---
+
+# 函数基础
+
+## 场景与问题
+
+函数是代码组织的基本单元。Python 和 TypeScript 在函数定义上有相似之处，但 TypeScript 的类型系统让函数签名更加严格和清晰。
+
+## Python 回顾
+
+```python
+# 基本函数定义
+def greet(name):
+    return f"Hello, {name}!"
+
+# 带类型提示的函数（Python 3.5+）
+def add(a: int, b: int) -> int:
+    return a + b
+
+# 默认参数
+def power(base: int, exponent: int = 2) -> int:
+    return base ** exponent
+
+# 可变参数
+def sum_all(*numbers: int) -> int:
+    return sum(numbers)
+
+# 关键字参数
+def create_user(name: str, **kwargs) -> dict:
+    user = {"name": name}
+    user.update(kwargs)
+    return user
+
+# Lambda 表达式
+square = lambda x: x ** 2
+numbers = [1, 2, 3, 4]
+squared = list(map(square, numbers))
+```
+
+## TypeScript 等价写法
+
+```typescript
+// 基本函数定义
+function greet(name: string): string {
+    return `Hello, ${name}!`;
+}
+
+// 带类型注解的函数
+function add(a: number, b: number): number {
+    return a + b;
+}
+
+// 默认参数
+function power(base: number, exponent: number = 2): number {
+    return Math.pow(base, exponent);
+}
+
+// 剩余参数（类似 Python *args）
+function sumAll(...numbers: number[]): number {
+    return numbers.reduce((sum, n) => sum + n, 0);
+}
+
+// 对象参数（替代 Python **kwargs）
+interface UserOptions {
+    age?: number;
+    email?: string;
+}
+
+function createUser(name: string, options?: UserOptions): { name: string } & UserOptions {
+    return { name, ...options };
+}
+
+// 箭头函数（类似 Lambda）
+const square = (x: number): number => x * x;
+const numbers: number[] = [1, 2, 3, 4];
+const squared = numbers.map(square);
+
+// 箭头函数的简写
+const doubled = numbers.map(n => n * 2);
+
+// 无返回值函数
+function logMessage(message: string): void {
+    console.log(message);
+}
+```
+
+## 差异与常见陷阱
+
+### 1. 函数声明方式
+
+```typescript
+// 函数声明（有提升）
+function add(a: number, b: number): number {
+    return a + b;
+}
+
+// 函数表达式（无提升）
+const add = function(a: number, b: number): number {
+    return a + b;
+};
+
+// 箭头函数（推荐用于回调）
+const add = (a: number, b: number): number => a + b;
+```
+
+### 2. this 绑定
+
+```typescript
+const person = {
+    name: "Alice",
+    age: 25,
+    
+    // 普通函数：this 指向调用者
+    greetRegular: function() {
+        console.log(`Hello, I'm ${this.name}`);
+    },
+    
+    // 箭头函数：this 继承外部上下文
+    greetArrow: () => {
+        console.log(`Hello, I'm ${this.name}`);  // this 可能不是 person
+    },
+    
+    // 简写方法（推荐）
+    greet() {
+        console.log(`Hello, I'm ${this.name}`);
+    }
+};
+```
+
+### 3. 可选参数与默认值
+
+```typescript
+// 可选参数（必须放在最后）
+function greet(name: string, greeting?: string): string {
+    if (greeting) {
+        return `${greeting}, ${name}!`;
+    }
+    return `Hello, ${name}!`;
+}
+
+// 带默认值
+function greet(name: string, greeting: string = "Hello"): string {
+    return `${greeting}, ${name}!`;
+}
+
+// 带类型的可选参数
+function createUser(
+    name: string,
+    age?: number,
+    isActive: boolean = true
+): { name: string; age?: number; isActive: boolean } {
+    return { name, age, isActive };
+}
+```
+
+### 4. 函数重载
+
+```typescript
+// TypeScript 支持函数重载
+function process(value: string): string;
+function process(value: number): number;
+function process(value: string | number): string | number {
+    if (typeof value === "string") {
+        return value.toUpperCase();
+    }
+    return value * 2;
+}
+
+process("hello");  // 返回 string
+process(42);       // 返回 number
+```
+
+## 优势对比
+
+| 特性 | Python | TypeScript |
+|------|--------|-----------|
+| 类型检查 | 运行时 | 编译时 |
+| 默认参数 | 支持 | 支持 |
+| 关键字参数 | `**kwargs` | 对象解构 |
+| 函数重载 | 不支持 | 支持 |
+| 箭头函数 | Lambda | 原生支持 |
+| 返回值推断 | 无 | 有 |
+
+## 练习
+
+将以下 Python 代码转换为 TypeScript：
+
+```python
+def calculate_area(shape, **params):
+    if shape == "circle":
+        radius = params.get("radius", 0)
+        return 3.14159 * radius ** 2
+    elif shape == "rectangle":
+        width = params.get("width", 0)
+        height = params.get("height", 0)
+        return width * height
+    return 0
+
+# 使用
+area1 = calculate_area("circle", radius=5)
+area2 = calculate_area("rectangle", width=4, height=6)
+```
+
+<details>
+<summary>答案</summary>
+
+```typescript
+interface CircleParams {
+    radius: number;
+}
+
+interface RectangleParams {
+    width: number;
+    height: number;
+}
+
+type ShapeParams = CircleParams | RectangleParams;
+
+function calculateArea(shape: "circle" | "rectangle", params: ShapeParams): number {
+    if (shape === "circle" && "radius" in params) {
+        return Math.PI * params.radius ** 2;
+    } else if (shape === "rectangle" && "width" in params && "height" in params) {
+        return params.width * params.height;
+    }
+    return 0;
+}
+
+// 使用
+const area1 = calculateArea("circle", { radius: 5 });
+const area2 = calculateArea("rectangle", { width: 4, height: 6 });
+```
+</details>
+
+## 面试追问
+
+1. **箭头函数和普通函数的区别？**
+   - 答：箭头函数没有自己的 `this`，不能作为构造函数，没有 `arguments` 对象。
+
+2. **什么时候用箭头函数，什么时候用普通函数？**
+   - 答：回调函数用箭头函数，方法定义用普通函数，需要 `this` 时用普通函数。
+
+---
+
+**下一步：** [类与对象](/paths/foundation/classes-objects)

@@ -1,0 +1,119 @@
+---
+title: 盛最多水的容器 (Container With Most Water)
+kind: algorithm
+difficulty: medium
+tags: ["array", "two-pointers", "greedy"]
+time_complexity: "O(n)"
+space_complexity: "O(1)"
+description: 找出两条线构成的容器能盛最多的水
+---
+
+## 问题描述
+
+给定一个长度为 `n` 的整数数组 `height`。有 `n` 条垂线，第 `i` 条线的两个端点是 `(i, 0)` 和 `(i, height[i])`。
+
+找出其中的两条线，使得它们与 x 轴共同构成的容器可以容纳最多的水。
+
+返回容器可以储存的最大水量。
+
+## 思路分析
+
+双指针法：
+- 初始时左右指针分别指向数组两端
+- 计算当前面积：`(right - left) * min(height[left], height[right])`
+- 移动高度较小的那个指针（因为移动较高的指针不会增加面积）
+- 更新最大面积
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，两个指针向中间移动
+- **空间复杂度**：O(1)，只使用常数额外空间
+
+## Python 实现
+
+```python
+def max_area(height: list[int]) -> int:
+    """
+    盛最多水的容器 - Python 实现
+    
+    Args:
+        height: 高度数组
+    
+    Returns:
+        最大水容量
+    """
+    left, right = 0, len(height) - 1
+    max_water = 0
+    
+    while left < right:
+        # 计算当前面积
+        width = right - left
+        current_height = min(height[left], height[right])
+        current_area = width * current_height
+        
+        max_water = max(max_water, current_area)
+        
+        # 移动高度较小的指针
+        if height[left] < height[right]:
+            left += 1
+        else:
+            right -= 1
+    
+    return max_water
+
+
+# 测试用例
+print(max_area([1, 8, 6, 2, 5, 4, 8, 3, 7]))  # 49
+print(max_area([1, 1]))                        # 1
+print(max_area([4, 3, 2, 1, 4]))              # 16
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 盛最多水的容器 - TypeScript 实现
+ * @param height 高度数组
+ * @returns 最大水容量
+ */
+function maxArea(height: number[]): number {
+    let left = 0;
+    let right = height.length - 1;
+    let maxWater = 0;
+    
+    while (left < right) {
+        // 计算当前面积
+        const width = right - left;
+        const currentHeight = Math.min(height[left], height[right]);
+        const currentArea = width * currentHeight;
+        
+        maxWater = Math.max(maxWater, currentArea);
+        
+        // 移动高度较小的指针
+        if (height[left] < height[right]) {
+            left++;
+        } else {
+            right--;
+        }
+    }
+    
+    return maxWater;
+}
+
+// 测试用例
+console.log(maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]));  // 49
+console.log(maxArea([1, 1]));                        // 1
+console.log(maxArea([4, 3, 2, 1, 4]));              // 16
+```
+
+## 面试变体
+
+1. **三指针问题**：使用三条线构成的容器
+2. **最多k个容器**：找出 k 个容器的最大总容量
+3. **最小容量**：找出容量至少为某个值的容器对
+
+## 常见错误
+
+1. 使用 `max` 而不是 `min` 计算高度
+2. 移动指针时逻辑错误，应该移动高度较小的
+3. 使用双重循环导致 O(n²) 复杂度

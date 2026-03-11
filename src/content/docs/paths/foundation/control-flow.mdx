@@ -1,0 +1,245 @@
+---
+title: 控制流
+kind: lesson
+level: foundation
+topic: control-flow
+difficulty: easy
+prerequisites: ["variables"]
+python_tags: ["if", "else", "elif", "for", "while"]
+ts_tags: ["if", "else", "switch", "for", "while"]
+description: 掌握 Python 和 TypeScript 的条件与循环语法差异
+---
+
+# 控制流
+
+## 场景与问题
+
+控制流是编程的基础。Python 和 TypeScript 在条件判断和循环结构上有相似之处，但也有重要差异，特别是 TypeScript 引入了 `switch` 语句和更灵活的循环语法。
+
+## Python 回顾
+
+```python
+# 条件语句
+score = 85
+
+if score >= 90:
+    grade = "A"
+elif score >= 80:
+    grade = "B"
+elif score >= 70:
+    grade = "C"
+else:
+    grade = "D"
+
+# for 循环遍历
+fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print(fruit)
+
+# while 循环
+count = 0
+while count < 5:
+    print(count)
+    count += 1
+
+# 列表推导式（Python 特有）
+squares = [x**2 for x in range(10)]
+```
+
+## TypeScript 等价写法
+
+```typescript
+// 条件语句
+const score: number = 85;
+let grade: string;
+
+if (score >= 90) {
+    grade = "A";
+} else if (score >= 80) {
+    grade = "B";
+} else if (score >= 70) {
+    grade = "C";
+} else {
+    grade = "D";
+}
+
+// TypeScript 有 switch 语句
+const day: number = 1;
+let dayName: string;
+
+switch (day) {
+    case 1:
+        dayName = "Monday";
+        break;
+    case 2:
+        dayName = "Tuesday";
+        break;
+    default:
+        dayName = "Unknown";
+}
+
+// for...of 循环（类似 Python 的 for）
+const fruits: string[] = ["apple", "banana", "cherry"];
+for (const fruit of fruits) {
+    console.log(fruit);
+}
+
+// 传统 for 循环
+for (let i = 0; i < 5; i++) {
+    console.log(i);
+}
+
+// while 循环
+let count = 0;
+while (count < 5) {
+    console.log(count);
+    count++;
+}
+
+// forEach 方法
+fruits.forEach((fruit, index) => {
+    console.log(`${index}: ${fruit}`);
+});
+
+// map 方法（类似列表推导式）
+const numbers: number[] = [1, 2, 3, 4, 5];
+const squares: number[] = numbers.map(x => x * x);
+```
+
+## 差异与常见陷阱
+
+### 1. 语法差异
+
+| 特性 | Python | TypeScript |
+|------|--------|-----------|
+| 代码块 | 缩进 | 花括号 `{}` |
+| 条件括号 | 可选 | 必需 |
+| else if | `elif` | `else if` |
+| Switch | 无原生 | 有 `switch` |
+
+```typescript
+// TypeScript 必须使用花括号
+if (condition) {
+    doSomething();
+}
+
+// 单行可以省略，但不推荐
+if (condition) doSomething();
+```
+
+### 2. 相等性判断
+
+```python
+# Python
+a = [1, 2, 3]
+b = [1, 2, 3]
+print(a == b)      # True（值相等）
+print(a is b)      # False（引用不等）
+```
+
+```typescript
+// TypeScript
+const a = [1, 2, 3];
+const b = [1, 2, 3];
+console.log(a == b);     // false（引用不等）
+console.log(a === b);    // false（严格相等，引用不等）
+
+// 数组比较需要手动比较内容
+console.log(JSON.stringify(a) === JSON.stringify(b));  // true
+```
+
+### 3. Switch 语句的穿透
+
+```typescript
+const status: number = 200;
+
+switch (status) {
+    case 200:
+    case 201:
+        console.log("Success");  // 200 和 201 都会执行
+        break;
+    case 404:
+        console.log("Not Found");
+        break;
+    default:
+        console.log("Unknown");
+}
+
+// 忘记 break 会导致意外的穿透行为
+switch (status) {
+    case 200:
+        console.log("OK");
+        // 忘记 break！
+    case 201:
+        console.log("Created");  // 200 也会执行这里
+        break;
+}
+```
+
+## 优势对比
+
+| 特性 | Python | TypeScript |
+|------|--------|-----------|
+| 可读性 | 高（缩进强制） | 中等（花括号灵活） |
+| Switch 语句 | 无（用字典替代） | 原生支持 |
+| 函数式循环 | 列表推导式 | map/filter/reduce |
+| 类型安全 | 低 | 高 |
+
+## 练习
+
+将以下 Python 代码转换为 TypeScript：
+
+```python
+def classify_number(n):
+    if n > 0:
+        return "positive"
+    elif n < 0:
+        return "negative"
+    else:
+        return "zero"
+
+# 打印 1-10 的奇数
+for i in range(1, 11):
+    if i % 2 != 0:
+        print(i)
+```
+
+<details>
+<summary>答案</summary>
+
+```typescript
+function classifyNumber(n: number): string {
+    if (n > 0) {
+        return "positive";
+    } else if (n < 0) {
+        return "negative";
+    } else {
+        return "zero";
+    }
+}
+
+// 打印 1-10 的奇数
+for (let i = 1; i <= 10; i++) {
+    if (i % 2 !== 0) {
+        console.log(i);
+    }
+}
+
+// 或者使用 filter
+const oddNumbers: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    .filter(i => i % 2 !== 0);
+console.log(oddNumbers);
+```
+</details>
+
+## 面试追问
+
+1. **什么时候用 `switch` 比 `if-else` 更好？**
+   - 答：当对同一变量进行多值比较时，`switch` 更清晰且可能性能更好。
+
+2. **TypeScript 中 `==` 和 `===` 的区别？**
+   - 答：`===` 是严格相等，比较值和类型；`==` 会进行类型转换后比较。始终使用 `===`。
+
+---
+
+**下一步：** [数据结构](/paths/foundation/data-structures)

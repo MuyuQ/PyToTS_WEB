@@ -1,0 +1,128 @@
+---
+title: 分割等和子集 (Partition Equal Subset Sum)
+kind: algorithm
+difficulty: medium
+tags: ["dynamic-programming", "array", "knapsack"]
+time_complexity: "O(n * sum)"
+space_complexity: "O(sum)"
+description: 判断数组是否能分成两个和相等的子集
+---
+
+## 问题描述
+
+给你一个 **只包含正整数** 的 **非空** 数组 `nums`。请你判断是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
+
+## 思路分析
+
+0-1 背包问题：
+1. 首先计算总和，如果是奇数，直接返回 False
+2. 目标：找到一个子集，其和为总和的一半
+3. 转化为背包问题：能否从数组中选出一些数，使它们的和等于 target = sum // 2
+
+- `dp[i]`：能否用数组中的数凑成和 i
+- 状态转移：`dp[i] = dp[i] or dp[i - num]`
+
+## 复杂度分析
+
+- **时间复杂度**：O(n * sum)，n 是数组长度，sum 是数组总和
+- **空间复杂度**：O(sum)，dp数组
+
+## Python 实现
+
+```python
+def can_partition(nums: list[int]) -> bool:
+    """
+    分割等和子集 - Python 实现
+    
+    Args:
+        nums: 正整数数组
+    
+    Returns:
+        是否能分成两个和相等的子集
+    """
+    total = sum(nums)
+    
+    # 总和为奇数，无法平分
+    if total % 2 != 0:
+        return False
+    
+    target = total // 2
+    
+    # dp[i] 表示能否凑成和 i
+    dp = [False] * (target + 1)
+    dp[0] = True
+    
+    for num in nums:
+        # 倒序遍历，避免重复计算
+        for i in range(target, num - 1, -1):
+            dp[i] = dp[i] or dp[i - num]
+        
+        # 提前退出
+        if dp[target]:
+            return True
+    
+    return dp[target]
+
+
+# 测试用例
+print(can_partition([1, 5, 11, 5]))   # True ([1,5,5] 和 [11])
+print(can_partition([1, 2, 3, 5]))    # False
+print(can_partition([1, 2, 5]))       # False
+print(can_partition([100, 100]))      # True
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 分割等和子集 - TypeScript 实现
+ * @param nums 正整数数组
+ * @returns 是否能分成两个和相等的子集
+ */
+function canPartition(nums: number[]): boolean {
+    const total = nums.reduce((a, b) => a + b, 0);
+    
+    // 总和为奇数，无法平分
+    if (total % 2 !== 0) {
+        return false;
+    }
+    
+    const target = total / 2;
+    
+    // dp[i] 表示能否凑成和 i
+    const dp: boolean[] = new Array(target + 1).fill(false);
+    dp[0] = true;
+    
+    for (const num of nums) {
+        // 倒序遍历，避免重复计算
+        for (let i = target; i >= num; i--) {
+            dp[i] = dp[i] || dp[i - num];
+        }
+        
+        // 提前退出
+        if (dp[target]) {
+            return true;
+        }
+    }
+    
+    return dp[target];
+}
+
+// 测试用例
+console.log(canPartition([1, 5, 11, 5]));   // true
+console.log(canPartition([1, 2, 3, 5]));    // false
+console.log(canPartition([1, 2, 5]));       // false
+console.log(canPartition([100, 100]));      // true
+```
+
+## 面试变体
+
+1. **最小差值**：分成两个子集，使差值最小
+2. **k个子集**：分成k个子集，使每个子集和相等
+3. **具体子集**：不只判断是否存在，还要返回具体子集
+
+## 常见错误
+
+1. 忘记倒序遍历（0-1背包）
+2. 正序遍历导致重复使用元素（变成完全背包）
+3. 边界条件处理错误

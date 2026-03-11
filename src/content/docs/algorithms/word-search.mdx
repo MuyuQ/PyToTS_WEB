@@ -1,0 +1,180 @@
+---
+title: 单词搜索 (Word Search)
+kind: algorithm
+difficulty: medium
+tags: ["array", "backtracking", "dfs"]
+time_complexity: "O(m * n * 4^l)"
+space_complexity: "O(l)"
+description: 在二维网格中搜索单词
+---
+
+## 问题描述
+
+给定一个 `m x n` 的二维字符网格 `board` 和一个字符串 `word`。如果 `word` 存在于网格中，返回 `true`；否则，返回 `false`。
+
+单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中**相邻**单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+
+## 思路分析
+
+回溯 + DFS：
+1. 从每个单元格出发，尝试匹配单词的第一个字符
+2. 如果匹配，向四个方向递归搜索下一个字符
+3. 使用访问标记避免重复使用单元格
+4. 回溯时恢复状态
+
+## 复杂度分析
+
+- **时间复杂度**：O(m * n * 4^l)，l 是单词长度，每个单元格出发，最多4个方向
+- **空间复杂度**：O(l)，递归栈深度
+
+## Python 实现
+
+```python
+def exist(board: list[list[str]], word: str) -> bool:
+    """
+    单词搜索 - Python 实现
+    
+    Args:
+        board: 二维字符网格
+        word: 要搜索的单词
+    
+    Returns:
+        是否存在该单词
+    """
+    if not board or not board[0]:
+        return False
+    
+    m, n = len(board), len(board[0])
+    
+    def dfs(i: int, j: int, k: int) -> bool:
+        """从(i,j)开始搜索word[k:]"""
+        # 边界检查
+        if i < 0 or i >= m or j < 0 or j >= n:
+            return False
+        
+        # 字符不匹配
+        if board[i][j] != word[k]:
+            return False
+        
+        # 找到完整单词
+        if k == len(word) - 1:
+            return True
+        
+        # 标记已访问
+        temp = board[i][j]
+        board[i][j] = '#'
+        
+        # 四个方向搜索
+        found = (dfs(i + 1, j, k + 1) or
+                 dfs(i - 1, j, k + 1) or
+                 dfs(i, j + 1, k + 1) or
+                 dfs(i, j - 1, k + 1))
+        
+        # 恢复状态
+        board[i][j] = temp
+        
+        return found
+    
+    # 从每个单元格出发
+    for i in range(m):
+        for j in range(n):
+            if dfs(i, j, 0):
+                return True
+    
+    return False
+
+
+# 测试用例
+board = [
+    ['A', 'B', 'C', 'E'],
+    ['S', 'F', 'C', 'S'],
+    ['A', 'D', 'E', 'E']
+]
+print(exist(board, "ABCCED"))  # True
+print(exist(board, "SEE"))     # True
+print(exist(board, "ABCB"))    # False
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 单词搜索 - TypeScript 实现
+ * @param board 二维字符网格
+ * @param word 要搜索的单词
+ * @returns 是否存在该单词
+ */
+function exist(board: string[][], word: string): boolean {
+    if (board.length === 0 || board[0].length === 0) {
+        return false;
+    }
+    
+    const m = board.length;
+    const n = board[0].length;
+    
+    function dfs(i: number, j: number, k: number): boolean {
+        // 边界检查
+        if (i < 0 || i >= m || j < 0 || j >= n) {
+            return false;
+        }
+        
+        // 字符不匹配
+        if (board[i][j] !== word[k]) {
+            return false;
+        }
+        
+        // 找到完整单词
+        if (k === word.length - 1) {
+            return true;
+        }
+        
+        // 标记已访问
+        const temp = board[i][j];
+        board[i][j] = '#'
+        
+        // 四个方向搜索
+        const found = dfs(i + 1, j, k + 1) ||
+                      dfs(i - 1, j, k + 1) ||
+                      dfs(i, j + 1, k + 1) ||
+                      dfs(i, j - 1, k + 1);
+        
+        // 恢复状态
+        board[i][j] = temp;
+        
+        return found;
+    }
+    
+    // 从每个单元格出发
+    for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+            if (dfs(i, j, 0)) {
+                return true;
+            }
+        }
+    }
+    
+    return false;
+}
+
+// 测试用例
+const board = [
+    ['A', 'B', 'C', 'E'],
+    ['S', 'F', 'C', 'S'],
+    ['A', 'D', 'E', 'E']
+];
+console.log(exist(board, "ABCCED"));  // true
+console.log(exist(board, "SEE"));     // true
+console.log(exist(board, "ABCB"));    // false
+```
+
+## 面试变体
+
+1. **单词搜索 II**：给定多个单词，找出所有存在的单词
+2. **前缀树优化**：使用 Trie 优化多个单词的搜索
+3. **最短路径**：找到构成单词的最短路径
+
+## 常见错误
+
+1. 忘记回溯恢复状态
+2. 边界检查条件写错
+3. 递归终止条件写错（应该是 k == len-1 不是 k == len）

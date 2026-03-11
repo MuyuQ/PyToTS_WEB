@@ -1,0 +1,247 @@
+---
+title: 算法
+description: 双语算法题解
+---
+
+import { CardGrid, Card } from "@astrojs/starlight/components";
+
+# 算法练习
+
+通过算法题练习 TypeScript 编程，同时对比 Python 实现。
+
+## 数组与双指针
+
+<CardGrid stagger>
+  <Card title="两数之和 (Two Sum)" icon="target">
+    难度：Easy
+    
+    使用哈希表优化查找，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/two-sum)
+  </Card>
+  
+  <Card title="二分查找 (Binary Search)" icon="search">
+    难度：Easy
+    
+    经典查找算法，时间复杂度 O(log n)
+    
+    [开始学习 →](/algorithms/binary-search)
+  </Card>
+  
+  <Card title="三数之和 (3Sum)" icon="seti:shell">
+    难度：Medium
+    
+    排序 + 双指针，时间复杂度 O(n²)
+    
+    [开始学习 →](/algorithms/3sum)
+  </Card>
+  
+  <Card title="盛最多水的容器 (Container With Most Water)" icon="seti:dropbox">
+    难度：Medium
+    
+    双指针贪心，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/container-with-most-water)
+  </Card>
+  
+  <Card title="最大子数组和 (Maximum Subarray)" icon="chart">
+    难度：Medium
+    
+    Kadane 算法，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/maximum-subarray)
+  </Card>
+</CardGrid>
+
+## 字符串
+
+<CardGrid stagger>
+  <Card title="无重复字符的最长子串" icon="seti:string">
+    难度：Medium
+    
+    滑动窗口 + 哈希表，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/longest-substring-without-repeating)
+  </Card>
+  
+  <Card title="最小覆盖子串" icon="seti:search">
+    难度：Hard
+    
+    滑动窗口，时间复杂度 O(m + n)
+    
+    [开始学习 →](/algorithms/minimum-window-substring)
+  </Card>
+  
+  <Card title="有效的括号" icon="seti:json">
+    难度：Easy
+    
+    栈的应用，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/valid-parentheses)
+  </Card>
+  
+  <Card title="单词拆分" icon="seti:word">
+    难度：Medium
+    
+    动态规划，时间复杂度 O(n²)
+    
+    [开始学习 →](/algorithms/word-break)
+  </Card>
+  
+  <Card title="编辑距离" icon="seti:edit">
+    难度：Medium
+    
+    动态规划，时间复杂度 O(m × n)
+    
+    [开始学习 →](/algorithms/edit-distance)
+  </Card>
+</CardGrid>
+
+## 链表
+
+<CardGrid stagger>
+  <Card title="环形链表 (Linked List Cycle)" icon="link">
+    难度：Easy
+    
+    快慢指针检测环
+    
+    [开始学习 →](/algorithms/linked-list-cycle)
+  </Card>
+  
+  <Card title="反转链表" icon="seti:refresh">
+    难度：Easy
+    
+    三指针迭代，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/reverse-linked-list)
+  </Card>
+</CardGrid>
+
+## 区间与合并
+
+<CardGrid stagger>
+  <Card title="合并区间 (Merge Intervals)" icon="list">
+    难度：Medium
+    
+    排序 + 贪心合并
+    
+    [开始学习 →](/algorithms/merge-intervals)
+  </Card>
+</CardGrid>
+
+## 动态规划
+
+<CardGrid stagger>
+  <Card title="爬楼梯" icon="seti:arrow-up">
+    难度：Easy
+    
+    斐波那契数列，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/climbing-stairs)
+  </Card>
+  
+  <Card title="打家劫舍" icon="seti:lock">
+    难度：Medium
+    
+    线性 DP，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/house-robber)
+  </Card>
+  
+  <Card title="零钱兑换" icon="seti:money">
+    难度：Medium
+    
+    完全背包，时间复杂度 O(amount × n)
+    
+    [开始学习 →](/algorithms/coin-change)
+  </Card>
+  
+  <Card title="最长递增子序列" icon="seti:graph">
+    难度：Medium
+    
+    二分查找优化，时间复杂度 O(n log n)
+    
+    [开始学习 →](/algorithms/longest-increasing-subsequence)
+  </Card>
+  
+  <Card title="解码方法" icon="seti:key">
+    难度：Medium
+    
+    线性 DP，时间复杂度 O(n)
+    
+    [开始学习 →](/algorithms/decode-ways)
+  </Card>
+  
+  <Card title="分割等和子集" icon="seti:split">
+    难度：Medium
+    
+    0-1 背包，时间复杂度 O(n × sum)
+    
+    [开始学习 →](/algorithms/partition-equal-subset-sum)
+  </Card>
+</CardGrid>
+
+## 图与搜索
+
+<CardGrid stagger>
+  <Card title="岛屿数量" icon="seti: globe">
+    难度：Medium
+    
+    DFS/BFS，时间复杂度 O(m × n)
+    
+    [开始学习 →](/algorithms/number-of-islands)
+  </Card>
+  
+  <Card title="腐烂的橘子" icon="seti:time">
+    难度：Medium
+    
+    多源 BFS，时间复杂度 O(m × n)
+    
+    [开始学习 →](/algorithms/rotting-oranges)
+  </Card>
+  
+  <Card title="课程表" icon="seti:graduation">
+    难度：Medium
+    
+    拓扑排序，时间复杂度 O(V + E)
+    
+    [开始学习 →](/algorithms/course-schedule)
+  </Card>
+  
+  <Card title="单词搜索" icon="seti:search">
+    难度：Medium
+    
+    回溯 + DFS，时间复杂度 O(m × n × 4^l)
+    
+    [开始学习 →](/algorithms/word-search)
+  </Card>
+</CardGrid>
+
+## 设计与数据结构
+
+<CardGrid stagger>
+  <Card title="LRU 缓存" icon="seti:database">
+    难度：Medium
+    
+    哈希表 + 双向链表，O(1) 操作
+    
+    [开始学习 →](/algorithms/lru-cache)
+  </Card>
+  
+  <Card title="数据流的中位数" icon="seti:graph">
+    难度：Hard
+    
+    双堆法，addNum O(log n)，findMedian O(1)
+    
+    [开始学习 →](/algorithms/find-median-from-data-stream)
+  </Card>
+</CardGrid>
+
+---
+
+## 学习建议
+
+1. **按难度递进**：从 Easy 开始，逐步挑战 Medium 和 Hard
+2. **先理解思路**：不要直接看代码，先自己思考解法
+3. **对比实现**：注意 Python 和 TypeScript 在语法和类型系统上的差异
+4. **面试准备**：重点关注「面试变体」和「常见错误」部分

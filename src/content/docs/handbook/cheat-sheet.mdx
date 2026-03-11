@@ -1,0 +1,168 @@
+---
+title: Python ↔ TypeScript 语法对照表
+description: 快速查阅 Python 和 TypeScript 的语法差异
+---
+
+# Python ↔ TypeScript 语法对照表
+
+这份手册用于快速对照两种语言的高频语法和工程概念。
+
+## 变量声明
+
+| Python | TypeScript | 说明 |
+|--------|-----------|------|
+| `x = 5` | `let x = 5` | 可变变量 |
+| `X = 5` (常量) | `const x = 5` | 常量（约定大写） |
+| `x: int = 5` | `let x: number = 5` | 显式类型注解 |
+
+## 数据类型
+
+| Python | TypeScript | 说明 |
+|--------|-----------|------|
+| `int` / `float` | `number` | 数字类型统一 |
+| `str` | `string` | 字符串 |
+| `bool` | `boolean` | 布尔值（注意：Python 是 `True/False`，TS 是 `true/false`） |
+| `list[int]` | `number[]` | 数组 |
+| `dict[str, int]` | `Record<string, number>` | 字典/对象 |
+| `tuple[int, str]` | `[number, string]` | 元组 |
+| `set[int]` | `Set<number>` | 集合 |
+| `Union[int, str]` | `number \| string` | 联合类型 |
+| `Optional[int]` | `number \| undefined` | 可选类型 |
+
+## 函数定义
+
+| Python | TypeScript | 说明 |
+|--------|-----------|------|
+| `def add(a, b):` | `function add(a, b) {}` | 基本函数 |
+| `def add(a: int) -> int:` | `function add(a: number): number {}` | 带类型注解 |
+| `lambda x: x + 1` | `(x) => x + 1` | 箭头函数 |
+| `*args` | `...args: T[]` | 剩余参数 |
+| `**kwargs` | `options?: Options` | 关键字参数用对象替代 |
+
+## 控制流
+
+| Python | TypeScript | 说明 |
+|--------|-----------|------|
+| `if x > 0:` | `if (x > 0) {}` | 条件语句（TS 需要括号） |
+| `elif` | `else if` | 多条件分支 |
+| `for x in items:` | `for (const x of items) {}` | for...of 循环 |
+| `for i in range(10):` | `for (let i = 0; i < 10; i++) {}` | 传统 for 循环 |
+| `while x < 10:` | `while (x < 10) {}` | while 循环 |
+| 无 | `switch (x) { case 1: ... }` | switch 语句 |
+
+## 类与对象
+
+| Python | TypeScript | 说明 |
+|--------|-----------|------|
+| `class Person:` | `class Person {}` | 类定义 |
+| `def __init__(self):` | `constructor() {}` | 构造函数 |
+| `self.name` | `this.name` | 实例属性访问 |
+| `@classmethod` | `static` | 静态方法 |
+| `@staticmethod` | `static` | 静态方法 |
+| `@property` | `get name() {}` | Getter |
+| 无接口 | `interface Person {}` | 接口定义 |
+| `class Student(Person):` | `class Student extends Person {}` | 继承 |
+
+## 异步编程
+
+| Python | TypeScript | 说明 |
+|--------|-----------|------|
+| `async def fetch():` | `async function fetch() {}` | 异步函数 |
+| `await fetch()` | `await fetch()` | 等待异步操作 |
+| `asyncio.gather(*tasks)` | `Promise.all(tasks)` | 并发执行 |
+| `asyncio.sleep(1)` | 无直接对应 | 使用 `new Promise(r => setTimeout(r, 1000))` |
+
+## 模块导入
+
+| Python | TypeScript | 说明 |
+|--------|-----------|------|
+| `import os` | `import * as os from 'os'` | 导入整个模块 |
+| `from os import path` | `import { path } from 'os'` | 导入特定成员 |
+| `from . import module` | `import module from './module'` | 相对导入 |
+
+## 常用方法对照
+
+### 数组/列表
+
+| Python | TypeScript |
+|--------|-----------|
+| `len(list)` | `array.length` |
+| `list.append(x)` | `array.push(x)` |
+| `list.pop()` | `array.pop()` |
+| `list[0]` | `array[0]` |
+| `list[1:4]` | `array.slice(1, 4)` |
+| `x in list` | `array.includes(x)` |
+| `[x for x in list if x > 0]` | `array.filter(x => x > 0)` |
+| `map(func, list)` | `array.map(func)` |
+
+### 字典/对象
+
+| Python | TypeScript |
+|--------|-----------|
+| `dict.keys()` | `Object.keys(obj)` |
+| `dict.values()` | `Object.values(obj)` |
+| `dict.items()` | `Object.entries(obj)` |
+| `key in dict` | `key in obj` |
+| `dict.get(key, default)` | `obj[key] ?? default` |
+
+## 相等性判断
+
+| Python | TypeScript | 说明 |
+|--------|-----------|------|
+| `==` | `===` | 严格相等（推荐） |
+| `==` | `==` | 松散相等（会进行类型转换） |
+| `is` | 无直接对应 | Python 比较引用，TS 比较引用用 `===` |
+
+## 常见陷阱
+
+### 1. 真假值判断
+
+```python
+# Python
+if []:      # False
+if "":      # False
+if 0:       # False
+if None:    # False
+```
+
+```typescript
+// TypeScript
+if ([]) {}     // True（空数组是 truthy）
+if ("") {}     // False
+if (0) {}      // False
+if (null) {}   // False
+if (undefined) {}  // False
+```
+
+### 2. 类型检查
+
+```python
+# Python
+if isinstance(x, int):
+    pass
+```
+
+```typescript
+// TypeScript
+if (typeof x === "number") {
+    // 注意：typeof null === "object"
+}
+```
+
+### 3. 解构赋值
+
+```python
+# Python
+x, y = point
+first, *rest = [1, 2, 3, 4, 5]
+```
+
+```typescript
+// TypeScript
+const [x, y] = point;
+const [first, ...rest] = [1, 2, 3, 4, 5];
+```
+
+---
+
+*持续更新中... 如果你发现有遗漏或错误，欢迎提交 PR！*

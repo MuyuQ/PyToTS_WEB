@@ -1,0 +1,144 @@
+---
+title: 最小覆盖子串 (Minimum Window Substring)
+kind: algorithm
+difficulty: hard
+tags: ["string", "sliding-window", "hash-table"]
+time_complexity: "O(m + n)"
+space_complexity: "O(m)"
+description: 找出包含目标字符串所有字符的最小子串
+---
+
+## 问题描述
+
+给定两个字符串 `s` 和 `t` 。返回 `s` 中涵盖 `t` 所有字符的最小子串。如果不存在符合条件的子串，则返回空字符串 `""`。
+
+## 思路分析
+
+滑动窗口 + 哈希表：
+1. 用哈希表记录 `t` 中每个字符需要的次数
+2. 右指针扩展窗口，包含字符
+3. 当窗口包含所有需要的字符时，尝试收缩左指针
+4. 更新最小窗口
+
+## 复杂度分析
+
+- **时间复杂度**：O(m + n)，m 和 n 分别是两个字符串的长度
+- **空间复杂度**：O(m)，哈希表存储字符频率
+
+## Python 实现
+
+```python
+def min_window(s: str, t: str) -> str:
+    """
+    最小覆盖子串 - Python 实现
+    
+    Args:
+        s: 源字符串
+        t: 目标字符串
+    
+    Returns:
+        最小覆盖子串
+    """
+    from collections import Counter
+    
+    need = Counter(t)  # 需要的字符及次数
+    missing = len(t)   # 还需要匹配的字符数
+    left = 0
+    min_len = float('inf')
+    min_start = 0
+    
+    for right, char in enumerate(s):
+        if need[char] > 0:
+            missing -= 1
+        need[char] -= 1
+        
+        # 窗口已包含所有需要的字符，尝试收缩
+        while missing == 0:
+            # 更新最小窗口
+            if right - left + 1 < min_len:
+                min_len = right - left + 1
+                min_start = left
+            
+            # 移动左指针
+            need[s[left]] += 1
+            if need[s[left]] > 0:
+                missing += 1
+            left += 1
+    
+    return "" if min_len == float('inf') else s[min_start:min_start + min_len]
+
+
+# 测试用例
+print(min_window("ADOBECODEBANC", "ABC"))  # "BANC"
+print(min_window("a", "a"))                 # "a"
+print(min_window("a", "aa"))                # ""
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 最小覆盖子串 - TypeScript 实现
+ * @param s 源字符串
+ * @param t 目标字符串
+ * @returns 最小覆盖子串
+ */
+function minWindow(s: string, t: string): string {
+    const need = new Map<string, number>();  // 需要的字符及次数
+    for (const char of t) {
+        need.set(char, (need.get(char) || 0) + 1);
+    }
+    
+    let missing = t.length;  // 还需要匹配的字符数
+    let left = 0;
+    let minLen = Infinity;
+    let minStart = 0;
+    
+    for (let right = 0; right < s.length; right++) {
+        const char = s[right];
+        const count = need.get(char);
+        
+        if (count !== undefined && count > 0) {
+            missing--;
+        }
+        need.set(char, (count || 0) - 1);
+        
+        // 窗口已包含所有需要的字符，尝试收缩
+        while (missing === 0) {
+            // 更新最小窗口
+            if (right - left + 1 < minLen) {
+                minLen = right - left + 1;
+                minStart = left;
+            }
+            
+            // 移动左指针
+            const leftChar = s[left];
+            const leftCount = need.get(leftChar)!;
+            need.set(leftChar, leftCount + 1);
+            if (leftCount + 1 > 0) {
+                missing++;
+            }
+            left++;
+        }
+    }
+    
+    return minLen === Infinity ? "" : s.substring(minStart, minStart + minLen);
+}
+
+// 测试用例
+console.log(minWindow("ADOBECODEBANC", "ABC"));  // "BANC"
+console.log(minWindow("a", "a"));                 // "a"
+console.log(minWindow("a", "aa"));                // ""
+```
+
+## 面试变体
+
+1. **包含排列**：找到包含 `t` 的某个排列的最小子串
+2. **最多k个不同字符**：包含所有 `t` 中字符，且窗口内最多 k 个不同字符
+3. **优化**：使用数组代替哈希表优化常数
+
+## 常见错误
+
+1. 混淆 `need` 数组的更新逻辑
+2. 忘记处理不存在的情况
+3. 边界条件错误，子串长度计算错误

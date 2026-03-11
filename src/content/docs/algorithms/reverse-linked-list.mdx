@@ -1,0 +1,150 @@
+---
+title: 反转链表 (Reverse Linked List)
+kind: algorithm
+difficulty: easy
+tags: ["linked-list", "two-pointers"]
+time_complexity: "O(n)"
+space_complexity: "O(1)"
+description: 反转一个单链表
+---
+
+## 问题描述
+
+给你单链表的头节点 `head`，请你反转链表，并返回反转后的链表。
+
+## 思路分析
+
+使用三指针法迭代反转：
+- `prev`：前一个节点
+- `curr`：当前节点
+- `next`：临时保存下一个节点
+
+遍历链表，将每个节点的 `next` 指向前一个节点。
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，遍历链表一次
+- **空间复杂度**：O(1)，只使用常数额外空间
+
+## Python 实现
+
+```python
+class ListNode:
+    def __init__(self, val: int = 0, next=None):
+        self.val = val
+        self.next = next
+
+def reverse_list(head: ListNode | None) -> ListNode | None:
+    """
+    反转链表 - Python 实现
+    
+    Args:
+        head: 链表头节点
+    
+    Returns:
+        反转后的链表头节点
+    """
+    prev = None
+    curr = head
+    
+    while curr:
+        next_temp = curr.next  # 保存下一个节点
+        curr.next = prev       # 反转当前节点的指向
+        prev = curr            # 移动 prev
+        curr = next_temp       # 移动 curr
+    
+    return prev
+
+
+# 测试用例
+def create_list(values):
+    dummy = ListNode(0)
+    curr = dummy
+    for v in values:
+        curr.next = ListNode(v)
+        curr = curr.next
+    return dummy.next
+
+def print_list(head):
+    result = []
+    while head:
+        result.append(head.val)
+        head = head.next
+    return result
+
+head = create_list([1, 2, 3, 4, 5])
+reversed_head = reverse_list(head)
+print(print_list(reversed_head))  # [5, 4, 3, 2, 1]
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 链表节点定义
+ */
+class ListNode {
+    val: number;
+    next: ListNode | null;
+    
+    constructor(val?: number, next?: ListNode | null) {
+        this.val = val === undefined ? 0 : val;
+        this.next = next === undefined ? null : next;
+    }
+}
+
+/**
+ * 反转链表 - TypeScript 实现
+ * @param head 链表头节点
+ * @returns 反转后的链表头节点
+ */
+function reverseList(head: ListNode | null): ListNode | null {
+    let prev: ListNode | null = null;
+    let curr: ListNode | null = head;
+    
+    while (curr !== null) {
+        const nextTemp = curr.next;  // 保存下一个节点
+        curr.next = prev;            // 反转当前节点的指向
+        prev = curr;                 // 移动 prev
+        curr = nextTemp;             // 移动 curr
+    }
+    
+    return prev;
+}
+
+// 测试用例
+function createList(values: number[]): ListNode | null {
+    const dummy = new ListNode(0);
+    let curr: ListNode = dummy;
+    for (const v of values) {
+        curr.next = new ListNode(v);
+        curr = curr.next;
+    }
+    return dummy.next;
+}
+
+function printList(head: ListNode | null): number[] {
+    const result: number[] = [];
+    while (head !== null) {
+        result.push(head.val);
+        head = head.next;
+    }
+    return result;
+}
+
+const head = createList([1, 2, 3, 4, 5]);
+const reversedHead = reverseList(head);
+console.log(printList(reversedHead));  // [5, 4, 3, 2, 1]
+```
+
+## 面试变体
+
+1. **递归实现**：使用递归方式反转链表
+2. **反转指定区间**：只反转从位置 m 到 n 的链表部分
+3. **k个一组反转**：每 k 个节点为一组进行反转
+
+## 常见错误
+
+1. 忘记保存下一个节点就修改当前节点的 next
+2. 返回的是 curr 而不是 prev（curr 已经是 null）
+3. 递归实现时忘记递归返回新的头节点

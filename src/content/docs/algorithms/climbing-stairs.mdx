@@ -1,0 +1,108 @@
+---
+title: 爬楼梯 (Climbing Stairs)
+kind: algorithm
+difficulty: easy
+tags: ["dynamic-programming", "fibonacci"]
+time_complexity: "O(n)"
+space_complexity: "O(1)"
+description: 计算爬楼梯的不同方法数
+---
+
+## 问题描述
+
+假设你正在爬楼梯。需要 `n` 阶你才能到达楼顶。
+
+每次你可以爬 `1` 或 `2` 个台阶。你有多少种不同的方法可以爬到楼顶呢？
+
+## 思路分析
+
+动态规划问题，本质是斐波那契数列：
+- `dp[i]` 表示到达第 i 阶的方法数
+- 状态转移：`dp[i] = dp[i-1] + dp[i-2]`
+- 初始条件：`dp[0] = 1, dp[1] = 1`
+
+可以优化空间复杂度到 O(1)。
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，需要计算到第 n 阶
+- **空间复杂度**：O(1)，只使用两个变量
+
+## Python 实现
+
+```python
+def climb_stairs(n: int) -> int:
+    """
+    爬楼梯 - Python 实现
+    
+    Args:
+        n: 楼梯阶数
+    
+    Returns:
+        爬楼梯的方法数
+    """
+    if n <= 1:
+        return 1
+    
+    # 只保留前两个状态
+    prev2, prev1 = 1, 1  # dp[i-2], dp[i-1]
+    
+    for i in range(2, n + 1):
+        current = prev1 + prev2
+        prev2 = prev1
+        prev1 = current
+    
+    return prev1
+
+
+# 测试用例
+print(climb_stairs(2))  # 2 (1+1, 2)
+print(climb_stairs(3))  # 3 (1+1+1, 1+2, 2+1)
+print(climb_stairs(4))  # 5
+print(climb_stairs(5))  # 8
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 爬楼梯 - TypeScript 实现
+ * @param n 楼梯阶数
+ * @returns 爬楼梯的方法数
+ */
+function climbStairs(n: number): number {
+    if (n <= 1) {
+        return 1;
+    }
+    
+    // 只保留前两个状态
+    let prev2 = 1;  // dp[i-2]
+    let prev1 = 1;  // dp[i-1]
+    
+    for (let i = 2; i <= n; i++) {
+        const current = prev1 + prev2;
+        prev2 = prev1;
+        prev1 = current;
+    }
+    
+    return prev1;
+}
+
+// 测试用例
+console.log(climbStairs(2));  // 2
+console.log(climbStairs(3));  // 3
+console.log(climbStairs(4));  // 5
+console.log(climbStairs(5));  // 8
+```
+
+## 面试变体
+
+1. **每次可以爬1/2/3阶**：状态转移变为 `dp[i] = dp[i-1] + dp[i-2] + dp[i-3]`
+2. **某些台阶不能踩**：给定一个不能踩的台阶集合
+3. **最小花费**：每阶有不同的体力花费，求最小花费
+
+## 常见错误
+
+1. 初始化错误，忘记 `dp[0] = 1` 的情况
+2. 使用递归没有记忆化，导致超时
+3. 混淆索引，循环范围设置错误

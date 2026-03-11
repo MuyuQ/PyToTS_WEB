@@ -1,0 +1,112 @@
+---
+title: 零钱兑换 (Coin Change)
+kind: algorithm
+difficulty: medium
+tags: ["dynamic-programming", "array"]
+time_complexity: "O(amount * n)"
+space_complexity: "O(amount)"
+description: 计算凑成总金额所需的最少硬币数
+---
+
+## 问题描述
+
+给你一个整数数组 `coins`，表示不同面额的硬币；以及一个整数 `amount`，表示总金额。
+
+计算并返回可以凑成总金额所需的**最少的硬币个数**。如果没有任何一种硬币组合能组成总金额，返回 `-1`。
+
+你可以认为每种硬币的数量是无限的。
+
+## 思路分析
+
+完全背包问题（动态规划）：
+- `dp[i]`：凑成金额 i 所需的最少硬币数
+- 状态转移：`dp[i] = min(dp[i], dp[i - coin] + 1)` 对于每个 coin
+- 初始化：`dp[0] = 0`，其他为无穷大
+
+## 复杂度分析
+
+- **时间复杂度**：O(amount * n)，n 是硬币种类数
+- **空间复杂度**：O(amount)，dp数组
+
+## Python 实现
+
+```python
+def coin_change(coins: list[int], amount: int) -> int:
+    """
+    零钱兑换 - Python 实现
+    
+    Args:
+        coins: 硬币面额数组
+        amount: 总金额
+    
+    Returns:
+        最少硬币数，如果无解返回-1
+    """
+    # dp[i] 表示凑成金额 i 所需的最少硬币数
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0
+    
+    # 对于每个金额
+    for i in range(1, amount + 1):
+        # 尝试每种硬币
+        for coin in coins:
+            if coin <= i:
+                dp[i] = min(dp[i], dp[i - coin] + 1)
+    
+    return dp[amount] if dp[amount] != float('inf') else -1
+
+
+# 测试用例
+print(coin_change([1, 2, 5], 11))   # 3 (5+5+1)
+print(coin_change([2], 3))          # -1
+print(coin_change([1], 0))          # 0
+print(coin_change([1], 1))          # 1
+print(coin_change([1], 2))          # 2
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 零钱兑换 - TypeScript 实现
+ * @param coins 硬币面额数组
+ * @param amount 总金额
+ * @returns 最少硬币数，如果无解返回-1
+ */
+function coinChange(coins: number[], amount: number): number {
+    // dp[i] 表示凑成金额 i 所需的最少硬币数
+    const dp: number[] = new Array(amount + 1).fill(Infinity);
+    dp[0] = 0;
+    
+    // 对于每个金额
+    for (let i = 1; i <= amount; i++) {
+        // 尝试每种硬币
+        for (const coin of coins) {
+            if (coin <= i) {
+                dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+            }
+        }
+    }
+    
+    return dp[amount] === Infinity ? -1 : dp[amount];
+}
+
+// 测试用例
+console.log(coinChange([1, 2, 5], 11));   // 3
+console.log(coinChange([2], 3));          // -1
+console.log(coinChange([1], 0));          // 0
+console.log(coinChange([1], 1));          // 1
+console.log(coinChange([1], 2));          // 2
+```
+
+## 面试变体
+
+1. **零钱兑换 II**：计算凑成金额的组合数（不考虑顺序）
+2. **每种硬币有限**：每种硬币数量有限制
+3. **找零问题**：不仅求最少硬币数，还要返回具体硬币组合
+
+## 常见错误
+
+1. 初始化 `dp[0]` 错误，应该是 0 不是 1
+2. 使用 `float('inf')` 或 `Infinity` 初始化，但最后忘记判断
+3. 循环顺序错误（完全背包和0-1背包的区别）

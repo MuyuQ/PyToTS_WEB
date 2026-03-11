@@ -1,0 +1,122 @@
+---
+title: 最长递增子序列 (Longest Increasing Subsequence)
+kind: algorithm
+difficulty: medium
+tags: ["dynamic-programming", "binary-search", "array"]
+time_complexity: "O(n log n)"
+space_complexity: "O(n)"
+description: 找出数组中最长严格递增子序列的长度
+---
+
+## 问题描述
+
+给你一个整数数组 `nums`，找到其中最长严格递增子序列的长度。
+
+子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。
+
+## 思路分析
+
+方法一：动态规划 O(n²)
+- `dp[i]`：以第 i 个元素结尾的最长递增子序列长度
+- 状态转移：`dp[i] = max(dp[j] + 1)` 对于所有 `j < i` 且 `nums[j] < nums[i]`
+
+方法二：二分查找优化 O(n log n)
+- 维护一个数组 `tails`，`tails[i]` 表示长度为 i+1 的递增子序列的最小末尾元素
+- 用二分查找确定每个元素应该放的位置
+
+## 复杂度分析
+
+- **时间复杂度**：O(n log n)，二分查找优化
+- **空间复杂度**：O(n)，dp数组或tails数组
+
+## Python 实现
+
+```python
+import bisect
+
+def length_of_lis(nums: list[int]) -> int:
+    """
+    最长递增子序列 - Python 实现 (二分查找优化)
+    
+    Args:
+        nums: 整数数组
+    
+    Returns:
+        最长递增子序列的长度
+    """
+    tails = []  # tails[i] 表示长度为 i+1 的递增子序列的最小末尾元素
+    
+    for num in nums:
+        # 二分查找：找到第一个 >= num 的位置
+        idx = bisect.bisect_left(tails, num)
+        
+        if idx == len(tails):
+            # 可以接在后面，增加子序列长度
+            tails.append(num)
+        else:
+            # 替换，保持末尾元素尽可能小
+            tails[idx] = num
+    
+    return len(tails)
+
+
+# 测试用例
+print(length_of_lis([10, 9, 2, 5, 3, 7, 101, 18]))  # 4 ([2,3,7,101])
+print(length_of_lis([0, 1, 0, 3, 2, 3]))            # 4
+print(length_of_lis([7, 7, 7, 7, 7, 7, 7]))         # 1
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 最长递增子序列 - TypeScript 实现 (二分查找优化)
+ * @param nums 整数数组
+ * @returns 最长递增子序列的长度
+ */
+function lengthOfLIS(nums: number[]): number {
+    const tails: number[] = [];  // tails[i] 表示长度为 i+1 的递增子序列的最小末尾元素
+    
+    for (const num of nums) {
+        // 二分查找：找到第一个 >= num 的位置
+        let left = 0;
+        let right = tails.length;
+        
+        while (left < right) {
+            const mid = Math.floor((left + right) / 2);
+            if (tails[mid] < num) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+        
+        if (left === tails.length) {
+            // 可以接在后面，增加子序列长度
+            tails.push(num);
+        } else {
+            // 替换，保持末尾元素尽可能小
+            tails[left] = num;
+        }
+    }
+    
+    return tails.length;
+}
+
+// 测试用例
+console.log(lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18]));  // 4
+console.log(lengthOfLIS([0, 1, 0, 3, 2, 3]));            // 4
+console.log(lengthOfLIS([7, 7, 7, 7, 7, 7, 7]));         // 1
+```
+
+## 面试变体
+
+1. **具体子序列**：不只返回长度，还要返回具体子序列
+2. **最长递减子序列**：找最长递减子序列
+3. **摆动序列**：找最长摆动子序列（交替增减）
+
+## 常见错误
+
+1. 使用 `bisect_right` 而不是 `bisect_left`
+2. 忘记处理相等元素（严格递增 vs 非递减）
+3. 二分查找边界条件写错

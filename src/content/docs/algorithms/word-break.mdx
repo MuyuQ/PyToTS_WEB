@@ -1,0 +1,114 @@
+---
+title: 单词拆分 (Word Break)
+kind: algorithm
+difficulty: medium
+tags: ["dynamic-programming", "string", "hash-table"]
+time_complexity: "O(n²)"
+space_complexity: "O(n)"
+description: 判断字符串是否可以被拆分成字典中的单词
+---
+
+## 问题描述
+
+给你一个字符串 `s` 和一个字符串列表 `wordDict` 作为字典。请你判断是否可以利用字典中出现的单词拼接出 `s`。
+
+**注意：**不要求字典中出现的单词全部都使用，并且字典中的单词可以重复使用。
+
+## 思路分析
+
+动态规划：
+- `dp[i]`：前 i 个字符能否被拆分
+- 状态转移：`dp[i] = dp[j] and s[j:i] in wordDict` 对于所有 `0 <= j < i`
+- 初始化：`dp[0] = True`
+
+优化：可以用 Trie 或哈希集合加速子串查询
+
+## 复杂度分析
+
+- **时间复杂度**：O(n²)，最坏情况需要检查所有子串
+- **空间复杂度**：O(n)，dp数组 + 哈希集合
+
+## Python 实现
+
+```python
+def word_break(s: str, wordDict: list[str]) -> bool:
+    """
+    单词拆分 - Python 实现
+    
+    Args:
+        s: 目标字符串
+        wordDict: 单词字典
+    
+    Returns:
+        是否能被拆分
+    """
+    word_set = set(wordDict)
+    n = len(s)
+    
+    # dp[i] 表示前 i 个字符能否被拆分
+    dp = [False] * (n + 1)
+    dp[0] = True
+    
+    for i in range(1, n + 1):
+        for j in range(i):
+            if dp[j] and s[j:i] in word_set:
+                dp[i] = True
+                break
+    
+    return dp[n]
+
+
+# 测试用例
+print(word_break("leetcode", ["leet", "code"]))                    # True
+print(word_break("applepenapple", ["apple", "pen"]))              # True
+print(word_break("catsandog", ["cats", "dog", "sand", "and", "cat"]))  # False
+print(word_break("aaaaaaa", ["aaaa", "aaa"]))                      # True
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 单词拆分 - TypeScript 实现
+ * @param s 目标字符串
+ * @param wordDict 单词字典
+ * @returns 是否能被拆分
+ */
+function wordBreak(s: string, wordDict: string[]): boolean {
+    const wordSet = new Set(wordDict);
+    const n = s.length;
+    
+    // dp[i] 表示前 i 个字符能否被拆分
+    const dp: boolean[] = new Array(n + 1).fill(false);
+    dp[0] = true;
+    
+    for (let i = 1; i <= n; i++) {
+        for (let j = 0; j < i; j++) {
+            if (dp[j] && wordSet.has(s.substring(j, i))) {
+                dp[i] = true;
+                break;
+            }
+        }
+    }
+    
+    return dp[n];
+}
+
+// 测试用例
+console.log(wordBreak("leetcode", ["leet", "code"]));                    // true
+console.log(wordBreak("applepenapple", ["apple", "pen"]));              // true
+console.log(wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"]));  // false
+console.log(wordBreak("aaaaaaa", ["aaaa", "aaa"]));                      // true
+```
+
+## 面试变体
+
+1. **所有拆分方式**：返回所有可能的拆分方式
+2. **最少单词数**：使用最少单词的拆分
+3. **最长单词**：使用最长单词优先的策略
+
+## 常见错误
+
+1. 忘记初始化 `dp[0] = True`
+2. 子串范围写错（应该是 s[j:i] 不是 s[j:i-1]）
+3. 内层循环可以提前退出但没有退出
