@@ -7,8 +7,13 @@ interface Props {
   title?: string;
 }
 
-const props = Astro.props as Props;
-const { python, typescript, title } = normalizeDualCodeInput(props);
+const { python, typescript, title } = {
+  title: Astro.props.title,
+  ...normalizeDualCodeInput({
+    python: Astro.props.python,
+    typescript: Astro.props.typescript,
+  }),
+};
 ---
 
 <div class="dual-code-block">

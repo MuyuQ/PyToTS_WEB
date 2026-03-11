@@ -5,7 +5,7 @@ export default tseslint.config(
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    ignores: ["dist/", "node_modules/", ".astro/"],
+    ignores: ["dist/", "node_modules/", ".astro/", "src/env.d.ts"],
   },
   {
     rules: {
