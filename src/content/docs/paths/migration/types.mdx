@@ -1,0 +1,89 @@
+---
+title: 类型系统对比
+level: migration
+topic: types
+difficulty: easy
+prerequisites: []
+python_tags: ["type hints", "typing"]
+ts_tags: ["type annotations", "interfaces"]
+description: 理解 Python 和 TypeScript 类型系统的核心差异
+---
+
+# 类型系统对比
+
+## 场景与问题
+
+在 Python 中，你可以使用类型注解来标注变量和函数的类型。TypeScript 也有类似的类型系统，但有一些关键差异。
+
+## Python 回顾
+
+```python
+# Python 类型注解
+def greet(name: str) -> str:
+    return f"Hello, {name}"
+
+# 可选类型
+from typing import Optional
+
+def find_user(id: int) -> Optional[str]:
+    if id > 0:
+        return "user"
+    return None
+
+# 联合类型
+from typing import Union
+
+def process(value: Union[int, str]) -> str:
+    return str(value)
+```
+
+## TypeScript 等价写法
+
+```typescript
+// TypeScript 类型注解
+function greet(name: string): string {
+    return `Hello, ${name}`;
+}
+
+// 可选类型 (使用 null 或 undefined)
+function findUser(id: number): string | null {
+    if (id > 0) {
+        return "user";
+    }
+    return null;
+}
+
+// 联合类型
+function process(value: number | string): string {
+    return String(value);
+}
+```
+
+## 差异与常见陷阱
+
+1. **类型位置**：Python 使用 `:` 和 `->`，TypeScript 使用 `:` 统一表示
+2. **可选类型**：Python 用 `Optional[T]`，TypeScript 用 `T | null` 或 `T | undefined`
+3. **运行时检查**：Python 类型注解运行时不强制，TypeScript 编译时检查
+
+## 优势对比
+
+| 特性 | Python | TypeScript |
+|------|--------|------------|
+| 类型推断 | 有限 | 强大 |
+| 编译检查 | 无 | 有 |
+| 泛型支持 | 有 | 有 |
+| 接口 | Protocol | interface |
+
+## 练习
+
+尝试将以下 Python 代码转换为 TypeScript：
+
+```python
+def calculate_area(width: float, height: float) -> float:
+    return width * height
+```
+
+## 面试追问
+
+- TypeScript 的 `any` 和 `unknown` 有什么区别？
+- 什么时候使用 `interface` vs `type`？

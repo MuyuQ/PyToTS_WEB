@@ -1,0 +1,40 @@
+---
+import { getNextPathStep, getPrevPathStep } from "../lib/path-map";
+import PathNavigator from "../components/PathNavigator.astro";
+
+interface Props {
+  track: string;
+  current: string;
+}
+
+const { track, current } = Astro.props;
+---
+
+<article class="lesson">
+  <slot />
+  <PathNavigator track={track} current={current} />
+</article>
+
+<style>
+  .lesson {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .lesson :global(h2) {
+    margin-top: var(--space-xl);
+    padding-bottom: var(--space-sm);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .lesson :global(h3) {
+    margin-top: var(--space-lg);
+  }
+  
+  .lesson :global(pre) {
+    background: var(--color-code-bg);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+</style>

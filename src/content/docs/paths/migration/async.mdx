@@ -1,0 +1,99 @@
+---
+title: 异步编程
+level: migration
+topic: async
+difficulty: medium
+prerequisites: ["functions"]
+python_tags: ["async", "await", "asyncio"]
+ts_tags: ["async", "await", "Promise"]
+description: 理解 Python 和 TypeScript 异步编程的差异
+---
+
+# 异步编程
+
+## 场景与问题
+
+异步编程对于 I/O 密集型应用至关重要。Python 的 `asyncio` 和 TypeScript 的 `Promise` 有相似的概念，但实现方式不同。
+
+## Python 回顾
+
+```python
+import asyncio
+
+# 异步函数定义
+async def fetch_data(url: str) -> str:
+    await asyncio.sleep(1)  # 模拟网络请求
+    return f"Data from {url}"
+
+# 并发执行
+async def main():
+    tasks = [
+        fetch_data("url1"),
+        fetch_data("url2"),
+    ]
+    results = await asyncio.gather(*tasks)
+    return results
+
+# 运行
+asyncio.run(main())
+```
+
+## TypeScript 等价写法
+
+```typescript
+// 异步函数定义
+async function fetchData(url: string): Promise<string> {
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    return `Data from ${url}`;
+}
+
+// 并发执行
+async function main(): Promise<string[]> {
+    const results = await Promise.all([
+        fetchData("url1"),
+        fetchData("url2"),
+    ]);
+    return results;
+}
+
+// 运行
+main();
+```
+
+## 差异与常见陷阱
+
+1. **返回类型**：Python 隐式返回协程，TypeScript 需要 `Promise<T>`
+2. **事件循环**：Python 需要显式运行 `asyncio.run()`，TypeScript 自动处理
+3. **错误处理**：Python 用 `try/except`，TypeScript 用 `try/catch`
+4. **并发工具**：Python 用 `asyncio.gather()`，TypeScript 用 `Promise.all()`
+
+## 优势对比
+
+| 特性 | Python | TypeScript |
+|------|--------|------------|
+| 语法 | `async/await` | `async/await` |
+| 返回类型 | 协程对象 | Promise |
+| 并发收集 | `asyncio.gather()` | `Promise.all()` |
+| 事件循环 | 显式管理 | 自动管理 |
+
+## 练习
+
+将以下 Python 异步代码转换为 TypeScript：
+
+```python
+async def fetch_user(id: int) -> dict:
+    await asyncio.sleep(0.5)
+    return {"id": id, "name": f"User {id}"}
+
+async def get_all_users() -> list:
+    return await asyncio.gather(
+        fetch_user(1),
+        fetch_user(2),
+        fetch_user(3),
+    )
+```
+
+## 面试追问
+
+- `Promise.all` 和 `Promise.allSettled` 有什么区别？
+- 如何处理 Promise 的错误？

@@ -1,0 +1,80 @@
+---
+title: 模块与包管理
+level: migration
+topic: modules
+difficulty: easy
+prerequisites: ["functions"]
+python_tags: ["import", "from", "pip"]
+ts_tags: ["import", "export", "npm"]
+description: 掌握 Python 和 TypeScript 模块系统的差异
+---
+
+# 模块与包管理
+
+## 场景与问题
+
+模块化是现代开发的基础。Python 使用 `pip` 和 `import`，TypeScript/JavaScript 使用 `npm` 和 ES 模块。
+
+## Python 回顾
+
+```python
+# 导入模块
+import os
+from typing import List, Optional
+
+# 导入自定义模块
+from mypackage import mymodule
+from mypackage.mymodule import MyClass
+
+# 包管理
+# pip install requests
+# pip freeze > requirements.txt
+```
+
+## TypeScript 等价写法
+
+```typescript
+// 导入模块
+import * as os from "os";
+import { List, Optional } from "./types";
+
+// 导入自定义模块
+import { myModule } from "./mypackage";
+import { MyClass } from "./mypackage/mymodule";
+
+// 包管理
+// npm install axios
+// package.json 记录依赖
+```
+
+## 差异与常见陷阱
+
+1. **导入语法**：Python 用 `from ... import`，TypeScript 用 `import { ... } from`
+2. **默认导出**：TypeScript 支持 `export default`，Python 没有
+3. **路径引用**：TypeScript 需要 `./` 前缀表示相对路径
+4. **包管理器**：Python 用 `pip`，TypeScript 用 `npm` 或 `yarn`
+
+## 优势对比
+
+| 特性 | Python | TypeScript |
+|------|--------|------------|
+| 导入语法 | `import` / `from` | `import` |
+| 默认导出 | ✗ | ✓ |
+| 包管理器 | pip | npm/yarn/pnpm |
+| 锁文件 | requirements.txt | package-lock.json |
+| 虚拟环境 | venv | node_modules |
+
+## 练习
+
+将以下 Python 导入转换为 TypeScript：
+
+```python
+import json
+from typing import Dict, List
+from myapp.utils import helper
+```
+
+## 面试追问
+
+- `import *` 和具名导入有什么区别？
+- 什么是 tree shaking？如何支持它？
