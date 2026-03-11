@@ -14,8 +14,12 @@ const icons = {
 };
 ---
 
-<div class:list={["diff-insight", `diff-insight--${type}`]}>
-  <div class="insight-icon">{icons[type]}</div>
+<div 
+  class:list={["diff-insight", `diff-insight--${type}`]} 
+  role="note" 
+  aria-label={`${type} 提示: ${title}`}
+>
+  <div class="insight-icon" aria-hidden="true">{icons[type]}</div>
   <div class="insight-content">
     <h4 class="insight-title">{title}</h4>
     <slot />

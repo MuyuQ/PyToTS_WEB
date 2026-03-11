@@ -11,18 +11,18 @@ const nextStep = getNextPathStep(track, current);
 const prevStep = getPrevPathStep(track, current);
 ---
 
-<nav class="path-navigator">
+<nav class="path-navigator" aria-label="课程导航">
   {prevStep && (
-    <a href={`/${prevStep}`} class="nav-link nav-prev">
-      <span class="nav-arrow">←</span>
+    <a href={`/${prevStep}`} class="nav-link nav-prev" aria-label="上一课">
+      <span class="nav-arrow" aria-hidden="true">←</span>
       <span class="nav-label">上一课</span>
     </a>
   )}
-  <span class="nav-current">{current}</span>
+  <span class="nav-current" aria-current="page">{current}</span>
   {nextStep && (
-    <a href={`/${nextStep}`} class="nav-link nav-next">
+    <a href={`/${nextStep}`} class="nav-link nav-next" aria-label="下一课">
       <span class="nav-label">下一课</span>
-      <span class="nav-arrow">→</span>
+      <span class="nav-arrow" aria-hidden="true">→</span>
     </a>
   )}
 </nav>
@@ -54,6 +54,16 @@ const prevStep = getPrevPathStep(track, current);
   
   .nav-link:hover {
     opacity: 0.9;
+  }
+  
+  .nav-link:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+  
+  .nav-link:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
   }
   
   .nav-prev {

@@ -16,20 +16,20 @@ const { python, typescript, title } = {
 };
 ---
 
-<div class="dual-code-block">
+<div class="dual-code-block" role="region" aria-label={title ? `${title} - 双语代码对比` : "双语代码对比"}>
   {title && <h4 class="block-title">{title}</h4>}
   <div class="code-container">
     <div class="code-panel">
       <div class="panel-header">
-        <span class="lang-badge python">Python</span>
+        <span class="lang-badge python" aria-label="Python 代码">Python</span>
       </div>
-      <pre class="code"><code class="language-python">{python}</code></pre>
+      <pre class="code" tabindex="0" aria-label="Python 代码"><code class="language-python">{python}</code></pre>
     </div>
     <div class="code-panel">
       <div class="panel-header">
-        <span class="lang-badge typescript">TypeScript</span>
+        <span class="lang-badge typescript" aria-label="TypeScript 代码">TypeScript</span>
       </div>
-      <pre class="code"><code class="language-typescript">{typescript}</code></pre>
+      <pre class="code" tabindex="0" aria-label="TypeScript 代码"><code class="language-typescript">{typescript}</code></pre>
     </div>
   </div>
 </div>
@@ -94,5 +94,14 @@ const { python, typescript, title } = {
     font-family: var(--font-mono);
     font-size: 0.875rem;
     line-height: 1.5;
+  }
+  
+  .code:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: -2px;
+  }
+  
+  .code-panel:focus-within {
+    box-shadow: 0 0 0 2px var(--sl-color-accent);
   }
 </style>

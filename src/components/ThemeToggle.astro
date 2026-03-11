@@ -2,7 +2,7 @@
 const initialTheme = "light";
 ---
 
-<script define:vars={{ initialTheme }}>
+<script is:inline define:vars={{ initialTheme }}>
   function initTheme() {
     const stored = localStorage.getItem("site-theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -48,5 +48,15 @@ const initialTheme = "light";
   
   #theme-toggle:hover {
     background-color: var(--color-border);
+  }
+
+  #theme-toggle:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  #theme-toggle:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
   }
 </style>

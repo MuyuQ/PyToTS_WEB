@@ -1,0 +1,680 @@
+---
+export interface QuizOption {
+  text: string;
+  correct: boolean;
+  explanation: string;
+}
+
+export interface QuizQuestion {
+  question: string;
+  options: QuizOption[];
+}
+
+interface Props {
+  quizId: string;
+}
+
+const { quizId } = Astro.props;
+
+const quizData: Record<string, QuizQuestion[]> = {
+  types: [
+    {
+      question: "Python 的 `list[int]` 对应 TypeScript 的什么类型？",
+      options: [
+        { text: "number[]", correct: true, explanation: "TypeScript 使用 number[] 或 Array<number> 表示数字数组" },
+        { text: "List<number>", correct: false, explanation: "这是 Python 的写法，不是 TypeScript" },
+        { text: "int[]", correct: false, explanation: "TypeScript 不区分 int 和 float，统一使用 number" },
+        { text: "Array[int]", correct: false, explanation: "TypeScript 的泛型语法是 Array<number>" }
+      ]
+    },
+    {
+      question: "TypeScript 中如何表示可选参数？",
+      options: [
+        { text: "name?: string", correct: true, explanation: "使用 ? 标记可选参数" },
+        { text: "name: string | None", correct: false, explanation: "这是错误的语法，应该使用联合类型 string | undefined" },
+        { text: "name = None", correct: false, explanation: "这是 Python 的写法" },
+        { text: "optional name: string", correct: false, explanation: "TypeScript 不使用 optional 关键字" }
+      ]
+    },
+    {
+      question: "Python 的 `Union[int, str]` 在 TypeScript 中如何写？",
+      options: [
+        { text: "int | str", correct: true, explanation: "TypeScript 使用 | 表示联合类型" },
+        { text: "Union[int, str]", correct: false, explanation: "这是 Python 的写法" },
+        { text: "int || str", correct: false, explanation: "语法错误" },
+        { text: "int or str", correct: false, explanation: "这是 Python 的逻辑运算符，不是类型语法" }
+      ]
+    },
+    {
+      question: "在 TypeScript 中，`const` 和 `let` 的主要区别是什么？",
+      options: [
+        { text: "const 声明的变量不能重新赋值", correct: true, explanation: "const 用于声明常量，let 用于声明可变变量" },
+        { text: "const 是常量，let 是变量", correct: false, explanation: "虽然结果正确，但这不是技术解释" },
+        { text: "const 有块级作用域，let 没有", correct: false, explanation: "两者都有块级作用域" },
+        { text: "没有区别", correct: false, explanation: "两者有重要区别" }
+      ]
+    },
+    {
+      question: "TypeScript 中 `any` 类型的作用是什么？",
+      options: [
+        { text: "绕过类型检查，允许任何类型的值", correct: true, explanation: "any 表示任意类型，会失去类型安全" },
+        { text: "表示数组类型", correct: false, explanation: "数组类型是 T[] 或 Array<T>" },
+        { text: "表示可选类型", correct: false, explanation: "可选类型用 ? 标记" },
+        { text: "表示未知类型", correct: false, explanation: "未知类型是 unknown" }
+      ]
+    },
+    {
+      question: "Python 的 `dict[str, int]` 在 TypeScript 中如何表示？",
+      options: [
+        { text: "Record<string, number>", correct: true, explanation: "Record<K, V> 表示键值对映射" },
+        { text: "Map<string, number>", correct: false, explanation: "Map 也可以，但 Record 更常用" },
+        { text: "{string: number}", correct: false, explanation: "这是对象字面量类型，不是 Record" },
+        { text: "Dictionary<string, number>", correct: false, explanation: "TypeScript 没有 Dictionary 类型" }
+      ]
+    }
+  ],
+  functions: [
+    {
+      question: "Python 的 `*args` 对应 TypeScript 的什么语法？",
+      options: [
+        { text: "...args: number[]", correct: true, explanation: "TypeScript 使用展开运算符 ... 表示剩余参数" },
+        { text: "*args: number[]", correct: false, explanation: "TypeScript 不使用 * 语法" },
+        { text: "args: ...number", correct: false, explanation: "语法错误" },
+        { text: "args?: number[]", correct: false, explanation: "? 表示可选参数，不是剩余参数" }
+      ]
+    },
+    {
+      question: "TypeScript 中如何给参数设置默认值？",
+      options: [
+        { text: "function greet(name: string = 'World')", correct: true, explanation: "直接在参数声明中使用 = 设置默认值" },
+        { text: "function greet(name: string = 'World'):", correct: false, explanation: "冒号是 Python 的语法" },
+        { text: "function greet(name: string ?= 'World')", correct: false, explanation: "?= 不是有效的 TypeScript 语法" },
+        { text: "function greet(name = 'World': string)", correct: false, explanation: "类型注解和默认值的位置写反了" }
+      ]
+    },
+    {
+      question: "Python 的 `lambda x: x + 1` 对应 TypeScript 的？",
+      options: [
+        { text: "(x) => x + 1", correct: true, explanation: "箭头函数是 TypeScript/JavaScript 的 lambda 表达式" },
+        { text: "lambda x: x + 1", correct: false, explanation: "这是 Python 的语法" },
+        { text: "function(x) { return x + 1 }", correct: false, explanation: "这是普通函数定义，不是箭头函数" },
+        { text: "x => x + 1", correct: false, explanation: "当参数只有一个时括号可以省略，但 (x) => 更规范" }
+      ]
+    },
+    {
+      question: "TypeScript 函数返回 `void` 表示什么？",
+      options: [
+        { text: "函数不返回任何值", correct: true, explanation: "void 表示没有返回值" },
+        { text: "函数返回 undefined", correct: false, explanation: "void 不是 undefined，只是不返回有意义的值" },
+        { text: "函数返回 null", correct: false, explanation: "void 不是 null" },
+        { text: "函数返回空字符串", correct: false, explanation: "void 不是空字符串" }
+      ]
+    },
+    {
+      question: "TypeScript 中箭头函数 `const fn = () => {}` 和普通函数 `function fn() {}` 的主要区别是？",
+      options: [
+        { text: "箭头函数没有自己的 this", correct: true, explanation: "箭头函数继承外部 this，普通函数有自己的 this" },
+        { text: "箭头函数不能返回值", correct: false, explanation: "箭头函数可以返回值" },
+        { text: "箭头函数不能有参数", correct: false, explanation: "箭头函数可以有参数" },
+        { text: "没有区别", correct: false, explanation: "两者有重要区别" }
+      ]
+    }
+  ],
+  async: [
+    {
+      question: "Python 的 `async def` 对应 TypeScript 的？",
+      options: [
+        { text: "async function", correct: true, explanation: "TypeScript 使用 async 关键字标记异步函数" },
+        { text: "await function", correct: false, explanation: "await 用于调用异步函数，不是定义" },
+        { text: "promise function", correct: false, explanation: "Promise 是类型，不是函数修饰符" },
+        { text: "def async", correct: false, explanation: "这是错误的语法顺序" }
+      ]
+    },
+    {
+      question: "TypeScript 中 `await` 只能在什么函数中使用？",
+      options: [
+        { text: "async 函数", correct: true, explanation: "await 只能在 async 函数或模块顶层使用" },
+        { text: "任何函数", correct: false, explanation: "普通函数中不能直接使用 await" },
+        { text: "Promise 函数", correct: false, explanation: "Promise 是类型，不是函数修饰符" },
+        { text: "generator 函数", correct: false, explanation: "虽然 generator 可以用 yield，但 await 需要 async" }
+      ]
+    },
+    {
+      question: "Python 的 `asyncio.gather(*tasks)` 对应 TypeScript 的？",
+      options: [
+        { text: "Promise.all(tasks)", correct: true, explanation: "Promise.all 等待所有 Promise 完成" },
+        { text: "Promise.race(tasks)", correct: false, explanation: "race 返回最快完成的那个" },
+        { text: "await tasks", correct: false, explanation: "不能 await 数组" },
+        { text: "async.all(tasks)", correct: false, explanation: "async 没有 all 方法" }
+      ]
+    },
+    {
+      question: "TypeScript 中的 `Promise` 是什么？",
+      options: [
+        { text: "表示异步操作最终完成或失败的对象", correct: true, explanation: "Promise 代表一个异步操作的最终状态" },
+        { text: "一种函数类型", correct: false, explanation: "Promise 不是函数类型" },
+        { text: "一种数组类型", correct: false, explanation: "Promise 不是数组" },
+        { text: "一个关键字", correct: false, explanation: "Promise 不是关键字，是内置类" }
+      ]
+    },
+    {
+      question: "在 TypeScript 中，如何处理 Promise 的错误？",
+      options: [
+        { text: "try/catch 包裹 await", correct: true, explanation: "使用 try/catch 捕获 await 抛出的错误" },
+        { text: "catch 方法链", correct: false, explanation: "虽然可以，但 async/await 更推荐用 try/catch" },
+        { text: "if/else 判断", correct: false, explanation: "不能用 if/else 处理异步错误" },
+        { text: "switch 语句", correct: false, explanation: "不能用 switch 处理异步错误" }
+      ]
+    }
+  ]
+};
+
+const questions = quizData[quizId] || [];
+---
+
+<div class="quiz-container" data-quiz-id={quizId} data-questions={JSON.stringify(questions)} role="region" aria-label="编程测验" tabindex="-1">
+  <div class="quiz-header">
+    <span class="quiz-progress" aria-live="polite"></span>
+  </div>
+  <div class="quiz-question" role="heading" aria-level="3"></div>
+  <div class="quiz-options" role="radiogroup" aria-label="选项"></div>
+  <div class="quiz-explanation" style="display: none;" role="alert" aria-live="polite"></div>
+  <div class="quiz-actions">
+    <button class="quiz-action-btn" disabled aria-label="提交答案">提交答案</button>
+  </div>
+  <div class="quiz-result" style="display: none;" role="region" aria-label="测验结果"></div>
+</div>
+
+<script>
+  type QuizOption = {
+    text: string;
+    correct: boolean;
+    explanation: string;
+  };
+
+  type QuizQuestion = {
+    question: string;
+    options: QuizOption[];
+  };
+
+  type QuizState = {
+    currentQuestion: number;
+    selectedOption: number | null;
+    showExplanation: boolean;
+    score: number;
+    completed: boolean;
+  };
+
+  class QuizManager {
+    private questions: QuizQuestion[];
+    private state: QuizState;
+
+    constructor(questions: QuizQuestion[]) {
+      this.questions = questions;
+      this.state = {
+        currentQuestion: 0,
+        selectedOption: null,
+        showExplanation: false,
+        score: 0,
+        completed: false
+      };
+    }
+
+    selectOption(index: number) {
+      if (this.state.showExplanation) return;
+      this.state.selectedOption = index;
+    }
+
+    submitAnswer() {
+      if (this.state.selectedOption === null) return;
+      
+      const currentQ = this.questions[this.state.currentQuestion];
+      const isCorrect = currentQ.options[this.state.selectedOption].correct;
+      
+      if (isCorrect) this.state.score++;
+      this.state.showExplanation = true;
+    }
+
+    nextQuestion() {
+      if (this.state.currentQuestion < this.questions.length - 1) {
+        this.state.currentQuestion++;
+        this.state.selectedOption = null;
+        this.state.showExplanation = false;
+      } else {
+        this.state.completed = true;
+      }
+    }
+
+    reset() {
+      this.state = {
+        currentQuestion: 0,
+        selectedOption: null,
+        showExplanation: false,
+        score: 0,
+        completed: false
+      };
+    }
+
+    getState() {
+      return { ...this.state };
+    }
+
+    getQuestions() {
+      return this.questions;
+    }
+
+    getCurrentQuestion() {
+      return this.questions[this.state.currentQuestion];
+    }
+  }
+
+  // Initialize quizzes
+  document.addEventListener('DOMContentLoaded', () => {
+    const containers = document.querySelectorAll('.quiz-container[data-quiz-id]');
+    
+    containers.forEach(container => {
+      const questionsData = container.getAttribute('data-questions');
+      if (!questionsData) return;
+      
+      let questions: QuizQuestion[];
+      try {
+        questions = JSON.parse(questionsData);
+      } catch {
+        console.error('Failed to parse quiz questions');
+        return;
+      }
+      
+      const quiz = new QuizManager(questions);
+      initializeQuizUI(container as HTMLElement, quiz);
+    });
+  });
+
+  function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
+    const questionEl = container.querySelector('.quiz-question') as HTMLElement;
+    const optionsEl = container.querySelector('.quiz-options') as HTMLElement;
+    const progressEl = container.querySelector('.quiz-progress') as HTMLElement;
+    const actionBtn = container.querySelector('.quiz-action-btn') as HTMLButtonElement;
+    const explanationEl = container.querySelector('.quiz-explanation') as HTMLElement;
+    const resultEl = container.querySelector('.quiz-result') as HTMLElement;
+
+    function render() {
+      const state = quiz.getState();
+      const questions = quiz.getQuestions();
+      
+      if (state.completed) {
+        showResults();
+        return;
+      }
+
+      const currentQ = quiz.getCurrentQuestion();
+      
+      // Update progress
+      progressEl.textContent = `问题 ${state.currentQuestion + 1} / ${questions.length}`;
+      
+      // Update question
+      questionEl.textContent = currentQ.question;
+      
+      // Update options
+      optionsEl.innerHTML = '';
+      currentQ.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = option.text;
+        btn.setAttribute('role', 'radio');
+        btn.setAttribute('aria-checked', state.selectedOption === index ? 'true' : 'false');
+        btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text}`);
+        btn.setAttribute('tabindex', '0');
+        
+        if (state.selectedOption === index) {
+          btn.classList.add('selected');
+          btn.setAttribute('aria-selected', 'true');
+        }
+        
+        if (state.showExplanation) {
+          btn.disabled = true;
+          btn.setAttribute('aria-disabled', 'true');
+          if (option.correct) {
+            btn.classList.add('correct');
+            btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text} - 正确答案`);
+          } else if (state.selectedOption === index) {
+            btn.classList.add('incorrect');
+            btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text} - 回答错误`);
+          }
+        }
+        
+        btn.addEventListener('click', () => {
+          quiz.selectOption(index);
+          render();
+        });
+        
+        btn.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            quiz.selectOption(index);
+            render();
+          }
+        });
+        
+        optionsEl.appendChild(btn);
+      });
+      
+      // Update action button
+      if (state.showExplanation) {
+        actionBtn.textContent = state.currentQuestion < questions.length - 1 ? '下一题' : '查看结果';
+        actionBtn.setAttribute('aria-label', state.currentQuestion < questions.length - 1 ? '进入下一题' : '查看测验结果');
+        actionBtn.onclick = () => {
+          quiz.nextQuestion();
+          render();
+          // 自动聚焦到新问题的第一个选项
+          const firstOption = container.querySelector('.quiz-option') as HTMLElement;
+          if (firstOption && !quiz.getState().showExplanation) {
+            firstOption.focus();
+          }
+        };
+      } else {
+        actionBtn.textContent = '提交答案';
+        actionBtn.setAttribute('aria-label', '提交答案');
+        actionBtn.disabled = state.selectedOption === null;
+        actionBtn.onclick = () => {
+          quiz.submitAnswer();
+          render();
+          // 自动聚焦到解释区域
+          if (explanationEl.style.display !== 'none') {
+            explanationEl.focus();
+          }
+        };
+      }
+      
+      // Show explanation
+      if (state.showExplanation && state.selectedOption !== null) {
+        const currentQ = quiz.getCurrentQuestion();
+        const selectedOption = currentQ.options[state.selectedOption];
+        explanationEl.innerHTML = `
+          <div class="explanation-header ${selectedOption.correct ? 'correct' : 'incorrect'}">
+            ${selectedOption.correct ? '✓ 回答正确' : '✗ 回答错误'}
+          </div>
+          <div class="explanation-content">${selectedOption.explanation}</div>
+        `;
+        explanationEl.style.display = 'block';
+      } else {
+        explanationEl.style.display = 'none';
+      }
+      
+      resultEl.style.display = 'none';
+    }
+
+    function showResults() {
+      const state = quiz.getState();
+      const questions = quiz.getQuestions();
+      const percentage = Math.round((state.score / questions.length) * 100);
+      
+      questionEl.style.display = 'none';
+      optionsEl.style.display = 'none';
+      progressEl.style.display = 'none';
+      actionBtn.style.display = 'none';
+      explanationEl.style.display = 'none';
+      
+      let message = '';
+      if (percentage >= 80) {
+        message = '太棒了！你对 Python 到 TypeScript 的迁移掌握得很好！';
+      } else if (percentage >= 60) {
+        message = '不错的成绩！继续加油，还有一些细节可以改进。';
+      } else {
+        message = '建议重新复习对应的学习路径，巩固基础知识。';
+      }
+      
+      resultEl.innerHTML = `
+        <div class="quiz-result-header">测验完成！</div>
+        <div class="quiz-result-score">${state.score} / ${questions.length}</div>
+        <div class="quiz-result-percentage">${percentage}%</div>
+        <div class="quiz-result-message">${message}</div>
+        <button class="quiz-restart-btn">重新测验</button>
+      `;
+      resultEl.style.display = 'block';
+      
+      const restartBtn = resultEl.querySelector('.quiz-restart-btn') as HTMLButtonElement;
+      restartBtn.onclick = () => {
+        quiz.reset();
+        questionEl.style.display = 'block';
+        optionsEl.style.display = 'flex';
+        progressEl.style.display = 'block';
+        actionBtn.style.display = 'block';
+        render();
+      };
+    }
+
+    render();
+  }
+</script>
+
+<style>
+  .quiz-container {
+    background: var(--sl-color-bg-inline-code);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .quiz-container:focus {
+    outline: none;
+  }
+
+  .quiz-container:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 4px;
+  }
+
+  .quiz-header {
+    margin-bottom: 1rem;
+  }
+
+  .quiz-progress {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-3);
+    font-weight: 500;
+  }
+
+  .quiz-question {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: var(--sl-color-white);
+    line-height: 1.5;
+  }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .quiz-option {
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    background: var(--sl-color-bg);
+    color: var(--sl-color-white);
+    font-size: 0.9375rem;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .quiz-option:hover:not(:disabled) {
+    border-color: var(--sl-color-accent);
+    background: var(--sl-color-accent-low);
+  }
+
+  .quiz-option:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .quiz-option:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .quiz-option.selected {
+    border-color: var(--sl-color-accent);
+    background: var(--sl-color-accent-low);
+  }
+
+  .quiz-option.correct {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  .quiz-option.incorrect {
+    border-color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  .quiz-option:disabled {
+    cursor: not-allowed;
+    opacity: 0.8;
+  }
+
+  .quiz-explanation {
+    margin-bottom: 1.25rem;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background: var(--sl-color-bg);
+  }
+
+  .quiz-explanation:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .explanation-header {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .explanation-header.correct {
+    color: #22c55e;
+  }
+
+  .explanation-header.incorrect {
+    color: #ef4444;
+  }
+
+  .explanation-content {
+    font-size: 0.9375rem;
+    color: var(--sl-color-gray-2);
+    line-height: 1.6;
+  }
+
+  .quiz-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .quiz-action-btn {
+    padding: 0.625rem 1.5rem;
+    background: var(--sl-color-accent);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .quiz-action-btn:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  .quiz-action-btn:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .quiz-action-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .quiz-action-btn:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  .quiz-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .quiz-result {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  .quiz-result-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--sl-color-white);
+  }
+
+  .quiz-result-score {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--sl-color-accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .quiz-result-percentage {
+    font-size: 1.5rem;
+    color: var(--sl-color-gray-3);
+    margin-bottom: 1rem;
+  }
+
+  .quiz-result-message {
+    font-size: 1rem;
+    color: var(--sl-color-gray-2);
+    margin-bottom: 1.5rem;
+  }
+
+  .quiz-restart-btn {
+    padding: 0.75rem 2rem;
+    background: var(--sl-color-accent);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .quiz-restart-btn:hover {
+    opacity: 0.9;
+  }
+
+  .quiz-restart-btn:focus {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  .quiz-restart-btn:focus-visible {
+    outline: 2px solid currentColor;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 768px) {
+    .quiz-container {
+      padding: 1rem;
+    }
+
+    .quiz-question {
+      font-size: 1rem;
+    }
+
+    .quiz-option {
+      padding: 0.75rem 0.875rem;
+      font-size: 0.875rem;
+    }
+  }
+</style>

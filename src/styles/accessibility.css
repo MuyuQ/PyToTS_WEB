@@ -1,0 +1,103 @@
+/* Global focus and accessibility styles */
+
+/* Ensure all interactive elements have visible focus indicators */
+a:focus,
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+[tabindex]:focus {
+  outline: 2px solid var(--sl-color-accent, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Remove default outline for mouse users, keep for keyboard */
+@media (hover: hover) {
+  a:focus:not(:focus-visible),
+  button:focus:not(:focus-visible),
+  input:focus:not(:focus-visible),
+  textarea:focus:not(:focus-visible),
+  select:focus:not(:focus-visible) {
+    outline: none;
+  }
+}
+
+/* Ensure focus-visible is always visible */
+:focus-visible {
+  outline: 2px solid var(--sl-color-accent, #3b82f6);
+  outline-offset: 2px;
+}
+
+/* Skip link for keyboard navigation */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--sl-color-accent);
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  z-index: 100;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+/* Ensure sufficient color contrast */
+::selection {
+  background: var(--sl-color-accent);
+  color: white;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  a:focus,
+  button:focus,
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline-width: 3px;
+  }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Ensure images have alt text styling (visual indicator for missing alt) */
+img:not([alt]) {
+  outline: 3px dashed #ef4444;
+  outline-offset: 2px;
+}
+
+/* Print styles */
+@media print {
+  .skip-link,
+  .theme-toggle,
+  .quiz-container,
+  .path-navigator button {
+    display: none !important;
+  }
+}
