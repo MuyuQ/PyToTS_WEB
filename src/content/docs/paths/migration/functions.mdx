@@ -10,11 +10,9 @@ ts_tags: ["function", "optional", "rest", "default"]
 description: 掌握 Python 和 TypeScript 函数定义的差异
 ---
 
-# 函数与参数
-
 ## 场景与问题
 
-函数是代码复用的基础单元。Python 和 TypeScript 都支持函数定义，但语法和特性有所不同。
+Python 和 TypeScript 都支持函数定义，但语法和特性有所不同。
 
 ## Python 回顾
 
@@ -41,22 +39,22 @@ def create_user(name: str, **kwargs) -> dict:
 ```typescript
 // 基本函数
 function add(a: number, b: number): number {
-    return a + b;
+  return a + b;
 }
 
 // 默认参数
 function greet(name: string, greeting: string = "Hello"): string {
-    return `${greeting}, ${name}`;
+  return `${greeting}, ${name}`;
 }
 
 // 可变参数 (rest 参数)
 function sumAll(...args: number[]): number {
-    return args.reduce((a, b) => a + b, 0);
+  return args.reduce((a, b) => a + b, 0);
 }
 
 // 对象参数
 function createUser(name: string, options: Record<string, unknown>): object {
-    return { name, ...options };
+  return { name, ...options };
 }
 ```
 
@@ -69,13 +67,13 @@ function createUser(name: string, options: Record<string, unknown>): object {
 
 ## 优势对比
 
-| 特性 | Python | TypeScript |
-|------|--------|------------|
-| 默认参数 | ✓ | ✓ |
-| 可变参数 | `*args` | `...args` |
-| 关键字参数 | `**kwargs` | 对象参数 |
-| 函数重载 | ✗ | ✓ |
-| 箭头函数 | ✗ | ✓ |
+| 特性       | Python     | TypeScript |
+| ---------- | ---------- | ---------- |
+| 默认参数   | ✓          | ✓          |
+| 可变参数   | `*args`    | `...args`  |
+| 关键字参数 | `**kwargs` | 对象参数   |
+| 函数重载   | ✗          | ✓          |
+| 箭头函数   | ✗          | ✓          |
 
 ## 练习
 

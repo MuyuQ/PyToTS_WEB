@@ -10,11 +10,9 @@ ts_tags: ["class", "constructor", "this", "extends", "implements"]
 description: 掌握 Python 和 TypeScript 的面向对象编程差异
 ---
 
-# 类与对象
-
 ## 场景与问题
 
-面向对象编程是构建复杂应用的基础。Python 和 TypeScript 都支持 OOP，但语法和特性有很大差异，特别是在访问修饰符和接口方面。
+Python 和 TypeScript 都支持 OOP，但语法和特性有差异，特别是访问修饰符和接口。
 
 ## Python 回顾
 
@@ -22,33 +20,33 @@ description: 掌握 Python 和 TypeScript 的面向对象编程差异
 class Person:
     # 类属性（所有实例共享）
     species = "Homo sapiens"
-    
+
     # 构造方法
     def __init__(self, name: str, age: int):
         # 实例属性
         self.name = name
         self._age = age  # 约定：受保护属性
         self.__id = 123  # 名称修饰：私有属性
-    
+
     # 实例方法
     def introduce(self) -> str:
         return f"I'm {self.name}, {self._age} years old"
-    
+
     # 类方法
     @classmethod
     def create_anonymous(cls) -> "Person":
         return cls("Anonymous", 0)
-    
+
     # 静态方法
     @staticmethod
     def is_adult(age: int) -> bool:
         return age >= 18
-    
+
     # 属性装饰器
     @property
     def age(self) -> int:
         return self._age
-    
+
     @age.setter
     def age(self, value: int) -> None:
         if value < 0:
@@ -60,7 +58,7 @@ class Student(Person):
     def __init__(self, name: str, age: int, grade: str):
         super().__init__(name, age)
         self.grade = grade
-    
+
     def introduce(self) -> str:
         base = super().introduce()
         return f"{base}, Grade: {self.grade}"
@@ -70,78 +68,78 @@ class Student(Person):
 
 ```typescript
 class Person {
-    // 类属性
-    static species = "Homo sapiens";
-    
-    // 实例属性
-    name: string;
-    private age: number;       // 私有属性
-    protected id: number;      // 受保护属性（子类可访问）
-    
-    // 构造方法
-    constructor(name: string, age: number) {
-        this.name = name;
-        this.age = age;
-        this.id = 123;
+  // 类属性
+  static species = "Homo sapiens";
+
+  // 实例属性
+  name: string;
+  private age: number; // 私有属性
+  protected id: number; // 受保护属性（子类可访问）
+
+  // 构造方法
+  constructor(name: string, age: number) {
+    this.name = name;
+    this.age = age;
+    this.id = 123;
+  }
+
+  // 实例方法
+  introduce(): string {
+    return `I'm ${this.name}, ${this.age} years old`;
+  }
+
+  // 类方法
+  static createAnonymous(): Person {
+    return new Person("Anonymous", 0);
+  }
+
+  // 静态方法
+  static isAdult(age: number): boolean {
+    return age >= 18;
+  }
+
+  // Getter
+  get age(): number {
+    return this.age;
+  }
+
+  // Setter
+  set age(value: number) {
+    if (value < 0) {
+      throw new Error("Age cannot be negative");
     }
-    
-    // 实例方法
-    introduce(): string {
-        return `I'm ${this.name}, ${this.age} years old`;
-    }
-    
-    // 类方法
-    static createAnonymous(): Person {
-        return new Person("Anonymous", 0);
-    }
-    
-    // 静态方法
-    static isAdult(age: number): boolean {
-        return age >= 18;
-    }
-    
-    // Getter
-    get age(): number {
-        return this.age;
-    }
-    
-    // Setter
-    set age(value: number) {
-        if (value < 0) {
-            throw new Error("Age cannot be negative");
-        }
-        this.age = value;
-    }
+    this.age = value;
+  }
 }
 
 // 继承
 class Student extends Person {
-    grade: string;
-    
-    constructor(name: string, age: number, grade: string) {
-        super(name, age);
-        this.grade = grade;
-    }
-    
-    introduce(): string {
-        const base = super.introduce();
-        return `${base}, Grade: ${this.grade}`;
-    }
+  grade: string;
+
+  constructor(name: string, age: number, grade: string) {
+    super(name, age);
+    this.grade = grade;
+  }
+
+  introduce(): string {
+    const base = super.introduce();
+    return `${base}, Grade: ${this.grade}`;
+  }
 }
 
 // 简写语法（推荐）
 class PersonShort {
-    static species = "Homo sapiens";
-    
-    constructor(
-        public name: string,
-        private age: number,
-        protected id: number = 123
-    ) {}
-    
-    introduce(): string {
-        return `I'm ${this.name}, ${this.age} years old`;
-    }
+  static species = "Homo sapiens";
+
+  constructor(
+    public name: string,
+    private age: number,
+    protected id: number = 123
+  ) {}
+
+  introduce(): string {
+    return `I'm ${this.name}, ${this.age} years old`;
+  }
 }
 ```
 
@@ -151,68 +149,68 @@ class PersonShort {
 
 ```typescript
 class Example {
-    publicProp: string;        // 公开（默认）
-    private privateProp: string;   // 私有（类内部访问）
-    protected protectedProp: string; // 受保护（类及子类访问）
-    readonly readonlyProp: string;   // 只读（初始化后不可修改）
-    
-    constructor() {
-        this.publicProp = "public";
-        this.privateProp = "private";
-        this.protectedProp = "protected";
-        this.readonlyProp = "readonly";
-    }
+  publicProp: string; // 公开（默认）
+  private privateProp: string; // 私有（类内部访问）
+  protected protectedProp: string; // 受保护（类及子类访问）
+  readonly readonlyProp: string; // 只读（初始化后不可修改）
+
+  constructor() {
+    this.publicProp = "public";
+    this.privateProp = "private";
+    this.protectedProp = "protected";
+    this.readonlyProp = "readonly";
+  }
 }
 ```
 
-| 修饰符 | Python | TypeScript |
-|--------|--------|-----------|
-| 公开 | 默认 | `public` |
-| 私有 | `_prefix` 或 `__name` | `private` |
-| 受保护 | 无原生 | `protected` |
-| 只读 | `@property` 无 setter | `readonly` |
+| 修饰符 | Python                | TypeScript  |
+| ------ | --------------------- | ----------- |
+| 公开   | 默认                  | `public`    |
+| 私有   | `_prefix` 或 `__name` | `private`   |
+| 受保护 | 无原生                | `protected` |
+| 只读   | `@property` 无 setter | `readonly`  |
 
 ### 2. 抽象类与接口
 
 ```typescript
 // 抽象类
 abstract class Animal {
-    abstract makeSound(): void;  // 抽象方法
-    
-    move(): void {
-        console.log("Moving...");
-    }
+  abstract makeSound(): void; // 抽象方法
+
+  move(): void {
+    console.log("Moving...");
+  }
 }
 
 class Dog extends Animal {
-    makeSound(): void {
-        console.log("Woof!");
-    }
+  makeSound(): void {
+    console.log("Woof!");
+  }
 }
 
 // 接口（TypeScript 特有）
 interface Drawable {
-    draw(): void;
-    color?: string;  // 可选属性
+  draw(): void;
+  color?: string; // 可选属性
 }
 
 interface Measurable {
-    getArea(): number;
+  getArea(): number;
 }
 
 // 实现多个接口
 class Circle implements Drawable, Measurable {
-    color: string = "red";
-    
-    constructor(private radius: number) {}
-    
-    draw(): void {
-        console.log(`Drawing circle with radius ${this.radius}`);
-    }
-    
-    getArea(): number {
-        return Math.PI * this.radius ** 2;
-    }
+  color: string = "red";
+
+  constructor(private radius: number) {}
+
+  draw(): void {
+    console.log(`Drawing circle with radius ${this.radius}`);
+  }
+
+  getArea(): number {
+    return Math.PI * this.radius ** 2;
+  }
 }
 ```
 
@@ -221,38 +219,38 @@ class Circle implements Drawable, Measurable {
 ```typescript
 // 传统写法
 class Point {
-    x: number;
-    y: number;
-    
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
-    }
+  x: number;
+  y: number;
+
+  constructor(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
 }
 
 // TypeScript 简写（自动创建属性）
 class PointShort {
-    constructor(
-        public x: number,
-        public y: number
-    ) {}
+  constructor(
+    public x: number,
+    public y: number
+  ) {}
 }
 
 // 使用
 const p = new PointShort(3, 4);
-console.log(p.x);  // 3
+console.log(p.x); // 3
 ```
 
 ## 优势对比
 
-| 特性 | Python | TypeScript |
-|------|--------|-----------|
-| 类型检查 | 运行时 | 编译时 |
-| 访问修饰符 | 命名约定 | 关键字支持 |
-| 抽象类 | 通过 ABC 模块 | 原生支持 |
-| 接口 | 协议/鸭子类型 | 原生支持 |
-| 多重继承 | 支持 | 不支持（但支持多接口） |
-| 泛型 | 3.12+ 支持 | 原生支持 |
+| 特性       | Python        | TypeScript             |
+| ---------- | ------------- | ---------------------- |
+| 类型检查   | 运行时        | 编译时                 |
+| 访问修饰符 | 命名约定      | 关键字支持             |
+| 抽象类     | 通过 ABC 模块 | 原生支持               |
+| 接口       | 协议/鸭子类型 | 原生支持               |
+| 多重继承   | 支持          | 不支持（但支持多接口） |
+| 泛型       | 3.12+ 支持    | 原生支持               |
 
 ## 练习
 
@@ -264,11 +262,11 @@ from abc import ABC, abstractmethod
 class Shape(ABC):
     def __init__(self, color: str):
         self.color = color
-    
+
     @abstractmethod
     def area(self) -> float:
         pass
-    
+
     def describe(self) -> str:
         return f"A {self.color} shape"
 
@@ -277,7 +275,7 @@ class Rectangle(Shape):
         super().__init__(color)
         self.width = width
         self.height = height
-    
+
     def area(self) -> float:
         return self.width * self.height
 ```
@@ -287,29 +285,30 @@ class Rectangle(Shape):
 
 ```typescript
 abstract class Shape {
-    constructor(protected color: string) {}
-    
-    abstract area(): number;
-    
-    describe(): string {
-        return `A ${this.color} shape`;
-    }
+  constructor(protected color: string) {}
+
+  abstract area(): number;
+
+  describe(): string {
+    return `A ${this.color} shape`;
+  }
 }
 
 class Rectangle extends Shape {
-    constructor(
-        color: string,
-        private width: number,
-        private height: number
-    ) {
-        super(color);
-    }
-    
-    area(): number {
-        return this.width * this.height;
-    }
+  constructor(
+    color: string,
+    private width: number,
+    private height: number
+  ) {
+    super(color);
+  }
+
+  area(): number {
+    return this.width * this.height;
+  }
 }
 ```
+
 </details>
 
 ## 面试追问

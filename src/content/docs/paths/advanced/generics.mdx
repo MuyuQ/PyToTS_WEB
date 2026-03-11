@@ -10,11 +10,9 @@ ts_tags: ["generic", "T", "extends", "infer"]
 description: 掌握 TypeScript 泛型的核心概念和高级用法
 ---
 
-# 泛型深入
-
 ## 场景与问题
 
-泛型是 TypeScript 最强大的特性之一，它允许你编写可重用的、类型安全的代码。虽然 Python 3.12+ 也支持泛型，但 TypeScript 的泛型系统更加强大和灵活。
+泛型允许编写可重用的、类型安全的代码。Python 3.12+ 支持泛型，但 TypeScript 的泛型系统更强大。
 
 ## Python 回顾
 
@@ -31,10 +29,10 @@ def first(items: List[T]) -> T:
 class Stack(Generic[T]):
     def __init__(self) -> None:
         self._items: List[T] = []
-    
+
     def push(self, item: T) -> None:
         self._items.append(item)
-    
+
     def pop(self) -> T:
         return self._items.pop()
 
@@ -50,32 +48,32 @@ print(stack.pop())  # 2
 ```typescript
 // 泛型函数
 function first<T>(items: T[]): T {
-    return items[0];
+  return items[0];
 }
 
 // 泛型类
 class Stack<T> {
-    private items: T[] = [];
-    
-    push(item: T): void {
-        this.items.push(item);
-    }
-    
-    pop(): T {
-        return this.items.pop()!;
-    }
-    
-    // 查看栈顶元素但不弹出
-    peek(): T | undefined {
-        return this.items[this.items.length - 1];
-    }
+  private items: T[] = [];
+
+  push(item: T): void {
+    this.items.push(item);
+  }
+
+  pop(): T {
+    return this.items.pop()!;
+  }
+
+  // 查看栈顶元素但不弹出
+  peek(): T | undefined {
+    return this.items[this.items.length - 1];
+  }
 }
 
 // 使用
 const stack = new Stack<number>();
 stack.push(1);
 stack.push(2);
-console.log(stack.pop());  // 2
+console.log(stack.pop()); // 2
 
 // 类型推断 - 不需要显式指定
 const stack2 = new Stack<string>();
@@ -89,13 +87,13 @@ stack2.push("hello");
 ```typescript
 // 要求 T 必须有 length 属性
 function logLength<T extends { length: number }>(arg: T): T {
-    console.log(arg.length);
-    return arg;
+  console.log(arg.length);
+  return arg;
 }
 
 // 可以使用
-logLength("hello");        // ✓ 字符串有 length
-logLength([1, 2, 3]);      // ✓ 数组有 length
+logLength("hello"); // ✓ 字符串有 length
+logLength([1, 2, 3]); // ✓ 数组有 length
 logLength({ length: 10 }); // ✓ 对象有 length
 
 // 错误
@@ -107,7 +105,7 @@ logLength({ length: 10 }); // ✓ 对象有 length
 ```typescript
 // 键值对映射
 function mapToArray<K, V>(map: Map<K, V>): [K, V][] {
-    return Array.from(map.entries());
+  return Array.from(map.entries());
 }
 
 // 使用
@@ -124,11 +122,11 @@ const pairs = mapToArray(userMap);
 ```typescript
 // 可以设置默认值
 interface Container<T = string> {
-    value: T;
+  value: T;
 }
 
-const c1: Container = { value: "hello" };      // T 默认为 string
-const c2: Container<number> = { value: 42 };  // T 显式指定为 number
+const c1: Container = { value: "hello" }; // T 默认为 string
+const c2: Container<number> = { value: 42 }; // T 显式指定为 number
 ```
 
 ### 4. 条件类型（TypeScript 特有）
@@ -137,25 +135,25 @@ const c2: Container<number> = { value: 42 };  // T 显式指定为 number
 // 根据类型选择不同结果
 type IsString<T> = T extends string ? true : false;
 
-type A = IsString<string>;   // true
-type B = IsString<number>;   // false
+type A = IsString<string>; // true
+type B = IsString<number>; // false
 
 // 实际应用：提取 Promise 返回值
 type UnwrapPromise<T> = T extends Promise<infer R> ? R : T;
 
-type C = UnwrapPromise<Promise<number>>;  // number
-type D = UnwrapPromise<string>;            // string
+type C = UnwrapPromise<Promise<number>>; // number
+type D = UnwrapPromise<string>; // string
 ```
 
 ## 优势对比
 
-| 特性 | Python | TypeScript |
-|------|--------|-----------|
-| 语法 | `TypeVar('T')` | `<T>` |
-| 约束 | `TypeVar('T', bound=...)` | `extends` |
-| 默认参数 | 不支持 | 支持 |
-| 条件类型 | 不支持 | 支持 |
-| 类型推断 | 有限 | 强大 |
+| 特性     | Python                    | TypeScript |
+| -------- | ------------------------- | ---------- |
+| 语法     | `TypeVar('T')`            | `<T>`      |
+| 约束     | `TypeVar('T', bound=...)` | `extends`  |
+| 默认参数 | 不支持                    | 支持       |
+| 条件类型 | 不支持                    | 支持       |
+| 类型推断 | 有限                      | 强大       |
 
 ## 练习
 
@@ -171,13 +169,13 @@ V = TypeVar('V')
 class Cache(Generic[K, V]):
     def __init__(self):
         self._data: Dict[K, V] = {}
-    
+
     def set(self, key: K, value: V) -> None:
         self._data[key] = value
-    
+
     def get(self, key: K) -> Optional[V]:
         return self._data.get(key)
-    
+
     def has(self, key: K) -> bool:
         return key in self._data
 
@@ -192,26 +190,27 @@ print(cache.get("score"))  # 100
 
 ```typescript
 class Cache<K, V> {
-    private data = new Map<K, V>();
-    
-    set(key: K, value: V): void {
-        this.data.set(key, value);
-    }
-    
-    get(key: K): V | undefined {
-        return this.data.get(key);
-    }
-    
-    has(key: K): boolean {
-        return this.data.has(key);
-    }
+  private data = new Map<K, V>();
+
+  set(key: K, value: V): void {
+    this.data.set(key, value);
+  }
+
+  get(key: K): V | undefined {
+    return this.data.get(key);
+  }
+
+  has(key: K): boolean {
+    return this.data.has(key);
+  }
 }
 
 // 使用
 const cache = new Cache<string, number>();
 cache.set("score", 100);
-console.log(cache.get("score"));  // 100
+console.log(cache.get("score")); // 100
 ```
+
 </details>
 
 ## 面试追问

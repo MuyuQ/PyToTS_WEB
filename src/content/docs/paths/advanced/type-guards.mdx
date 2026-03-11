@@ -10,11 +10,9 @@ ts_tags: ["typeof", "instanceof", "in", "is", "predicate"]
 description: 掌握 TypeScript 的类型守卫机制和类型收窄技巧
 ---
 
-# 类型守卫与收窄
-
 ## 场景与问题
 
-当使用联合类型时，TypeScript 需要在运行时确定具体类型。类型守卫是 TypeScript 强大的类型收窄机制，让编译器能在特定代码块内确定更具体的类型。
+使用联合类型时，TypeScript 需要在运行时确定具体类型。类型守卫让编译器能在特定代码块内确定更具体的类型。
 
 ## Python 回顾
 
@@ -52,53 +50,53 @@ def make_sound(animal: Animal) -> str:
 
 ```typescript
 function process(value: string | number | string[]): void {
-    // typeof 类型守卫
-    if (typeof value === "string") {
-        // 在这里 value 是 string 类型
-        console.log(`String: ${value.toUpperCase()}`);
-    } else if (typeof value === "number") {
-        // 在这里 value 是 number 类型
-        console.log(`Number: ${value * 2}`);
-    } else {
-        // 在这里 value 是 string[] 类型
-        console.log(`List length: ${value.length}`);
-    }
+  // typeof 类型守卫
+  if (typeof value === "string") {
+    // 在这里 value 是 string 类型
+    console.log(`String: ${value.toUpperCase()}`);
+  } else if (typeof value === "number") {
+    // 在这里 value 是 number 类型
+    console.log(`Number: ${value * 2}`);
+  } else {
+    // 在这里 value 是 string[] 类型
+    console.log(`List length: ${value.length}`);
+  }
 }
 
 // instanceof 类型守卫
 class Animal {
-    move(): void {
-        console.log("Moving...");
-    }
+  move(): void {
+    console.log("Moving...");
+  }
 }
 
 class Dog extends Animal {
-    bark(): string {
-        return "Woof!";
-    }
+  bark(): string {
+    return "Woof!";
+  }
 }
 
 function makeSound(animal: Animal): string {
-    if (animal instanceof Dog) {
-        // 在这里 animal 是 Dog 类型
-        return animal.bark();
-    }
-    return "Unknown sound";
+  if (animal instanceof Dog) {
+    // 在这里 animal 是 Dog 类型
+    return animal.bark();
+  }
+  return "Unknown sound";
 }
 
 // in 操作符类型守卫
 interface Cat {
-    meow(): string;
+  meow(): string;
 }
 
 function interact(pet: Dog | Cat): string {
-    if ('bark' in pet) {
-        // 在这里 pet 是 Dog 类型
-        return pet.bark();
-    } else {
-        // 在这里 pet 是 Cat 类型
-        return pet.meow();
-    }
+  if ("bark" in pet) {
+    // 在这里 pet 是 Dog 类型
+    return pet.bark();
+  } else {
+    // 在这里 pet 是 Cat 类型
+    return pet.meow();
+  }
 }
 ```
 
@@ -109,53 +107,53 @@ function interact(pet: Dog | Cat): string {
 ```typescript
 // 用户定义的类型守卫
 interface Fish {
-    swim(): void;
+  swim(): void;
 }
 
 interface Bird {
-    fly(): void;
+  fly(): void;
 }
 
 // 类型谓词 isFish 告诉 TypeScript 返回值的含义
 function isFish(pet: Fish | Bird): pet is Fish {
-    return (pet as Fish).swim !== undefined;
+  return (pet as Fish).swim !== undefined;
 }
 
 function move(pet: Fish | Bird): void {
-    if (isFish(pet)) {
-        // 在这里 pet 是 Fish 类型
-        pet.swim();
-    } else {
-        // 在这里 pet 是 Bird 类型
-        pet.fly();
-    }
+  if (isFish(pet)) {
+    // 在这里 pet 是 Fish 类型
+    pet.swim();
+  } else {
+    // 在这里 pet 是 Bird 类型
+    pet.fly();
+  }
 }
 ```
 
 ### 2. 联合类型的穷尽检查
 
 ```typescript
-type Shape = 
-    | { kind: "circle"; radius: number }
-    | { kind: "square"; side: number }
-    | { kind: "rectangle"; width: number; height: number };
+type Shape =
+  | { kind: "circle"; radius: number }
+  | { kind: "square"; side: number }
+  | { kind: "rectangle"; width: number; height: number };
 
 function getArea(shape: Shape): number {
-    switch (shape.kind) {
-        case "circle":
-            // shape 被收窄为 { kind: "circle", radius: number }
-            return Math.PI * shape.radius ** 2;
-        case "square":
-            // shape 被收窄为 { kind: "square", side: number }
-            return shape.side ** 2;
-        case "rectangle":
-            // shape 被收窄为 { kind: "rectangle", width: number, height: number }
-            return shape.width * shape.height;
-        default:
-            // 穷尽检查 - 如果上面漏了 case，这里会报错
-            const _exhaustiveCheck: never = shape;
-            return _exhaustiveCheck;
-    }
+  switch (shape.kind) {
+    case "circle":
+      // shape 被收窄为 { kind: "circle", radius: number }
+      return Math.PI * shape.radius ** 2;
+    case "square":
+      // shape 被收窄为 { kind: "square", side: number }
+      return shape.side ** 2;
+    case "rectangle":
+      // shape 被收窄为 { kind: "rectangle", width: number, height: number }
+      return shape.width * shape.height;
+    default:
+      // 穷尽检查 - 如果上面漏了 case，这里会报错
+      const _exhaustiveCheck: never = shape;
+      return _exhaustiveCheck;
+  }
 }
 ```
 
@@ -163,40 +161,40 @@ function getArea(shape: Shape): number {
 
 ```typescript
 function processUser(user: User | null | undefined): string {
-    // 简单检查
-    if (user) {
-        // user 是 User 类型（非 null 且非 undefined）
-        return user.name;
-    }
-    return "Anonymous";
+  // 简单检查
+  if (user) {
+    // user 是 User 类型（非 null 且非 undefined）
+    return user.name;
+  }
+  return "Anonymous";
 }
 
 // 使用可选链和空值合并
 function getUserName(user: User | null): string {
-    return user?.name ?? "Anonymous";
+  return user?.name ?? "Anonymous";
 }
 
 // 使用 ! 非空断言（谨慎使用）
 function getNameLength(user: User | null): number {
-    if (user === null) {
-        return 0;
-    }
-    // 这里 TypeScript 知道 user 不是 null
-    // 但我们明确告诉编译器 user.name 一定存在
-    return user.name!.length;
+  if (user === null) {
+    return 0;
+  }
+  // 这里 TypeScript 知道 user 不是 null
+  // 但我们明确告诉编译器 user.name 一定存在
+  return user.name!.length;
 }
 ```
 
 ## 优势对比
 
-| 特性 | Python | TypeScript |
-|------|--------|-----------|
+| 特性       | Python       | TypeScript             |
+| ---------- | ------------ | ---------------------- |
 | 运行时检查 | `isinstance` | `typeof`, `instanceof` |
-| 属性检查 | `hasattr` | `in` 操作符 |
-| 自定义守卫 | 手动实现 | `is` 类型谓词 |
-| 穷尽检查 | 无 | `never` 类型 |
-| 可选链 | Python 3.10+ | 原生支持 |
-| 空值合并 | `or` | `??` |
+| 属性检查   | `hasattr`    | `in` 操作符            |
+| 自定义守卫 | 手动实现     | `is` 类型谓词          |
+| 穷尽检查   | 无           | `never` 类型           |
+| 可选链     | Python 3.10+ | 原生支持               |
+| 空值合并   | `or`         | `??`                   |
 
 ## 练习
 
@@ -229,50 +227,51 @@ def calculate_area(shape: Union[Circle, Rectangle, None]) -> Optional[float]:
 
 ```typescript
 class Circle {
-    constructor(public radius: number) {}
+  constructor(public radius: number) {}
 }
 
 class Rectangle {
-    constructor(
-        public width: number,
-        public height: number
-    ) {}
+  constructor(
+    public width: number,
+    public height: number
+  ) {}
 }
 
 // 使用自定义类型守卫
 function isCircle(shape: Circle | Rectangle): shape is Circle {
-    return shape instanceof Circle;
+  return shape instanceof Circle;
 }
 
 function calculateArea(shape: Circle | Rectangle | null): number | null {
-    if (shape === null) {
-        return null;
-    } else if (isCircle(shape)) {
-        return Math.PI * shape.radius ** 2;
-    } else {
-        // TypeScript 知道这里是 Rectangle
-        return shape.width * shape.height;
-    }
+  if (shape === null) {
+    return null;
+  } else if (isCircle(shape)) {
+    return Math.PI * shape.radius ** 2;
+  } else {
+    // TypeScript 知道这里是 Rectangle
+    return shape.width * shape.height;
+  }
 }
 
 // 或者使用更简洁的写法
 function calculateAreaV2(shape: Circle | Rectangle | null): number | null {
-    if (!shape) return null;
-    
-    if (shape instanceof Circle) {
-        return Math.PI * shape.radius ** 2;
-    }
-    
-    // 穷尽检查
-    if (shape instanceof Rectangle) {
-        return shape.width * shape.height;
-    }
-    
-    // 如果漏了情况，这行会报错
-    const _exhaustiveCheck: never = shape;
-    return _exhaustiveCheck;
+  if (!shape) return null;
+
+  if (shape instanceof Circle) {
+    return Math.PI * shape.radius ** 2;
+  }
+
+  // 穷尽检查
+  if (shape instanceof Rectangle) {
+    return shape.width * shape.height;
+  }
+
+  // 如果漏了情况，这行会报错
+  const _exhaustiveCheck: never = shape;
+  return _exhaustiveCheck;
 }
 ```
+
 </details>
 
 ## 面试追问

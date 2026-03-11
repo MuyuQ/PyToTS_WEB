@@ -10,11 +10,9 @@ ts_tags: ["@decorator", "experimentalDecorators", "metadata", "reflect-metadata"
 description: 掌握装饰器模式在 Python 和 TypeScript 中的应用
 ---
 
-# 装饰器与元编程
-
 ## 场景与问题
 
-装饰器是一种设计模式，允许你在不修改原始代码的情况下增强功能。Python 和 TypeScript 都支持装饰器，但实现和用法有很大差异。TypeScript 的装饰器是实验性特性，需要启用编译器选项。
+装饰器允许在不修改原始代码的情况下增强功能。Python 和 TypeScript 都支持装饰器，但实现和用法有差异。TypeScript 的装饰器是实验性特性，需要启用编译器选项。
 
 ## Python 回顾
 
@@ -80,21 +78,21 @@ class Database:
 class Person:
     def __init__(self, name: str):
         self._name = name
-    
+
     @property
     def name(self) -> str:
         return self._name
-    
+
     @name.setter
     def name(self, value: str) -> None:
         if not value:
             raise ValueError("Name cannot be empty")
         self._name = value
-    
+
     @staticmethod
     def is_adult(age: int) -> bool:
         return age >= 18
-    
+
     @classmethod
     def create_anonymous(cls) -> "Person":
         return cls("Anonymous")
@@ -108,102 +106,91 @@ class Person:
 // "emitDecoratorMetadata": true
 
 // 方法装饰器
-function timer(
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-) {
-    const originalMethod = descriptor.value;
-    
-    descriptor.value = function (...args: any[]) {
-        const start = performance.now();
-        const result = originalMethod.apply(this, args);
-        const elapsed = performance.now() - start;
-        console.log(`${propertyKey} took ${elapsed.toFixed(2)} ms`);
-        return result;
-    };
-    
-    return descriptor;
+function timer(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+
+  descriptor.value = function (...args: any[]) {
+    const start = performance.now();
+    const result = originalMethod.apply(this, args);
+    const elapsed = performance.now() - start;
+    console.log(`${propertyKey} took ${elapsed.toFixed(2)} ms`);
+    return result;
+  };
+
+  return descriptor;
 }
 
 class Example {
-    @timer
-    slowMethod() {
-        // 模拟耗时操作
-        for (let i = 0; i < 1000000; i++) {}
-        return "Done";
-    }
+  @timer
+  slowMethod() {
+    // 模拟耗时操作
+    for (let i = 0; i < 1000000; i++) {}
+    return "Done";
+  }
 }
 
 // 装饰器工厂（带参数）
 function retry(maxAttempts: number = 3) {
-    return function (
-        target: any,
-        propertyKey: string,
-        descriptor: PropertyDescriptor
-    ) {
-        const originalMethod = descriptor.value;
-        
-        descriptor.value = async function (...args: any[]) {
-            for (let attempt = 0; attempt < maxAttempts; attempt++) {
-                try {
-                    return await originalMethod.apply(this, args);
-                } catch (error) {
-                    if (attempt === maxAttempts - 1) {
-                        throw error;
-                    }
-                    console.log(`Attempt ${attempt + 1} failed, retrying...`);
-                }
-            }
-        };
-        
-        return descriptor;
+  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+
+    descriptor.value = async function (...args: any[]) {
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+          return await originalMethod.apply(this, args);
+        } catch (error) {
+          if (attempt === maxAttempts - 1) {
+            throw error;
+          }
+          console.log(`Attempt ${attempt + 1} failed, retrying...`);
+        }
+      }
     };
+
+    return descriptor;
+  };
 }
 
 class ApiClient {
-    @retry(5)
-    async unstableRequest() {
-        if (Math.random() < 0.7) {
-            throw new Error("Random failure");
-        }
-        return "Success";
+  @retry(5)
+  async unstableRequest() {
+    if (Math.random() < 0.7) {
+      throw new Error("Random failure");
     }
+    return "Success";
+  }
 }
 
 // 类装饰器
 function singleton<T extends new (...args: any[]) => {}>(constructor: T) {
-    let instance: any;
-    
-    return class extends constructor {
-        constructor(...args: any[]) {
-            if (instance) {
-                return instance;
-            }
-            super(...args);
-            instance = this;
-        }
-    };
+  let instance: any;
+
+  return class extends constructor {
+    constructor(...args: any[]) {
+      if (instance) {
+        return instance;
+      }
+      super(...args);
+      instance = this;
+    }
+  };
 }
 
 @singleton
 class Database {
-    connection: string = "Connected";
+  connection: string = "Connected";
 }
 
 // 属性装饰器
-function readonly(
-    target: any,
-    propertyKey: string
-) {
-    Object.defineProperty(target, propertyKey, {
-        writable: false
-    });
+function readonly(target: any, propertyKey: string) {
+  Object.defineProperty(target, propertyKey, {
+    writable: false,
+  });
 }
 
 class Config {
-    @readonly
-    apiUrl: string = "https://api.example.com";
+  @readonly
+  apiUrl: string = "https://api.example.com";
 }
 ```
 
@@ -218,11 +205,11 @@ class Config {
 
 @ClassDecorator
 class MyClass {
-    @PropertyDecorator
-    myProperty: string;
-    
-    @MethodDecorator
-    myMethod() {}
+  @PropertyDecorator
+  myProperty: string;
+
+  @MethodDecorator
+  myMethod() {}
 }
 
 // 执行顺序：
@@ -240,51 +227,35 @@ import "reflect-metadata";
 const REQUIRED_KEY = Symbol("required");
 
 // 参数装饰器 + 元数据
-function required(
-    target: Object,
-    propertyKey: string | symbol,
-    parameterIndex: number
-) {
-    const existingRequired: number[] = 
-        Reflect.getMetadata(REQUIRED_KEY, target, propertyKey) || [];
-    existingRequired.push(parameterIndex);
-    Reflect.defineMetadata(
-        REQUIRED_KEY, 
-        existingRequired, 
-        target, 
-        propertyKey
-    );
+function required(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+  const existingRequired: number[] = Reflect.getMetadata(REQUIRED_KEY, target, propertyKey) || [];
+  existingRequired.push(parameterIndex);
+  Reflect.defineMetadata(REQUIRED_KEY, existingRequired, target, propertyKey);
 }
 
 // 方法装饰器读取元数据
-function validate(
-    target: any,
-    propertyKey: string,
-    descriptor: PropertyDescriptor
-) {
-    const method = descriptor.value;
-    
-    descriptor.value = function (...args: any[]) {
-        const requiredParameters: number[] = 
-            Reflect.getMetadata(REQUIRED_KEY, target, propertyKey) || [];
-        
-        for (const index of requiredParameters) {
-            if (args[index] === undefined || args[index] === null) {
-                throw new Error(
-                    `Missing required argument at position ${index}`
-                );
-            }
-        }
-        
-        return method.apply(this, args);
-    };
+function validate(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  const method = descriptor.value;
+
+  descriptor.value = function (...args: any[]) {
+    const requiredParameters: number[] =
+      Reflect.getMetadata(REQUIRED_KEY, target, propertyKey) || [];
+
+    for (const index of requiredParameters) {
+      if (args[index] === undefined || args[index] === null) {
+        throw new Error(`Missing required argument at position ${index}`);
+      }
+    }
+
+    return method.apply(this, args);
+  };
 }
 
 class UserService {
-    @validate
-    createUser(@required name: string, @required email: string, age?: number) {
-        return { name, email, age };
-    }
+  @validate
+  createUser(@required name: string, @required email: string, age?: number) {
+    return { name, email, age };
+  }
 }
 ```
 
@@ -293,47 +264,47 @@ class UserService {
 ```typescript
 // 使用泛型让装饰器更类型安全
 function memoize<T extends (...args: any[]) => any>(
-    target: any,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<T>
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<T>
 ) {
-    const originalMethod = descriptor.value!;
-    const cache = new Map<string, ReturnType<T>>();
-    
-    descriptor.value = function (...args: Parameters<T>): ReturnType<T> {
-        const key = JSON.stringify(args);
-        
-        if (cache.has(key)) {
-            return cache.get(key)!;
-        }
-        
-        const result = originalMethod.apply(this, args);
-        cache.set(key, result);
-        return result;
-    } as T;
-    
-    return descriptor;
+  const originalMethod = descriptor.value!;
+  const cache = new Map<string, ReturnType<T>>();
+
+  descriptor.value = function (...args: Parameters<T>): ReturnType<T> {
+    const key = JSON.stringify(args);
+
+    if (cache.has(key)) {
+      return cache.get(key)!;
+    }
+
+    const result = originalMethod.apply(this, args);
+    cache.set(key, result);
+    return result;
+  } as T;
+
+  return descriptor;
 }
 
 class Calculator {
-    @memoize
-    fibonacci(n: number): number {
-        if (n <= 1) return n;
-        return this.fibonacci(n - 1) + this.fibonacci(n - 2);
-    }
+  @memoize
+  fibonacci(n: number): number {
+    if (n <= 1) return n;
+    return this.fibonacci(n - 1) + this.fibonacci(n - 2);
+  }
 }
 ```
 
 ## 优势对比
 
-| 特性 | Python | TypeScript |
-|------|--------|-----------|
-| 语法 | `@decorator` | `@decorator` |
-| 类型安全 | 运行时 | 编译时 |
-| 装饰器类型 | 函数/类/方法/属性 | 类/方法/属性/参数 |
-| 元数据 | 手动管理 | `reflect-metadata` |
-| 状态 | 正式特性 | 实验性特性 |
-| 性能 | 运行时开销 | 编译后无开销 |
+| 特性       | Python            | TypeScript         |
+| ---------- | ----------------- | ------------------ |
+| 语法       | `@decorator`      | `@decorator`       |
+| 类型安全   | 运行时            | 编译时             |
+| 装饰器类型 | 函数/类/方法/属性 | 类/方法/属性/参数  |
+| 元数据     | 手动管理          | `reflect-metadata` |
+| 状态       | 正式特性          | 实验性特性         |
+| 性能       | 运行时开销        | 编译后无开销       |
 
 ## 练习
 
@@ -346,20 +317,20 @@ from typing import Callable, Any
 def cache_result(max_size: int = 128):
     def decorator(func: Callable) -> Callable:
         cache = {}
-        
+
         @functools.wraps(func)
         def wrapper(*args) -> Any:
             if args in cache:
                 return cache[args]
-            
+
             result = func(*args)
-            
+
             if len(cache) >= max_size:
                 cache.pop(next(iter(cache)))
-            
+
             cache[args] = result
             return result
-        
+
         return wrapper
     return decorator
 
@@ -374,44 +345,45 @@ def expensive_calculation(n: int) -> int:
 
 ```typescript
 function cacheResult(maxSize: number = 128) {
-    return function <T extends (...args: any[]) => any>(
-        target: any,
-        propertyKey: string,
-        descriptor: TypedPropertyDescriptor<T>
-    ) {
-        const originalMethod = descriptor.value!;
-        const cache = new Map<string, ReturnType<T>>();
-        
-        descriptor.value = function (...args: Parameters<T>): ReturnType<T> {
-            const key = JSON.stringify(args);
-            
-            if (cache.has(key)) {
-                return cache.get(key)!;
-            }
-            
-            const result = originalMethod.apply(this, args);
-            
-            if (cache.size >= maxSize) {
-                const firstKey = cache.keys().next().value;
-                cache.delete(firstKey);
-            }
-            
-            cache.set(key, result);
-            return result;
-        } as T;
-        
-        return descriptor;
-    };
+  return function <T extends (...args: any[]) => any>(
+    target: any,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<T>
+  ) {
+    const originalMethod = descriptor.value!;
+    const cache = new Map<string, ReturnType<T>>();
+
+    descriptor.value = function (...args: Parameters<T>): ReturnType<T> {
+      const key = JSON.stringify(args);
+
+      if (cache.has(key)) {
+        return cache.get(key)!;
+      }
+
+      const result = originalMethod.apply(this, args);
+
+      if (cache.size >= maxSize) {
+        const firstKey = cache.keys().next().value;
+        cache.delete(firstKey);
+      }
+
+      cache.set(key, result);
+      return result;
+    } as T;
+
+    return descriptor;
+  };
 }
 
 class Calculator {
-    @cacheResult(100)
-    expensiveCalculation(n: number): number {
-        console.log(`Calculating for ${n}`);
-        return n * n;
-    }
+  @cacheResult(100)
+  expensiveCalculation(n: number): number {
+    console.log(`Calculating for ${n}`);
+    return n * n;
+  }
 }
 ```
+
 </details>
 
 ## 面试追问

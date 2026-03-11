@@ -11,7 +11,23 @@ export default defineConfig({
       sidebar: [
         {
           label: "学习路径",
-          autogenerate: { directory: "paths" },
+          items: [
+            {
+              label: "基础路径",
+              collapsed: true,
+              autogenerate: { directory: "paths/foundation" },
+            },
+            {
+              label: "迁移路径",
+              collapsed: true,
+              autogenerate: { directory: "paths/migration" },
+            },
+            {
+              label: "进阶路径",
+              collapsed: true,
+              autogenerate: { directory: "paths/advanced" },
+            },
+          ],
         },
         {
           label: "手册",

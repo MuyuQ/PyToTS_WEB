@@ -10,11 +10,9 @@ ts_tags: ["async", "await", "Promise"]
 description: 理解 Python 和 TypeScript 异步编程的差异
 ---
 
-# 异步编程
-
 ## 场景与问题
 
-异步编程对于 I/O 密集型应用至关重要。Python 的 `asyncio` 和 TypeScript 的 `Promise` 有相似的概念，但实现方式不同。
+Python 的 `asyncio` 和 TypeScript 的 `Promise` 概念相似，但实现方式不同。
 
 ## Python 回顾
 
@@ -44,17 +42,14 @@ asyncio.run(main())
 ```typescript
 // 异步函数定义
 async function fetchData(url: string): Promise<string> {
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    return `Data from ${url}`;
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  return `Data from ${url}`;
 }
 
 // 并发执行
 async function main(): Promise<string[]> {
-    const results = await Promise.all([
-        fetchData("url1"),
-        fetchData("url2"),
-    ]);
-    return results;
+  const results = await Promise.all([fetchData("url1"), fetchData("url2")]);
+  return results;
 }
 
 // 运行
@@ -70,12 +65,12 @@ main();
 
 ## 优势对比
 
-| 特性 | Python | TypeScript |
-|------|--------|------------|
-| 语法 | `async/await` | `async/await` |
-| 返回类型 | 协程对象 | Promise |
+| 特性     | Python             | TypeScript      |
+| -------- | ------------------ | --------------- |
+| 语法     | `async/await`      | `async/await`   |
+| 返回类型 | 协程对象           | Promise         |
 | 并发收集 | `asyncio.gather()` | `Promise.all()` |
-| 事件循环 | 显式管理 | 自动管理 |
+| 事件循环 | 显式管理           | 自动管理        |
 
 ## 练习
 

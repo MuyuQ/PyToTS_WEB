@@ -10,11 +10,9 @@ ts_tags: ["array", "object", "Map", "Set", "tuple"]
 description: 掌握 Python 和 TypeScript 的核心数据结构差异
 ---
 
-# 数据结构
-
 ## 场景与问题
 
-数据结构是编程的基石。Python 和 TypeScript 都提供了丰富的内置数据结构，但命名和用法有很大不同。本节将帮助你建立数据结构的心智模型映射。
+Python 和 TypeScript 都有丰富的数据结构，但命名和用法不同。
 
 ## Python 回顾
 
@@ -50,11 +48,11 @@ numbers[0] = 10;
 
 // Object - 键值对（类似 Python dict，但键只能是 string 或 number）
 const user: { name: string; age: number; email: string } = {
-    name: "Alice",
-    age: 25,
-    email: "alice@example.com"
+  name: "Alice",
+  age: 25,
+  email: "alice@example.com",
 };
-console.log(user.name);  // 注意：使用点号访问，不是方括号
+console.log(user.name); // 注意：使用点号访问，不是方括号
 
 // Map - 更灵活的键值对，键可以是任意类型
 const userMap = new Map<string, any>();
@@ -69,7 +67,7 @@ const point: [number, number] = [3, 4];
 
 // Set - 无序不重复集合
 const uniqueNumbers = new Set([1, 2, 3, 3, 3]);
-console.log(uniqueNumbers);  // Set {1, 2, 3}
+console.log(uniqueNumbers); // Set {1, 2, 3}
 ```
 
 ## 差异与常见陷阱
@@ -86,13 +84,13 @@ person["hobbies"] = ["reading"] # 值可以是任意类型
 ```typescript
 // TypeScript Object 需要类型定义
 interface Person {
-    name: string;
-    age?: number;        // 可选属性
-    hobbies?: string[];  // 可选属性
+  name: string;
+  age?: number; // 可选属性
+  hobbies?: string[]; // 可选属性
 }
 
 const person: Person = { name: "Bob" };
-person.age = 30;  // 如果 age 在接口中定义了就可以
+person.age = 30; // 如果 age 在接口中定义了就可以
 
 // 动态键值对使用 Map
 const dynamic = new Map<string, any>();
@@ -102,28 +100,28 @@ dynamic.set("key2", 123);
 
 ### 2. 数组/列表操作
 
-| 操作 | Python | TypeScript |
-|------|--------|-----------|
-| 添加元素 | `append()` | `push()` |
-| 移除最后一个 | `pop()` | `pop()` |
-| 获取长度 | `len(list)` | `array.length` |
-| 切片 | `list[1:4]` | `array.slice(1, 4)` |
-| 包含检查 | `x in list` | `array.includes(x)` |
-| 查找索引 | `list.index(x)` | `array.indexOf(x)` |
+| 操作         | Python          | TypeScript          |
+| ------------ | --------------- | ------------------- |
+| 添加元素     | `append()`      | `push()`            |
+| 移除最后一个 | `pop()`         | `pop()`             |
+| 获取长度     | `len(list)`     | `array.length`      |
+| 切片         | `list[1:4]`     | `array.slice(1, 4)` |
+| 包含检查     | `x in list`     | `array.includes(x)` |
+| 查找索引     | `list.index(x)` | `array.indexOf(x)`  |
 
 ```typescript
 const arr = [1, 2, 3, 4, 5];
 
 // 切片
-const slice1 = arr.slice(1, 4);    // [2, 3, 4]（索引 1 到 3）
-const slice2 = arr.slice(2);       // [3, 4, 5]（索引 2 到末尾）
-const slice3 = arr.slice(-2);      // [4, 5]（最后两个）
+const slice1 = arr.slice(1, 4); // [2, 3, 4]（索引 1 到 3）
+const slice2 = arr.slice(2); // [3, 4, 5]（索引 2 到末尾）
+const slice3 = arr.slice(-2); // [4, 5]（最后两个）
 
 // 包含检查
-const hasThree = arr.includes(3);  // true
+const hasThree = arr.includes(3); // true
 
 // 查找索引
-const index = arr.indexOf(3);      // 2
+const index = arr.indexOf(3); // 2
 ```
 
 ### 3. 解构赋值
@@ -141,22 +139,22 @@ first, *rest = [1, 2, 3, 4, 5]  # first=1, rest=[2,3,4,5]
 const point: [number, number] = [3, 4];
 const [x, y] = point;
 
-const [first, ...rest] = [1, 2, 3, 4, 5];  // first=1, rest=[2,3,4,5]
+const [first, ...rest] = [1, 2, 3, 4, 5]; // first=1, rest=[2,3,4,5]
 
 // 对象解构
 const user = { name: "Alice", age: 25, city: "NYC" };
-const { name, age } = user;  // 提取 name 和 age
-const { name: userName } = user;  // 重命名
+const { name, age } = user; // 提取 name 和 age
+const { name: userName } = user; // 重命名
 ```
 
 ## 优势对比
 
-| 特性 | Python | TypeScript |
-|------|--------|-----------|
-| 类型安全 | 运行时检查 | 编译时检查 |
-| 灵活性 | 高（动态类型） | 中（需要类型定义） |
-| 性能 | 解释型 | 编译优化 |
-| 智能提示 | 有限 | 强大 |
+| 特性     | Python         | TypeScript         |
+| -------- | -------------- | ------------------ |
+| 类型安全 | 运行时检查     | 编译时检查         |
+| 灵活性   | 高（动态类型） | 中（需要类型定义） |
+| 性能     | 解释型         | 编译优化           |
+| 智能提示 | 有限           | 强大               |
 
 ## 练习
 
@@ -182,27 +180,24 @@ emails = {"alice@example.com", "bob@example.com", "alice@example.com"}
 ```typescript
 // 定义接口
 interface User {
-    name: string;
-    age: number;
+  name: string;
+  age: number;
 }
 
 // 创建一个用户列表
 const users: User[] = [
-    { name: "Alice", age: 25 },
-    { name: "Bob", age: 30 }
+  { name: "Alice", age: 25 },
+  { name: "Bob", age: 30 },
 ];
 
 // 找到年龄大于 26 的用户
-const olderUsers: User[] = users.filter(u => u.age > 26);
+const olderUsers: User[] = users.filter((u) => u.age > 26);
 
 // 创建一个不重复的邮箱集合
-const emails = new Set<string>([
-    "alice@example.com",
-    "bob@example.com",
-    "alice@example.com"
-]);
-console.log(emails);  // Set {2} {"alice@example.com", "bob@example.com"}
+const emails = new Set<string>(["alice@example.com", "bob@example.com", "alice@example.com"]);
+console.log(emails); // Set {2} {"alice@example.com", "bob@example.com"}
 ```
+
 </details>
 
 ## 面试追问
