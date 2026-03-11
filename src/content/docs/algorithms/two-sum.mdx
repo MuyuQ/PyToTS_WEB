@@ -1,0 +1,94 @@
+---
+title: 两数之和 (Two Sum)
+difficulty: easy
+tags: ["array", "hash-table"]
+time_complexity: "O(n)"
+space_complexity: "O(n)"
+description: 给定数组和目标值，找出两数之和等于目标值的索引
+---
+
+## 问题描述
+
+给定一个整数数组 `nums` 和一个整数目标值 `target`，请你在该数组中找出和为目标值 `target` 的那两个整数，并返回它们的数组下标。
+
+## 思路分析
+
+使用哈希表存储已遍历的数字及其索引，对于每个数字，检查 `target - num` 是否在哈希表中。
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，只需遍历一次数组
+- **空间复杂度**：O(n)，哈希表最多存储 n 个元素
+
+## Python 实现
+
+```python
+def two_sum(nums: list[int], target: int) -> list[int]:
+    """
+    两数之和 - Python 实现
+    
+    Args:
+        nums: 整数数组
+        target: 目标和
+    
+    Returns:
+        两个数的索引列表
+    """
+    seen = {}  # 值 -> 索引 的映射
+    
+    for i, num in enumerate(nums):
+        complement = target - num
+        if complement in seen:
+            return [seen[complement], i]
+        seen[num] = i
+    
+    return []  # 未找到解
+
+
+# 测试用例
+print(two_sum([2, 7, 11, 15], 9))  # [0, 1]
+print(two_sum([3, 2, 4], 6))       # [1, 2]
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 两数之和 - TypeScript 实现
+ * @param nums 整数数组
+ * @param target 目标和
+ * @returns 两个数的索引数组
+ */
+function twoSum(nums: number[], target: number): number[] {
+    const seen = new Map<number, number>(); // 值 -> 索引 的映射
+    
+    for (let i = 0; i < nums.length; i++) {
+        const num = nums[i];
+        const complement = target - num;
+        
+        if (seen.has(complement)) {
+            return [seen.get(complement)!, i];
+        }
+        
+        seen.set(num, i);
+    }
+    
+    return []; // 未找到解
+}
+
+// 测试用例
+console.log(twoSum([2, 7, 11, 15], 9)); // [0, 1]
+console.log(twoSum([3, 2, 4], 6));      // [1, 2]
+```
+
+## 面试变体
+
+1. **返回所有组合**：如果有多个解，返回所有不重复的组合
+2. **有序数组**：如果数组已排序，可以使用双指针法
+3. **三数之和**：扩展到三个数之和等于目标值
+
+## 常见错误
+
+1. 忘记检查 `complement` 是否在哈希表中就返回
+2. 使用两层循环导致 O(n²) 时间复杂度
+3. 重复使用同一元素（题目通常不允许）

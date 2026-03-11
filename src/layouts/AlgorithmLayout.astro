@@ -1,0 +1,81 @@
+---
+interface Props {
+  title: string;
+  difficulty: string;
+  tags?: string[];
+}
+
+const { title, difficulty, tags = [] } = Astro.props;
+
+const difficultyColors: Record<string, string> = {
+  easy: "#10b981",
+  medium: "#f59e0b",
+  hard: "#ef4444",
+};
+---
+
+<article class="algorithm">
+  <header class="algo-header">
+    <h1>{title}</h1>
+    <div class="meta">
+      <span class="difficulty" style={`background: ${difficultyColors[difficulty] || "#6b7280"}`}>
+        {difficulty.toUpperCase()}
+      </span>
+      {tags.map((tag) => (
+        <span class="tag">{tag}</span>
+      ))}
+    </div>
+  </header>
+  <slot />
+</article>
+
+<style>
+  .algorithm {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .algo-header {
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
+  .algo-header h1 {
+    margin: 0 0 var(--space-sm) 0;
+  }
+  
+  .meta {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  
+  .difficulty {
+    color: white;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .tag {
+    background: var(--color-code-bg);
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    color: var(--color-text);
+  }
+  
+  .algorithm :global(h2) {
+    margin-top: var(--space-xl);
+  }
+  
+  .algorithm :global(pre) {
+    background: var(--color-code-bg);
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+  }
+</style>

@@ -1,0 +1,137 @@
+---
+title: 环形链表 (Linked List Cycle)
+difficulty: easy
+tags: ["linked-list", "two-pointers"]
+time_complexity: "O(n)"
+space_complexity: "O(1)"
+description: 判断链表是否有环
+---
+
+## 问题描述
+
+给定一个链表，判断链表中是否有环。如果链表中存在环，则返回 `true`，否则返回 `false`。
+
+## 思路分析
+
+使用快慢指针（龟兔赛跑算法）：
+- 慢指针每次移动一步
+- 快指针每次移动两步
+- 如果有环，快指针最终会追上慢指针
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，最坏情况遍历整个链表
+- **空间复杂度**：O(1)，只使用两个指针
+
+## Python 实现
+
+```python
+class ListNode:
+    """链表节点定义"""
+    def __init__(self, val: int = 0, next: 'ListNode' = None):
+        self.val = val
+        self.next = next
+
+
+def has_cycle(head: ListNode) -> bool:
+    """
+    环形链表 - Python 实现
+    
+    Args:
+        head: 链表头节点
+    
+    Returns:
+        是否有环
+    """
+    if not head or not head.next:
+        return False
+    
+    slow = head      # 慢指针：每次移动一步
+    fast = head      # 快指针：每次移动两步
+    
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        
+        if slow == fast:
+            return True  # 快慢指针相遇，有环
+    
+    return False  # 快指针到达末尾，无环
+
+
+# 测试用例
+# 创建有环链表: 1 -> 2 -> 3 -> 2 (环)
+node1 = ListNode(1)
+node2 = ListNode(2)
+node3 = ListNode(3)
+node1.next = node2
+node2.next = node3
+node3.next = node2  # 环
+
+print(has_cycle(node1))  # True
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 链表节点定义
+ */
+class ListNode {
+    val: number;
+    next: ListNode | null;
+    
+    constructor(val: number = 0, next: ListNode | null = null) {
+        this.val = val;
+        this.next = next;
+    }
+}
+
+/**
+ * 环形链表 - TypeScript 实现
+ * @param head 链表头节点
+ * @returns 是否有环
+ */
+function hasCycle(head: ListNode | null): boolean {
+    if (!head || !head.next) {
+        return false;
+    }
+    
+    let slow: ListNode | null = head;  // 慢指针：每次移动一步
+    let fast: ListNode | null = head;  // 快指针：每次移动两步
+    
+    while (fast && fast.next) {
+        slow = slow!.next;
+        fast = fast.next.next;
+        
+        if (slow === fast) {
+            return true;  // 快慢指针相遇，有环
+        }
+    }
+    
+    return false;  // 快指针到达末尾，无环
+}
+
+// 测试用例
+// 创建有环链表: 1 -> 2 -> 3 -> 2 (环)
+const node1 = new ListNode(1);
+const node2 = new ListNode(2);
+const node3 = new ListNode(3);
+node1.next = node2;
+node2.next = node3;
+node3.next = node2;  // 环
+
+console.log(hasCycle(node1));  // true
+```
+
+## 面试变体
+
+1. **找环的入口**：找到环的起始节点
+2. **计算环的长度**：返回环中节点的数量
+3. **检测两个链表是否相交**：判断两个链表是否有公共节点
+
+## 常见错误
+
+1. 没有检查 `fast.next` 是否为空就移动指针
+2. 只检查 `fast` 而忘记检查 `fast.next`
+3. 初始化时 `slow` 和 `fast` 不在同一个位置，可能导致误判

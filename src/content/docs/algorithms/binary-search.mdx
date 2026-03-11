@@ -1,0 +1,100 @@
+---
+title: 二分查找 (Binary Search)
+difficulty: easy
+tags: ["array", "binary-search"]
+time_complexity: "O(log n)"
+space_complexity: "O(1)"
+description: 在有序数组中查找目标值的位置
+---
+
+## 问题描述
+
+给定一个有序数组 `nums` 和目标值 `target`，返回目标值在数组中的索引。如果不存在，返回 -1。
+
+## 思路分析
+
+利用数组有序的特性，每次将搜索范围缩小一半。比较中间元素与目标值，决定搜索左半部分还是右半部分。
+
+## 复杂度分析
+
+- **时间复杂度**：O(log n)，每次将搜索范围减半
+- **空间复杂度**：O(1)，只使用常数额外空间
+
+## Python 实现
+
+```python
+def binary_search(nums: list[int], target: int) -> int:
+    """
+    二分查找 - Python 实现
+    
+    Args:
+        nums: 有序整数数组
+        target: 目标值
+    
+    Returns:
+        目标值的索引，不存在返回 -1
+    """
+    left, right = 0, len(nums) - 1
+    
+    while left <= right:
+        mid = left + (right - left) // 2  # 防止溢出
+        
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    
+    return -1  # 未找到
+
+
+# 测试用例
+print(binary_search([-1, 0, 3, 5, 9, 12], 9))   # 4
+print(binary_search([-1, 0, 3, 5, 9, 12], 2))   # -1
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 二分查找 - TypeScript 实现
+ * @param nums 有序整数数组
+ * @param target 目标值
+ * @returns 目标值的索引，不存在返回 -1
+ */
+function binarySearch(nums: number[], target: number): number {
+    let left = 0;
+    let right = nums.length - 1;
+    
+    while (left <= right) {
+        const mid = left + Math.floor((right - left) / 2); // 防止溢出
+        
+        if (nums[mid] === target) {
+            return mid;
+        } else if (nums[mid] < target) {
+            left = mid + 1;
+        } else {
+            right = mid - 1;
+        }
+    }
+    
+    return -1; // 未找到
+}
+
+// 测试用例
+console.log(binarySearch([-1, 0, 3, 5, 9, 12], 9));  // 4
+console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2));  // -1
+```
+
+## 面试变体
+
+1. **查找插入位置**：如果不存在，返回应该插入的位置
+2. **查找左右边界**：找到第一个等于目标的位置和最后一个等于目标的位置
+3. **旋转数组查找**：数组在某个位置旋转过
+
+## 常见错误
+
+1. `mid = (left + right) / 2` 可能溢出，应使用 `left + (right - left) / 2`
+2. 循环条件应该是 `left <= right` 而不是 `left < right`
+3. 更新指针时应该是 `mid + 1` 或 `mid - 1`，而不是 `mid`
