@@ -1,0 +1,315 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+  url?: string;
+}
+
+const { title, description = '', url = Astro.url } = Astro.props;
+
+const shareUrl = typeof url === 'string' ? url : url.toString();
+const encodedUrl = encodeURIComponent(shareUrl);
+const encodedTitle = encodeURIComponent(title);
+const encodedDesc = encodeURIComponent(description);
+
+const twitterUrl = `https://twitter.com/intent/tweet?url=${encodedUrl}&text=${encodedTitle}`;
+---
+
+<div class="share-buttons" role="group" aria-label="分享选项">
+  <span class="share-label">分享:</span>
+
+  <button
+    class="share-btn twitter"
+    data-url={twitterUrl}
+    aria-label="分享到 Twitter"
+    title="分享到 Twitter"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+    </svg>
+  </button>
+
+  <button
+    class="share-btn wechat"
+    data-toggle="qrcode"
+    aria-label="微信分享"
+    title="微信分享"
+  >
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.49.49 0 0 1 .177-.554C23.062 18.369 24 16.672 24 14.788c0-3.26-3.064-5.891-7.062-5.93zm-2.54 2.858c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.983.97-.983zm4.844 0c.535 0 .969.44.969.983a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.983.969-.983z"/>
+    </svg>
+  </button>
+
+  <button
+    class="share-btn copy"
+    data-url={shareUrl}
+    aria-label="复制链接"
+    title="复制链接"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+    </svg>
+  </button>
+
+  <!-- 微信二维码弹窗 -->
+  <div class="qrcode-modal" role="dialog" aria-label="微信分享二维码" aria-hidden="true">
+    <div class="qrcode-content">
+      <button class="qrcode-close" aria-label="关闭">&times;</button>
+      <h3>微信扫一扫分享</h3>
+      <div class="qrcode-placeholder" data-url={shareUrl}>
+        <p>二维码加载中...</p>
+      </div>
+      <p class="qrcode-hint">打开微信扫一扫即可分享</p>
+    </div>
+  </div>
+
+  <!-- Toast 提示 -->
+  <div class="share-toast" role="status" aria-live="polite" aria-hidden="true">
+    <span class="toast-message"></span>
+  </div>
+</div>
+
+<script>
+  function initShareButtons() {
+    const containers = document.querySelectorAll('.share-buttons');
+
+    containers.forEach(container => {
+      const twitterBtn = container.querySelector('.share-btn.twitter');
+      const wechatBtn = container.querySelector('.share-btn.wechat');
+      const copyBtn = container.querySelector('.share-btn.copy');
+      const qrcodeModal = container.querySelector('.qrcode-modal');
+      const qrcodeClose = container.querySelector('.qrcode-close');
+      const toast = container.querySelector('.share-toast');
+
+      // Twitter 分享
+      twitterBtn?.addEventListener('click', () => {
+        const url = twitterBtn.getAttribute('data-url');
+        if (url) {
+          window.open(url, '_blank', 'width=600,height=400');
+        }
+      });
+
+      // 微信二维码
+      wechatBtn?.addEventListener('click', () => {
+        qrcodeModal?.classList.add('show');
+        qrcodeModal?.setAttribute('aria-hidden', 'false');
+
+        // 生成二维码（使用 qrserver API）
+        const qrcodePlaceholder = container.querySelector('.qrcode-placeholder');
+        const url = qrcodePlaceholder?.getAttribute('data-url');
+        if (qrcodePlaceholder && url) {
+          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+          qrcodePlaceholder.innerHTML = `<img src="${qrUrl}" alt="分享二维码" width="200" height="200" />`;
+        }
+      });
+
+      // 关闭二维码弹窗
+      qrcodeClose?.addEventListener('click', () => {
+        qrcodeModal?.classList.remove('show');
+        qrcodeModal?.setAttribute('aria-hidden', 'true');
+      });
+
+      // 点击弹窗外部关闭
+      qrcodeModal?.addEventListener('click', (e) => {
+        if (e.target === qrcodeModal) {
+          qrcodeModal.classList.remove('show');
+          qrcodeModal.setAttribute('aria-hidden', 'true');
+        }
+      });
+
+      // 复制链接
+      copyBtn?.addEventListener('click', async () => {
+        const url = copyBtn.getAttribute('data-url');
+        if (url) {
+          try {
+            await navigator.clipboard.writeText(url);
+            showToast(toast as HTMLElement, '链接已复制到剪贴板');
+          } catch {
+            // 降级方案
+            const textarea = document.createElement('textarea');
+            textarea.value = url;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showToast(toast as HTMLElement, '链接已复制到剪贴板');
+          }
+        }
+      });
+    });
+  }
+
+  function showToast(toast: HTMLElement, message: string) {
+    const messageEl = toast.querySelector('.toast-message');
+    if (messageEl) messageEl.textContent = message;
+    toast.classList.add('show');
+    toast.setAttribute('aria-hidden', 'false');
+
+    setTimeout(() => {
+      toast.classList.remove('show');
+      toast.setAttribute('aria-hidden', 'true');
+    }, 3000);
+  }
+
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initShareButtons);
+  } else {
+    initShareButtons();
+  }
+</script>
+
+<style>
+  .share-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .share-label {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-3);
+    margin-right: 0.5rem;
+  }
+
+  .share-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-white);
+  }
+
+  .share-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .share-btn.twitter:hover {
+    background: #000000;
+  }
+
+  .share-btn.wechat:hover {
+    background: #07c160;
+  }
+
+  .share-btn.copy:hover {
+    background: var(--sl-color-accent);
+  }
+
+  .share-btn:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  /* 二维码弹窗 */
+  .qrcode-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .qrcode-modal.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .qrcode-content {
+    background: var(--sl-color-bg);
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    text-align: center;
+    position: relative;
+    max-width: 90%;
+    width: 300px;
+  }
+
+  .qrcode-content h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.125rem;
+  }
+
+  .qrcode-placeholder {
+    width: 200px;
+    height: 200px;
+    margin: 0 auto;
+    background: var(--sl-color-gray-6);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .qrcode-placeholder img {
+    border-radius: 0.5rem;
+  }
+
+  .qrcode-hint {
+    margin: 1rem 0 0 0;
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .qrcode-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--sl-color-gray-3);
+    line-height: 1;
+  }
+
+  .qrcode-close:hover {
+    color: var(--sl-color-white);
+  }
+
+  /* Toast 提示 */
+  .share-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--sl-color-accent);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    z-index: 1001;
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+
+  .share-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    .share-buttons {
+      flex-wrap: wrap;
+    }
+  }
+</style>

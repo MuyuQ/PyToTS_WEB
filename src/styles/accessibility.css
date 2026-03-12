@@ -97,7 +97,129 @@ img:not([alt]) {
   .skip-link,
   .theme-toggle,
   .quiz-container,
-  .path-navigator button {
+  .path-navigator button,
+  .mobile-nav-toggle,
+  .mobile-nav,
+  .mobile-nav-overlay,
+  .theme-selector,
+  .language-switcher {
     display: none !important;
+  }
+
+  /* Ensure content is visible when printing */
+  .lesson {
+    max-width: 100% !important;
+    margin: 0 !important;
+  }
+
+  /* Show URLs for links in print */
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.8em;
+    opacity: 0.7;
+  }
+
+  /* Ensure code blocks don't break across pages */
+  pre {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure headings don't break across pages */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+}
+
+/* Mobile-specific touch targets (shared with mobile.css) */
+@media (max-width: 768px) {
+  /* Ensure minimum touch target size */
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  [role="button"],
+  [role="radio"],
+  [role="checkbox"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Exception for form inputs */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="number"],
+  textarea {
+    min-height: auto;
+    min-width: auto;
+  }
+}
+
+/* Focus visible improvements */
+@media (hover: none) {
+  /* On touch devices, always show focus */
+  :focus {
+    outline: 2px solid var(--sl-color-accent, #3b82f6);
+    outline-offset: 2px;
+  }
+}
+
+/* Keyboard navigation enhancements */
+[tabindex="-1"]:focus {
+  outline: none;
+}
+
+/* Announce live regions for screen readers */
+[aria-live="polite"],
+[aria-live="assertive"] {
+  position: relative;
+}
+
+/* Hide content visually but keep it available to screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus trap for modals */
+.modal-open {
+  overflow: hidden;
+}
+
+/* Smooth scrolling for anchor links */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* Ensure text remains visible during webfont load */
+.fonts-loading {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Respect user's color scheme preference initially */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    color-scheme: light;
   }
 }

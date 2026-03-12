@@ -38,9 +38,9 @@ const prevStep = getPrevPathStep(track, current);
     margin: var(--space-lg) 0;
     border: 1px solid var(--color-border);
   }
-  
+
   .nav-link {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: var(--space-xs);
     padding: var(--space-sm) var(--space-md);
@@ -50,41 +50,107 @@ const prevStep = getPrevPathStep(track, current);
     border-radius: var(--radius-sm);
     font-weight: 500;
     transition: opacity 0.2s;
+    min-height: 44px;
+    min-width: 44px;
   }
-  
+
   .nav-link:hover {
     opacity: 0.9;
   }
-  
+
   .nav-link:focus {
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
-  
+
   .nav-link:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
-  
+
   .nav-prev {
     margin-right: auto;
   }
-  
+
   .nav-next {
     margin-left: auto;
   }
-  
+
   .nav-current {
     font-weight: 600;
     color: var(--color-text);
     padding: 0 var(--space-md);
   }
-  
+
   .nav-arrow {
     font-size: 1.1rem;
   }
-  
+
   .nav-label {
     font-size: 0.875rem;
+  }
+
+  /* Mobile responsive styles */
+  @media (max-width: 768px) {
+    .path-navigator {
+      padding: var(--space-sm);
+      gap: var(--space-sm);
+    }
+
+    .nav-link {
+      padding: var(--space-sm);
+      min-height: 44px;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .nav-current {
+      font-size: 0.875rem;
+      padding: 0 var(--space-sm);
+      order: -1;
+      flex-basis: 100%;
+      text-align: center;
+      margin-bottom: var(--space-sm);
+    }
+
+    .nav-arrow {
+      font-size: 1rem;
+    }
+
+    .nav-label {
+      font-size: 0.8125rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .path-navigator {
+      flex-wrap: wrap;
+    }
+
+    .nav-label {
+      display: none;
+    }
+
+    .nav-link {
+      min-width: 60px;
+    }
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: high) {
+    .nav-link {
+      border: 2px solid currentColor;
+    }
+
+    .path-navigator {
+      border-width: 2px;
+    }
+  }
+
+  /* Touch device optimizations */
+  @media (hover: none) {
+    .nav-link {
+      touch-action: manipulation;
+    }
   }
 </style>

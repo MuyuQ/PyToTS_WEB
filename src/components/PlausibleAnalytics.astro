@@ -1,0 +1,84 @@
+---
+/**
+ * Plausible 分析集成
+ * 隐私友好的分析，不使用 cookies，不跟踪个人数据
+ */
+
+export interface Props {
+  domain?: string;
+}
+
+const { domain = "typescript-python-web.github.io" } = Astro.props;
+---
+
+<!-- Plausible 分析脚本 -->
+<script
+  defer
+  data-domain={domain}
+  src="https://plausible.io/js/script.js"
+></script>
+
+<!-- 自定义事件追踪脚本 -->
+<script is:inline>
+  // Plausible 事件追踪辅助函数
+  window.trackEvent = function(eventName, props) {
+    if (window.plausible) {
+      window.plausible(eventName, { props: props });
+    }
+  };
+
+  // 追踪代码复制
+  document.addEventListener('DOMContentLoaded', function() {
+    // 监听代码块复制按钮
+    const codeBlocks = document.querySelectorAll('pre');
+    codeBlocks.forEach(function(block) {
+      const copyBtn = block.querySelector('.copy-button, [data-copy]');
+      if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+          window.trackEvent('Code Copied', {
+            page: window.location.pathname
+          });
+        });
+      }
+    });
+
+    // 追踪外部链接点击
+    document.querySelectorAll('a[href^="http"]').forEach(function(link) {
+      link.addEventListener('click', function(e) {
+        const href = link.getAttribute('href');
+        window.trackEvent('External Link Clicked', {
+          url: href,
+          page: window.location.pathname
+        });
+      });
+    });
+
+    // 追踪滚动深度
+    let maxScroll = 0;
+    let scrollTracked = false;
+
+    window.addEventListener('scroll', function() {
+      if (scrollTracked) return;
+
+      const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+      if (scrollPercent > maxScroll) {
+        maxScroll = scrollPercent;
+      }
+
+      // 在 25%, 50%, 75%, 100% 时追踪
+      if (maxScroll >= 25 && maxScroll < 50) {
+        window.trackEvent('Scroll Depth', { depth: '25%' });
+      } else if (maxScroll >= 50 && maxScroll < 75) {
+        window.trackEvent('Scroll Depth', { depth: '50%' });
+      } else if (maxScroll >= 75 && maxScroll < 100) {
+        window.trackEvent('Scroll Depth', { depth: '75%' });
+      } else if (maxScroll >= 90) {
+        window.trackEvent('Scroll Depth', { depth: '100%' });
+        scrollTracked = true;
+      }
+    }, { passive: true });
+  });
+</script>
+
+<!-- Plausible 分析配置 -->
+<meta name="plausible-domain" content={domain} />

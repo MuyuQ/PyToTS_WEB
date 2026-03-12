@@ -10,7 +10,7 @@ interface Props {
 const { track, current } = Astro.props;
 ---
 
-<article class="lesson">
+<article class="lesson" data-track={track} data-current={current}>
   <MobileNav>
     <nav aria-label="课程章节">
       <slot name="nav-content" />
@@ -21,6 +21,62 @@ const { track, current } = Astro.props;
     <PathNavigator track={track} current={current} />
   </div>
 </article>
+
+<script>
+  import { markAsCompleted, updateLastVisited } from '../lib/progress-store';
+
+  function initLessonProgress() {
+    const article = document.querySelector('.lesson[data-track][data-current]');
+    if (!article) return;
+
+    const track = article.getAttribute('data-track');
+    const current = article.getAttribute('data-current');
+
+    if (track && current) {
+      // 更新最后访问
+      updateLastVisited(current);
+
+      // 发送分析事件
+      try {
+        if (typeof window !== 'undefined' && (window as any).plausible) {
+          (window as any).plausible('Page View', {
+            props: { track, path: current }
+          });
+        }
+      } catch (e) {
+        // Plausible 可能未加载
+      }
+
+      // 监听滚动到页面底部，标记为完成
+      let markedCompleted = false;
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting && !markedCompleted) {
+              markedCompleted = true;
+              const title = document.querySelector('h1')?.textContent || '';
+              markAsCompleted(current, title, 'lesson');
+              observer.disconnect();
+            }
+          });
+        },
+        { threshold: 0.5 }
+      );
+
+      // 观察 PathNavigator 组件
+      const pathNavigator = article.querySelector('.path-navigator');
+      if (pathNavigator) {
+        observer.observe(pathNavigator);
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLessonProgress);
+  } else {
+    initLessonProgress();
+  }
+</script>
 
 <style>
   .lesson {
@@ -59,6 +115,37 @@ const { track, current } = Astro.props;
     .lesson :global(pre) {
       padding: var(--space-sm);
       font-size: 0.8125rem;
+    }
+
+    /* Ensure tables are scrollable on mobile */
+    .lesson :global(table) {
+      display: block;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      white-space: nowrap;
+    }
+
+    /* Responsive images */
+    .lesson :global(img) {
+      max-width: 100%;
+      height: auto;
+    }
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: high) {
+    .lesson :global(h2) {
+      border-bottom-width: 2px;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .lesson :global(*),
+    .lesson :global(*::before),
+    .lesson :global(*::after) {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
     }
   }
 </style>

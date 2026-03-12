@@ -1,4 +1,7 @@
 ---
+import BookmarkButton from "../components/BookmarkButton.astro";
+import ShareButtons from "../components/ShareButtons.astro";
+
 interface Props {
   title: string;
   difficulty: string;
@@ -12,6 +15,8 @@ const difficultyColors: Record<string, string> = {
   medium: "#f59e0b",
   hard: "#ef4444",
 };
+
+const currentPath = Astro.url.pathname;
 ---
 
 <article class="algorithm">
@@ -25,33 +30,100 @@ const difficultyColors: Record<string, string> = {
         <span class="tag">{tag}</span>
       ))}
     </div>
+    <div class="actions">
+      <BookmarkButton path={currentPath} title={title} />
+      <ShareButtons title={title} />
+    </div>
   </header>
   <slot />
 </article>
+
+<script>
+  import { markAsCompleted, updateLastVisited } from '../lib/progress-store';
+
+  function initAlgorithmProgress() {
+    const article = document.querySelector('.algorithm');
+    if (!article) return;
+
+    const path = window.location.pathname;
+    const title = document.querySelector('h1')?.textContent || '';
+
+    // 更新最后访问
+    updateLastVisited(path);
+
+    // 监听滚动到页面底部，标记为完成
+    let markedCompleted = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && !markedCompleted) {
+            markedCompleted = true;
+            markAsCompleted(path, title, 'algorithm');
+
+            // 发送分析事件
+            try {
+              if (typeof window !== 'undefined' && (window as any).plausible) {
+                (window as any).plausible('Algorithm Completed', {
+                  props: { title, path }
+                });
+              }
+            } catch (e) {
+              // Plausible 可能未加载
+            }
+
+            observer.disconnect();
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+
+    // 观察页面底部
+    const footer = document.querySelector('.page-footer, footer, [class*="footer"]');
+    if (footer) {
+      observer.observe(footer);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAlgorithmProgress);
+  } else {
+    initAlgorithmProgress();
+  }
+</script>
 
 <style>
   .algorithm {
     max-width: 900px;
     margin: 0 auto;
   }
-  
+
   .algo-header {
     margin-bottom: var(--space-lg);
     padding-bottom: var(--space-md);
     border-bottom: 1px solid var(--color-border);
   }
-  
+
   .algo-header h1 {
     margin: 0 0 var(--space-sm) 0;
   }
-  
+
   .meta {
     display: flex;
     gap: var(--space-sm);
     flex-wrap: wrap;
     align-items: center;
+    margin-bottom: var(--space-sm);
   }
-  
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex-wrap: wrap;
+    margin-top: var(--space-sm);
+  }
+
   .difficulty {
     color: white;
     padding: 2px 8px;
@@ -59,7 +131,7 @@ const difficultyColors: Record<string, string> = {
     font-size: 0.75rem;
     font-weight: 600;
   }
-  
+
   .tag {
     background: var(--color-code-bg);
     padding: 2px 8px;
@@ -67,11 +139,11 @@ const difficultyColors: Record<string, string> = {
     font-size: 0.75rem;
     color: var(--color-text);
   }
-  
+
   .algorithm :global(h2) {
     margin-top: var(--space-xl);
   }
-  
+
   .algorithm :global(pre) {
     background: var(--color-code-bg);
     padding: var(--space-md);

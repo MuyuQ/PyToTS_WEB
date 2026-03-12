@@ -1,0 +1,213 @@
+---
+---
+
+<div class="progress-dashboard">
+  <h2>学习进度</h2>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" data-stat="completed">0</div>
+      <div class="stat-label">已完成课程</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-value" data-stat="quizzes">0</div>
+      <div class="stat-label">完成测验</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-value" data-stat="average">0%</div>
+      <div class="stat-label">平均得分</div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-value" data-stat="bookmarks">0</div>
+      <div class="stat-label">收藏内容</div>
+    </div>
+  </div>
+
+  <div class="progress-section" style="display: none;" data-progress-section>
+    <h3>总体进度</h3>
+    <div class="progress-bar-container">
+      <div class="progress-bar" data-progress-bar style="width: 0%"></div>
+      <span class="progress-text" data-progress-text>0%</span>
+    </div>
+  </div>
+
+  <div class="quick-links">
+    <a href="/bookmarks" class="quick-link">
+      <span>查看书签</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+    <a href="/paths" class="quick-link">
+      <span>继续学习</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M5 12h14M12 5l7 7-7 7"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+<script>
+  import { getCompletionStats, getProgress } from '../lib/progress-store';
+
+  function initProgressDashboard() {
+    const stats = getCompletionStats();
+    const progress = getProgress();
+
+    // 更新统计数字
+    const completedEl = document.querySelector('[data-stat="completed"]');
+    const quizzesEl = document.querySelector('[data-stat="quizzes"]');
+    const averageEl = document.querySelector('[data-stat="average"]');
+    const bookmarksEl = document.querySelector('[data-stat="bookmarks"]');
+
+    if (completedEl) completedEl.textContent = stats.totalCompleted.toString();
+    if (quizzesEl) quizzesEl.textContent = stats.quizzesTaken.toString();
+    if (averageEl) averageEl.textContent = stats.averageScore + '%';
+    if (bookmarksEl) bookmarksEl.textContent = stats.bookmarksCount.toString();
+
+    // 显示进度条
+    if (stats.totalCompleted > 0) {
+      const progressSection = document.querySelector('[data-progress-section]') as HTMLElement | null;
+      if (progressSection) {
+        progressSection.style.display = 'block';
+      }
+
+      const totalLessons = 30; // 估算总课程数
+      const percentage = Math.min(Math.round((stats.totalCompleted / totalLessons) * 100), 100);
+
+      const progressBar = document.querySelector('[data-progress-bar]') as HTMLElement | null;
+      const progressText = document.querySelector('[data-progress-text]') as HTMLElement | null;
+
+      if (progressBar) progressBar.style.width = percentage + '%';
+      if (progressText) progressText.textContent = percentage + '%';
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initProgressDashboard);
+  } else {
+    initProgressDashboard();
+  }
+</script>
+
+<style>
+  .progress-dashboard {
+    background: var(--sl-color-bg-inline-code);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .progress-dashboard h2 {
+    margin: 0 0 1rem 0;
+    font-size: 1.25rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    text-align: center;
+    padding: 1rem;
+    background: var(--sl-color-bg);
+    border-radius: 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--sl-color-accent);
+  }
+
+  .stat-label {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-3);
+    margin-top: 0.25rem;
+  }
+
+  .progress-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .progress-section h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1rem;
+  }
+
+  .progress-bar-container {
+    position: relative;
+    height: 2rem;
+    background: var(--sl-color-gray-6);
+    border-radius: 1rem;
+    overflow: hidden;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sl-color-accent), var(--sl-color-accent-high));
+    border-radius: 1rem;
+    transition: width 0.5s ease;
+  }
+
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  .quick-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .quick-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: var(--sl-color-accent);
+    color: white;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: opacity 0.2s ease;
+  }
+
+  .quick-link:hover {
+    opacity: 0.9;
+  }
+
+  .quick-link svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  @media (max-width: 768px) {
+    .progress-dashboard {
+      padding: 1rem;
+    }
+
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+    }
+  }
+</style>
