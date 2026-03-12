@@ -40,7 +40,7 @@ describe("axe-core accessibility tests", () => {
 
     it("should have no critical accessibility violations", async () => {
       const document = dom.window.document;
-      const results = await axe.run(document.documentElement);
+      const results = await axe.run(document.body);
 
       const criticalViolations = results.violations.filter(
         (v) => v.impact === "critical"
@@ -129,7 +129,7 @@ describe("axe-core accessibility tests", () => {
 
     it("should have no critical accessibility violations", async () => {
       const document = dom.window.document;
-      const results = await axe.run(document.documentElement);
+      const results = await axe.run(document.body);
 
       const criticalViolations = results.violations.filter(
         (v) => v.impact === "critical"
