@@ -1,0 +1,298 @@
+---
+// Mobile navigation with hamburger menu
+---
+
+<button
+  type="button"
+  class="mobile-nav-toggle"
+  aria-label="打开导航菜单"
+  aria-expanded="false"
+  aria-controls="mobile-nav-menu"
+  id="mobile-nav-toggle"
+>
+  <span class="hamburger-line" aria-hidden="true"></span>
+  <span class="hamburger-line" aria-hidden="true"></span>
+  <span class="hamburger-line" aria-hidden="true"></span>
+</button>
+
+<nav
+  id="mobile-nav-menu"
+  class="mobile-nav"
+  aria-label="移动端导航"
+  hidden
+>
+  <div class="mobile-nav-header">
+    <span class="mobile-nav-title">课程导航</span>
+    <button
+      type="button"
+      class="mobile-nav-close"
+      aria-label="关闭导航菜单"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+  <div class="mobile-nav-content">
+    <slot />
+  </div>
+  <div class="mobile-nav-footer">
+    <div class="mobile-nav-gestures" aria-label="触摸手势提示">
+      <span class="gesture-hint">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M15 18l-6-6 6-6"></path>
+        </svg>
+        左滑：上一课
+      </span>
+      <span class="gesture-hint">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18l6-6-6-6"></path>
+        </svg>
+        右滑：下一课
+      </span>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-nav-overlay" id="mobile-nav-overlay" hidden></div>
+
+<script>
+  (function() {
+    const toggle = document.getElementById('mobile-nav-toggle');
+    const nav = document.getElementById('mobile-nav-menu');
+    const overlay = document.getElementById('mobile-nav-overlay');
+    const closeBtn = nav?.querySelector('.mobile-nav-close');
+
+    if (!toggle || !nav || !overlay) return;
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    function openNav() {
+      if (!nav || !overlay || !toggle) return;
+      nav.hidden = false;
+      overlay.hidden = false;
+      toggle.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+      // Focus first focusable element
+      const firstFocusable = nav.querySelector('a, button, [tabindex]:not([tabindex="-1"])');
+      if (firstFocusable) {
+        (firstFocusable as HTMLElement).focus();
+      }
+    }
+
+    function closeNav() {
+      if (!nav || !overlay || !toggle) return;
+      nav.hidden = true;
+      overlay.hidden = true;
+      toggle.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+      toggle.focus();
+    }
+
+    toggle.addEventListener('click', openNav);
+    closeBtn?.addEventListener('click', closeNav);
+    overlay.addEventListener('click', closeNav);
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !nav.hidden) {
+        closeNav();
+      }
+    });
+
+    // Touch gestures for lesson navigation
+    const lessonContent = document.querySelector('.lesson');
+    if (lessonContent) {
+      lessonContent.addEventListener('touchstart', (e) => {
+        touchStartX = (e as TouchEvent).changedTouches[0].screenX;
+      }, { passive: true });
+
+      lessonContent.addEventListener('touchend', (e) => {
+        touchEndX = (e as TouchEvent).changedTouches[0].screenX;
+        handleSwipe();
+      }, { passive: true });
+    }
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const diff = touchStartX - touchEndX;
+
+      // Swipe left - next lesson
+      if (diff > swipeThreshold) {
+        const nextLink = document.querySelector('.nav-next') as HTMLAnchorElement;
+        if (nextLink) {
+          nextLink.click();
+        }
+      }
+      // Swipe right - previous lesson
+      else if (diff < -swipeThreshold) {
+        const prevLink = document.querySelector('.nav-prev') as HTMLAnchorElement;
+        if (prevLink) {
+          prevLink.click();
+        }
+      }
+    }
+
+    // Trap focus within modal
+    nav.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+
+      const focusableElements = nav.querySelectorAll(
+        'a[href], button, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      if (e.shiftKey && document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      } else if (!e.shiftKey && document.activeElement === lastElement) {
+        e.preventDefault();
+        firstElement.focus();
+      }
+    });
+  })();
+</script>
+
+<style>
+  .mobile-nav-toggle {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    gap: 4px;
+    touch-action: manipulation;
+  }
+
+  .hamburger-line {
+    display: block;
+    width: 20px;
+    height: 2px;
+    background: var(--color-text);
+    transition: transform 0.2s, opacity 0.2s;
+  }
+
+  .mobile-nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .mobile-nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-nav-toggle[aria-expanded="true"] .hamburger-line:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  .mobile-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--color-bg);
+    z-index: 1000;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .mobile-nav[hidden] {
+    display: none;
+  }
+
+  .mobile-nav-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .mobile-nav-title {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: var(--color-text);
+  }
+
+  .mobile-nav-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    color: var(--color-text);
+    touch-action: manipulation;
+  }
+
+  .mobile-nav-close:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .mobile-nav-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-md);
+  }
+
+  .mobile-nav-footer {
+    padding: var(--space-md);
+    border-top: 1px solid var(--color-border);
+    background: var(--color-code-bg);
+  }
+
+  .mobile-nav-gestures {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .gesture-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.75rem;
+    color: var(--sl-color-gray-3);
+  }
+
+  .mobile-nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  .mobile-nav-overlay[hidden] {
+    display: none;
+  }
+
+  /* Show mobile nav toggle on small screens */
+  @media (max-width: 768px) {
+    .mobile-nav-toggle {
+      display: flex;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .hamburger-line {
+      transition: none;
+    }
+  }
+</style>

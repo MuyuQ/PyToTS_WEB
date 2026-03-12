@@ -1,5 +1,6 @@
 ---
 import PathNavigator from "../components/PathNavigator.astro";
+import MobileNav from "../components/MobileNav.astro";
 
 interface Props {
   track: string;
@@ -10,8 +11,15 @@ const { track, current } = Astro.props;
 ---
 
 <article class="lesson">
-  <slot />
-  <PathNavigator track={track} current={current} />
+  <MobileNav>
+    <nav aria-label="课程章节">
+      <slot name="nav-content" />
+    </nav>
+  </MobileNav>
+  <div class="lesson-content">
+    <slot />
+    <PathNavigator track={track} current={current} />
+  </div>
 </article>
 
 <style>
@@ -19,21 +27,38 @@ const { track, current } = Astro.props;
     max-width: 800px;
     margin: 0 auto;
   }
-  
+
+  .lesson-content {
+    position: relative;
+  }
+
   .lesson :global(h2) {
     margin-top: var(--space-xl);
     padding-bottom: var(--space-sm);
     border-bottom: 1px solid var(--color-border);
   }
-  
+
   .lesson :global(h3) {
     margin-top: var(--space-lg);
   }
-  
+
   .lesson :global(pre) {
     background: var(--color-code-bg);
     padding: var(--space-md);
     border-radius: var(--radius-md);
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .lesson {
+      padding: 0 var(--space-sm);
+    }
+
+    .lesson :global(pre) {
+      padding: var(--space-sm);
+      font-size: 0.8125rem;
+    }
   }
 </style>

@@ -1,0 +1,58 @@
+{
+  "site": {
+    "title": "Python到TypeScript迁移指南",
+    "description": "一个结构化的、互动式的学习路径，帮助Python开发者学习TypeScript"
+  },
+  "nav": {
+    "home": "首页",
+    "about": "关于",
+    "paths": "学习路径",
+    "handbook": "参考手册",
+    "algorithms": "算法",
+    "practice": "实践",
+    "tags": "标签",
+    "difficulty": "难度"
+  },
+  "lesson": {
+    "previous": "上一课",
+    "next": "下一课",
+    "contents": "目录",
+    "quiz": "测验",
+    "submit": "提交答案",
+    "correct": "回答正确",
+    "incorrect": "回答错误",
+    "explanation": "解释",
+    "nextQuestion": "下一题",
+    "viewResults": "查看结果",
+    "restartQuiz": "重新测验",
+    "quizComplete": "测验完成",
+    "score": "得分",
+    "greatJob": "太棒了！你对 Python 到 TypeScript 的迁移掌握得很好！",
+    "goodJob": "不错的成绩！继续加油，还有一些细节可以改进。",
+    "reviewNeeded": "建议重新复习对应的学习路径，巩固基础知识。"
+  },
+  "theme": {
+    "light": "浅色",
+    "dark": "深色",
+    "sepia": "护眼",
+    "highContrast": "高对比",
+    "system": "跟随系统"
+  },
+  "accessibility": {
+    "skipToMain": "跳转到主要内容",
+    "menu": "菜单",
+    "closeMenu": "关闭菜单",
+    "codeExample": "代码示例",
+    "pythonCode": "Python 代码",
+    "typescriptCode": "TypeScript 代码",
+    "quizRegion": "编程测验",
+    "optionsRegion": "选项",
+    "resultsRegion": "测验结果"
+  },
+  "errors": {
+    "pageNotFound": "页面未找到",
+    "pageNotFoundDesc": "抱歉，我们找不到您请求的页面。",
+    "goHome": "返回首页",
+    "loadError": "加载内容时出错"
+  }
+}

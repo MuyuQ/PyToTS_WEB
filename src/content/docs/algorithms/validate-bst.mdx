@@ -1,0 +1,230 @@
+---
+title: 验证二叉搜索树 (Validate Binary Search Tree)
+kind: algorithm
+difficulty: medium
+tags: ["tree", "binary-search-tree", "dfs"]
+time_complexity: "O(n)"
+space_complexity: "O(n)"
+description: 判断二叉树是否为有效的二叉搜索树
+---
+
+## 问题描述
+
+给你一个二叉树的根节点 `root`，判断其是否是一个有效的二叉搜索树（BST）。
+
+**有效 BST 的定义：**
+- 节点的左子树只包含**小于**当前节点值的节点
+- 节点的右子树只包含**大于**当前节点值的节点
+- 所有左子树和右子树自身必须也是二叉搜索树
+
+## 思路分析
+
+### 方法一：中序遍历（最优）
+
+BST的中序遍历结果应该是一个**严格递增**的有序序列。
+
+### 方法二：递归验证
+
+- 每个节点有上下界约束
+- 左子树节点值必须在 `(min, root.val)` 范围内
+- 右子树节点值必须在 `(root.val, max)` 范围内
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，每个节点访问一次
+- **空间复杂度**：O(n)，递归栈深度
+
+## Python 实现
+
+```python
+from typing import Optional
+
+class TreeNode:
+    """二叉树节点"""
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def is_valid_bst_inorder(root: Optional[TreeNode]) -> bool:
+    """
+    验证BST - 中序遍历法
+
+    Args:
+        root: 二叉树根节点
+
+    Returns:
+        是否为有效BST
+    """
+    prev_val = None
+
+    def inorder(node: Optional[TreeNode]) -> bool:
+        nonlocal prev_val
+
+        if not node:
+            return True
+
+        # 左子树
+        if not inorder(node.left):
+            return False
+
+        # 当前节点（必须严格大于前一个值）
+        if prev_val is not None and node.val <= prev_val:
+            return False
+        prev_val = node.val
+
+        # 右子树
+        return inorder(node.right)
+
+    return inorder(root)
+
+def is_valid_bst_range(root: Optional[TreeNode]) -> bool:
+    """
+    验证BST - 范围约束法
+
+    Args:
+        root: 二叉树根节点
+
+    Returns:
+        是否为有效BST
+    """
+    def validate(node: Optional[TreeNode], min_val: Optional[float],
+                 max_val: Optional[float]) -> bool:
+        if not node:
+            return True
+
+        # 当前节点值必须在范围内
+        if min_val is not None and node.val <= min_val:
+            return False
+        if max_val is not None and node.val >= max_val:
+            return False
+
+        # 递归验证左右子树
+        return (validate(node.left, min_val, node.val) and
+                validate(node.right, node.val, max_val))
+
+    return validate(root, None, None)
+
+
+# 测试用例
+# 有效BST
+root1 = TreeNode(2)
+root1.left = TreeNode(1)
+root1.right = TreeNode(3)
+
+# 无效BST（右子树中有小于根的节点）
+root2 = TreeNode(5)
+root2.left = TreeNode(1)
+root2.right = TreeNode(4)
+root2.right.left = TreeNode(3)
+root2.right.right = TreeNode(6)
+
+print(is_valid_bst_inorder(root1))   # True
+print(is_valid_bst_inorder(root2))   # False
+print(is_valid_bst_range(root1))     # True
+print(is_valid_bst_range(root2))     # False
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 二叉树节点
+ */
+class TreeNode {
+    val: number;
+    left: TreeNode | null;
+    right: TreeNode | null;
+
+    constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+        this.val = val ?? 0;
+        this.left = left ?? null;
+        this.right = right ?? null;
+    }
+}
+
+/**
+ * 验证BST - 中序遍历法
+ * @param root 二叉树根节点
+ * @returns 是否为有效BST
+ */
+function isValidBSTInorder(root: TreeNode | null): boolean {
+    let prevVal: number | null = null;
+
+    function inorder(node: TreeNode | null): boolean {
+        if (!node) return true;
+
+        // 左子树
+        if (!inorder(node.left)) return false;
+
+        // 当前节点（必须严格大于前一个值）
+        if (prevVal !== null && node.val <= prevVal) {
+            return false;
+        }
+        prevVal = node.val;
+
+        // 右子树
+        return inorder(node.right);
+    }
+
+    return inorder(root);
+}
+
+/**
+ * 验证BST - 范围约束法
+ * @param root 二叉树根节点
+ * @returns 是否为有效BST
+ */
+function isValidBSTRange(root: TreeNode | null): boolean {
+    function validate(
+        node: TreeNode | null,
+        minVal: number | null,
+        maxVal: number | null
+    ): boolean {
+        if (!node) return true;
+
+        // 当前节点值必须在范围内
+        if (minVal !== null && node.val <= minVal) return false;
+        if (maxVal !== null && node.val >= maxVal) return false;
+
+        // 递归验证左右子树
+        return validate(node.left, minVal, node.val) &&
+               validate(node.right, node.val, maxVal);
+    }
+
+    return validate(root, null, null);
+}
+
+// 测试用例
+// 有效BST
+const root1 = new TreeNode(2);
+root1.left = new TreeNode(1);
+root1.right = new TreeNode(3);
+
+// 无效BST
+const root2 = new TreeNode(5);
+root2.left = new TreeNode(1);
+root2.right = new TreeNode(4);
+root2.right.left = new TreeNode(3);
+root2.right.right = new TreeNode(6);
+
+console.log(isValidBSTInorder(root1));   // true
+console.log(isValidBSTInorder(root2));   // false
+console.log(isValidBSTRange(root1));     // true
+console.log(isValidBSTRange(root2));     // false
+```
+
+## 面试变体
+
+1. **BST的第K小元素**：利用BST性质，中序遍历第K个节点
+2. **BST的最近公共祖先**：利用大小关系快速定位
+3. **将有序数组转换为BST**：选择中间元素作为根
+4. **BST中的插入和删除**：保持BST性质的操作
+5. **恢复BST**：交换了两个节点的BST，如何恢复原状
+
+## 常见错误
+
+1. 只比较左右子节点，没有考虑整个子树的范围
+2. 使用 `<=` 而不是 `<`，BST要求严格小于/大于
+3. 忘记处理空树（应该返回True）
+4. 整数溢出，极端值测试失败

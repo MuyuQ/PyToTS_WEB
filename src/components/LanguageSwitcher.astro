@@ -1,0 +1,257 @@
+---
+// Language switcher component for i18n
+interface Props {
+  currentLang: 'zh' | 'en';
+  currentPath: string;
+}
+
+const { currentLang, currentPath } = Astro.props;
+
+const LANGUAGES = [
+  { code: 'zh', label: '中文', flag: '🇨🇳' },
+  { code: 'en', label: 'English', flag: '🇬🇧' },
+] as const;
+
+function getPathForLang(lang: string, path: string): string {
+  // Remove current language prefix if exists
+  const pathWithoutLang = path.replace(/^\/(zh|en)\//, '/');
+
+  if (lang === 'zh') {
+    return pathWithoutLang;
+  }
+  return `/en${pathWithoutLang}`;
+}
+---
+
+<div class="language-switcher">
+  <button
+    type="button"
+    class="lang-trigger"
+    id="lang-trigger"
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-label="切换语言 / Change language"
+  >
+    <span class="lang-flag" aria-hidden="true">
+      {LANGUAGES.find(l => l.code === currentLang)?.flag}
+    </span>
+    <span class="lang-label">{LANGUAGES.find(l => l.code === currentLang)?.label}</span>
+    <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </button>
+
+  <div class="lang-dropdown" role="menu" aria-labelledby="lang-trigger" hidden>
+    {LANGUAGES.map((lang) => (
+      <a
+        href={getPathForLang(lang.code, currentPath)}
+        class={`lang-option ${lang.code === currentLang ? 'active' : ''}`}
+        role="menuitem"
+        aria-current={lang.code === currentLang ? 'true' : undefined}
+        aria-label={`Switch to ${lang.label}`}
+      >
+        <span class="lang-flag" aria-hidden="true">{lang.flag}</span>
+        <span class="lang-option-label">{lang.label}</span>
+        {lang.code === currentLang && (
+          <span class="checkmark" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          </span>
+        )}
+      </a>
+    ))}
+  </div>
+</div>
+
+<script>
+  (function() {
+    const trigger = document.getElementById('lang-trigger');
+    const dropdown = trigger?.nextElementSibling as HTMLElement;
+    if (!trigger || !dropdown) return;
+
+    let isOpen = false;
+
+    function toggleDropdown() {
+      isOpen = !isOpen;
+      dropdown.hidden = !isOpen;
+      if (trigger) {
+        trigger.setAttribute('aria-expanded', String(isOpen));
+      }
+
+      if (isOpen) {
+        const firstOption = dropdown.querySelector('.lang-option') as HTMLElement;
+        firstOption?.focus();
+      }
+    }
+
+    function closeDropdown() {
+      isOpen = false;
+      dropdown.hidden = true;
+      if (trigger) {
+        trigger.setAttribute('aria-expanded', 'false');
+      }
+    }
+
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleDropdown();
+    });
+
+    document.addEventListener('click', (e) => {
+      if (isOpen && !trigger.contains(e.target as Node) && !dropdown.contains(e.target as Node)) {
+        closeDropdown();
+      }
+    });
+
+    // Keyboard navigation
+    dropdown.addEventListener('keydown', (e) => {
+      const options = Array.from(dropdown.querySelectorAll('.lang-option'));
+      const currentIndex = options.indexOf(document.activeElement as Element);
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          const nextIndex = (currentIndex + 1) % options.length;
+          (options[nextIndex] as HTMLElement).focus();
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          const prevIndex = (currentIndex - 1 + options.length) % options.length;
+          (options[prevIndex] as HTMLElement).focus();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          closeDropdown();
+          trigger.focus();
+          break;
+        case 'Tab':
+          closeDropdown();
+          break;
+      }
+    });
+  })();
+</script>
+
+<style>
+  .language-switcher {
+    position: relative;
+    display: inline-block;
+  }
+
+  .lang-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--sl-color-bg-inline-code, var(--color-code-bg));
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all var(--transition-base, 200ms ease);
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .lang-trigger:hover {
+    background: var(--color-border);
+  }
+
+  .lang-trigger:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .lang-trigger[aria-expanded="true"] .dropdown-arrow {
+    transform: rotate(180deg);
+  }
+
+  .lang-flag {
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .lang-label {
+    display: inline;
+  }
+
+  @media (max-width: 480px) {
+    .lang-label {
+      display: none;
+    }
+  }
+
+  .dropdown-arrow {
+    transition: transform var(--transition-base, 200ms ease);
+  }
+
+  .lang-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 140px;
+    z-index: 1000;
+    overflow: hidden;
+  }
+
+  .lang-dropdown[hidden] {
+    display: none;
+  }
+
+  .lang-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    background: transparent;
+    border: none;
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-align: left;
+    text-decoration: none;
+    transition: background-color var(--transition-fast, 150ms ease);
+    min-height: 44px;
+  }
+
+  .lang-option:hover {
+    background: var(--color-code-bg);
+  }
+
+  .lang-option:focus {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
+  }
+
+  .lang-option.active {
+    background: var(--color-code-bg);
+  }
+
+  .lang-option .checkmark {
+    margin-left: auto;
+    color: var(--color-primary);
+  }
+
+  .lang-option-label {
+    flex: 1;
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: high) {
+    .lang-trigger,
+    .lang-dropdown {
+      border-width: 2px;
+    }
+
+    .lang-option.active {
+      outline: 2px solid currentColor;
+    }
+  }
+</style>

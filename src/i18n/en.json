@@ -1,0 +1,58 @@
+{
+  "site": {
+    "title": "Python to TypeScript Migration Guide",
+    "description": "A structured, interactive learning path for Python developers to learn TypeScript"
+  },
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "paths": "Learning Paths",
+    "handbook": "Handbook",
+    "algorithms": "Algorithms",
+    "practice": "Practice",
+    "tags": "Tags",
+    "difficulty": "Difficulty"
+  },
+  "lesson": {
+    "previous": "Previous",
+    "next": "Next",
+    "contents": "Contents",
+    "quiz": "Quiz",
+    "submit": "Submit",
+    "correct": "Correct",
+    "incorrect": "Incorrect",
+    "explanation": "Explanation",
+    "nextQuestion": "Next Question",
+    "viewResults": "View Results",
+    "restartQuiz": "Restart Quiz",
+    "quizComplete": "Quiz Complete",
+    "score": "Score",
+    "greatJob": "Great job! You've mastered the Python to TypeScript migration!",
+    "goodJob": "Good work! Keep going, there are some details to improve.",
+    "reviewNeeded": "We recommend reviewing the learning path to solidify your understanding."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "sepia": "Sepia",
+    "highContrast": "High Contrast",
+    "system": "System"
+  },
+  "accessibility": {
+    "skipToMain": "Skip to main content",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "codeExample": "Code example",
+    "pythonCode": "Python code",
+    "typescriptCode": "TypeScript code",
+    "quizRegion": "Programming quiz",
+    "optionsRegion": "Options",
+    "resultsRegion": "Quiz results"
+  },
+  "errors": {
+    "pageNotFound": "Page not found",
+    "pageNotFoundDesc": "Sorry, we couldn't find the page you requested.",
+    "goHome": "Go home",
+    "loadError": "Error loading content"
+  }
+}

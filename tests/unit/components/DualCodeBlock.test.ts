@@ -43,7 +43,7 @@ describe("DualCodeBlock", () => {
                   <span class="lang-badge typescript" aria-label="TypeScript 代码">TypeScript</span>
                 </div>
                 <pre class="code" tabindex="0" aria-label="TypeScript 代码"><code class="language-typescript">function greet(name: string): string {
-  return \`Hello, ${name}!\`;
+  return \`Hello, \${name}!\`;
 }</code></pre>
               </div>
             </div>

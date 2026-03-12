@@ -1,0 +1,254 @@
+---
+title: 克隆图 (Clone Graph)
+kind: algorithm
+difficulty: medium
+tags: ["graph", "dfs", "bfs", "hash-table"]
+time_complexity: "O(V + E)"
+space_complexity: "O(V)"
+description: 深度拷贝一个无向连通图
+---
+
+## 问题描述
+
+给你无向**连通**图中一个节点的引用，请你返回该图的**深拷贝**（克隆）。
+
+图中的每个节点都包含它的值 `val` 和邻居列表 `neighbors`。
+
+测试用例格式：
+- 简单起见，每个节点的值都与它的索引相同
+- 例如，第一个节点值为 1，第二个节点值为 2，以此类推
+
+## 思路分析
+
+### 方法一：DFS
+
+- 使用哈希表记录原节点到克隆节点的映射
+- 递归克隆每个节点及其邻居
+
+### 方法二：BFS
+
+- 使用队列和哈希表
+- 先克隆起始节点，然后逐层克隆邻居
+
+## 复杂度分析
+
+- **时间复杂度**：O(V + E)，V是节点数，E是边数
+- **空间复杂度**：O(V)，哈希表存储克隆节点
+
+## Python 实现
+
+```python
+from typing import Optional
+from collections import deque
+
+class Node:
+    """图节点"""
+    def __init__(self, val=0, neighbors=None):
+        self.val = val
+        self.neighbors = neighbors if neighbors is not None else []
+
+def clone_graph_dfs(node: Optional[Node]) -> Optional[Node]:
+    """
+    克隆图 - DFS实现
+
+    Args:
+        node: 原图节点
+
+    Returns:
+        克隆后的节点
+    """
+    if not node:
+        return None
+
+    # 原节点 -> 克隆节点的映射
+    old_to_new = {}
+
+    def dfs(old_node: Node) -> Node:
+        # 已克隆过，直接返回
+        if old_node in old_to_new:
+            return old_to_new[old_node]
+
+        # 克隆当前节点
+        new_node = Node(old_node.val)
+        old_to_new[old_node] = new_node
+
+        # 递归克隆所有邻居
+        for neighbor in old_node.neighbors:
+            new_node.neighbors.append(dfs(neighbor))
+
+        return new_node
+
+    return dfs(node)
+
+def clone_graph_bfs(node: Optional[Node]) -> Optional[Node]:
+    """
+    克隆图 - BFS实现
+
+    Args:
+        node: 原图节点
+
+    Returns:
+        克隆后的节点
+    """
+    if not node:
+        return None
+
+    # 原节点 -> 克隆节点的映射
+    old_to_new = {}
+
+    # 克隆起始节点
+    old_to_new[node] = Node(node.val)
+    queue = deque([node])
+
+    while queue:
+        old_node = queue.popleft()
+        new_node = old_to_new[old_node]
+
+        # 克隆所有邻居
+        for neighbor in old_node.neighbors:
+            if neighbor not in old_to_new:
+                # 未访问过，创建克隆节点并入队
+                old_to_new[neighbor] = Node(neighbor.val)
+                queue.append(neighbor)
+            # 建立邻居关系
+            new_node.neighbors.append(old_to_new[neighbor])
+
+    return old_to_new[node]
+
+
+# 测试用例
+# 构建图: 1 -- 2
+#         |    |
+#         4 -- 3
+node1 = Node(1)
+node2 = Node(2)
+node3 = Node(3)
+node4 = Node(4)
+
+node1.neighbors = [node2, node4]
+node2.neighbors = [node1, node3]
+node3.neighbors = [node2, node4]
+node4.neighbors = [node1, node3]
+
+cloned = clone_graph_dfs(node1)
+print(cloned.val)           # 1
+print(cloned.neighbors[0].val)  # 2
+print(cloned is node1)      # False (深拷贝)
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 图节点
+ */
+class Node {
+    val: number;
+    neighbors: Node[];
+
+    constructor(val?: number, neighbors?: Node[]) {
+        this.val = val ?? 0;
+        this.neighbors = neighbors ?? [];
+    }
+}
+
+/**
+ * 克隆图 - DFS实现
+ * @param node 原图节点
+ * @returns 克隆后的节点
+ */
+function cloneGraphDFS(node: Node | null): Node | null {
+    if (!node) return null;
+
+    // 原节点 -> 克隆节点的映射
+    const oldToNew = new Map<Node, Node>();
+
+    function dfs(oldNode: Node): Node {
+        // 已克隆过，直接返回
+        if (oldToNew.has(oldNode)) {
+            return oldToNew.get(oldNode)!;
+        }
+
+        // 克隆当前节点
+        const newNode = new Node(oldNode.val);
+        oldToNew.set(oldNode, newNode);
+
+        // 递归克隆所有邻居
+        for (const neighbor of oldNode.neighbors) {
+            newNode.neighbors.push(dfs(neighbor));
+        }
+
+        return newNode;
+    }
+
+    return dfs(node);
+}
+
+/**
+ * 克隆图 - BFS实现
+ * @param node 原图节点
+ * @returns 克隆后的节点
+ */
+function cloneGraphBFS(node: Node | null): Node | null {
+    if (!node) return null;
+
+    // 原节点 -> 克隆节点的映射
+    const oldToNew = new Map<Node, Node>();
+
+    // 克隆起始节点
+    oldToNew.set(node, new Node(node.val));
+    const queue: Node[] = [node];
+
+    while (queue.length > 0) {
+        const oldNode = queue.shift()!;
+        const newNode = oldToNew.get(oldNode)!;
+
+        // 克隆所有邻居
+        for (const neighbor of oldNode.neighbors) {
+            if (!oldToNew.has(neighbor)) {
+                // 未访问过，创建克隆节点并入队
+                oldToNew.set(neighbor, new Node(neighbor.val));
+                queue.push(neighbor);
+            }
+            // 建立邻居关系
+            newNode.neighbors.push(oldToNew.get(neighbor)!);
+        }
+    }
+
+    return oldToNew.get(node)!;
+}
+
+// 测试用例
+// 构建图: 1 -- 2
+//         |    |
+//         4 -- 3
+const node1 = new Node(1);
+const node2 = new Node(2);
+const node3 = new Node(3);
+const node4 = new Node(4);
+
+node1.neighbors = [node2, node4];
+node2.neighbors = [node1, node3];
+node3.neighbors = [node2, node4];
+node4.neighbors = [node1, node3];
+
+const cloned = cloneGraphDFS(node1);
+console.log(cloned?.val);           // 1
+console.log(cloned?.neighbors[0].val);  // 2
+console.log(cloned === node1);      // false (深拷贝)
+```
+
+## 面试变体
+
+1. **克隆带随机指针的链表**：类似思路，哈希表记录映射
+2. **序列化和反序列化图**：将图转为字符串再还原
+3. **判断图是否同构**：结构相同但值可能不同
+4. **克隆有向图**：需要考虑入度和出度
+5. **克隆N叉树**：简化版的图克隆
+
+## 常见错误
+
+1. 忘记处理环，导致无限递归
+2. 浅拷贝而不是深拷贝
+3. 哈希表键的类型错误（对象引用 vs 值）
+4. BFS时忘记先创建节点再加入队列

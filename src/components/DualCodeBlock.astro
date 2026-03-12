@@ -50,10 +50,85 @@ const { python, typescript, title } = {
     grid-template-columns: 1fr 1fr;
     gap: var(--space-md);
   }
-  
+
   @media (max-width: 768px) {
     .code-container {
       grid-template-columns: 1fr;
+      gap: var(--space-sm);
+    }
+
+    .code-panel {
+      margin-bottom: var(--space-sm);
+    }
+
+    .code-panel:last-child {
+      margin-bottom: 0;
+    }
+
+    .code {
+      font-size: 0.75rem;
+      padding: var(--space-sm);
+    }
+
+    .panel-header {
+      padding: var(--space-xs) var(--space-sm);
+    }
+
+    .lang-badge {
+      font-size: 0.6875rem;
+      padding: 2px 6px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .code {
+      font-size: 0.6875rem;
+      line-height: 1.4;
+    }
+  }
+
+  /* Ensure code blocks scroll horizontally on small screens */
+  .code {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .code::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .code::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .code::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: high) {
+    .code-panel {
+      border-width: 2px;
+    }
+
+    .lang-badge.python {
+      outline: 2px solid #3776ab;
+      outline-offset: 2px;
+    }
+
+    .lang-badge.typescript {
+      outline: 2px solid #3178c6;
+      outline-offset: 2px;
+    }
+  }
+
+  /* Touch device optimizations */
+  @media (hover: none) {
+    .code {
+      /* Larger touch targets for code scrolling */
+      min-height: 44px;
     }
   }
   

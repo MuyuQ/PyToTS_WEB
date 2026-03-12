@@ -135,50 +135,58 @@ import { CardGrid, Card } from "@astrojs/starlight/components";
 <CardGrid stagger>
   <Card title="爬楼梯" icon="seti:arrow-up">
     难度：Easy
-    
+
     斐波那契数列，时间复杂度 O(n)
-    
+
     [开始学习 →](/algorithms/climbing-stairs)
   </Card>
-  
+
   <Card title="打家劫舍" icon="seti:lock">
     难度：Medium
-    
+
     线性 DP，时间复杂度 O(n)
-    
+
     [开始学习 →](/algorithms/house-robber)
   </Card>
-  
+
   <Card title="零钱兑换" icon="seti:money">
     难度：Medium
-    
+
     完全背包，时间复杂度 O(amount × n)
-    
+
     [开始学习 →](/algorithms/coin-change)
   </Card>
-  
+
   <Card title="最长递增子序列" icon="seti:graph">
     难度：Medium
-    
+
     二分查找优化，时间复杂度 O(n log n)
-    
+
     [开始学习 →](/algorithms/longest-increasing-subsequence)
   </Card>
-  
+
   <Card title="解码方法" icon="seti:key">
     难度：Medium
-    
+
     线性 DP，时间复杂度 O(n)
-    
+
     [开始学习 →](/algorithms/decode-ways)
   </Card>
-  
+
   <Card title="分割等和子集" icon="seti:split">
     难度：Medium
-    
+
     0-1 背包，时间复杂度 O(n × sum)
-    
+
     [开始学习 →](/algorithms/partition-equal-subset-sum)
+  </Card>
+
+  <Card title="最长公共子序列" icon="seti:split">
+    难度：Medium
+
+    高级DP，字符串匹配，时间复杂度 O(m × n)
+
+    [开始学习 →](/algorithms/longest-common-subsequence)
   </Card>
 </CardGrid>
 
@@ -218,22 +226,66 @@ import { CardGrid, Card } from "@astrojs/starlight/components";
   </Card>
 </CardGrid>
 
+## 树
+
+<CardGrid stagger>
+  <Card title="二叉树的中序遍历" icon="seti:tree">
+    难度：Easy
+
+    递归与迭代实现，掌握树遍历基础
+
+    [开始学习 →](/algorithms/binary-tree-inorder-traversal)
+  </Card>
+
+  <Card title="验证二叉搜索树" icon="seti:tree">
+    难度：Medium
+
+    BST性质验证，范围约束法
+
+    [开始学习 →](/algorithms/validate-bst)
+  </Card>
+</CardGrid>
+
+## 图
+
+<CardGrid stagger>
+  <Card title="克隆图" icon="seti:graph">
+    难度：Medium
+
+    DFS/BFS深拷贝，哈希表记录映射
+
+    [开始学习 →](/algorithms/clone-graph)
+  </Card>
+</CardGrid>
+
+## 堆与优先队列
+
+<CardGrid stagger>
+  <Card title="合并K个升序链表" icon="seti:database">
+    难度：Hard
+
+    最小堆/分治法，时间复杂度 O(N log k)
+
+    [开始学习 →](/algorithms/merge-k-sorted-lists)
+  </Card>
+</CardGrid>
+
 ## 设计与数据结构
 
 <CardGrid stagger>
   <Card title="LRU 缓存" icon="seti:database">
     难度：Medium
-    
+
     哈希表 + 双向链表，O(1) 操作
-    
+
     [开始学习 →](/algorithms/lru-cache)
   </Card>
-  
+
   <Card title="数据流的中位数" icon="seti:graph">
     难度：Hard
-    
+
     双堆法，addNum O(log n)，findMedian O(1)
-    
+
     [开始学习 →](/algorithms/find-median-from-data-stream)
   </Card>
 </CardGrid>

@@ -78,6 +78,19 @@ Each algorithm page should include:
 
 The site is automatically deployed to GitHub Pages when changes are pushed to the `main` branch.
 
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions.
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment steps and rollback procedures |
+| [RUNBOOK.md](docs/RUNBOOK.md) | Operations and incident response |
+| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues and solutions |
+| [monitoring.md](docs/monitoring.md) | Monitoring and alerting setup |
+| [adr/](docs/adr/) | Architecture Decision Records |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+
 ## License
 
 MIT
