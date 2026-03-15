@@ -1,265 +1,171 @@
 /**
  * Custom Layout & Typography Enhancements
- * Enhances Starlight's default styles with better visual hierarchy
+ * MkDocs Material inspired design for Starlight
  */
 
-/* ===== HEADING HIERARCHY ENHANCEMENTS ===== */
+/* ===== HEADING HIERARCHY ===== */
 
-/* Page title (h1 from frontmatter) - More prominent */
 .sl-page-title h1 {
-  font-size: 2.75rem;
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  margin-bottom: 1rem;
-  color: var(--sl-color-white);
-  position: relative;
-}
-
-/* Decorative underline for h1 */
-.sl-page-title h1::after {
-  content: "";
-  position: absolute;
-  bottom: -0.5rem;
-  left: 0;
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, var(--sl-color-accent), var(--sl-color-accent-high));
-  border-radius: 2px;
-}
-
-/* H2 - Section headings */
-.sl-markdown-content h2 {
-  font-size: 1.875rem;
+  font-size: 2.5rem;
   font-weight: 700;
-  line-height: 1.25;
-  margin-top: 3rem;
-  margin-bottom: 1.25rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
   color: var(--sl-color-white);
-  position: relative;
-  padding-left: 1rem;
-  border-left: 4px solid var(--sl-color-accent);
 }
 
-/* H3 - Subsection headings */
-.sl-markdown-content h3 {
-  font-size: 1.5rem;
+.sl-markdown-content h2 {
+  font-size: 1.75rem;
   font-weight: 600;
   line-height: 1.3;
-  margin-top: 2.25rem;
+  margin-top: 2.5rem;
   margin-bottom: 1rem;
-  color: var(--sl-color-gray-1);
+  color: var(--sl-color-white);
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--sl-color-hairline);
 }
 
-/* H4 - Smaller headings */
-.sl-markdown-content h4 {
-  font-size: 1.25rem;
+.sl-markdown-content h3 {
+  font-size: 1.375rem;
   font-weight: 600;
   line-height: 1.4;
   margin-top: 2rem;
   margin-bottom: 0.75rem;
+  color: var(--sl-color-gray-1);
+}
+
+.sl-markdown-content h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
   color: var(--sl-color-gray-2);
 }
 
-/* ===== CARD GRID ENHANCEMENTS ===== */
+/* ===== CARD GRID ===== */
 
-/* Main card grid container */
 .sl-markdown-content .card-grid {
-  gap: 1.5rem;
-  margin: 2rem 0;
+  gap: 1.25rem;
+  margin: 1.5rem 0;
 }
 
-/* Individual cards */
 .sl-markdown-content .card-grid .card {
-  background: var(--sl-color-bg-card, var(--sl-color-bg-aside));
+  background: var(--sl-color-bg-card);
   border: 1px solid var(--sl-color-hairline);
-  border-radius: 12px;
-  padding: 1.75rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  border-radius: 8px;
+  padding: 1.25rem;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-/* Card hover effects */
 .sl-markdown-content .card-grid .card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    0 12px 40px -12px rgba(0, 0, 0, 0.25),
-    0 4px 12px -4px rgba(0, 0, 0, 0.15);
   border-color: var(--sl-color-accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Card subtle gradient background */
-.sl-markdown-content .card-grid .card::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--sl-color-accent), transparent);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.sl-markdown-content .card-grid .card:hover::before {
-  opacity: 1;
-}
-
-/* Card title styling */
 .sl-markdown-content .card-grid .card h3,
 .sl-markdown-content .card-grid .card-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  margin-bottom: 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
   color: var(--sl-color-white);
   display: flex;
   align-items: center;
   gap: 0.5rem;
 }
 
-/* Card icon styling */
 .sl-markdown-content .card-grid .card .icon {
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 1.25rem;
+  height: 1.25rem;
   color: var(--sl-color-accent);
 }
 
-/* Card content text */
 .sl-markdown-content .card-grid .card p {
   color: var(--sl-color-gray-2);
   line-height: 1.6;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
-/* Card lists */
 .sl-markdown-content .card-grid .card ul {
-  margin: 0.75rem 0;
+  margin: 0.5rem 0;
   padding-left: 1.25rem;
 }
 
 .sl-markdown-content .card-grid .card li {
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.25rem;
   color: var(--sl-color-gray-3);
 }
 
-/* Card links */
 .sl-markdown-content .card-grid .card a {
   color: var(--sl-color-accent);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
 }
 
 .sl-markdown-content .card-grid .card a:hover {
-  color: var(--sl-color-white);
+  text-decoration: underline;
 }
 
-/* ===== CONTENT SECTION DIVIDERS ===== */
+/* ===== CONTENT SPACING ===== */
 
-/* Add visual separation between major sections */
 .sl-markdown-content > h2 {
-  margin-top: 4rem;
-  padding-top: 2rem;
-  border-top: 1px solid var(--sl-color-hairline);
-}
-
-/* First h2 should not have top border */
-.sl-markdown-content > h2:first-of-type {
-  border-top: none;
   margin-top: 3rem;
 }
 
-/* Paragraph spacing */
+.sl-markdown-content > h2:first-of-type {
+  margin-top: 2rem;
+}
+
 .sl-markdown-content p {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   line-height: 1.7;
 }
 
-/* Lists spacing */
 .sl-markdown-content ul,
 .sl-markdown-content ol {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   padding-left: 1.5rem;
 }
 
 .sl-markdown-content li {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.375rem;
   line-height: 1.6;
 }
 
-/* ===== HORIZONTAL RULE STYLING ===== */
+/* ===== HORIZONTAL RULE ===== */
 
 .sl-markdown-content hr {
   border: none;
   height: 1px;
-  background: linear-gradient(90deg, transparent, var(--sl-color-hairline), transparent);
-  margin: 3rem 0;
-  position: relative;
+  background: var(--sl-color-hairline);
+  margin: 2rem 0;
 }
 
-.sl-markdown-content hr::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 8px;
-  height: 8px;
-  background: var(--sl-color-accent);
-  border-radius: 50%;
-  opacity: 0.5;
-}
+/* ===== INTRODUCTION PARAGRAPH ===== */
 
-/* ===== CALLOUT/CALLOUT BOX ENHANCEMENTS ===== */
-
-/* Introduction paragraph styling - subtle accent */
 .sl-markdown-content > p:first-of-type {
-  font-size: 1.125rem;
+  font-size: 1.0625rem;
   color: var(--sl-color-gray-2);
   margin-bottom: 1.5rem;
-  padding-left: 1rem;
-  border-left: 3px solid var(--sl-color-accent);
 }
 
-/* ===== CHECKLIST/FEATURE LIST STYLING ===== */
-
-/* Style for "完成后你能" section */
-.sl-markdown-content ul:has(> li:contains("✓")) {
-  list-style: none;
-  padding-left: 0;
-}
-
-.sl-markdown-content li:contains("✓")::marker {
-  content: none;
-}
-
-/* Custom checklist items */
-.sl-markdown-content li[data-check] {
-  list-style: none;
-  position: relative;
-  padding-left: 1.75rem;
-}
-
-/* ===== RESPONSIVE ADJUSTMENTS ===== */
+/* ===== RESPONSIVE ===== */
 
 @media (max-width: 768px) {
   .sl-page-title h1,
   .sl-markdown-content h1:first-of-type {
-    font-size: 2rem;
+    font-size: 1.875rem;
   }
 
   .sl-markdown-content h2 {
-    font-size: 1.5rem;
-    margin-top: 2.5rem;
-    padding-left: 0.75rem;
+    font-size: 1.375rem;
+    margin-top: 2rem;
   }
 
   .sl-markdown-content h3 {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
   }
 
   .sl-markdown-content .card-grid {
@@ -267,36 +173,41 @@
   }
 
   .sl-markdown-content .card-grid .card {
-    padding: 1.25rem;
-  }
-
-  .sl-markdown-content > p:first-of-type {
-    font-size: 1rem;
-    padding-left: 0.75rem;
+    padding: 1rem;
   }
 }
 
-/* ===== DARK THEME SPECIFIC ENHANCEMENTS ===== */
+/* ===== DARK THEME ENHANCEMENTS ===== */
+
+[data-theme="dark"] {
+  background-color: var(--sl-color-bg);
+}
 
 [data-theme="dark"] .sl-markdown-content .card-grid .card {
-  background: linear-gradient(145deg, var(--sl-color-bg-card), var(--sl-color-bg-aside));
+  background: var(--sl-color-bg-card);
 }
 
 [data-theme="dark"] .sl-markdown-content .card-grid .card:hover {
-  box-shadow:
-    0 12px 40px -12px rgba(0, 0, 0, 0.5),
-    0 4px 12px -4px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(56, 189, 248, 0.1);
+  border-color: var(--sl-color-accent);
+  box-shadow: 0 4px 16px rgba(88, 166, 255, 0.1);
 }
 
-/* ===== LIGHT THEME SPECIFIC ENHANCEMENTS ===== */
+[data-theme="dark"] .sl-markdown-content a {
+  color: var(--sl-color-accent);
+}
+
+[data-theme="dark"] .sl-markdown-content a:hover {
+  color: var(--sl-color-white);
+}
+
+/* ===== LIGHT THEME ===== */
 
 :root:not([data-theme="dark"]):not([data-theme="high-contrast"]):not([data-theme="sepia"])
   .sl-markdown-content
   .card-grid
   .card {
-  background: linear-gradient(145deg, #ffffff, #f8fafc);
-  border-color: #e2e8f0;
+  background: #ffffff;
+  border-color: #e1e4e8;
 }
 
 :root:not([data-theme="dark"]):not([data-theme="high-contrast"]):not([data-theme="sepia"])
@@ -304,20 +215,13 @@
   .card-grid
   .card:hover {
   border-color: #3b82f6;
-  box-shadow:
-    0 12px 40px -12px rgba(59, 130, 246, 0.25),
-    0 4px 12px -4px rgba(59, 130, 246, 0.15);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
 
-/* ===== HIGH CONTRAST MODE ===== */
-
-[data-theme="high-contrast"] .sl-markdown-content h1::after,
-[data-theme="high-contrast"] .sl-markdown-content h2 {
-  border-color: currentColor;
-}
+/* ===== HIGH CONTRAST ===== */
 
 [data-theme="high-contrast"] .sl-markdown-content .card-grid .card:hover {
-  border-width: 3px;
+  border-width: 2px;
 }
 
 /* ===== REDUCED MOTION ===== */
@@ -325,9 +229,5 @@
 @media (prefers-reduced-motion: reduce) {
   .sl-markdown-content .card-grid .card {
     transition: none;
-  }
-
-  .sl-markdown-content .card-grid .card:hover {
-    transform: none;
   }
 }

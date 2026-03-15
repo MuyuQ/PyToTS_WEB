@@ -34,10 +34,11 @@
 *,
 *::before,
 *::after {
-  transition: background-color var(--transition-base),
-              border-color var(--transition-base),
-              color var(--transition-fast),
-              box-shadow var(--transition-base);
+  transition:
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    color var(--transition-fast),
+    box-shadow var(--transition-base);
 }
 
 /* Disable transitions for users who prefer reduced motion */
@@ -49,14 +50,43 @@
   }
 }
 
+/* ===== DARK THEME (MkDocs Material inspired) ===== */
 [data-theme="dark"] {
-  --color-bg: #0f172a;
-  --color-text: #e2e8f0;
-  --color-primary: #60a5fa;
-  --color-secondary: #818cf8;
-  --color-accent: #fbbf24;
-  --color-border: #334155;
-  --color-code-bg: #1e293b;
+  --color-bg: #0d1117;
+  --color-text: #e6edf3;
+  --color-primary: #58a6ff;
+  --color-secondary: #a371f7;
+  --color-accent: #f0883e;
+  --color-border: #30363d;
+  --color-code-bg: #161b22;
+
+  /* Starlight CSS variables - MkDocs Material inspired palette */
+  --sl-color-bg: #0d1117;
+  --sl-color-bg-nav: #161b22;
+  --sl-color-bg-nav-mobile: #161b22;
+  --sl-color-bg-aside: #161b22;
+  --sl-color-bg-inline-code: #21262d;
+  --sl-color-bg-card: #161b22;
+  --sl-color-hairline: #30363d;
+  --sl-color-hairline-shade: #484f58;
+  --sl-color-hairline-light: #30363d;
+  --sl-color-gray-1: #e6edf3;
+  --sl-color-gray-2: #8b949e;
+  --sl-color-gray-3: #6e7681;
+  --sl-color-gray-4: #484f58;
+  --sl-color-gray-5: #30363d;
+  --sl-color-gray-6: #21262d;
+  --sl-color-white: #f0f6fc;
+  --sl-color-black: #0d1117;
+  --sl-color-accent: #58a6ff;
+  --sl-color-accent-low: rgba(88, 166, 255, 0.15);
+  --sl-color-accent-high: rgba(88, 166, 255, 0.25);
+
+  /* Additional custom variables */
+  --sl-color-success: #3fb950;
+  --sl-color-warning: #d29922;
+  --sl-color-error: #f85149;
+  --sl-color-info: #58a6ff;
 }
 
 /* High contrast theme */
@@ -68,44 +98,7 @@
   --color-accent: #ffff00;
   --color-border: #ffffff;
   --color-code-bg: #000000;
-}
 
-/* Sepia theme for eye comfort */
-[data-theme="sepia"] {
-  --color-bg: #f4ecd8;
-  --color-text: #433422;
-  --color-primary: #8b4513;
-  --color-secondary: #a0522d;
-  --color-accent: #cd853f;
-  --color-border: #d4c5b0;
-  --color-code-bg: #e8dcc8;
-}
-
-/* Starlight CSS variables for compatibility */
-[data-theme="dark"] {
-  --sl-color-bg: #0f172a;
-  --sl-color-bg-nav: #1e293b;
-  --sl-color-bg-nav-mobile: #1e293b;
-  --sl-color-bg-aside: #1e293b;
-  --sl-color-bg-inline-code: #334155;
-  --sl-color-bg-card: #1e293b;
-  --sl-color-hairline: #334155;
-  --sl-color-hairline-shade: #475569;
-  --sl-color-hairline-light: #334155;
-  --sl-color-gray-1: #e2e8f0;
-  --sl-color-gray-2: #94a3b8;
-  --sl-color-gray-3: #64748b;
-  --sl-color-gray-4: #475569;
-  --sl-color-gray-5: #334155;
-  --sl-color-gray-6: #1e293b;
-  --sl-color-white: #f1f5f9;
-  --sl-color-black: #0f172a;
-  --sl-color-accent: #38bdf8;
-  --sl-color-accent-low: rgba(56, 189, 248, 0.1);
-  --sl-color-accent-high: rgba(56, 189, 248, 0.2);
-}
-
-[data-theme="high-contrast"] {
   --sl-color-bg: #000000;
   --sl-color-bg-nav: #000000;
   --sl-color-bg-nav-mobile: #000000;
@@ -128,7 +121,16 @@
   --sl-color-accent-high: rgba(0, 255, 255, 0.4);
 }
 
+/* Sepia theme for eye comfort */
 [data-theme="sepia"] {
+  --color-bg: #f4ecd8;
+  --color-text: #433422;
+  --color-primary: #8b4513;
+  --color-secondary: #a0522d;
+  --color-accent: #cd853f;
+  --color-border: #d4c5b0;
+  --color-code-bg: #e8dcc8;
+
   --sl-color-bg: #f4ecd8;
   --sl-color-bg-nav: #e8dcc8;
   --sl-color-bg-nav-mobile: #e8dcc8;
