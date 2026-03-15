@@ -6,24 +6,21 @@
 /* ===== HEADING HIERARCHY ENHANCEMENTS ===== */
 
 /* Page title (h1 from frontmatter) - More prominent */
-.sl-page-title h1,
-.sl-markdown-content h1:first-of-type {
+.sl-page-title h1 {
   font-size: 2.75rem;
   font-weight: 800;
   line-height: 1.1;
   letter-spacing: -0.025em;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   color: var(--sl-color-white);
   position: relative;
-  padding-bottom: 0.75rem;
 }
 
 /* Decorative underline for h1 */
-.sl-page-title h1::after,
-.sl-markdown-content h1:first-of-type::after {
+.sl-page-title h1::after {
   content: "";
   position: absolute;
-  bottom: 0;
+  bottom: -0.5rem;
   left: 0;
   width: 80px;
   height: 4px;
@@ -219,15 +216,13 @@
 
 /* ===== CALLOUT/CALLOUT BOX ENHANCEMENTS ===== */
 
-/* Introduction paragraph styling */
+/* Introduction paragraph styling - subtle accent */
 .sl-markdown-content > p:first-of-type {
   font-size: 1.125rem;
   color: var(--sl-color-gray-2);
-  margin-bottom: 2rem;
-  padding: 1.25rem 1.5rem;
-  background: var(--sl-color-bg-aside);
-  border-left: 4px solid var(--sl-color-accent);
-  border-radius: 0 8px 8px 0;
+  margin-bottom: 1.5rem;
+  padding-left: 1rem;
+  border-left: 3px solid var(--sl-color-accent);
 }
 
 /* ===== CHECKLIST/FEATURE LIST STYLING ===== */
@@ -277,7 +272,7 @@
 
   .sl-markdown-content > p:first-of-type {
     font-size: 1rem;
-    padding: 1rem;
+    padding-left: 0.75rem;
   }
 }
 
