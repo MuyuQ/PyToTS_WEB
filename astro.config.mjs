@@ -6,7 +6,11 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "Python to TypeScript",
-      customCss: ["./src/styles/tokens.css", "./src/styles/accessibility.css"],
+      customCss: [
+        "./src/styles/tokens.css",
+        "./src/styles/accessibility.css",
+        "./src/styles/custom-layout.css",
+      ],
       disable404Route: true,
       sidebar: [
         {
