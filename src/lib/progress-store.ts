@@ -7,7 +7,7 @@ export interface LessonProgress {
   path: string;
   title: string;
   completedAt: string;
-  type: 'lesson' | 'algorithm' | 'quiz';
+  type: "lesson" | "algorithm" | "quiz";
 }
 
 export interface QuizResult {
@@ -25,14 +25,14 @@ export interface LearningProgress {
   lastVisited: string;
 }
 
-const STORAGE_KEY = 'ts-py-learning-progress';
+const STORAGE_KEY = "ts-py-learning-progress";
 
 /**
  * 获取当前进度
  */
 export function getProgress(): LearningProgress {
-  if (typeof window === 'undefined') {
-    return { lessons: [], quizzes: [], bookmarks: [], lastVisited: '' };
+  if (typeof window === "undefined") {
+    return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
   }
 
   try {
@@ -41,22 +41,23 @@ export function getProgress(): LearningProgress {
       return JSON.parse(data);
     }
   } catch (e) {
-    console.error('Failed to load progress:', e);
+    console.error("Failed to load progress:", e);
   }
 
-  return { lessons: [], quizzes: [], bookmarks: [], lastVisited: '' };
+  return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
 }
 
 /**
  * 保存进度
  */
 export function setProgress(progress: LearningProgress): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
 
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+    window.dispatchEvent(new CustomEvent("progress-updated", { detail: progress }));
   } catch (e) {
-    console.error('Failed to save progress:', e);
+    console.error("Failed to save progress:", e);
   }
 }
 
@@ -64,12 +65,12 @@ export function setProgress(progress: LearningProgress): void {
  * 清除所有进度
  */
 export function clearProgress(): void {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
 
   try {
     localStorage.removeItem(STORAGE_KEY);
   } catch (e) {
-    console.error('Failed to clear progress:', e);
+    console.error("Failed to clear progress:", e);
   }
 }
 
@@ -79,17 +80,17 @@ export function clearProgress(): void {
 export function markAsCompleted(
   path: string,
   title: string,
-  type: 'lesson' | 'algorithm' | 'quiz'
+  type: "lesson" | "algorithm" | "quiz"
 ): void {
   const progress = getProgress();
 
   // 检查是否已存在
-  const existingIndex = progress.lessons.findIndex(l => l.path === path);
+  const existingIndex = progress.lessons.findIndex((l) => l.path === path);
   const lesson: LessonProgress = {
     path,
     title,
     completedAt: new Date().toISOString(),
-    type
+    type,
   };
 
   if (existingIndex >= 0) {
@@ -106,17 +107,13 @@ export function markAsCompleted(
  */
 export function isCompleted(path: string): boolean {
   const progress = getProgress();
-  return progress.lessons.some(l => l.path === path);
+  return progress.lessons.some((l) => l.path === path);
 }
 
 /**
  * 保存测验结果
  */
-export function saveQuizResult(
-  quizId: string,
-  score: number,
-  total: number
-): void {
+export function saveQuizResult(quizId: string, score: number, total: number): void {
   const progress = getProgress();
   const percentage = Math.round((score / total) * 100);
 
@@ -125,11 +122,11 @@ export function saveQuizResult(
     score,
     total,
     percentage,
-    completedAt: new Date().toISOString()
+    completedAt: new Date().toISOString(),
   };
 
   // 检查是否已存在
-  const existingIndex = progress.quizzes.findIndex(q => q.quizId === quizId);
+  const existingIndex = progress.quizzes.findIndex((q) => q.quizId === quizId);
   if (existingIndex >= 0) {
     progress.quizzes[existingIndex] = result;
   } else {
@@ -144,7 +141,7 @@ export function saveQuizResult(
  */
 export function getQuizResult(quizId: string): QuizResult | null {
   const progress = getProgress();
-  return progress.quizzes.find(q => q.quizId === quizId) || null;
+  return progress.quizzes.find((q) => q.quizId === quizId) || null;
 }
 
 /**
@@ -163,7 +160,7 @@ export function addBookmark(path: string): void {
  */
 export function removeBookmark(path: string): void {
   const progress = getProgress();
-  progress.bookmarks = progress.bookmarks.filter(b => b !== path);
+  progress.bookmarks = progress.bookmarks.filter((b) => b !== path);
   setProgress(progress);
 }
 
@@ -214,15 +211,16 @@ export function getCompletionStats(): {
 
   const totalCompleted = progress.lessons.length;
   const quizzesTaken = progress.quizzes.length;
-  const averageScore = quizzesTaken > 0
-    ? Math.round(progress.quizzes.reduce((sum, q) => sum + q.percentage, 0) / quizzesTaken)
-    : 0;
+  const averageScore =
+    quizzesTaken > 0
+      ? Math.round(progress.quizzes.reduce((sum, q) => sum + q.percentage, 0) / quizzesTaken)
+      : 0;
   const bookmarksCount = progress.bookmarks.length;
 
   return {
     totalCompleted,
     quizzesTaken,
     averageScore,
-    bookmarksCount
+    bookmarksCount,
   };
 }
