@@ -1,96 +1,128 @@
-# Python to TypeScript Learning Site
+# PyToTS - Python 转 TypeScript 学习站
 
-A modern learning website for Python users who want to learn TypeScript.
+[English](./README_EN.md) | 简体中文
 
-## Features
+面向 Python 开发者的 TypeScript 学习平台。通过双语对照、实战演练和交互测验，帮助 Python 程序员快速掌握 TypeScript。
 
-- **Direct Comparison**: Python and TypeScript code side by side
-- **Algorithm Track**: Practice with bilingual implementations
-- **Interview Ready**: Prepare for TypeScript interviews
+## 功能特性
 
-## Development
+- **双语对照学习**：Python 与 TypeScript 代码并列展示，直观对比语法差异
+- **系统学习路径**：从基础语法到高级类型，循序渐进
+- **算法实战**：26 道 LeetCode 经典题目的双语实现
+- **交互测验**：200+ 练习题，即时反馈
+- **面试准备**：每课配套面试追问，实战导向
 
-### Prerequisites
+## 学习路径
+
+| 路径     | 课时 | 内容                                       |
+| -------- | ---- | ------------------------------------------ |
+| 基础入门 | 5 课 | 变量、控制流、数据结构、函数、类           |
+| 语法迁移 | 7 课 | 模块、错误处理、枚举、字符串、异步、装饰器 |
+| 进阶实战 | 8 课 | 泛型、类型守卫、工具类型、声明文件、配置   |
+
+## 快速开始
+
+### 环境要求
 
 - Node.js 20+
 - npm
 
-### Setup
+### 本地运行
 
 ```bash
+# 安装依赖
 npm install
+
+# 启动开发服务器
 npm run dev
+
+# 访问 http://localhost:4321
 ```
 
-### Commands
+### 常用命令
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run lint` | Run ESLint |
-| `npm run typecheck` | Run TypeScript type checking |
-| `npm run test` | Run unit tests |
-| `npm run linkcheck` | Validate internal doc links |
-| `npm run check` | Run all checks |
+| 命令               | 说明           |
+| ------------------ | -------------- |
+| `npm run dev`      | 启动开发服务器 |
+| `npm run build`    | 构建生产版本   |
+| `npm run preview`  | 预览构建结果   |
+| `npm run test`     | 运行单元测试   |
+| `npm run test:e2e` | 运行 E2E 测试  |
+| `npm run lint`     | 代码检查       |
+| `npm run check`    | 完整质量检查   |
 
-## Project Structure
+## 项目结构
 
 ```
 src/
-├── components/     # Reusable UI components
-├── content/        # Markdown/MDX content
-│   └── docs/       # Documentation pages
-│       ├── paths/  # Learning paths
-│       └── algorithms/ # Algorithm problems
-├── layouts/        # Page layouts
-├── lib/            # Utility functions
-└── styles/         # CSS styles
+├── components/           # UI 组件
+│   ├── QuizContainer.astro    # 测验容器
+│   ├── DualCodeBlock.astro    # 双语代码块
+│   └── PathNavigator.astro    # 学习路径导航
+├── content/docs/         # 文档内容 (MDX)
+│   ├── paths/            # 学习路径
+│   │   ├── foundation/   # 基础课程
+│   │   ├── migration/    # 迁移课程
+│   │   └── advanced/     # 进阶课程
+│   ├── algorithms/       # 算法题解
+│   ├── handbook/         # 速查手册
+│   └── practice/         # 练习测验
+├── lib/                  # 工具库
+├── pages/                # 页面路由
+└── styles/               # 样式文件
 ```
 
-## Content Guidelines
+## 技术栈
 
-### Lesson Template
+- **框架**：[Astro](https://astro.build/) + [Starlight](https://starlight.astro.build/)
+- **语言**：TypeScript
+- **测试**：Vitest + Playwright
+- **部署**：GitHub Pages
 
-Each lesson should include:
-1. Scenario and problem statement
-2. Python refresher
-3. TypeScript equivalent
-4. Differences and common pitfalls
-5. Advantage comparison
-6. Short exercise
-7. Interview follow-up questions
+## 在线访问
 
-### Algorithm Template
+站点已部署至 GitHub Pages：
 
-Each algorithm page should include:
-1. Problem statement
-2. Thought process
-3. Complexity analysis
-4. Python implementation
-5. TypeScript implementation
-6. Detailed line-by-line comments
-7. Interview variants
-8. Common mistakes
+**https://muyuq.github.io/PyToTS_WEB/**
 
-## Deployment
+## 内容规范
 
-The site is automatically deployed to GitHub Pages when changes are pushed to the `main` branch.
+### 课程结构
 
-See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed deployment instructions.
+```
+## 场景与问题
+## Python 回顾
+## TypeScript 等价写法
+## 差异与常见陷阱
+## 练习
+## 面试追问
+```
 
-## Documentation
+### 算法结构
 
-| Document | Description |
-|----------|-------------|
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment steps and rollback procedures |
-| [RUNBOOK.md](docs/RUNBOOK.md) | Operations and incident response |
-| [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common issues and solutions |
-| [monitoring.md](docs/monitoring.md) | Monitoring and alerting setup |
-| [adr/](docs/adr/) | Architecture Decision Records |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution guidelines |
+```
+## 问题描述
+## 思路分析
+## 复杂度分析
+## Python 实现
+## TypeScript 实现
+## 面试变体
+```
 
-## License
+## 贡献指南
 
-MIT
+欢迎提交 Issue 和 Pull Request。
+
+1. Fork 本仓库
+2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
+3. 提交更改 (`git commit -m 'Add some amazing feature'`)
+4. 推送到分支 (`git push origin feature/amazing-feature`)
+5. 创建 Pull Request
+
+## 许可证
+
+[MIT](./LICENSE)
+
+---
+
+如本项目对你有帮助，欢迎 Star 支持！
