@@ -1,0 +1,274 @@
+---
+---
+
+<script is:inline>
+  var LESSON_PATHS = {
+    preparation: ['/paths/preparation/', '/paths/preparation/typescript-intro/', '/paths/preparation/setup/'],
+    foundation: ['/paths/foundation/variables/', '/paths/foundation/functions-basics/', '/paths/foundation/control-flow/', '/paths/foundation/data-structures/', '/paths/foundation/classes-objects/'],
+    migration: ['/paths/migration/types/', '/paths/migration/functions/', '/paths/migration/modules/', '/paths/migration/async/', '/paths/migration/error-handling/', '/paths/migration/enums/', '/paths/migration/strings-regex/'],
+    advanced: ['/paths/advanced/generics/', '/paths/advanced/type-guards/', '/paths/advanced/utility-types/', '/paths/advanced/declarations-config/', '/paths/advanced/decorators/', '/paths/advanced/design-patterns/', '/paths/advanced/datetime/', '/paths/advanced/nodejs-basics/'],
+    algorithms: [
+      '/algorithms/3sum/',
+      '/algorithms/binary-search/',
+      '/algorithms/binary-tree-inorder-traversal/',
+      '/algorithms/climbing-stairs/',
+      '/algorithms/clone-graph/',
+      '/algorithms/coin-change/',
+      '/algorithms/container-with-most-water/',
+      '/algorithms/counting-bits/',
+      '/algorithms/course-schedule/',
+      '/algorithms/decode-ways/',
+      '/algorithms/edit-distance/',
+      '/algorithms/find-median-from-data-stream/',
+      '/algorithms/house-robber/',
+      '/algorithms/implement-trie/',
+      '/algorithms/linked-list-cycle/',
+      '/algorithms/longest-common-subsequence/',
+      '/algorithms/longest-increasing-subsequence/',
+      '/algorithms/longest-substring-without-repeating/',
+      '/algorithms/lru-cache/',
+      '/algorithms/maximum-subarray/',
+      '/algorithms/merge-intervals/',
+      '/algorithms/merge-k-sorted-lists/',
+      '/algorithms/minimum-window-substring/',
+      '/algorithms/network-delay-time/',
+      '/algorithms/number-of-islands/',
+      '/algorithms/partition-equal-subset-sum/',
+      '/algorithms/permutations/',
+      '/algorithms/reverse-linked-list/',
+      '/algorithms/rotting-oranges/',
+      '/algorithms/single-number/',
+      '/algorithms/subsets/',
+      '/algorithms/two-sum/',
+      '/algorithms/validate-bst/',
+      '/algorithms/valid-parentheses/',
+      '/algorithms/word-break/',
+      '/algorithms/word-search/'
+    ]
+  };
+
+  var ALL_LESSON_PATHS = Object.values(LESSON_PATHS).flat();
+  var progressInitialized = false;
+
+  function getCurrentLessonPath() {
+    var pathname = window.location.pathname;
+    return ALL_LESSON_PATHS.find(function(p) { return pathname === p || pathname === p.replace(/\/$/, ''); });
+  }
+
+  function markLessonCompleted(path) {
+    try {
+      var data = localStorage.getItem('ts-py-learning-progress');
+      var progress = data ? JSON.parse(data) : { lessons: [], quizzes: [], bookmarks: [], lastVisited: '' };
+      
+      if (!progress.lessons.some(function(l) { return l.path === path; })) {
+        var title = document.querySelector('h1')?.textContent || '';
+        progress.lessons.push({
+          path: path,
+          title: title,
+          completedAt: new Date().toISOString(),
+          type: 'lesson'
+        });
+        localStorage.setItem('ts-py-learning-progress', JSON.stringify(progress));
+        window.dispatchEvent(new CustomEvent('progress-updated', { detail: progress }));
+      }
+    } catch (e) {
+      console.error('Failed to save progress:', e);
+    }
+  }
+
+  function getCompletedPaths() {
+    try {
+      var data = localStorage.getItem('ts-py-learning-progress');
+      if (data) {
+        var progress = JSON.parse(data);
+        return progress.lessons ? progress.lessons.map(function(l) { return l.path; }) : [];
+      }
+    } catch (e) {}
+    return [];
+  }
+
+  function isCompleted(path) {
+    var completed = getCompletedPaths();
+    return completed.includes(path) || completed.includes(path.replace(/\/$/, ''));
+  }
+
+  function initLessonCompletion() {
+    var currentPath = getCurrentLessonPath();
+    if (!currentPath) return;
+
+    var markedCompleted = false;
+    var retryCount = 0;
+    var maxRetries = 10;
+    var observer = null;
+
+    function trySetupObserver() {
+      var footer = document.querySelector('footer, .sl-footer, [data-footer], .sl-markdown-content > *:last-child, .pagination-links');
+      
+      if (!footer && retryCount < maxRetries) {
+        retryCount++;
+        setTimeout(trySetupObserver, 200);
+        return;
+      }
+
+      if (!footer) {
+        var content = document.querySelector('.sl-markdown-content');
+        if (content) {
+          footer = content.lastElementChild;
+        }
+      }
+
+      if (!footer) return;
+
+      observer = new IntersectionObserver(
+        function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting && !markedCompleted) {
+              markedCompleted = true;
+              markLessonCompleted(currentPath);
+              if (observer) observer.disconnect();
+            }
+          });
+        },
+        { threshold: 0.1 }
+      );
+
+      observer.observe(footer);
+    }
+
+    trySetupObserver();
+  }
+
+  function addProgressIndicators() {
+    var sidebar = document.querySelector('nav.sidebar, .sl-sidebar, [data-sidebar]');
+    if (!sidebar) return;
+
+    // Remove all existing progress indicators
+    sidebar.querySelectorAll('.progress-dot').forEach(function(dot) {
+      dot.remove();
+    });
+    sidebar.querySelectorAll('.group-progress').forEach(function(gp) {
+      gp.remove();
+    });
+
+    // Add progress dots to lesson links
+    ALL_LESSON_PATHS.forEach(function(path) {
+      var links = sidebar.querySelectorAll('a[href="' + path + '"], a[href="' + path.replace(/\/$/, '') + '"]');
+      links.forEach(function(link) {
+        // Double check no duplicate
+        if (link.querySelector('.progress-dot')) return;
+        
+        var completed = isCompleted(path);
+        var dot = document.createElement('span');
+        dot.className = 'progress-dot' + (completed ? ' completed' : '');
+        dot.textContent = completed ? '●' : '○';
+        dot.setAttribute('aria-label', completed ? '已完成' : '未完成');
+        link.appendChild(dot);
+      });
+    });
+
+    // Add group progress
+    Object.keys(LESSON_PATHS).forEach(function(groupKey) {
+      var paths = LESSON_PATHS[groupKey];
+      var completedCount = paths.filter(isCompleted).length;
+      var total = paths.length;
+
+      var firstPath = paths[0];
+      var firstLinks = sidebar.querySelectorAll('a[href="' + firstPath + '"], a[href="' + firstPath.replace(/\/$/, '') + '"]');
+      if (!firstLinks.length) return;
+
+      firstLinks.forEach(function(firstLink) {
+        var groupElement = firstLink.closest('.sl-sidebar-group, [data-sidebar-group], details');
+        if (!groupElement) return;
+
+        var groupButton = groupElement.querySelector('button, .sl-sidebar-group-toggle, summary');
+        if (!groupButton || groupButton.querySelector('.group-progress')) return;
+
+        var progress = document.createElement('span');
+        progress.className = 'group-progress ' + (completedCount > 0 ? 'has-progress' : 'no-progress');
+        progress.textContent = completedCount + '/' + total;
+        groupButton.appendChild(progress);
+      });
+    });
+
+    progressInitialized = true;
+  }
+
+  function init() {
+    if (progressInitialized) return;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          addProgressIndicators();
+          initLessonCompletion();
+        }, 100);
+      });
+    } else {
+      setTimeout(function() {
+        addProgressIndicators();
+        initLessonCompletion();
+      }, 100);
+    }
+  }
+
+  window.addEventListener('progress-updated', function() {
+    setTimeout(addProgressIndicators, 50);
+  });
+
+  document.addEventListener('astro:page-load', function() {
+    setTimeout(function() {
+      addProgressIndicators();
+      initLessonCompletion();
+    }, 100);
+  });
+
+  init();
+</script>
+
+<style is:global>
+  .progress-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0.375rem;
+    font-size: 0.625rem;
+    transition: color 0.2s ease;
+    vertical-align: middle;
+    line-height: 1;
+  }
+
+  .progress-dot.completed {
+    color: #22c55e;
+  }
+
+  .progress-dot:not(.completed) {
+    color: var(--sl-color-gray-4, #6b7280);
+  }
+
+  .group-progress {
+    display: inline-flex;
+    align-items: center;
+    margin-left: auto;
+    padding-left: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    opacity: 0.8;
+  }
+
+  .group-progress.has-progress {
+    color: #22c55e;
+  }
+
+  .group-progress.no-progress {
+    color: var(--sl-color-gray-4, #6b7280);
+  }
+
+  [data-theme="dark"] .progress-dot:not(.completed),
+  [data-theme="dark"] .group-progress.no-progress {
+    color: var(--sl-color-gray-4, #6b7280);
+  }
+
+  [data-theme="high-contrast"] .progress-dot.completed,
+  [data-theme="high-contrast"] .group-progress.has-progress {
+    color: #4ade80;
+  }
+</style>

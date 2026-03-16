@@ -1,0 +1,710 @@
+---
+title: 错误处理机制
+kind: lesson
+level: migration
+topic: error-handling
+difficulty: easy
+prerequisites: ["functions"]
+python_tags: ["try", "except", "raise", "finally", "Exception"]
+ts_tags: ["try", "catch", "throw", "finally", "Error"]
+description: 理解 Python 和 TypeScript 错误处理的差异
+---
+## 🎯 为什么这个很重要
+
+凌晨三点，线上服务报错了：
+
+```python
+# Python 日志
+File "app.py", line 42
+    raise ValueError("Invalid input")
+ValueError: Invalid input
+```
+
+```typescript
+// TypeScript 日志
+Error: Invalid input
+    at Object.<anonymous> (app.ts:42:15)
+    at Module._compile (internal/modules/cjs/loader.js:1063:30)
+```
+
+看起来差不多？但转到 TypeScript 后，这些坑让开发者加班到天亮：
+
+- 忘记 `catch` 块里检查错误类型，结果访问了不存在的属性
+- 自定义错误类继承错了基类，`instanceof` 判断失败
+- 以为 `finally` 里的 `return` 会生效，结果被静默忽略
+
+错误处理是代码健壮性的最后一道防线。理解两种语言的差异，才能写出可靠的程序。
+
+---
+## 💡 核心概念：用类比理解
+
+| 概念              | 类比       | 说明                                         |
+| ----------------- | ---------- | -------------------------------------------- |
+| **try**           | 试验田     | 可能出问题的代码放这里                       |
+| **except/catch**  | 救护站     | 出问题后的处理逻辑                           |
+| **raise/throw**   | 拉警报     | 主动报告问题                                 |
+| **finally**       | 清理队     | 无论成功失败都会执行的清理工作               |
+| **Exception**     | 标准错误   | Python 的错误基类                            |
+| **Error**         | 标准错误   | JavaScript 的错误基类                        |
+| **自定义错误类**  | 专业救援队 | 针对特定错误类型的专业处理                   |
+| **可选链 `?.`**   | 安全通行证 | 访问可能为空的属性，安全通过或返回 undefined |
+| **空值合并 `??`** | 保底方案   | 值为 null 或 undefined 时使用默认值          |
+
+---
+## 📚 Python 回顾
+
+```python
+# 基本异常处理
+try:
+    result = 10 / int(input("请输入除数: "))
+except ValueError as e:
+    # 处理类型转换错误
+    print(f"输入无效: {e}")
+except ZeroDivisionError:
+    # 处理除零错误
+    print("除数不能为零")
+except Exception as e:
+    # 捕获其他所有异常
+    print(f"未知错误: {e}")
+else:
+    # 没有异常时执行
+    print(f"结果是: {result}")
+finally:
+    # 无论如何都执行
+    print("计算结束")
+
+# 主动抛出异常
+def validate_age(age: int) -> None:
+    if age < 0:
+        raise ValueError("年龄不能为负数")
+    if age > 150:
+        raise ValueError("年龄不合理")
+
+# 自定义异常类
+class ValidationError(Exception):
+    """自定义验证错误"""
+    def __init__(self, field: str, message: str):
+        self.field = field
+        self.message = message
+        super().__init__(f"{field}: {message}")
+
+# 使用自定义异常
+raise ValidationError("email", "格式不正确")
+```
+
+**Python 错误处理要点**：
+
+- `try/except/else/finally` 四段式结构
+- `raise` 关键字抛出异常
+- 自定义异常继承 `Exception`
+- `except` 可以捕获特定异常类型
+- `as` 关键字绑定异常对象
+
+---
+## 🔧 TypeScript 等价写法
+
+```typescript
+// 基本异常处理
+let result: number;
+
+try {
+  const input = prompt("请输入除数:");
+  if (input === null) throw new Error("用户取消输入");
+  result = 10 / parseInt(input, 10);
+} catch (e) {
+  // 注意：catch 没有 e 的类型声明
+  if (e instanceof Error) {
+    console.log(`错误: ${e.message}`);
+  } else {
+    console.log(`未知错误: ${e}`);
+  }
+} finally {
+  console.log("计算结束");
+}
+// 注意：TypeScript 没有 else 分支
+
+// 主动抛出错误
+function validateAge(age: number): void {
+  if (age < 0) {
+    throw new Error("年龄不能为负数");
+  }
+  if (age > 150) {
+    throw new Error("年龄不合理");
+  }
+}
+
+// 自定义错误类
+class ValidationError extends Error {
+  constructor(
+    public field: string,
+    message: string
+  ) {
+    super(`${field}: ${message}`);
+    this.name = "ValidationError";
+    // 重要：修复原型链
+    Object.setPrototypeOf(this, ValidationError.prototype);
+  }
+}
+
+// 使用自定义错误
+throw new ValidationError("email", "格式不正确");
+```
+
+**TypeScript 错误处理要点**：
+
+- `try/catch/finally` 三段式结构（没有 `else`）
+- `throw` 关键字抛出错误
+- 自定义错误继承 `Error`
+- `catch` 块的参数类型默认是 `unknown`
+- 必须用 `instanceof` 检查错误类型
+
+---
+## 📊 语法速查表
+
+| 特性         | Python                      | TypeScript                          |
+| ------------ | --------------------------- | ----------------------------------- |
+| 基本结构     | `try/except/finally`        | `try/catch/finally`                 |
+| 无异常分支   | `else:`                     | ❌ 不支持                           |
+| 抛出异常     | `raise ValueError("msg")`   | `throw new Error("msg")`            |
+| 捕获特定异常 | `except ValueError as e:`   | `if (e instanceof Error)`           |
+| 异常基类     | `Exception`                 | `Error`                             |
+| 自定义异常   | `class MyError(Exception):` | `class MyError extends Error {}`    |
+| 异常信息     | `e.args[0]` 或 `str(e)`     | `e.message`                         |
+| 堆栈追踪     | `traceback.print_exc()`     | `console.error(e.stack)`            |
+| 断言         | `assert condition, "msg"`   | `console.assert()` 或自定义断言函数 |
+
+---
+## ⚠️ 差异与常见陷阱
+
+### 1. catch 块的参数类型
+
+Python 的 `except` 可以指定异常类型，TypeScript 的 `catch` 参数默认是 `unknown`：
+
+```python
+# Python：精确捕获特定异常
+try:
+    risky_operation()
+except ValueError as e:
+    print(f"值错误: {e}")  # e 明确是 ValueError 类型
+except KeyError as e:
+    print(f"键错误: {e}")  # e 明确是 KeyError 类型
+```
+
+```typescript
+// TypeScript：catch 参数是 unknown
+try {
+  riskyOperation();
+} catch (e) {
+  // ❌ 错误：e 可能不是 Error
+  console.log(e.message); // Error: Property 'message' does not exist on type 'unknown'
+
+  // ✅ 正确：先检查类型
+  if (e instanceof Error) {
+    console.log(e.message);
+  } else if (typeof e === "string") {
+    console.log(e);
+  } else {
+    console.log("未知错误");
+  }
+}
+```
+
+### 2. throw vs raise 的差异
+
+```python
+# Python：raise 可以抛出任何对象
+raise "出错了"  # 允许，但不推荐
+raise ValueError("值错误")  # 推荐
+```
+
+```typescript
+// TypeScript：throw 可以抛出任何值
+throw "出错了"; // 允许，但不推荐
+throw new Error("出错了"); // 推荐
+
+// 但推荐的做法是抛出 Error 对象
+function safeThrow(message: string): never {
+  throw new Error(message);
+}
+```
+
+### 3. 自定义错误类的原型链
+
+这是最常见的坑：
+
+```typescript
+// ❌ 错误的自定义错误类
+class BadError extends Error {
+  constructor(message: string) {
+    super(message);
+    // 缺少这行，instanceof 会失败
+  }
+}
+
+const e = new BadError("test");
+console.log(e instanceof BadError); // 可能在某些环境下返回 false
+console.log(e instanceof Error); // true
+
+// ✅ 正确的自定义错误类
+class GoodError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GoodError";
+    // 关键：修复原型链
+    Object.setPrototypeOf(this, GoodError.prototype);
+  }
+}
+```
+
+### 4. TypeScript 没有 try-else
+
+Python 有 `try-else` 结构，TypeScript 没有：
+
+```python
+# Python：else 分支在没有异常时执行
+try:
+    result = parse_data(data)
+except ValueError:
+    print("数据格式错误")
+else:
+    # 只有 try 成功才执行
+    save_to_db(result)
+finally:
+    cleanup()
+```
+
+```typescript
+// TypeScript：需要用变量标记
+let success = false;
+try {
+  const result = parseData(data);
+  success = true;
+  saveToDb(result); // 移到 try 里
+} catch (e) {
+  if (e instanceof Error) {
+    console.log(`数据格式错误: ${e.message}`);
+  }
+} finally {
+  cleanup();
+}
+```
+
+### 5. finally 中的 return
+
+两种语言都不推荐在 `finally` 中返回值：
+
+```python
+# Python：finally 的 return 会覆盖 try 的 return
+def get_value():
+    try:
+        return 1
+    finally:
+        return 2  # 覆盖了上面的 return 1
+
+print(get_value())  # 2，不是 1
+```
+
+```typescript
+// TypeScript：同样的行为
+function getValue(): number {
+  try {
+    return 1;
+  } finally {
+    return 2; // 覆盖了上面的 return 1
+  }
+}
+
+console.log(getValue()); // 2，不是 1
+```
+
+### 6. 可选链和空值合并
+
+TypeScript 特有的安全访问操作符：
+
+```typescript
+// 可选链 ?.：安全访问可能为 null/undefined 的属性
+const user = {
+  name: "Alice",
+  address: null,
+};
+
+// ❌ 不安全：可能报错
+// const city = user.address.city; // Error: Cannot read property 'city' of null
+
+// ✅ 安全：可选链
+const city = user.address?.city; // undefined，不会报错
+
+// 链式调用
+const zip = user.address?.street?.zip; // undefined
+
+// 调用可能不存在的方法
+const result = user.someMethod?.(); // undefined（如果方法不存在）
+
+// 空值合并 ??：提供默认值
+const name = user.name ?? "Anonymous"; // "Alice"（不是 null/undefined）
+const country = user.address?.country ?? "Unknown"; // "Unknown"
+
+// 对比 || 运算符
+const count = 0;
+const value1 = count || 10; // 10（因为 0 是 falsy）
+const value2 = count ?? 10; // 0（因为 0 不是 null/undefined）
+```
+
+---
+## 💬 开发者对话
+
+**Python 开发者**：为什么 TypeScript 的 `catch` 不能像 Python 那样指定异常类型？
+
+**TypeScript 开发者**：因为 JavaScript 允许 `throw` 任何值，不只是 Error 对象。你可以 `throw "字符串"` 甚至 `throw 42`。所以 TypeScript 把 `catch` 参数类型定为 `unknown`，让你自己检查。
+
+**Python 开发者**：那 Python 的 `except ValueError as e` 这种写法怎么实现？
+
+**TypeScript 开发者**：用 `instanceof` 检查：
+
+```typescript
+try {
+  riskyOperation();
+} catch (e) {
+  if (e instanceof ValidationError) {
+    console.log(`验证失败: ${e.field}`);
+  } else if (e instanceof NetworkError) {
+    console.log(`网络错误: ${e.message}`);
+  } else if (e instanceof Error) {
+    console.log(`错误: ${e.message}`);
+  } else {
+    console.log(`未知错误: ${e}`);
+  }
+}
+```
+
+**Python 开发者**：`?.` 和 `??` 是什么？Python 没有这些。
+
+**TypeScript 开发者**：这是 JavaScript 的安全访问操作符：
+
+- `?.` 是可选链，`a?.b` 等价于 `a == null ? undefined : a.b`
+- `??` 是空值合并，`a ?? b` 等价于 `a !== null && a !== undefined ? a : b`
+
+**Python 开发者**：有点像 Python 的 `getattr(obj, 'attr', default)`？
+
+**TypeScript 开发者**：有点像，但 `?.` 更灵活，可以链式调用：
+
+```typescript
+// 链式可选链
+const city = user?.address?.city ?? "Unknown";
+
+// 方法可选调用
+const result = obj.method?.();
+
+// 数组可选访问
+const first = arr?.[0];
+```
+
+**Python 开发者**：自定义错误类有什么要注意的？
+
+**TypeScript 开发者**：两件事：
+
+1. 继承 `Error` 而不是 `Object`
+2. 设置 `name` 属性和修复原型链
+
+```typescript
+class AppError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "AppError";
+    Object.setPrototypeOf(this, AppError.prototype); // 关键！
+  }
+}
+```
+
+不修复原型链，`instanceof AppError` 可能返回 `false`。
+
+---
+## 🤔 试试看
+
+### 预测输出
+
+下面这段代码的输出是什么？
+
+```typescript
+function testFinally(): number {
+  try {
+    console.log("1. try start");
+    throw new Error("oops");
+  } catch (e) {
+    console.log("2. catch");
+    return 10;
+  } finally {
+    console.log("3. finally");
+    return 20;
+  }
+}
+
+console.log("4. result:", testFinally());
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+输出顺序：
+
+```
+1. try start
+2. catch
+3. finally
+4. result: 20
+```
+
+**关键点**：
+
+- `finally` 块总是会执行
+- `finally` 中的 `return` 会覆盖 `catch` 中的 `return`
+- 返回值是 20，不是 10
+
+**教训**：永远不要在 `finally` 中写 `return`，这会让代码难以理解和调试。
+
+</details>
+
+### 找错误
+
+下面这段代码有什么问题？
+
+```typescript
+function parseJson(input: string) {
+  try {
+    return JSON.parse(input);
+  } catch (e) {
+    console.log("解析失败:", e.message);
+    return null;
+  }
+}
+
+const data = parseJson('{"name": "Alice"');
+console.log(data.name);
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+**问题**：`e` 的类型是 `unknown`，直接访问 `e.message` 会报编译错误。
+
+**错误信息**：
+
+```
+Property 'message' does not exist on type 'unknown'.
+```
+
+**修复方式**：
+
+```typescript
+function parseJson(input: string) {
+  try {
+    return JSON.parse(input);
+  } catch (e) {
+    // ✅ 正确：先检查类型
+    if (e instanceof Error) {
+      console.log("解析失败:", e.message);
+    } else {
+      console.log("解析失败:", e);
+    }
+    return null;
+  }
+}
+```
+
+**另一个问题**：输入的 JSON 格式错误（缺少右括号），`JSON.parse` 会抛出语法错误，但被正确捕获并返回 `null`。后面的 `data.name` 会报错，因为 `data` 是 `null`。
+
+更安全的写法：
+
+```typescript
+const data = parseJson('{"name": "Alice"');
+console.log(data?.name); // 使用可选链
+```
+
+</details>
+
+---
+## 📝 练习
+
+将以下 Python 错误处理代码转换为 TypeScript：
+
+```python
+class InsufficientBalanceError(Exception):
+    """余额不足错误"""
+    def __init__(self, balance: float, amount: float):
+        self.balance = balance
+        self.amount = amount
+        super().__init__(f"余额不足: 当前 {balance}，需要 {amount}")
+
+def withdraw(balance: float, amount: float) -> float:
+    if amount > balance:
+        raise InsufficientBalanceError(balance, amount)
+    return balance - amount
+
+def process_withdrawal(balance: float, amount: float) -> float:
+    try:
+        new_balance = withdraw(balance, amount)
+    except InsufficientBalanceError as e:
+        print(f"错误: {e}")
+        print(f"当前余额: {e.balance}, 提取金额: {e.amount}")
+        return balance
+    else:
+        print(f"取款成功，新余额: {new_balance}")
+        return new_balance
+    finally:
+        print("交易结束")
+```
+
+<details>
+<summary>点击查看参考答案</summary>
+
+```typescript
+// 自定义错误类
+class InsufficientBalanceError extends Error {
+  constructor(
+    public balance: number,
+    public amount: number
+  ) {
+    super(`余额不足: 当前 ${balance}，需要 ${amount}`);
+    this.name = "InsufficientBalanceError";
+    Object.setPrototypeOf(this, InsufficientBalanceError.prototype);
+  }
+}
+
+function withdraw(balance: number, amount: number): number {
+  if (amount > balance) {
+    throw new InsufficientBalanceError(balance, amount);
+  }
+  return balance - amount;
+}
+
+function processWithdrawal(balance: number, amount: number): number {
+  let newBalance = balance;
+  try {
+    newBalance = withdraw(balance, amount);
+    // TypeScript 没有 try-else，把成功逻辑放在 try 里
+    console.log(`取款成功，新余额: ${newBalance}`);
+  } catch (e) {
+    // 检查错误类型
+    if (e instanceof InsufficientBalanceError) {
+      console.log(`错误: ${e.message}`);
+      console.log(`当前余额: ${e.balance}, 提取金额: ${e.amount}`);
+    } else if (e instanceof Error) {
+      console.log(`未知错误: ${e.message}`);
+    } else {
+      console.log(`未知错误: ${e}`);
+    }
+    return balance; // 返回原余额
+  } finally {
+    console.log("交易结束");
+  }
+  return newBalance;
+}
+```
+
+**关键转换点**：
+
+| Python                    | TypeScript                                 |
+| ------------------------- | ------------------------------------------ |
+| `class X(Exception):`     | `class X extends Error {}`                 |
+| `raise X(...)`            | `throw new X(...)`                         |
+| `except X as e:`          | `if (e instanceof X)`                      |
+| `try/except/else/finally` | `try/catch/finally`（无 else）             |
+| `super().__init__(msg)`   | `super(msg)` + 修复原型链                  |
+| `e.balance` 直接访问      | 需要 `instanceof` 检查后才能访问自定义属性 |
+
+</details>
+
+---
+## 🎓 面试实战
+
+### 问题 1：throw 可以抛出非 Error 对象吗？
+
+可以。JavaScript 允许抛出任何值：
+
+```typescript
+// 这些都是合法的
+throw "出错了";
+throw 404;
+throw { code: 500, message: "服务器错误" };
+throw null;
+
+// 但不推荐，最好抛出 Error 对象
+throw new Error("出错了");
+```
+
+最佳实践是始终抛出 Error 对象或其子类，这样才有 `message` 和 `stack` 属性。
+
+### 问题 2：可选链 `?.` 和空值合并 `??` 有什么区别？
+
+```typescript
+// 可选链 ?.：安全访问属性或方法
+const name = user?.profile?.name; // 如果 user 或 profile 为 null/undefined，返回 undefined
+const result = obj.method?.(); // 如果 method 不存在，返回 undefined
+
+// 空值合并 ??：提供默认值
+const value = input ?? "default"; // 仅当 input 是 null 或 undefined 时使用默认值
+
+// 组合使用
+const city = user?.address?.city ?? "Unknown";
+```
+
+**区别**：
+
+- `?.` 用于安全访问，返回值可能是 `undefined`
+- `??` 用于提供默认值，返回值一定非 null/undefined
+
+### 问题 3：如何正确创建自定义错误类？
+
+```typescript
+class AppError extends Error {
+  constructor(
+    message: string,
+    public code: number
+  ) {
+    super(message);
+    this.name = "AppError"; // 设置错误名称
+    Object.setPrototypeOf(this, AppError.prototype); // 修复原型链
+  }
+}
+
+// 使用
+try {
+  throw new AppError("资源未找到", 404);
+} catch (e) {
+  if (e instanceof AppError) {
+    console.log(`错误 ${e.code}: ${e.message}`); // 错误 404: 资源未找到
+  }
+}
+```
+
+**为什么需要修复原型链？**
+
+在 ES6 之前，JavaScript 的类继承机制有问题。当子类继承 Error 时，`instanceof` 检查可能失败。`Object.setPrototypeOf(this, AppError.prototype)` 修复这个问题。
+
+### 问题 4：finally 块中的代码什么时候执行？
+
+`finally` 块**总是**会执行，无论：
+
+- try 块正常完成
+- try 块抛出异常
+- catch 块捕获了异常
+- try 或 catch 块中有 return 语句
+
+```typescript
+function test(): number {
+  try {
+    console.log("try");
+    return 1;
+  } finally {
+    console.log("finally");
+    // finally 的 return 会覆盖上面的
+  }
+}
+
+// 输出：
+// try
+// finally
+// 返回 1
+```
+
+**重要**：如果在 `finally` 中写 `return`，它会覆盖 `try` 或 `catch` 中的 `return`。这是常见的 bug 来源。

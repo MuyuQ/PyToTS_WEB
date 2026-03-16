@@ -1,0 +1,672 @@
+---
+title: 类型声明与配置
+kind: lesson
+level: advanced
+topic: typesystem
+difficulty: medium
+prerequisites: ["modules-packages", "generics"]
+python_tags: ["typing", "stub files", "pyproject.toml"]
+ts_tags: [".d.ts", "declare", "tsconfig.json", "@types"]
+description: 掌握 TypeScript 类型声明文件和 tsconfig.json 配置的核心概念
+---
+## 场景与问题
+
+在 Python 中，类型提示存放在 `.pyi` 存根文件中，配置通过 `pyproject.toml` 或 `mypy.ini` 管理。TypeScript 使用 `.d.ts` 声明文件描述 JavaScript 代码的类型，`tsconfig.json` 控制编译行为。理解这两者对于管理大型项目至关重要。
+
+## 类型声明文件
+
+### 什么是类型声明文件
+
+类型声明文件（`.d.ts`）为 JavaScript 代码提供类型信息。它们只包含类型定义，不包含实现代码。
+
+```typescript
+// utils.d.ts - 声明文件
+declare function greet(name: string): string;
+declare const version: string;
+declare class Calculator {
+  add(a: number, b: number): number;
+  subtract(a: number, b: number): number;
+}
+
+// 以上声明不生成任何 JavaScript 代码
+```
+
+Python 的 `.pyi` 存根文件作用类似：
+
+```python
+# utils.pyi - Python 存根文件
+def greet(name: str) -> str: ...
+version: str
+
+class Calculator:
+    def add(self, a: int, b: int) -> int: ...
+    def subtract(self, a: int, b: int) -> int: ...
+```
+
+### @types/xxx 包的作用和来源
+
+TypeScript 类型声明通常通过 `@types/` 包安装，这些包来自 DefinitelyTyped 仓库。
+
+```bash
+# 安装类型声明
+npm install --save-dev @types/node @types/lodash @types/express
+```
+
+安装后类型自动全局可用：
+
+```typescript
+// 无需手动导入，类型自动生效
+import _ from "lodash";
+// _.map 等方法已有完整类型提示
+```
+
+Python 的等价操作：
+
+```bash
+# Python 类型存根通常随包安装或单独提供
+pip install types-requests types-python-dateutil
+```
+
+### 为 JavaScript 库编写类型声明
+
+当使用的 JavaScript 库没有类型声明时，可以自行创建：
+
+```typescript
+// my-lib.d.ts
+declare module "my-lib" {
+  // 导出函数
+  export function formatDate(date: Date, format: string): string;
+
+  // 导出类
+  export class Parser {
+    constructor(options?: ParserOptions);
+    parse(input: string): ParseResult;
+  }
+
+  // 导出接口
+  export interface ParserOptions {
+    strict?: boolean;
+    encoding?: string;
+  }
+
+  export interface ParseResult {
+    success: boolean;
+    data: unknown;
+    errors: string[];
+  }
+
+  // 默认导出
+  export default class MyLib {
+    version: string;
+  }
+}
+```
+
+也可以创建全局声明：
+
+```typescript
+// global.d.ts
+declare const ENV: {
+  API_URL: string;
+  DEBUG: boolean;
+  VERSION: string;
+};
+
+declare function log(message: string, level?: "info" | "warn" | "error"): void;
+```
+
+### declare 关键字
+
+`declare` 告诉 TypeScript 某个值存在，但不产生实际代码：
+
+```typescript
+// 声明全局变量
+declare const API_KEY: string;
+
+// 声明全局函数
+declare function debug(...args: unknown[]): void;
+
+// 声明全局类
+declare class EventEmitter {
+  on(event: string, listener: (...args: unknown[]) => void): void;
+  emit(event: string, ...args: unknown[]): void;
+}
+
+// 声明模块
+declare module "legacy-lib" {
+  export function oldFunction(x: number): number;
+}
+```
+
+Python 中类似的存根声明：
+
+```python
+# legacy_lib.pyi
+def old_function(x: int) -> int: ...
+```
+
+### 声明合并（Declaration Merging）
+
+TypeScript 允许同名声明的合并：
+
+```typescript
+// 接口合并
+interface Config {
+  host: string;
+}
+
+interface Config {
+  port: number;
+}
+
+// 合并后：Config 同时有 host 和 port
+const config: Config = {
+  host: "localhost",
+  port: 8080,
+};
+
+// 扩展第三方类型
+declare module "express" {
+  interface Request {
+    user?: {
+      id: string;
+      name: string;
+    };
+  }
+}
+
+// 使用时 Request 类型已包含 user 属性
+```
+
+Python 不支持声明合并，需要使用 `Protocol` 或继承：
+
+```python
+from typing import Protocol
+
+class ConfigBase(Protocol):
+    host: str
+
+class Config(ConfigBase, Protocol):
+    port: int
+```
+
+## tsconfig.json 核心配置
+
+### 基本结构
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+Python 的 `pyproject.toml` 类型检查配置：
+
+```toml
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+```
+
+### 编译选项
+
+#### target 和 module
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext"
+  }
+}
+```
+
+| 配置     | 作用                        | Python 对比           |
+| -------- | --------------------------- | --------------------- |
+| `target` | 编译后的 JS 版本            | 类似 `python_version` |
+| `module` | 模块系统（CommonJS/ESNext） | 无直接对应            |
+
+#### moduleResolution
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "bundler"
+  }
+}
+```
+
+选项说明：
+
+- `node`: Node.js 经典解析（后缀必须完整）
+- `node16`/`nodenext`: Node.js ESM 解析
+- `bundler`: 适合打包工具（Vite、webpack）
+
+### strict 模式系列
+
+```json
+{
+  "compilerOptions": {
+    "strict": true
+  }
+}
+```
+
+`strict: true` 等价于开启以下所有选项：
+
+```json
+{
+  "compilerOptions": {
+    "strict": true,
+    // 以下自动启用
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "useUnknownInCatchVariables": true
+  }
+}
+```
+
+#### noImplicitAny
+
+禁止隐式 `any` 类型：
+
+```typescript
+// noImplicitAny: false 时允许
+function parse(input) {
+  // input 类型为 any
+  return input.trim();
+}
+
+// noImplicitAny: true 时必须指定
+function parse(input: string): string {
+  return input.trim();
+}
+```
+
+#### strictNullChecks
+
+严格空值检查：
+
+```typescript
+// strictNullChecks: false
+let name: string = null; // 允许
+
+// strictNullChecks: true
+let name: string = null; // 错误
+let name: string | null = null; // 正确
+
+// 常见场景
+interface User {
+  name: string;
+  email: string | null;
+}
+
+const user: User = { name: "Alice", email: null };
+
+// 需要类型收窄
+if (user.email) {
+  console.log(user.email.toUpperCase()); // OK
+}
+```
+
+### lib 配置
+
+指定可用的 API 类型定义：
+
+```json
+{
+  "compilerOptions": {
+    "lib": ["ES2022", "DOM", "DOM.Iterable"]
+  }
+}
+```
+
+常见场景：
+
+```typescript
+// Node.js 项目
+{
+  "lib": ["ES2022"]
+}
+
+// 浏览器项目
+{
+  "lib": ["ES2022", "DOM", "DOM.Iterable"]
+}
+
+// Web Worker
+{
+  "lib": ["ES2022", "WebWorker"]
+}
+```
+
+### paths 和 baseUrl（路径别名）
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@components/*": ["src/components/*"],
+      "@lib/*": ["src/lib/*"]
+    }
+  }
+}
+```
+
+使用示例：
+
+```typescript
+// 不使用别名
+import { formatDate } from "../../../lib/utils/format";
+import { Button } from "../../../components/ui/Button";
+
+// 使用别名
+import { formatDate } from "@/lib/utils/format";
+import { Button } from "@components/ui/Button";
+```
+
+Python 的等价配置：
+
+```python
+# pyproject.toml
+[tool.mypy]
+mypy_path = "src"
+
+# 代码中使用
+from lib.utils.format import format_date
+```
+
+### typeRoots 和 types
+
+控制类型声明查找位置：
+
+```json
+{
+  "compilerOptions": {
+    "typeRoots": ["./types", "./node_modules/@types"],
+    "types": ["node", "jest"]
+  }
+}
+```
+
+- `typeRoots`: 指定类型声明目录
+- `types`: 只包含指定的类型包（提高编译速度）
+
+```typescript
+// types: ["node", "jest"]
+// 只有 @types/node 和 @types/jest 的类型全局可用
+// 其他 @types/xxx 需要显式导入
+```
+
+### 项目引用
+
+大型项目可以拆分为多个子项目：
+
+```json
+// tsconfig.json（根目录）
+{
+  "references": [
+    { "path": "./packages/core" },
+    { "path": "./packages/cli" }
+  ],
+  "compilerOptions": {
+    "composite": true
+  }
+}
+
+// packages/core/tsconfig.json
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "./dist"
+  }
+}
+```
+
+## 三斜线指令
+
+三斜线指令用于声明文件间的依赖关系：
+
+```typescript
+/// <reference path="./types/global.d.ts" />
+/// <reference types="node" />
+/// <reference lib="es2022.promise" />
+```
+
+示例场景：
+
+```typescript
+// base.d.ts
+interface BaseConfig {
+  debug: boolean;
+}
+
+// app.d.ts
+/// <reference path="./base.d.ts" />
+
+interface AppConfig extends BaseConfig {
+  apiUrl: string;
+}
+```
+
+Python 没有直接等价物，类型导入使用 `import`：
+
+```python
+# base.pyi
+class BaseConfig:
+    debug: bool
+
+# app.pyi
+from .base import BaseConfig
+
+class AppConfig(BaseConfig):
+    api_url: str
+```
+
+## 环境声明
+
+### 全局变量声明
+
+为第三方脚本注入的全局变量提供类型：
+
+```typescript
+// env.d.ts
+interface Window {
+  __APP_CONFIG__: {
+    apiBaseUrl: string;
+    environment: "development" | "production";
+  };
+}
+
+declare const __DEV__: boolean;
+declare const APP_VERSION: string;
+```
+
+使用：
+
+```typescript
+// 直接使用，无需导入
+if (__DEV__) {
+  console.log("Debug mode enabled");
+}
+
+console.log(`App version: ${APP_VERSION}`);
+console.log(window.__APP_CONFIG__.apiBaseUrl);
+```
+
+### 模块扩展
+
+扩展现有模块的类型：
+
+```typescript
+// 扩展 Express
+declare module "express" {
+  interface Request {
+    session: {
+      userId: string;
+      role: "admin" | "user";
+    };
+  }
+}
+
+// 扩展 Vue
+declare module "@vue/runtime-core" {
+  interface ComponentCustomProperties {
+    $http: typeof import("axios").default;
+  }
+}
+```
+
+Python 使用 `Protocol` 或继承实现类似效果：
+
+```python
+from typing import Protocol
+from flask import Request
+
+class ExtendedRequest(Request, Protocol):
+    session: dict[str, str]
+```
+
+## 差异与常见陷阱
+
+### 1. 类型声明不生效
+
+```typescript
+// 错误：类型声明文件未被包含
+// my-types.d.ts
+declare module "my-lib" { ... }
+
+// 解决：确保 tsconfig.json 包含该文件
+{
+  "include": ["src/**/*", "types/**/*"]
+}
+```
+
+### 2. 路径别名运行时错误
+
+```typescript
+// tsconfig.json 配置了路径别名
+{
+  "paths": {
+    "@/*": ["src/*"]
+  }
+}
+
+// 运行时错误：Node.js 不认识 @ 别名
+import { utils } from "@/lib/utils";
+
+// 解决：配置打包工具或使用 ts-node/tsx
+// tsx 会自动解析 tsconfig.json 的 paths
+```
+
+### 3. 声明合并冲突
+
+```typescript
+// 接口合并时属性不能重复
+interface User {
+  name: string;
+}
+
+interface User {
+  name: number; // 错误：后续声明必须同名同类型
+}
+```
+
+### 4. lib 配置缺失
+
+```typescript
+// 使用 DOM API 但 lib 未包含 "DOM"
+document.getElementById("app"); // 错误：找不到 document
+
+// 解决：添加 "DOM" 到 lib
+{
+  "lib": ["ES2022", "DOM"]
+}
+```
+
+### 5. 类型声明优先级
+
+```typescript
+// node_modules/@types/lodash 与本地 types/lodash.d.ts
+// 后声明的会覆盖或合并
+
+// 控制顺序：typeRoots 数组前面的优先级更高
+{
+  "typeRoots": ["./types", "./node_modules/@types"]
+}
+```
+
+## 配置对比总结
+
+| 配置项   | TypeScript         | Python (mypy)             |
+| -------- | ------------------ | ------------------------- |
+| 目标版本 | `target: "ES2022"` | `python_version = "3.12"` |
+| 严格模式 | `strict: true`     | `strict = true`           |
+| 隐式 any | `noImplicitAny`    | `disallow_untyped_defs`   |
+| 空值检查 | `strictNullChecks` | 无直接对应                |
+| 路径映射 | `paths`            | `mypy_path`               |
+| 类型存根 | `.d.ts`            | `.pyi`                    |
+
+## 练习
+
+为一个假设的 JavaScript 库 `string-utils` 编写类型声明文件：
+
+1. 导出函数 `capitalize(str: string): string`
+2. 导出函数 `truncate(str: string, length: number): string`
+3. 导出常量 `VERSION: string`
+4. 导出配置接口 `StringUtilsConfig` 包含 `strict?: boolean` 和 `encoding?: string`
+
+<details>
+<summary>答案</summary>
+
+```typescript
+// string-utils.d.ts
+declare module "string-utils" {
+  export function capitalize(str: string): string;
+
+  export function truncate(str: string, length: number): string;
+
+  export const VERSION: string;
+
+  export interface StringUtilsConfig {
+    strict?: boolean;
+    encoding?: string;
+  }
+}
+```
+
+</details>
+
+## 面试追问
+
+1. **`.d.ts` 文件会被编译到输出目录吗？**
+   - 答：不会。`.d.ts` 只提供类型信息，不包含实现代码，编译时会生成对应的声明文件但不转换它们。
+
+2. **`declare module` 和 `declare namespace` 的区别？**
+   - 答：`declare module` 用于声明外部模块的类型，`namespace` 用于组织内部类型。现代代码推荐使用 ES 模块代替 namespace。
+
+3. **如何在 TypeScript 项目中使用没有类型声明的 npm 包？**
+   - 答：三种方式：安装 `@types/xxx`；创建本地 `.d.ts` 文件用 `declare module` 声明；或在项目中创建 `shims-xxx.d.ts` 进行模块扩展。
+
+4. **`strict: true` 和手动开启各 strict 选项有什么区别？**
+   - 答：`strict: true` 是一组选项的快捷方式，同时开启所有严格检查。未来新增的严格选项也会自动生效，推荐使用。
+
+---
+**下一步：** [装饰器与元编程](/paths/advanced/decorators)

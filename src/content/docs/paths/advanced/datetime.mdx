@@ -1,0 +1,584 @@
+---
+title: 日期时间处理
+kind: lesson
+level: advanced
+topic: datetime
+difficulty: medium
+prerequisites: ["classes-objects", "error-handling"]
+python_tags: ["datetime", "timedelta", "timezone", "strftime", "strptime"]
+ts_tags: ["Date", "toLocaleDateString", "toISOString", "date-fns"]
+description: 对比 Python datetime 模块与 JavaScript Date 对象，掌握跨语言日期时间处理
+---
+## 场景与问题
+
+日期时间处理是开发中最常见也最容易出错的领域之一。无论是记录日志时间、计算截止日期、还是处理时区转换，都需要准确理解语言的日期 API。Python 的 `datetime` 模块设计清晰，类型明确；而 JavaScript 的 `Date` 对象设计较早，存在若干历史遗留问题，需要特别注意。
+
+## 核心概念
+
+### Python datetime 类型体系
+
+Python 将日期时间拆分为多个独立的类型：
+
+| 类型        | 说明           | 示例                            |
+| ----------- | -------------- | ------------------------------- |
+| `date`      | 日期（年月日） | `date(2024, 3, 15)`             |
+| `time`      | 时间（时分秒） | `time(14, 30, 0)`               |
+| `datetime`  | 日期+时间      | `datetime(2024, 3, 15, 14, 30)` |
+| `timedelta` | 时间差         | `timedelta(days=7)`             |
+| `timezone`  | 时区           | `timezone.utc`                  |
+
+### JavaScript Date 对象
+
+JavaScript 只有一个 `Date` 类型，内部存储 UTC 时间戳（毫秒）：
+
+```typescript
+// JavaScript Date 始终包含日期和时间
+const now = new Date();
+// 没有独立的 date 或 time 类型
+```
+
+## Python 回顾
+
+### 创建日期时间
+
+```python
+from datetime import date, time, datetime, timedelta, timezone
+
+# 当前时间
+now = datetime.now()
+today = date.today()
+
+# 指定日期时间
+d = date(2024, 3, 15)           # 2024-03-15
+t = time(14, 30, 0)              # 14:30:00
+dt = datetime(2024, 3, 15, 14, 30, 0)  # 2024-03-15 14:30:00
+
+# 从时间戳创建（秒级）
+ts = 1710497400.0
+dt_from_ts = datetime.fromtimestamp(ts)
+
+# 从字符串解析
+dt_parsed = datetime.strptime("2024-03-15 14:30", "%Y-%m-%d %H:%M")
+```
+
+### 日期计算
+
+```python
+from datetime import datetime, timedelta
+
+now = datetime.now()
+
+# 时间加减
+tomorrow = now + timedelta(days=1)
+next_week = now + timedelta(weeks=1)
+hours_later = now + timedelta(hours=3)
+
+# 日期差值
+deadline = datetime(2024, 12, 31)
+remaining = deadline - now  # timedelta 对象
+print(f"剩余 {remaining.days} 天")
+
+# 替换部分字段
+new_year = now.replace(year=2025)
+```
+
+### 格式化输出
+
+```python
+from datetime import datetime
+
+now = datetime.now()
+
+# strftime 格式化
+formatted = now.strftime("%Y-%m-%d %H:%M:%S")  # 2024-03-15 14:30:00
+chinese = now.strftime("%Y年%m月%d日")          # 2024年03月15日
+
+# ISO 格式
+iso_format = now.isoformat()  # 2024-03-15T14:30:00
+```
+
+### 时区处理
+
+```python
+from datetime import datetime, timezone, timedelta
+
+# UTC 时间
+utc_now = datetime.now(timezone.utc)
+
+# 自定义时区（东八区）
+beijing_tz = timezone(timedelta(hours=8))
+beijing_time = datetime.now(beijing_tz)
+
+# 时区转换
+utc_dt = datetime.now(timezone.utc)
+beijing_dt = utc_dt.astimezone(beijing_tz)
+```
+
+## TypeScript 等价写法
+
+### 创建日期时间
+
+```typescript
+// 当前时间
+const now = new Date();
+
+// 指定日期时间（注意：月份从 0 开始！）
+const d = new Date(2024, 2, 15); // 2024-03-15（月份是 2，不是 3）
+const dt = new Date(2024, 2, 15, 14, 30, 0);
+
+// 从时间戳创建（毫秒级）
+const ts = 1710497400000; // 注意：JavaScript 使用毫秒
+const dtFromTs = new Date(ts);
+
+// 从字符串解析（ISO 格式推荐）
+const dtParsed = new Date("2024-03-15T14:30:00");
+const dtParsed2 = new Date("2024-03-15 14:30"); // 可能有时区歧义
+
+// 获取各个字段
+now.getFullYear(); // 年
+now.getMonth(); // 月（0-11）
+now.getDate(); // 日
+now.getHours(); // 时
+now.getMinutes(); // 分
+now.getSeconds(); // 秒
+now.getDay(); // 星期几（0-6，0 是周日）
+```
+
+### 日期计算
+
+```typescript
+const now = new Date();
+
+// 时间加减（通过时间戳）
+const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+const hoursLater = new Date(now.getTime() + 3 * 60 * 60 * 1000);
+
+// 日期差值
+const deadline = new Date("2024-12-31");
+const remaining = deadline.getTime() - now.getTime(); // 毫秒差值
+const remainingDays = Math.floor(remaining / (24 * 60 * 60 * 1000));
+
+// 设置部分字段
+const newYear = new Date(now);
+newYear.setFullYear(2025);
+```
+
+### 格式化输出
+
+```typescript
+const now = new Date();
+
+// toISOString：UTC 时间，ISO 格式
+const iso = now.toISOString(); // 2024-03-15T06:30:00.000Z
+
+// toLocaleDateString：本地化日期字符串
+const localDate = now.toLocaleDateString("zh-CN"); // 2024/3/15
+const localTime = now.toLocaleTimeString("zh-CN"); // 14:30:00
+const localDateTime = now.toLocaleString("zh-CN"); // 2024/3/15 14:30:00
+
+// 自定义格式（需要手动拼接或使用库）
+const year = now.getFullYear();
+const month = String(now.getMonth() + 1).padStart(2, "0");
+const day = String(now.getDate()).padStart(2, "0");
+const formatted = `${year}-${month}-${day}`; // 2024-03-15
+
+// toDateString / toTimeString
+now.toDateString(); // Fri Mar 15 2024
+now.toTimeString(); // 14:30:00 GMT+0800
+```
+
+### 时区处理
+
+```typescript
+const now = new Date();
+
+// 获取时区偏移（分钟）
+const offset = now.getTimezoneOffset(); // -480（东八区）
+
+// toISOString 总是返回 UTC 时间
+const utcString = now.toISOString();
+
+// 使用 Intl API 格式化时区
+const beijing = now.toLocaleString("zh-CN", {
+  timeZone: "Asia/Shanghai",
+});
+```
+
+## 差异与常见陷阱
+
+### 1. 月份索引从 0 开始
+
+这是 JavaScript 最著名的设计缺陷：
+
+```python
+# Python：月份直观
+from datetime import date
+
+d = date(2024, 3, 15)  # 3 月 15 日
+print(d.month)  # 3
+```
+
+```typescript
+// TypeScript：月份从 0 开始！
+const d = new Date(2024, 2, 15); // 3 月 15 日（月份是 2）
+console.log(d.getMonth()); // 2
+
+// 常见错误
+const wrongDate = new Date(2024, 3, 15); // 这是 4 月 15 日！
+
+// 正确写法：月份 -1 或使用 ISO 字符串
+const correct = new Date(2024, 2, 15); // 3 月 15 日
+const alsoCorrect = new Date("2024-03-15"); // ISO 格式更安全
+```
+
+### 2. Date 对象是可变的
+
+```python
+# Python：日期对象不可变
+from datetime import datetime
+
+dt = datetime(2024, 3, 15)
+new_dt = dt.replace(year=2025)  # 返回新对象
+print(dt.year)  # 2024（原对象不变）
+```
+
+```typescript
+// TypeScript：Date 对象可变
+const dt = new Date(2024, 2, 15);
+dt.setFullYear(2025); // 直接修改原对象
+console.log(dt.getFullYear()); // 2025
+
+// 如果需要保留原对象，必须复制
+const original = new Date(2024, 2, 15);
+const copy = new Date(original.getTime()); // 或 new Date(original)
+copy.setFullYear(2025);
+```
+
+### 3. 时间戳单位差异
+
+```python
+# Python：秒级时间戳
+import time
+
+ts = time.time()  # 1710497400.0（秒）
+dt = datetime.fromtimestamp(ts)  # 从秒创建
+```
+
+```typescript
+// TypeScript：毫秒级时间戳
+const ts = Date.now(); // 1710497400000（毫秒）
+const dt = new Date(ts); // 从毫秒创建
+
+// Python 时间戳转 JavaScript
+const pythonTs = 1710497400.0;
+const jsDate = new Date(pythonTs * 1000); // 乘以 1000
+
+// JavaScript 时间戳转 Python
+const jsTs = Date.now();
+// 在 Python 中：datetime.fromtimestamp(jsTs / 1000)
+```
+
+### 4. 日期解析的不一致性
+
+```python
+# Python：strptime 格式明确
+from datetime import datetime
+
+dt = datetime.strptime("2024-03-15", "%Y-%m-%d")
+dt2 = datetime.strptime("15/03/2024", "%d/%m/%Y")
+```
+
+```typescript
+// TypeScript：字符串解析行为不一致
+const dt = new Date("2024-03-15"); // ISO 格式，视为 UTC
+const dt2 = new Date("2024-03-15T14:30:00"); // ISO 格式，视为本地时间
+
+// 不推荐使用非标准格式
+const dangerous = new Date("03/15/2024"); // 可能是 3 月 15 日或报错
+
+// 推荐：使用 Date.parse 配合检查
+const timestamp = Date.parse("2024-03-15T14:30:00");
+if (isNaN(timestamp)) {
+  throw new Error("Invalid date string");
+}
+const dt3 = new Date(timestamp);
+```
+
+### 5. 时区处理的复杂性
+
+```python
+# Python：时区处理明确
+from datetime import datetime, timezone, timedelta
+
+# 明确的 UTC 时间
+utc = datetime.now(timezone.utc)
+
+# 带时区的 datetime
+beijing_tz = timezone(timedelta(hours=8))
+beijing = datetime(2024, 3, 15, 14, 30, tzinfo=beijing_tz)
+```
+
+```typescript
+// TypeScript：时区处理较复杂
+const now = new Date();
+
+// Date 内部总是 UTC，展示依赖运行环境
+console.log(now.toString()); // 本地时区
+console.log(now.toISOString()); // UTC
+
+// 使用 Intl API 处理时区显示
+const options: Intl.DateTimeFormatOptions = {
+  timeZone: "Asia/Shanghai",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+};
+console.log(now.toLocaleString("zh-CN", options));
+```
+
+### 核心差异对比
+
+| 特性       | Python                  | JavaScript/TypeScript |
+| ---------- | ----------------------- | --------------------- |
+| 类型分离   | date/time/datetime 分离 | 只有 Date 类型        |
+| 月份索引   | 1-12                    | 0-11                  |
+| 可变性     | 不可变                  | 可变                  |
+| 时间戳单位 | 秒                      | 毫秒                  |
+| 时区支持   | 内置 timezone           | 依赖 Intl API         |
+| 格式化     | strftime                | toLocaleString/ISO    |
+| 解析       | strptime（格式明确）    | 构造函数（行为不一）  |
+
+## 第三方库推荐
+
+由于 JavaScript 原生 Date API 的局限性，实际项目中通常使用第三方库。
+
+### date-fns：函数式，Tree-shakable
+
+```typescript
+import { format, addDays, differenceInDays, parseISO } from "date-fns";
+import { zhCN } from "date-fns/locale";
+
+const now = new Date();
+
+// 格式化
+format(now, "yyyy-MM-dd"); // "2024-03-15"
+format(now, "yyyy年MM月dd日", { locale: zhCN }); // "2024年03月15日"
+
+// 日期计算
+addDays(now, 7); // 7 天后
+
+// 日期差值
+const deadline = new Date("2024-12-31");
+differenceInDays(deadline, now); // 差多少天
+
+// 解析 ISO 字符串
+parseISO("2024-03-15T14:30:00");
+```
+
+### dayjs：轻量，API 类似 moment
+
+```typescript
+import dayjs from "dayjs";
+import "dayjs/locale/zh-cn";
+
+dayjs.locale("zh-cn");
+
+const now = dayjs();
+
+// 格式化
+now.format("YYYY-MM-DD"); // "2024-03-15"
+now.format("YYYY年MM月DD日"); // "2024年03月15日"
+
+// 链式操作
+now.add(7, "day").format("YYYY-MM-DD");
+now.subtract(1, "month").format("YYYY-MM-DD");
+
+// 解析
+dayjs("2024-03-15");
+dayjs("2024-03-15 14:30:00", "YYYY-MM-DD HH:mm:ss");
+
+// 时区（需要插件）
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+dayjs().tz("Asia/Shanghai").format();
+```
+
+### luxon：现代，时区支持完善
+
+```typescript
+import { DateTime } from "luxon";
+
+// 当前时间
+const now = DateTime.now();
+
+// 格式化
+now.toFormat("yyyy-MM-dd"); // "2024-03-15"
+now.toFormat("yyyy年MM月dd日"); // "2024年03月15日"
+
+// 时区处理
+const beijing = now.setZone("Asia/Shanghai");
+const utc = now.setZone("UTC");
+
+// ISO 格式
+now.toISO(); // "2024-03-15T14:30:00.000+08:00"
+now.toISODate(); // "2024-03-15"
+
+// 日期计算
+now.plus({ days: 7 });
+now.minus({ months: 1 });
+
+// 解析
+DateTime.fromISO("2024-03-15T14:30:00");
+DateTime.fromFormat("2024/03/15", "yyyy/MM/dd");
+```
+
+### 库对比
+
+| 特性         | date-fns      | dayjs         | luxon    |
+| ------------ | ------------- | ------------- | -------- |
+| 体积         | ~70KB（按需） | ~2KB          | ~70KB    |
+| 风格         | 函数式        | 链式调用      | 链式调用 |
+| Tree-shaking | 完美          | 一般          | 一般     |
+| 时区支持     | 需要插件      | 需要插件      | 内置     |
+| 国际化       | 需导入 locale | 需导入 locale | 内置     |
+| 学习曲线     | 低            | 低            | 中       |
+
+## 练习
+
+将以下 Python 日期处理代码转换为 TypeScript：
+
+```python
+from datetime import datetime, timedelta
+
+def get_workdays_in_month(year: int, month: int) -> list[datetime]:
+    """获取指定月份的所有工作日"""
+    # 月初
+    start = datetime(year, month, 1)
+    # 月末
+    if month == 12:
+        end = datetime(year + 1, 1, 1)
+    else:
+        end = datetime(year, month + 1, 1)
+
+    workdays = []
+    current = start
+    while current < end:
+        # 0-4 是周一到周五
+        if current.weekday() < 5:
+            workdays.append(current)
+        current += timedelta(days=1)
+
+    return workdays
+
+# 测试
+march_workdays = get_workdays_in_month(2024, 3)
+print(f"2024年3月有 {len(march_workdays)} 个工作日")
+```
+
+<details>
+<summary>答案</summary>
+
+```typescript
+function getWorkdaysInMonth(year: number, month: number): Date[] {
+  // 获取指定月份的所有工作日
+  // 注意：month 是 1-12，Date 构造函数需要 0-11
+  const start = new Date(year, month - 1, 1);
+
+  // 月末：下月 1 号的前一天
+  const end = new Date(year, month, 1);
+
+  const workdays: Date[] = [];
+  const current = new Date(start);
+
+  while (current < end) {
+    // getDay() 返回 0-6，0 是周日，1-5 是周一到周五
+    const dayOfWeek = current.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      workdays.push(new Date(current)); // 复制日期对象
+    }
+    current.setDate(current.getDate() + 1);
+  }
+
+  return workdays;
+}
+
+// 测试
+const marchWorkdays = getWorkdaysInMonth(2024, 3);
+console.log(`2024年3月有 ${marchWorkdays.length} 个工作日`);
+
+// 使用 date-fns 的版本
+import { startOfMonth, endOfMonth, eachDayOfInterval, isWeekday } from "date-fns";
+
+function getWorkdaysInMonthWithDateFns(year: number, month: number): Date[] {
+  const start = startOfMonth(new Date(year, month - 1));
+  const end = endOfMonth(start);
+
+  return eachDayOfInterval({ start, end }).filter(isWeekday);
+}
+```
+
+</details>
+
+## 面试追问
+
+1. **JavaScript Date 的月份为什么从 0 开始？**
+
+   这是历史遗留问题。早期 Java 的 Date 类就是这样设计的（0-11），JavaScript 继承了这个设计。现代实践中推荐使用 ISO 字符串或日期库避免混淆。
+
+2. **如何处理跨时区的日期显示？**
+
+   推荐方案：后端统一存储 UTC 时间戳或 ISO 字符串，前端根据用户时区显示。使用 `toLocaleString` 的 `timeZone` 选项，或使用 luxon/dayjs 的时区插件。
+
+3. **为什么推荐使用日期库而不是原生 Date？**
+   - 原生 Date API 语义不清晰（月份从 0 开始）
+   - 缺少便捷的日期计算方法
+   - 时区处理复杂
+   - 格式化能力有限
+   - Date 对象可变，容易产生 bug
+
+4. **如何安全地解析用户输入的日期字符串？**
+
+   ```typescript
+   // 方案 1：使用日期库
+   import { parse, format } from "date-fns";
+
+   const input = "2024/03/15";
+   const date = parse(input, "yyyy/MM/dd", new Date());
+
+   // 方案 2：手动解析并验证
+   function parseDateString(str: string): Date | null {
+     const parts = str.split("-").map(Number);
+     if (parts.length !== 3) return null;
+     const [year, month, day] = parts;
+     // 验证范围
+     if (month < 1 || month > 12) return null;
+     if (day < 1 || day > 31) return null;
+     return new Date(year, month - 1, day);
+   }
+   ```
+
+5. **如何判断两个日期是否是同一天？**
+
+   ```typescript
+   function isSameDay(d1: Date, d2: Date): boolean {
+     return (
+       d1.getFullYear() === d2.getFullYear() &&
+       d1.getMonth() === d2.getMonth() &&
+       d1.getDate() === d2.getDate()
+     );
+   }
+
+   // 或使用 date-fns
+   import { isSameDay } from "date-fns";
+   isSameDay(date1, date2);
+   ```
+
+---
+[下一课：装饰器模式](/paths/advanced/decorators/) | [返回学习路径首页](/paths/)

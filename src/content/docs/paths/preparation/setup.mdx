@@ -1,0 +1,231 @@
+---
+title: 开发环境准备
+kind: lesson
+level: preparation
+topic: setup
+difficulty: easy
+prerequisites: []
+python_tags: []
+ts_tags: ["typescript", "setup", "node", "npm"]
+description: 搭建 TypeScript 开发环境
+---
+
+## 必备工具
+
+| 工具       | 用途              | 安装方式        |
+| ---------- | ----------------- | --------------- |
+| Node.js    | JavaScript 运行时 | 官网下载 / nvm  |
+| npm / pnpm | 包管理器          | 随 Node.js 安装 |
+| VS Code    | 推荐编辑器        | 官网下载        |
+
+## 安装 Node.js
+
+### 方式一：官网下载
+
+访问 [nodejs.org](https://nodejs.org/)，下载 LTS 版本。
+
+### 方式二：nvm（推荐）
+
+```bash
+# 安装 nvm
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+
+# 安装 Node.js LTS
+nvm install --lts
+
+# 使用
+nvm use --lts
+
+# 验证
+node -v
+npm -v
+```
+
+### 方式三：pnpm（更快的包管理器）
+
+```bash
+npm install -g pnpm
+pnpm -v
+```
+
+## 安装 TypeScript
+
+```bash
+# 全局安装
+npm install -g typescript
+
+# 验证
+tsc -v
+```
+
+## VS Code 配置
+
+### 推荐扩展
+
+| 扩展名         | 功能         |
+| -------------- | ------------ |
+| TypeScript God | 增强类型提示 |
+| ESLint         | 代码规范检查 |
+| Prettier       | 代码格式化   |
+| Error Lens     | 行内错误显示 |
+
+### 配置文件
+
+创建 `.vscode/settings.json`：
+
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsd": true
+}
+```
+
+## 创建第一个项目
+
+### 方式一：手动创建
+
+```bash
+mkdir my-ts-project
+cd my-ts-project
+npm init -y
+npm install typescript --save-dev
+```
+
+创建 `tsconfig.json`：
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}
+```
+
+创建 `src/index.ts`：
+
+```typescript
+function greet(name: string): string {
+  return `Hello, ${name}!`;
+}
+
+console.log(greet("TypeScript"));
+```
+
+编译并运行：
+
+```bash
+npx tsc
+node dist/index.js
+```
+
+### 方式二：ts-node（开发时直接运行）
+
+```bash
+npm install ts-node --save-dev
+npx ts-node src/index.ts
+```
+
+### 方式三：使用脚手架
+
+```bash
+# Vite（推荐用于前端项目）
+npm create vite@latest my-app -- --template vanilla-ts
+
+# Next.js（React 全栈）
+npx create-next-app@latest --typescript
+
+# NestJS（Node.js 后端）
+npm i -g @nestjs/cli
+nest new my-project
+```
+
+## package.json 脚本
+
+```json
+{
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "watch": "tsc --watch"
+  }
+}
+```
+
+## 项目结构推荐
+
+```
+my-ts-project/
+├── src/
+│   ├── index.ts
+│   ├── utils/
+│   │   └── helpers.ts
+│   └── types/
+│       └── index.ts
+├── dist/
+├── node_modules/
+├── package.json
+├── tsconfig.json
+└── .gitignore
+```
+
+## Python 开发者注意事项
+
+| Python                            | TypeScript    | 说明                      |
+| --------------------------------- | ------------- | ------------------------- |
+| `python -m venv venv`             | 不需要        | Node.js 使用 node_modules |
+| `pip install -r requirements.txt` | `npm install` | 根据 package.json 安装    |
+| `pip freeze > requirements.txt`   | `npm init`    | 手动维护依赖              |
+| `__init__.py`                     | `index.ts`    | 模块入口                  |
+
+## 常见问题
+
+### Q: 找不到模块？
+
+确保 `tsconfig.json` 中配置正确：
+
+```json
+{
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  }
+}
+```
+
+### Q: 类型定义缺失？
+
+```bash
+# 安装类型定义
+npm install @types/node --save-dev
+```
+
+### Q: 编译速度慢？
+
+```bash
+# 使用增量编译
+tsc --incremental
+
+# 或使用 swc
+npm install @swc/core @swc/cli --save-dev
+```
+
+## 下一步
+
+环境准备就绪，开始学习 TypeScript 基础：
+
+→ [变量与数据类型](/paths/foundation/variables/)

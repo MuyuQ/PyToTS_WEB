@@ -1,4 +1,5 @@
-:root {
+:root,
+[data-theme="light"] {
   /* Base colors */
   --color-bg: #ffffff;
   --color-text: #1a1a2e;
@@ -50,43 +51,61 @@
   }
 }
 
-/* ===== DARK THEME (MkDocs Material inspired) ===== */
+/* ===== DARK THEME (MkDocs Material Slate inspired) ===== */
 [data-theme="dark"] {
-  --color-bg: #0d1117;
-  --color-text: #e6edf3;
-  --color-primary: #58a6ff;
+  /* Custom color variables - HSL-based with hue 232 */
+  --color-bg: hsl(232, 15%, 5%);
+  --color-text: hsl(232, 15%, 90%);
+  --color-primary: #5488e8;
   --color-secondary: #a371f7;
-  --color-accent: #f0883e;
-  --color-border: #30363d;
-  --color-code-bg: #161b22;
+  --color-accent: #ff9100;
+  --color-border: hsl(232, 15%, 18%);
+  --color-code-bg: hsl(232, 20%, 10%);
 
-  /* Starlight CSS variables - MkDocs Material inspired palette */
-  --sl-color-bg: #0d1117;
-  --sl-color-bg-nav: #161b22;
-  --sl-color-bg-nav-mobile: #161b22;
-  --sl-color-bg-aside: #161b22;
-  --sl-color-bg-inline-code: #21262d;
-  --sl-color-bg-card: #161b22;
-  --sl-color-hairline: #30363d;
-  --sl-color-hairline-shade: #484f58;
-  --sl-color-hairline-light: #30363d;
-  --sl-color-gray-1: #e6edf3;
-  --sl-color-gray-2: #8b949e;
-  --sl-color-gray-3: #6e7681;
-  --sl-color-gray-4: #484f58;
-  --sl-color-gray-5: #30363d;
-  --sl-color-gray-6: #21262d;
-  --sl-color-white: #f0f6fc;
-  --sl-color-black: #0d1117;
-  --sl-color-accent: #58a6ff;
-  --sl-color-accent-low: rgba(88, 166, 255, 0.15);
-  --sl-color-accent-high: rgba(88, 166, 255, 0.25);
+  /* Background layers - HSL(hue=232, sat=15%) for harmony */
+  --sl-color-bg: hsl(232, 15%, 5%); /* Main background - deepest */
+  --sl-color-bg-nav: hsl(232, 15%, 8%); /* Nav/sidebar - slightly elevated */
+  --sl-color-bg-aside: hsl(232, 15%, 8%); /* Aside/sidebar */
+  --sl-color-bg-nav-mobile: hsl(232, 15%, 8%); /* Mobile nav */
+  --sl-color-bg-card: hsl(232, 15%, 10%); /* Cards - elevated surface */
+  --sl-color-bg-inline-code: hsl(232, 20%, 12%); /* Inline code */
 
-  /* Additional custom variables */
+  /* Text colors - HSL(hue=232, sat=15%) with varying lightness */
+  --sl-color-white: hsl(232, 15%, 95%); /* Primary text - brightest */
+  --sl-color-gray-1: hsl(232, 15%, 90%); /* Headings */
+  --sl-color-gray-2: hsl(232, 15%, 70%); /* Body text */
+  --sl-color-gray-3: hsl(232, 15%, 55%); /* Muted text */
+  --sl-color-gray-4: hsl(232, 15%, 40%); /* Subtle text */
+  --sl-color-gray-5: hsl(232, 15%, 25%); /* Borders light */
+  --sl-color-gray-6: hsl(232, 15%, 12%); /* Borders dark */
+
+  /* Hairline/borders */
+  --sl-color-hairline: hsl(232, 15%, 18%);
+  --sl-color-hairline-shade: hsl(232, 15%, 25%);
+  --sl-color-hairline-light: hsl(232, 15%, 15%);
+
+  /* Accent colors - MkDocs Material Slate */
+  --sl-color-accent: #5488e8; /* Indigo blue - primary links */
+  --sl-color-accent-low: rgba(84, 136, 232, 0.15);
+  --sl-color-accent-high: rgba(84, 136, 232, 0.25);
+
+  /* Semantic colors - MkDocs Material Slate */
   --sl-color-success: #3fb950;
   --sl-color-warning: #d29922;
   --sl-color-error: #f85149;
   --sl-color-info: #58a6ff;
+
+  /* Black/white overrides for dark mode */
+  --sl-color-black: hsl(232, 15%, 95%); /* In dark mode, "black" = light text */
+
+  /* Code syntax colors - MkDocs Material palette */
+  --sl-color-syntax-number: #e6695b;
+  --sl-color-syntax-string: #2fb170;
+  --sl-color-syntax-keyword: #6791e0;
+  --sl-color-syntax-function: #c973d9;
+  --sl-color-syntax-constant: #9383e2;
+  --sl-color-syntax-special: #f06090;
+  --sl-color-syntax-comment: hsl(232, 15%, 55%);
 }
 
 /* High contrast theme */

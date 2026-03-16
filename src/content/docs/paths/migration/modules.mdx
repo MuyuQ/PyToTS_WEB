@@ -9,61 +9,347 @@ python_tags: ["import", "from", "pip"]
 ts_tags: ["import", "export", "npm"]
 description: 掌握 Python 和 TypeScript 模块系统的差异
 ---
+## 🎯 为什么这个很重要
 
-## 场景与问题
-
-Python 使用 `pip` 和 `import`，TypeScript/JavaScript 使用 `npm` 和 ES 模块。
-
-## Python 回顾
+你在 Python 里写惯了简洁的导入：
 
 ```python
-# 导入模块
+from my_module import my_function
+import package.submodule as sm
+```
+
+转到 TypeScript 项目后，打开一个文件，发现满屏报红：
+
+```
+Cannot find module './utils' or its corresponding type declarations.
+Module '"./types"' has no exported member 'User'.
+Typescript thinks this is a CommonJS module...
+```
+
+更麻烦的是：
+
+- Python 的循环导入可能只是警告，TypeScript 的循环依赖直接编译失败
+- `export default` 和命名导出混用，IDE 自动导入总是加错
+- 忘了写 `./` 前缀，TypeScript 找不到相对路径模块
+- 安装了包但类型定义没装，全是 `any` 类型
+
+理解模块系统差异，能帮你避免一多半的项目结构问题...
+
+## 💡 核心概念
+
+### 模块 = 工具箱
+
+把代码组织成模块，就像把工具放进工具箱：
+
+- **模块（module）** = 工具箱：每个箱子放一类工具（函数、类、常量）
+- **import** = 借工具：从别人的箱子里拿工具用
+- **export** = 对外开放：标记哪些工具可以借走
+- **命名空间** = 分类标签：把相关工具放一起，方便查找
+
+### 两种导出方式
+
+| 方式                      | 比喻             | 特点                                   |
+| ------------------------- | ---------------- | -------------------------------------- |
+| 默认导出 `export default` | 工具箱的主打产品 | 一个箱子只有一个，导入时可以随便命名   |
+| 命名导出 `export { ... }` | 工具箱的格子     | 一个箱子里很多格子，导入时名字必须对应 |
+
+### 循环依赖 = 死锁
+
+A 模块导入 B，B 又导入 A。就像两个人互相等着对方先开口，谁也动不了：
+
+```
+A → 导入 B → 需要 B 的导出
+       ↓
+B → 导入 A → 需要 A 的导出
+       ↓
+A 还没执行完 → B 拿不到 A 的导出 → 💥
+```
+
+### 类型导入 = 产品说明书
+
+```typescript
+import type { User } from "./types"; // 只要说明书
+import { User } from "./types"; // 要说明书 + 实物
+```
+
+`import type` 只导入类型定义，编译后会被删除。就像你只看说明书，不把产品买回家。
+
+## 📚 代码对比
+
+### Python 模块系统
+
+```python
+# 导入整个模块
 import os
-from typing import List, Optional
+import json as j
+
+# 从模块导入特定内容
+from typing import List, Optional, Dict
+from collections import defaultdict
 
 # 导入自定义模块
 from mypackage import mymodule
-from mypackage.mymodule import MyClass
+from mypackage.mymodule import MyClass, helper
 
 # 包管理
 # pip install requests
 # pip freeze > requirements.txt
 ```
 
-## TypeScript 等价写法
+### TypeScript 模块系统
 
 ```typescript
-// 导入模块
+// 导入整个模块
 import * as os from "os";
-import { List, Optional } from "./types";
+import * as json from "./json"; // 注意：需要 ./ 前缀
+
+// 从模块导入特定内容（命名导入）
+import { List, Optional, Dict } from "./types";
+import { defaultdict } from "./collections";
 
 // 导入自定义模块
 import { myModule } from "./mypackage";
-import { MyClass } from "./mypackage/mymodule";
+import { MyClass, helper } from "./mypackage/mymodule";
+
+// 默认导入
+import MyDefault from "./mypackage"; // 名字可以随便起
+
+// 类型导入（编译后删除）
+import type { User } from "./types";
 
 // 包管理
 // npm install axios
 // package.json 记录依赖
 ```
 
-## 差异与常见陷阱
+### 导出对比
 
-1. **导入语法**：Python 用 `from ... import`，TypeScript 用 `import { ... } from`
-2. **默认导出**：TypeScript 支持 `export default`，Python 没有
-3. **路径引用**：TypeScript 需要 `./` 前缀表示相对路径
-4. **包管理器**：Python 用 `pip`，TypeScript 用 `npm` 或 `yarn`
+```python
+# Python: 没有显式导出概念
+# 文件里定义的东西都可以被导入
 
-## 优势对比
+# mymodule.py
+def public_func():
+    pass
 
-| 特性     | Python            | TypeScript        |
-| -------- | ----------------- | ----------------- |
-| 导入语法 | `import` / `from` | `import`          |
-| 默认导出 | ✗                 | ✓                 |
-| 包管理器 | pip               | npm/yarn/pnpm     |
-| 锁文件   | requirements.txt  | package-lock.json |
-| 虚拟环境 | venv              | node_modules      |
+def _private_func():  # 约定私有，但技术上仍可导入
+    pass
+```
 
-## 练习
+```typescript
+// TypeScript: 显式导出
+
+// mymodule.ts
+
+// 命名导出
+export function publicFunc() {}
+
+// 默认导出（一个文件只能有一个）
+export default class MyClass {}
+
+// 类型导出
+export type User = {
+  name: string;
+  age: number;
+};
+```
+
+## ⚠️ 常见陷阱
+
+### 1. 相对路径必须加 `./`
+
+```typescript
+// ❌ 错误：找不到模块
+import { helper } from "utils";
+
+// ✅ 正确：相对路径
+import { helper } from "./utils";
+```
+
+Python 不需要，TypeScript 必须写。
+
+### 2. 默认导出 vs 命名导出
+
+```typescript
+// 文件：user.ts
+export default class User {}
+export const VERSION = "1.0";
+
+// 导入时：
+import User from "./user"; // 默认导出，名字随便起
+import { VERSION } from "./user"; // 命名导出，名字必须对应
+import MyUser, { VERSION } from "./user"; // 两种可以同时导入
+```
+
+### 3. 循环依赖
+
+```typescript
+// a.ts
+import { b } from "./b";
+export const a = "hello";
+console.log(b); // 可能是 undefined！
+
+// b.ts
+import { a } from "./a";
+export const b = a.toUpperCase(); // 💥 a 还是 undefined
+```
+
+解决方案：重构代码结构，或延迟导入。
+
+### 4. 忘记导出
+
+```typescript
+// types.ts
+type User = { name: string }; // 忘了 export
+
+// other.ts
+import { User } from "./types"; // ❌ 报错：没有导出 User
+```
+
+## 📊 语法速查表
+
+| 操作         | Python                 | TypeScript                            |
+| ------------ | ---------------------- | ------------------------------------- |
+| 导入整个模块 | `import os`            | `import * as os from 'os'`            |
+| 导入特定内容 | `from os import path`  | `import { path } from 'os'`           |
+| 起别名       | `import numpy as np`   | `import * as np from 'numpy'`         |
+| 默认导入     | ❌ 不支持              | `import User from './user'`           |
+| 类型导入     | ❌ 不适用              | `import type { User } from './types'` |
+| 相对路径     | `from . import module` | `import { x } from './module'`        |
+| 包管理器     | pip                    | npm / yarn / pnpm                     |
+| 依赖文件     | requirements.txt       | package.json                          |
+| 锁文件       | Pipfile.lock           | package-lock.json                     |
+
+## 💬 开发者对话
+
+**Python 开发者**：为什么 TypeScript 导入这么麻烦？还要写 `export`？
+
+**TypeScript 开发者**：这其实是好处。Python 的模块里所有东西都能被导入，即使是内部函数。TypeScript 要求你明确声明"哪些是对外开放的"，内部实现自然被保护起来。
+
+**Python 开发者**：那默认导出和命名导出怎么选？
+
+**TypeScript 开发者**：简单规则：
+
+- 一个文件只导出一个主类/函数 → 用默认导出
+- 导出多个相关的东西 → 用命名导出
+- 混用时，默认导出放主要的东西，命名导出放辅助内容
+
+**Python 开发者**：`import type` 是什么？什么时候用？
+
+**TypeScript 开发者**：只导入类型定义时用。好处是编译后代码更干净，不会把类型定义打包进去。
+
+```typescript
+import type { User } from "./types"; // 编译后删除
+import { User } from "./types"; // 会保留引用
+```
+
+**Python 开发者**：循环依赖怎么解决？
+
+**TypeScript 开发者**：几种方法：
+
+1. 重构代码，把共享部分抽到第三个模块
+2. 用 `import type`，只在类型层面依赖
+3. 延迟导入：在函数内部 `import`，而不是文件顶部
+
+## 🤔 预测输出
+
+看看这段代码，运行时会输出什么？
+
+```typescript
+// utils.ts
+let counter = 0;
+export function increment() {
+  return ++counter;
+}
+export function getCounter() {
+  return counter;
+}
+
+// main.ts
+import { increment, getCounter } from "./utils";
+
+console.log(increment()); // 输出什么？
+console.log(increment()); // 输出什么？
+console.log(getCounter()); // 输出什么？
+
+import { increment as inc } from "./utils";
+console.log(inc()); // 输出什么？
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+```
+1
+2
+2
+3
+```
+
+**解释**：ES 模块是单例的。不管你导入多少次，`utils.ts` 只执行一次，`counter` 变量是共享的。`increment as inc` 只是起了别名，还是同一个函数。
+
+这个行为和 Python 一致：模块级别的变量在多次导入时也是共享的。
+
+</details>
+
+## ❌ 找错误
+
+下面这段代码有问题，你能找到吗？
+
+```typescript
+// user.ts
+export class User {
+  constructor(public name: string) {}
+}
+
+// admin.ts
+import { User } from "./user";
+
+export class Admin extends User {
+  constructor(
+    name: string,
+    public role: string
+  ) {
+    super(name);
+  }
+}
+
+// main.ts
+import User from "./user"; // 这里！
+import { Admin } from "./admin";
+
+const u = new User("Alice"); // 报错！
+const a = new Admin("Bob", "admin");
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+问题在 `main.ts` 第一行：
+
+```typescript
+import User from "./user"; // ❌ user.ts 是命名导出，不是默认导出
+```
+
+`user.ts` 使用的是命名导出 `export class User`，所以应该这样导入：
+
+```typescript
+import { User } from "./user"; // ✅ 正确
+```
+
+默认导入 `import User from './user'` 会尝试找一个 `export default`，但文件里没有定义，所以导入的是 `undefined`。
+
+**记住**：导出方式和导入方式必须匹配！
+
+| 导出方式               | 导入方式                     |
+| ---------------------- | ---------------------------- |
+| `export default X`     | `import X from './file'`     |
+| `export { X }`         | `import { X } from './file'` |
+| `export const X = ...` | `import { X } from './file'` |
+
+</details>
+
+## 📝 练习
 
 将以下 Python 导入转换为 TypeScript：
 
@@ -71,9 +357,47 @@ import { MyClass } from "./mypackage/mymodule";
 import json
 from typing import Dict, List
 from myapp.utils import helper
+from myapp.models import User, Admin as Administrator
+import numpy as np
 ```
 
-## 面试追问
+<details>
+<summary>参考答案</summary>
+
+```typescript
+import * as json from "json"; // 或直接用全局 JSON 对象
+import type { Dict, List } from "./types"; // 类型用 import type
+import { helper } from "./myapp/utils";
+import { User, Admin as Administrator } from "./myapp/models";
+import * as np from "numpy"; // 实际项目可能用其他数值计算库
+```
+
+**注意**：
+
+`typing` 模块的类型在 TypeScript 里通常用 `import type`，相对路径需要 `./` 前缀，别名用 `as` 关键字（和 Python 一致）。
+
+</details>
+
+## 🎓 面试追问
 
 - `import *` 和具名导入有什么区别？
+
+  `import *` 把整个模块导出对象赋值给一个变量，具名导入只导入特定的导出项。具名导入支持 tree shaking（未使用的代码会被删除），`import *` 不支持。
+
 - 什么是 tree shaking？如何支持它？
+
+  Tree shaking 是打包工具（如 Webpack、Rollup）删除未使用代码的优化技术。要支持 tree shaking：
+  1. 使用 ES 模块语法（`import`/`export`）
+  2. 使用命名导出，而非默认导出
+  3. 避免副作用代码（或用 `/*#__PURE__*/` 标记）
+  4. 在 `package.json` 中设置 `"sideEffects": false`
+
+- `import type` 和 `import` 有什么区别？
+
+  `import type` 只导入类型定义，编译后会被完全删除。普通 `import` 会保留运行时引用。用 `import type` 可以避免循环依赖，也能减少打包体积。
+
+- 循环依赖怎么解决？
+  1. 重构代码结构，提取共享模块
+  2. 用 `import type` 代替值导入
+  3. 延迟导入：在函数内部 `import`
+  4. 使用依赖注入模式

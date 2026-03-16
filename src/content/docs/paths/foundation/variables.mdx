@@ -9,14 +9,24 @@ python_tags: ["variables", "int", "float", "str", "bool"]
 ts_tags: ["variables", "number", "string", "boolean", "const", "let"]
 description: 从 Python 的基础数据类型过渡到 TypeScript
 ---
+## 🎯 为什么这个很重要
 
-## 场景与问题
+上周，小王在生产环境修了一个"简单"的 bug。代码大概是这样：
 
-Python 习惯动态类型，变量随手定义、类型随意改。TypeScript 要求编码时明确类型，刚开始可能觉得麻烦，但能省去很多调试时间。
+```python
+def calculate_discount(price):
+    # 某处代码意外把 price 改成了字符串
+    price = str(price)  # 调试时加的，忘记删
+    return price * 0.9   # 运行时才报错
+```
 
-## Python 回顾
+Python 运行到这行才报错。如果用 TypeScript，编辑器里就会画红线提醒你。
 
-Python 中变量类型是动态的：
+**类型系统就像交通规则**。Python 是"大家自觉遵守"，出事才知道。TypeScript 是"红绿灯 + 摄像头"，违规立刻提醒。虽然等红灯有点烦，但能避免事故。
+
+## 📚 Python 回顾
+
+Python 中变量类型是动态的，想改就改：
 
 ```python
 name = "Alice"           # str
@@ -25,21 +35,23 @@ height = 1.75            # float
 is_student = True        # bool
 
 # 可以改变类型（虽然不建议）
-age = "25 years old"     # 合法
+age = "25 years old"     # 合法，但埋下隐患
 ```
 
-## TypeScript 等价写法
+这种自由很爽，但团队协作时容易出问题。你定义 `age` 是数字，同事改成字符串，代码在某个角落悄悄崩溃。
+
+## 🔷 TypeScript 等价写法
 
 TypeScript 有两种写法：显式声明或类型推断。
 
 ```typescript
-// 显式声明
+// 显式声明（告诉 TypeScript 类型）
 let name: string = "Alice";
 let age: number = 25;
 let height: number = 1.75;
 let isStudent: boolean = true;
 
-// 类型推断（更常用）
+// 类型推断（让 TypeScript 自己猜，更常用）
 let name2 = "Alice"; // TypeScript 推断为 string
 let age2 = 25; // 推断为 number
 
@@ -48,9 +60,9 @@ const PI = 3.14159;
 const GREETING = "Hello";
 ```
 
-默认使用 `const`，确定需要重新赋值时才用 `let`。
+> **经验法则**：默认用 `const`，确定需要重新赋值时才用 `let`。这能防止意外修改变量。
 
-## 差异与常见陷阱
+## ⚠️ 差异与常见陷阱
 
 ### 1. 变量声明关键字
 
@@ -61,10 +73,10 @@ const GREETING = "Hello";
 
 ```typescript
 let count = 0;
-count = 1; // ✓ 合法
+count = 1; // ✅ 合法
 
 const MAX_SIZE = 100;
-MAX_SIZE = 200; // ✗ 报错：const 不能重新赋值
+MAX_SIZE = 200; // ❌ 报错：const 不能重新赋值
 ```
 
 ### 2. 数字类型统一
@@ -72,22 +84,95 @@ MAX_SIZE = 200; // ✗ 报错：const 不能重新赋值
 Python 区分 `int` 和 `float`，TypeScript 统一为 `number`：
 
 ```typescript
-let x: number = 5;
-let y: number = 5.0; // 都是 number
+let x: number = 5; // 整数
+let y: number = 5.0; // 浮点数
+// 都是 number 类型，没有区别
 ```
 
 ### 3. 类型不能随意改变
 
+这是最大的变化：
+
 ```typescript
 let value = "hello";
-value = 123; // ✗ 报错
+value = 123; // ❌ 报错：不能把 string 改成 number
 
 // 需要多种类型时使用联合类型
 let flexible: string | number = "hello";
-flexible = 123; // ✓ 合法
+flexible = 123; // ✅ 合法
 ```
 
-## 优势对比
+**类比**：Python 变量像便利贴，想贴什么贴什么。TypeScript 变量像带标签的盒子，贴了"书"的标签就不能装衣服。
+
+## 💬 开发者对话
+
+🐍 **Python 开发者**：TypeScript 这么严格，写代码不是很慢吗？
+
+🦀 **TS 开发者**：刚开始确实慢一点。但想想你花在调试 `TypeError: can't multiply sequence by non-int` 上的时间。TypeScript 把这些错误提前到写代码时就发现了。
+
+🐍 **Python 开发者**：那我定义变量每次都要写类型？
+
+🦀 **TS 开发者**：不用！TypeScript 会自动推断。`let name = "Alice"` 就知道是 string。只有类型不明确时才需要显式写。
+
+🐍 **Python 开发者**：`const` 和 `let` 怎么选？
+
+🦀 **TS 开发者**：默认 `const`。就像 Python 的命名约定：全大写是常量。TypeScript 用关键字强制执行这个约定。只有循环计数器、累加器这些才用 `let`。
+
+## 🤔 试试看
+
+### 预测输出
+
+下面代码会输出什么？先想想，再看答案。
+
+```typescript
+let score = 95;
+score = 95.5;
+console.log(score);
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+输出：`95.5`
+
+TypeScript 的 `number` 类型同时包含整数和浮点数，所以 `95` 改成 `95.5` 完全合法。这和 Python 不同，Python 会区分 `int` 和 `float`。
+
+</details>
+
+### 找错误
+
+下面代码有一个错误，能找到吗？
+
+```typescript
+const username = "admin";
+const role = "user";
+username = "guest"; // 想要切换用户
+console.log(username);
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+错误在第 3 行：`username` 用 `const` 声明，不能重新赋值。
+
+修复方法：
+
+- 如果确实需要切换用户，改用 `let`
+- 如果用户名不应该变，删除这行重新赋值
+
+```typescript
+// 方案 1：改用 let
+let username = "admin";
+username = "guest"; // ✅ 现在合法了
+
+// 方案 2：保持 const，用新变量
+const username = "admin";
+const currentUsername = "guest"; // ✅ 用新变量存储
+```
+
+</details>
+
+## 📊 优势对比
 
 | 特性     | Python             | TypeScript |
 | -------- | ------------------ | ---------- |
@@ -96,9 +181,9 @@ flexible = 123; // ✓ 合法
 | 自动补全 | 有限               | 强大       |
 | 重构安全 | 较低               | 高         |
 
-Python 类型检查在运行时，TypeScript 在编译时检查，提前发现错误。
+**一句话总结**：Python 在运行时发现问题，TypeScript 在写代码时就提醒你。
 
-## 练习
+## ✏️ 练习
 
 将以下 Python 代码转换为 TypeScript：
 
@@ -119,18 +204,31 @@ const isPassed: boolean = true; // Python 的 True 变成小写 true
 let attempts: number = 3;
 ```
 
+思考：为什么 `score` 和 `attempts` 用 `let`？因为分数可能会更新，尝试次数肯定会变。`username` 和 `isPassed` 用 `const` 因为它们在这次操作中不会变。
+
 </details>
 
-## 面试追问
+## 🎓 面试追问
 
 **什么时候用 `let`，什么时候用 `const`？**
 
-默认使用 `const`，只有确定需要重新赋值时才用 `let`。
+默认 `const`，只有确定需要重新赋值时才用 `let`。这是 TypeScript 社区的最佳实践，能减少意外修改。
 
 **TypeScript 的 `any` 类型是什么？应该避免吗？**
 
-`any` 表示任意类型，会绕过类型检查。能不用就不用，如果真不知道类型，用 `unknown` 更安全。
+`any` 表示任意类型，会绕过类型检查。能不用就不用。如果真不知道类型，用 `unknown` 更安全，因为它要求使用前做类型检查。
+
+```typescript
+// ❌ 避免
+let data: any = fetchData();
+data.whatever(); // 编译通过，运行时可能崩溃
+
+// ✅ 更安全
+let data: unknown = fetchData();
+if (typeof data === "object" && data !== null) {
+  // 使用前先检查
+}
+```
 
 ---
-
 **下一步：** [控制流](/paths/foundation/control-flow)

@@ -1,0 +1,184 @@
+---
+title: 比特位计数 (Counting Bits)
+kind: algorithm
+difficulty: easy
+tags: ["bit-manipulation", "dynamic-programming"]
+time_complexity: "O(n)"
+space_complexity: "O(n)"
+description: 计算0到n每个数的二进制中1的个数
+---
+## 问题描述
+
+给你一个整数 `n`，对于 `0 <= i <= n` 中的每个 `i`，计算其二进制表示中 `1` 的个数，返回一个长度为 `n + 1` 的数组 `ans`。
+
+**示例：**
+
+```
+输入: n = 5
+输出: [0, 1, 1, 2, 1, 2]
+解释:
+0 --> 0 (0个1)
+1 --> 1 (1个1)
+2 --> 10 (1个1)
+3 --> 11 (2个1)
+4 --> 100 (1个1)
+5 --> 101 (2个1)
+```
+
+## 思路分析
+
+### 方法一：动态规划 + 最低有效位
+
+观察二进制规律：
+
+- 偶数的 `1` 的个数等于它右移一位后的数的 `1` 的个数
+- 奇数的 `1` 的个数等于它右移一位后的数的 `1` 的个数加 1
+
+**状态转移方程：**
+
+```
+dp[i] = dp[i >> 1] + (i & 1)
+```
+
+解释：
+
+- `i >> 1` 去掉最低位
+- `i & 1` 判断最低位是否为 1
+
+### 方法二：动态规划 + Brian Kernighan 算法
+
+Brian Kernighan 技巧：`n & (n - 1)` 可以去掉 `n` 的最低位 `1`
+
+**状态转移方程：**
+
+```
+dp[i] = dp[i & (i - 1)] + 1
+```
+
+解释：
+
+- `i & (i - 1)` 将 `i` 的最低位 `1` 变成 `0`
+- 结果比 `i` 少一个 `1`，所以加 1
+
+### 方法对比
+
+| 方法            | 优势     | 适用场景       |
+| --------------- | -------- | -------------- |
+| 最低有效位      | 直观易懂 | 教学、面试基础 |
+| Brian Kernighan | 数学优雅 | 追求代码简洁   |
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，遍历一次即可
+- **空间复杂度**：O(n)，存储结果数组
+
+## Python 实现
+
+```python
+def count_bits(n: int) -> list[int]:
+    """
+    比特位计数 - Python 实现 (DP + 最低有效位)
+
+    Args:
+        n: 上界整数
+
+    Returns:
+        每个数二进制中1的个数数组
+    """
+    # dp[i] 表示数字 i 二进制中 1 的个数
+    dp = [0] * (n + 1)
+
+    for i in range(1, n + 1):
+        # i >> 1: 去掉最低位
+        # i & 1: 最低位是否为1
+        dp[i] = dp[i >> 1] + (i & 1)
+
+    return dp
+
+
+def count_bits_kernighan(n: int) -> list[int]:
+    """
+    比特位计数 - Python 实现 (Brian Kernighan 技巧)
+
+    Args:
+        n: 上界整数
+
+    Returns:
+        每个数二进制中1的个数数组
+    """
+    dp = [0] * (n + 1)
+
+    for i in range(1, n + 1):
+        # i & (i - 1): 去掉最低位的1
+        dp[i] = dp[i & (i - 1)] + 1
+
+    return dp
+
+
+# 测试用例
+print(count_bits(5))   # [0, 1, 1, 2, 1, 2]
+print(count_bits(0))   # [0]
+print(count_bits(10))  # [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2]
+
+# 两种方法结果一致
+assert count_bits(100) == count_bits_kernighan(100)
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 比特位计数 - TypeScript 实现 (DP + 最低有效位)
+ * @param n 上界整数
+ * @returns 每个数二进制中1的个数数组
+ */
+function countBits(n: number): number[] {
+  // dp[i] 表示数字 i 二进制中 1 的个数
+  const dp: number[] = new Array(n + 1).fill(0);
+
+  for (let i = 1; i <= n; i++) {
+    // i >> 1: 去掉最低位
+    // i & 1: 最低位是否为1
+    dp[i] = dp[i >> 1] + (i & 1);
+  }
+
+  return dp;
+}
+
+/**
+ * 比特位计数 - TypeScript 实现 (Brian Kernighan 技巧)
+ * @param n 上界整数
+ * @returns 每个数二进制中1的个数数组
+ */
+function countBitsKernighan(n: number): number[] {
+  const dp: number[] = new Array(n + 1).fill(0);
+
+  for (let i = 1; i <= n; i++) {
+    // i & (i - 1): 去掉最低位的1
+    dp[i] = dp[i & (i - 1)] + 1;
+  }
+
+  return dp;
+}
+
+// 测试用例
+console.log(countBits(5)); // [0, 1, 1, 2, 1, 2]
+console.log(countBits(0)); // [0]
+console.log(countBits(10)); // [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2]
+
+// 两种方法结果一致
+console.log(JSON.stringify(countBits(100)) === JSON.stringify(countBitsKernighan(100))); // true
+```
+
+## 面试变体
+
+1. **只计算一个数**：给定单个数，计算其 `1` 的个数（使用 `n & (n-1)` 循环）
+2. **计算汉明距离**：两个数的二进制表示中不同位的个数
+3. **判断 2 的幂**：`n > 0 && (n & (n - 1)) === 0`
+
+## 常见错误
+
+1. 忘记初始化 `dp[0] = 0`（虽然默认值通常为 0）
+2. 混淆 `>>`（有符号右移）和 `>>>`（无符号右移），本题用 `>>` 即可
+3. 循环从 0 开始而不是 1（`dp[0]` 已是正确值）
+4. 使用 `__builtin_popcount` 而非手动实现（面试考察的是思路）

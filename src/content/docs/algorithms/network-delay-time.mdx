@@ -1,0 +1,342 @@
+---
+title: 网络延迟时间 (Network Delay Time)
+kind: algorithm
+difficulty: medium
+tags: ["shortest-path", "dijkstra", "heap", "graph"]
+time_complexity: "O(E log V)"
+space_complexity: "O(V + E)"
+description: 计算信号从源节点到达所有节点的最短时间（Dijkstra 最短路径）
+---
+## 问题描述
+
+有 `n` 个网络节点，标记为 `1` 到 `n`。
+
+给定列表 `times`，其中 `times[i] = (u, v, w)` 表示从节点 `u` 到节点 `v` 的信号传输时间为 `w`。
+
+给定起始节点 `k`，求从节点 `k` 发出信号后，所有节点都收到信号所需的最短时间。如果无法让所有节点都收到信号，返回 `-1`。
+
+## 思路分析
+
+Dijkstra 最短路径算法：
+
+1. **构建邻接表**：将边列表转换为图结构
+2. **初始化距离数组**：源节点距离为 0，其他为无穷大
+3. **优先队列**：使用最小堆，每次取出距离最小的节点
+4. **松弛操作**：如果通过当前节点到达邻居的距离更短，更新距离
+5. **结果判断**：所有节点的最大距离即为答案
+
+核心思想：
+
+- 贪心策略：每次选择当前距离最小的未访问节点
+- 优先队列保证高效获取最小值
+- 不能处理负权边（需要 Bellman-Ford）
+
+## 复杂度分析
+
+- **时间复杂度**：O(E log V)，每条边最多入堆一次，堆操作 O(log V)
+- **空间复杂度**：O(V + E)，邻接表和距离数组
+
+## Python 实现
+
+```python
+import heapq
+from typing import List, Tuple
+
+def network_delay_time(times: List[List[int]], n: int, k: int) -> int:
+    """
+    网络延迟时间 - Python 实现 (Dijkstra)
+
+    Args:
+        times: 边列表 [[u, v, w], ...]
+        n: 节点数
+        k: 起始节点
+
+    Returns:
+        所有节点收到信号的最短时间，无法到达返回 -1
+    """
+    # 构建邻接表（节点编号 1 到 n）
+    graph = [[] for _ in range(n + 1)]
+    for u, v, w in times:
+        graph[u].append((v, w))
+
+    # 距离数组，初始化为无穷大
+    dist = [float('inf')] * (n + 1)
+    dist[k] = 0  # 源节点距离为 0
+
+    # 优先队列：(距离, 节点)
+    pq = [(0, k)]
+
+    # 已确定最短路径的节点
+    visited = set()
+
+    while pq:
+        d, node = heapq.heappop(pq)
+
+        # 已访问过，跳过
+        if node in visited:
+            continue
+        visited.add(node)
+
+        # 松弛操作：更新邻居距离
+        for neighbor, weight in graph[node]:
+            new_dist = d + weight
+            if new_dist < dist[neighbor]:
+                dist[neighbor] = new_dist
+                heapq.heappush(pq, (new_dist, neighbor))
+
+    # 找最大距离（忽略索引 0）
+    max_dist = max(dist[1:])
+    return -1 if max_dist == float('inf') else int(max_dist)
+
+
+# 测试用例
+times1 = [[2, 1, 1], [2, 3, 1], [3, 4, 1]]
+print(network_delay_time(times1, 4, 2))  # 2
+
+times2 = [[1, 2, 1]]
+print(network_delay_time(times2, 2, 2))  # -1（节点 2 无法到达节点 1）
+
+times3 = [[1, 2, 1], [2, 3, 2], [1, 3, 4]]
+print(network_delay_time(times3, 3, 1))  # 3
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 网络延迟时间 - TypeScript 实现 (Dijkstra)
+ * @param times 边列表 [[u, v, w], ...]
+ * @param n 节点数
+ * @param k 起始节点
+ * @returns 所有节点收到信号的最短时间，无法到达返回 -1
+ */
+function networkDelayTime(times: number[][], n: number, k: number): number {
+  // 构建邻接表（节点编号 1 到 n）
+  const graph: Map<number, [number, number][]> = new Map();
+  for (let i = 1; i <= n; i++) {
+    graph.set(i, []);
+  }
+  for (const [u, v, w] of times) {
+    graph.get(u)!.push([v, w]);
+  }
+
+  // 距离数组，初始化为无穷大
+  const dist: number[] = new Array(n + 1).fill(Infinity);
+  dist[k] = 0; // 源节点距离为 0
+
+  // 优先队列实现：最小堆
+  // 元素：[距离, 节点]
+  const pq: [number, number][] = [[0, k]];
+
+  // 使用数组模拟最小堆的 push/pop
+  const heapPush = (item: [number, number]): void => {
+    pq.push(item);
+    pq.sort((a, b) => a[0] - b[0]);
+  };
+
+  const heapPop = (): [number, number] | undefined => {
+    return pq.shift();
+  };
+
+  // 已确定最短路径的节点
+  const visited: Set<number> = new Set();
+
+  while (pq.length > 0) {
+    const item = heapPop();
+    if (!item) break;
+
+    const [d, node] = item;
+
+    // 已访问过，跳过
+    if (visited.has(node)) continue;
+    visited.add(node);
+
+    // 松弛操作：更新邻居距离
+    const neighbors = graph.get(node) || [];
+    for (const [neighbor, weight] of neighbors) {
+      const newDist = d + weight;
+      if (newDist < dist[neighbor]) {
+        dist[neighbor] = newDist;
+        heapPush([newDist, neighbor]);
+      }
+    }
+  }
+
+  // 找最大距离（忽略索引 0）
+  let maxDist = 0;
+  for (let i = 1; i <= n; i++) {
+    if (dist[i] === Infinity) {
+      return -1; // 有节点无法到达
+    }
+    maxDist = Math.max(maxDist, dist[i]);
+  }
+
+  return maxDist;
+}
+
+// 测试用例
+const times1 = [
+  [2, 1, 1],
+  [2, 3, 1],
+  [3, 4, 1],
+];
+console.log(networkDelayTime(times1, 4, 2)); // 2
+
+const times2 = [[1, 2, 1]];
+console.log(networkDelayTime(times2, 2, 2)); // -1
+
+const times3 = [
+  [1, 2, 1],
+  [2, 3, 2],
+  [1, 3, 4],
+];
+console.log(networkDelayTime(times3, 3, 1)); // 3
+```
+
+## TypeScript 优化实现（使用真正的堆）
+
+```typescript
+/**
+ * 使用二叉堆实现的优先队列
+ */
+class MinHeap<T> {
+  private heap: T[] = [];
+
+  constructor(private compare: (a: T, b: T) => number) {}
+
+  push(item: T): void {
+    this.heap.push(item);
+    this.bubbleUp(this.heap.length - 1);
+  }
+
+  pop(): T | undefined {
+    if (this.heap.length === 0) return undefined;
+    const min = this.heap[0];
+    const last = this.heap.pop()!;
+    if (this.heap.length > 0) {
+      this.heap[0] = last;
+      this.bubbleDown(0);
+    }
+    return min;
+  }
+
+  get length(): number {
+    return this.heap.length;
+  }
+
+  private bubbleUp(index: number): void {
+    while (index > 0) {
+      const parent = Math.floor((index - 1) / 2);
+      if (this.compare(this.heap[index], this.heap[parent]) >= 0) break;
+      [this.heap[index], this.heap[parent]] = [this.heap[parent], this.heap[index]];
+      index = parent;
+    }
+  }
+
+  private bubbleDown(index: number): void {
+    const length = this.heap.length;
+    while (true) {
+      const left = 2 * index + 1;
+      const right = 2 * index + 2;
+      let smallest = index;
+
+      if (left < length && this.compare(this.heap[left], this.heap[smallest]) < 0) {
+        smallest = left;
+      }
+      if (right < length && this.compare(this.heap[right], this.heap[smallest]) < 0) {
+        smallest = right;
+      }
+      if (smallest === index) break;
+
+      [this.heap[index], this.heap[smallest]] = [this.heap[smallest], this.heap[index]];
+      index = smallest;
+    }
+  }
+}
+
+/**
+ * 网络延迟时间 - 使用真正堆的优化版本
+ */
+function networkDelayTimeOptimized(times: number[][], n: number, k: number): number {
+  // 构建邻接表
+  const graph: Map<number, [number, number][]> = new Map();
+  for (let i = 1; i <= n; i++) {
+    graph.set(i, []);
+  }
+  for (const [u, v, w] of times) {
+    graph.get(u)!.push([v, w]);
+  }
+
+  // 距离数组
+  const dist: number[] = new Array(n + 1).fill(Infinity);
+  dist[k] = 0;
+
+  // 优先队列
+  const pq = new MinHeap<[number, number]>((a, b) => a[0] - b[0]);
+  pq.push([0, k]);
+
+  const visited: Set<number> = new Set();
+
+  while (pq.length > 0) {
+    const item = pq.pop();
+    if (!item) break;
+
+    const [d, node] = item;
+
+    if (visited.has(node)) continue;
+    visited.add(node);
+
+    for (const [neighbor, weight] of graph.get(node) || []) {
+      const newDist = d + weight;
+      if (newDist < dist[neighbor]) {
+        dist[neighbor] = newDist;
+        pq.push([newDist, neighbor]);
+      }
+    }
+  }
+
+  let maxDist = 0;
+  for (let i = 1; i <= n; i++) {
+    if (dist[i] === Infinity) return -1;
+    maxDist = Math.max(maxDist, dist[i]);
+  }
+
+  return maxDist;
+}
+```
+
+## 面试变体
+
+1. **返回最短路径**：记录前驱节点，重构从源到任意节点的路径
+2. **多个源节点**：多源最短路径，使用虚拟源节点或 Floyd-Warshall
+3. **负权边**：使用 Bellman-Ford 或 SPFA 算法
+4. **K 短路径**：A\* 算法或 Yen's algorithm
+5. **动态边权**：根据时间变化的边权，需要修改松弛条件
+
+## 常见错误
+
+1. **节点编号问题**：题目节点从 1 开始，数组索引从 0 开始，需要调整
+2. **堆中重复节点**：同一节点可能多次入堆，需要 visited 集合
+3. **返回值类型**：Python 用 `float('inf')`，TypeScript 用 `Infinity`
+4. **优先队列方向**：Dijkstra 需要最小堆，Prim 最小生成树也是最小堆
+5. **忘记检查不可达**：最后要判断是否有节点距离仍为无穷大
+
+## 扩展：为什么 Dijkstra 不能处理负权边？
+
+Dijkstra 基于贪心策略，一旦确定某节点的最短距离就不会再更新。但负权边可能导致后续找到更短的路径。
+
+```
+    A --(2)--> B
+    |         |
+   (1)      (-3)
+    |         |
+    v         v
+    C --(1)--> D
+
+从 A 出发：
+- Dijkstra 先处理 A->B(2)，标记 B 的距离为 2
+- 然后处理 A->C(1)，C 的距离为 1
+- 但实际上 A->C->D->B 的距离是 1+1+(-3)=-1，比 2 更短！
+```
+
+负权边场景应使用 Bellman-Ford 算法。

@@ -1,0 +1,159 @@
+---
+import { getNextPathStep, getPrevPathStep } from '../lib/path-map';
+
+interface PaginationLink {
+  href: string;
+  label: string;
+}
+
+interface Props {
+  dir: 'ltr' | 'rtl';
+  pagination: {
+    prev: PaginationLink | undefined;
+    next: PaginationLink | undefined;
+  };
+}
+
+const { dir, pagination } = Astro.props as Props;
+const { prev: defaultPrev, next: defaultNext } = pagination;
+
+const pathname = Astro.url.pathname;
+
+const PATH_TITLES: Record<string, string> = {
+  'preparation/index': 'TypeScript 简介',
+  'preparation/typescript-intro': 'TS vs JS 对比',
+  'preparation/setup': '开发环境准备',
+  'foundation/variables': '变量与数据类型',
+  'foundation/functions-basics': '函数基础',
+  'foundation/control-flow': '控制流',
+  'foundation/data-structures': '数据结构',
+  'foundation/classes-objects': '类与对象',
+  'migration/types': '类型系统对比',
+  'migration/functions': '函数与参数',
+  'migration/modules': '模块与包管理',
+  'migration/async': '异步编程',
+  'migration/error-handling': '错误处理机制',
+  'migration/enums': '枚举与常量定义',
+  'migration/strings-regex': '字符串与正则处理',
+  'advanced/generics': '泛型深入',
+  'advanced/type-guards': '类型守卫与收窄',
+  'advanced/utility-types': '工具类型详解',
+  'advanced/declarations-config': '类型声明与配置',
+  'advanced/decorators': '装饰器与元编程',
+  'advanced/design-patterns': '设计模式实践',
+  'advanced/datetime': '日期时间处理',
+  'advanced/nodejs-basics': 'Node.js 基础',
+};
+
+function parsePath(pathname: string): { track: string; current: string } | null {
+  const match = pathname.match(/^\/paths\/(preparation|foundation|migration|advanced)\/([^/]+)\/?$/);
+  if (!match) return null;
+  return { track: match[1], current: match[2] };
+}
+
+const pathInfo = parsePath(pathname);
+
+let prev = defaultPrev;
+let next = defaultNext;
+
+if (pathInfo) {
+  const prevStep = getPrevPathStep(pathInfo.track, pathInfo.current);
+  const nextStep = getNextPathStep(pathInfo.track, pathInfo.current);
+
+  if (prevStep) {
+    prev = { href: `/paths/${prevStep}/`, label: PATH_TITLES[prevStep] || prevStep };
+  }
+  if (nextStep) {
+    next = { href: `/paths/${nextStep}/`, label: PATH_TITLES[nextStep] || nextStep };
+  }
+}
+
+const isRtl = dir === 'rtl';
+---
+
+<div class="pagination-links print:hidden" dir={dir}>
+  {prev && (
+    <a href={prev.href} rel="prev">
+      <span class="pagination-arrow">←</span>
+      <span>
+        <span class="pagination-label">上一课</span>
+        <br />
+        <span class="link-title">{prev.label}</span>
+      </span>
+    </a>
+  )}
+  {next && (
+    <a href={next.href} rel="next">
+      <span>
+        <span class="pagination-label">下一课</span>
+        <br />
+        <span class="link-title">{next.label}</span>
+      </span>
+      <span class="pagination-arrow">→</span>
+    </a>
+  )}
+</div>
+
+<style>
+  .pagination-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+
+  a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.5rem;
+    width: 100%;
+    flex-basis: calc(50% - 0.5rem);
+    flex-grow: 1;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    text-decoration: none;
+    color: var(--sl-color-gray-2);
+    box-shadow: var(--sl-shadow-md);
+    overflow-wrap: anywhere;
+    transition: border-color 0.2s ease, transform 0.1s ease;
+  }
+
+  a:hover {
+    border-color: var(--sl-color-accent);
+    transform: translateY(-1px);
+  }
+
+  a[rel="next"] {
+    justify-content: end;
+    text-align: end;
+    flex-direction: row-reverse;
+  }
+
+  .link-title {
+    color: var(--sl-color-white);
+    font-size: var(--sl-text-xl);
+    line-height: var(--sl-line-height-headings);
+  }
+
+  .pagination-label {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+
+  .pagination-arrow {
+    font-size: 1.5rem;
+    color: var(--sl-color-accent);
+  }
+
+  @media (max-width: 768px) {
+    a {
+      padding: 0.75rem;
+    }
+
+    .link-title {
+      font-size: var(--sl-text-lg);
+    }
+  }
+</style>

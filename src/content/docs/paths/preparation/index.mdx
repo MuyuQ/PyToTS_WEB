@@ -1,0 +1,128 @@
+---
+title: TypeScript 简介
+kind: lesson
+level: preparation
+topic: introduction
+difficulty: easy
+prerequisites: []
+python_tags: []
+ts_tags: ["typescript", "javascript"]
+description: 了解 TypeScript 是什么，以及为什么 Python 开发者应该学习它
+---
+
+## TypeScript 是什么
+
+TypeScript 是 JavaScript 的超集，由微软在 2012 年开源。它在 JavaScript 基础上添加了静态类型系统。
+
+```typescript
+function greet(name: string): string {
+  return `Hello, ${name}!`;
+}
+
+greet("World"); // 正确
+greet(123); // 编译错误：类型不匹配
+```
+
+Python 开发者可以这样理解：
+
+| Python            | TypeScript     | 说明                |
+| ----------------- | -------------- | ------------------- |
+| 运行时类型检查    | 编译时类型检查 | 错误提前发现        |
+| 可选类型注解      | 可选类型注解   | 都支持渐进式采用    |
+| `mypy` 第三方工具 | 内置类型检查器 | TypeScript 开箱即用 |
+
+## 为什么选择 TypeScript
+
+### 编译时错误捕获
+
+JavaScript 中的常见错误：
+
+```javascript
+// JavaScript - 运行时才发现错误
+const user = { name: "Alice" };
+console.log(user.nmae); // undefined（拼写错误，但不报错）
+```
+
+TypeScript 在写代码时就提示：
+
+```typescript
+// TypeScript - 编辑器直接画红线
+const user = { name: "Alice" };
+console.log(user.nmae); // 错误：属性 'nmae' 不存在
+```
+
+### 更好的 IDE 支持
+
+- **自动补全**：基于类型信息提供精确的建议
+- **重构支持**：安全地重命名变量、函数、文件
+- **文档提示**：悬停查看类型定义和注释
+
+### 团队协作友好
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function createUser(data: User): User {
+  return data;
+}
+
+createUser({ id: 1, name: "Alice" }); // 缺少 email，编译错误
+```
+
+接口定义即文档，不需要额外的文档维护。
+
+## TypeScript vs JavaScript
+
+| 特性     | JavaScript | TypeScript           |
+| -------- | ---------- | -------------------- |
+| 类型系统 | 动态类型   | 静态类型（可选）     |
+| 编译     | 不需要     | 需要编译为 JS        |
+| 错误发现 | 运行时     | 编译时               |
+| 学习曲线 | 平缓       | 稍陡（需要理解类型） |
+| 生态系统 | 原生       | 兼容 JS 生态         |
+| 适合项目 | 小型脚本   | 中大型项目           |
+
+## TypeScript vs Python 类型系统
+
+Python 3.5+ 引入了类型注解，但仍是可选的：
+
+```python
+# Python - 类型注解只是提示，不强制
+def add(a: int, b: int) -> int:
+    return a + b
+
+add("1", "2")  # 运行正常，返回 "12"（mypy 会警告）
+```
+
+```typescript
+// TypeScript - 类型检查是强制的
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+add("1", "2"); // 编译错误
+```
+
+## 谁在使用 TypeScript
+
+- **Microsoft**：VS Code、TypeScript 本身
+- **Google**：Angular、Google Cloud Console
+- **Meta**：React 文档、部分内部工具
+- **Airbnb**：前端代码库
+- **Slack**：桌面应用
+
+## 下一步
+
+准备好开始学习了吗？接下来会介绍：
+
+1. TypeScript 与 JavaScript 的详细对比
+2. 开发环境搭建
+3. 第一个 TypeScript 程序
+
+---
+
+**建议**：如果时间有限，可以先跳到[开发环境准备](/paths/preparation/setup/)直接动手实践。

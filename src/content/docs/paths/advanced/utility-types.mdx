@@ -1,0 +1,704 @@
+---
+title: 工具类型详解
+kind: lesson
+level: advanced
+topic: utility-types
+difficulty: medium
+prerequisites: ["generics", "type-guards"]
+python_tags: ["typing", "TypedDict", "Optional"]
+ts_tags: ["Partial", "Pick", "Omit", "Record", "infer", "mapped-types"]
+description: 掌握 TypeScript 内置工具类型的使用方法和底层实现原理
+---
+## 场景与问题
+
+开发中经常需要基于已有类型创建新类型：让所有属性变为可选、选取部分属性、从函数提取参数类型等。Python 没有直接对应的机制，但 TypeScript 提供了丰富的工具类型来解决这些问题。
+
+## 核心概念
+
+工具类型（Utility Types）是 TypeScript 内置的泛型类型，用于转换和操作其他类型。它们本质上是映射类型和条件类型的组合应用。
+
+### 映射类型基础
+
+映射类型基于旧类型创建新类型，语法类似对象展开：
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+// 将所有属性变为可选
+type OptionalUser = {
+  [K in keyof User]?: User[K];
+};
+// 等价于 { id?: number; name?: string; email?: string; }
+
+// 将所有属性变为只读
+type ReadonlyUser = {
+  readonly [K in keyof User]: User[K];
+};
+// 等价于 { readonly id: number; readonly name: string; readonly email: string; }
+```
+
+### 条件类型基础
+
+条件类型根据类型关系选择不同的结果：
+
+```typescript
+// 基本语法：T extends U ? X : Y
+type IsString<T> = T extends string ? true : false;
+
+type A = IsString<string>; // true
+type B = IsString<number>; // false
+
+// infer 关键字：在条件中提取类型
+type UnwrapArray<T> = T extends (infer U)[] ? U : T;
+
+type C = UnwrapArray<string[]>; // string
+type D = UnwrapArray<number>; // number
+```
+
+## 内置工具类型
+
+### 属性修饰工具类型
+
+#### Partial{"<T>"} - 所有属性可选
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+// 更新用户信息，只传需要修改的字段
+function updateUser(id: number, data: Partial<User>): void {
+  // 实现...
+}
+
+updateUser(1, { name: "New Name" }); // ✓ 只传 name
+updateUser(2, { email: "new@email.com", name: "Alice" }); // ✓ 传多个字段
+
+// 底层实现
+type MyPartial<T> = {
+  [K in keyof T]?: T[K];
+};
+```
+
+#### Required{"<T>"} - 所有属性必需
+
+```typescript
+interface OptionalUser {
+  id?: number;
+  name?: string;
+}
+
+// 确保所有字段都必须提供
+type RequiredUser = Required<OptionalUser>;
+// { id: number; name: string; }
+
+function createUser(data: Required<OptionalUser>): void {
+  // data.id 和 data.name 一定存在
+}
+
+// 底层实现
+type MyRequired<T> = {
+  [K in keyof T]-?: T[K]; // -? 移除可选标记
+};
+```
+
+#### Readonly{"<T>"} - 所有属性只读
+
+```typescript
+interface Config {
+  apiUrl: string;
+  timeout: number;
+}
+
+const config: Readonly<Config> = {
+  apiUrl: "https://api.example.com",
+  timeout: 5000,
+};
+
+// config.apiUrl = "new-url"; // ✗ 错误：只读属性不能修改
+
+// 深层只读（递归）
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];
+};
+
+interface NestedConfig {
+  api: {
+    url: string;
+    key: string;
+  };
+}
+
+const nestedConfig: DeepReadonly<NestedConfig> = {
+  api: { url: "https://example.com", key: "secret" },
+};
+// nestedConfig.api.url = "new"; // ✗ 错误
+```
+
+### 类型转换工具类型
+
+#### Pick{"<T, K>"} - 选取部分属性
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  createdAt: Date;
+}
+
+// API 返回用户信息时，排除敏感字段
+type PublicUser = Pick<User, "id" | "name" | "email">;
+// { id: number; name: string; email: string; }
+
+function getPublicUser(user: User): PublicUser {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  };
+}
+
+// 底层实现
+type MyPick<T, K extends keyof T> = {
+  [P in K]: T[P];
+};
+```
+
+#### Omit{"<T, K>"} - 排除部分属性
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  role: "admin" | "user";
+}
+
+// 创建用户时不需要 id（自动生成）
+type CreateUserData = Omit<User, "id">;
+// { name: string; email: string; password: string; role: "admin" | "user"; }
+
+// 更新用户时不能修改 role
+type UpdateUserData = Omit<User, "id" | "role">;
+// { name: string; email: string; password: string; }
+
+function createUser(data: CreateUserData): User {
+  return {
+    id: Math.random(), // 模拟自动生成
+    ...data,
+  };
+}
+
+// 底层实现
+type MyOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+```
+
+#### Record{"<K, V>"} - 构建对象类型
+
+```typescript
+// 键值对结构
+type UserRoles = Record<string, "admin" | "user" | "guest">;
+
+const roles: UserRoles = {
+  alice: "admin",
+  bob: "user",
+  charlie: "guest",
+};
+
+// 配置映射
+type HttpStatus = Record<200 | 404 | 500, string>;
+
+const statusMessages: HttpStatus = {
+  200: "OK",
+  404: "Not Found",
+  500: "Internal Server Error",
+};
+
+// 表单字段配置
+interface FieldConfig {
+  type: "text" | "number" | "email";
+  required: boolean;
+  label: string;
+}
+
+type FormFields = Record<"name" | "age" | "email", FieldConfig>;
+
+const formConfig: FormFields = {
+  name: { type: "text", required: true, label: "姓名" },
+  age: { type: "number", required: false, label: "年龄" },
+  email: { type: "email", required: true, label: "邮箱" },
+};
+
+// 底层实现
+type MyRecord<K extends keyof unknown, V> = {
+  [P in K]: V;
+};
+```
+
+### 函数相关工具类型
+
+#### Parameters{"<T>"} - 获取函数参数类型
+
+```typescript
+function greet(name: string, age: number, active: boolean): string {
+  return `Hello ${name}`;
+}
+
+// 获取参数类型元组
+type GreetParams = Parameters<typeof greet>;
+// [name: string, age: number, active: boolean]
+
+// 用于包装函数
+function logCall<T extends (...args: unknown[]) => unknown>(
+  fn: T,
+  ...args: Parameters<T>
+): ReturnType<T> {
+  console.log("Calling with:", args);
+  return fn(...args) as ReturnType<T>;
+}
+
+// 提取单个参数类型
+type FirstParam = Parameters<typeof greet>[0]; // string
+type SecondParam = Parameters<typeof greet>[1]; // number
+
+// 底层实现
+type MyParameters<T extends (...args: unknown[]) => unknown> = T extends (
+  ...args: infer P
+) => unknown
+  ? P
+  : never;
+```
+
+#### ReturnType{"<T>"} - 获取函数返回值类型
+
+```typescript
+function fetchUser(id: number): Promise<{ id: number; name: string }> {
+  return Promise.resolve({ id, name: "Alice" });
+}
+
+// 获取返回类型（包含 Promise）
+type FetchResult = ReturnType<typeof fetchUser>;
+// Promise<{ id: number; name: string }>
+
+// 解包 Promise 得到实际返回类型
+type UserData = Awaited<ReturnType<typeof fetchUser>>;
+// { id: number; name: string }
+
+// 实际应用：从 API 函数推导类型
+function createApiClient<T extends (...args: unknown[]) => Promise<unknown>>(
+  fn: T
+): {
+  call: (...args: Parameters<T>) => Promise<Awaited<ReturnType<T>>>;
+} {
+  return {
+    call: (...args) => fn(...args) as Promise<Awaited<ReturnType<T>>>,
+  };
+}
+
+// 底层实现
+type MyReturnType<T extends (...args: unknown[]) => unknown> = T extends (
+  ...args: unknown[]
+) => infer R
+  ? R
+  : never;
+```
+
+#### Awaited{"<T>"} - 获取 Promise 解包类型
+
+```typescript
+// 嵌套 Promise 解包
+type A = Awaited<Promise<string>>; // string
+type B = Awaited<Promise<Promise<number>>>; // number（递归解包）
+type C = Awaited<boolean | Promise<string>>; // boolean | string
+
+// 实际应用：定义异步函数返回类型
+async function getData(): Promise<{ users: string[]; count: number }> {
+  return { users: ["Alice", "Bob"], count: 2 };
+}
+
+// 不需要手动定义，直接从函数推导
+type DataResult = Awaited<ReturnType<typeof getData>>;
+// { users: string[]; count: number }
+
+// 底层实现（简化版）
+type MyAwaited<T> = T extends Promise<infer U> ? MyAwaited<U> : T;
+```
+
+### 其他常用工具类型
+
+#### NonNullable{"<T>"} - 排除 null 和 undefined
+
+```typescript
+type MaybeString = string | null | undefined;
+type DefiniteString = NonNullable<MaybeString>; // string
+
+// 实际应用：过滤数组中的空值
+function filterNonNull<T>(items: (T | null | undefined)[]): T[] {
+  return items.filter((item): item is T => item !== null && item !== undefined);
+}
+
+const mixed = [1, null, 2, undefined, 3];
+const clean = filterNonNull(mixed); // number[]
+
+// 底层实现
+type MyNonNullable<T> = T extends null | undefined ? never : T;
+```
+
+#### Extract{"<T, U>"} - 提取可赋值给 U 的类型
+
+```typescript
+type Mixed = string | number | boolean | null;
+type OnlyStringOrNumber = Extract<Mixed, string | number>; // string | number
+
+// 实际应用：从联合类型提取特定类型
+type Events = "click" | "focus" | "blur" | "keydown" | "keyup";
+type KeyboardEvents = Extract<Events, `key${string}`>; // "keydown" | "keyup"
+
+// 底层实现
+type MyExtract<T, U> = T extends U ? T : never;
+```
+
+#### Exclude{"<T, U>"} - 排除可赋值给 U 的类型
+
+```typescript
+type Mixed = string | number | boolean;
+type NotString = Exclude<Mixed, string>; // number | boolean
+
+// 实际应用：定义不允许的操作
+type AllActions = "create" | "read" | "update" | "delete";
+type ReadOnlyActions = Exclude<AllActions, "create" | "update" | "delete">;
+// "read"
+
+// 底层实现
+type MyExclude<T, U> = T extends U ? never : T;
+```
+
+#### InstanceType{"<T>"} - 获取构造函数实例类型
+
+```typescript
+class User {
+  constructor(
+    public name: string,
+    public age: number
+  ) {}
+
+  greet() {
+    return `Hello, ${this.name}`;
+  }
+}
+
+// 从类获取实例类型
+type UserInstance = InstanceType<typeof User>;
+// { name: string; age: number; greet: () => string }
+
+// 实际应用：工厂函数
+function createInstance<T extends new (...args: unknown[]) => unknown>(
+  ctor: T,
+  ...args: ConstructorParameters<T>
+): InstanceType<T> {
+  return new ctor(...args) as InstanceType<T>;
+}
+
+const user = createInstance(User, "Alice", 25);
+user.greet(); // "Hello, Alice"
+
+// 底层实现
+type MyInstanceType<T extends new (...args: unknown[]) => unknown> = T extends new (
+  ...args: unknown[]
+) => infer R
+  ? R
+  : never;
+```
+
+## 高级工具类型模式
+
+### 组合使用工具类型
+
+```typescript
+// 表单场景：创建时全部可选，更新时部分可选
+interface Entity {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+  name: string;
+  value: number;
+}
+
+// 创建：id 和时间戳自动生成
+type CreateInput = Omit<Entity, "id" | "createdAt" | "updatedAt">;
+
+// 更新：只能修改 name 和 value
+type UpdateInput = Partial<Pick<Entity, "name" | "value">>;
+
+// API 响应：排除敏感字段
+interface UserWithSecret extends Entity {
+  password: string;
+  salt: string;
+}
+type SafeUser = Omit<UserWithSecret, "password" | "salt">;
+```
+
+### 条件类型与映射类型结合
+
+```typescript
+// 根据值类型决定键的可选性
+type OptionalByValueType<T, V> = {
+  [K in keyof T as T[K] extends V ? never : K]: T[K];
+} & {
+  [K in keyof T as T[K] extends V ? K : never]?: T[K];
+};
+
+interface Config {
+  required: string;
+  optional: string | undefined;
+  normal: number;
+}
+
+// 让 string | undefined 类型的属性变为可选
+type ProcessedConfig = OptionalByValueType<Config, string | undefined>;
+// { required: string; normal: number; optional?: string | undefined; }
+```
+
+### 递归工具类型
+
+```typescript
+// 深层 Partial
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+};
+
+interface Nested {
+  user: {
+    profile: {
+      name: string;
+      settings: {
+        theme: string;
+      };
+    };
+  };
+}
+
+const partial: DeepPartial<Nested> = {
+  user: {
+    profile: {
+      settings: {
+        theme: "dark",
+      },
+    },
+  },
+};
+
+// 深层 Required
+type DeepRequired<T> = {
+  [K in keyof T]-?: T[K] extends object ? DeepRequired<T[K]> : T[K];
+};
+
+// 深层 Readonly
+type DeepReadonly<T> = {
+  readonly [K in keyof T]: T[K] extends object ? DeepReadonly<T[K]> : T[K];
+};
+```
+
+### 模板字面量类型与工具类型
+
+```typescript
+// 事件处理器类型
+type EventName = "click" | "focus" | "blur";
+type EventHandler = `on${Capitalize<EventName>}`; // "onClick" | "onFocus" | "onBlur"
+
+// 从事件处理器提取事件名
+type ExtractEvent<T extends string> = T extends `on${infer Event}`
+  ? Uncapitalize<Event>
+  : never;
+
+type Click = ExtractEvent<"onClick">; // "click"
+type Focus = ExtractEvent<"onFocus">; // "focus"
+
+//Getter/Setter 类型生成
+type Getters<T> = {
+  [K in keyof T as `get${Capitalize<string & K>>`]: () => T[K];
+};
+
+type Setters<T> = {
+  [K in keyof T as `set${Capitalize<string & K>}`]: (value: T[K]) => void;
+};
+
+interface State {
+  count: number;
+  name: string;
+}
+
+type StateGetters = Getters<State>;
+// { getCount: () => number; getName: () => string }
+
+type StateSetters = Setters<State>;
+// { setCount: (value: number) => void; setName: (value: string) => void }
+```
+
+## 差异与常见陷阱
+
+### Python 对比
+
+Python 的 `typing` 模块提供部分类似功能，但不如 TypeScript 灵活：
+
+```python
+from typing import TypedDict, Optional, NotRequired
+
+# Python 3.11+ 使用 NotRequired 标记可选字段
+class User(TypedDict):
+    id: int
+    name: NotRequired[str]  # 类似 Partial
+    email: NotRequired[str]
+
+# Python 没有直接的 Pick/Omit 等价物
+# 需要手动定义新类型或使用第三方库
+
+# Python 的 TypeVar 可以实现部分效果
+from typing import TypeVar, Callable
+
+T = TypeVar('T')
+
+def get_return_type(func: Callable[..., T]) -> type[T]:
+    return func.__annotations__.get('return', type(None))
+```
+
+### 常见陷阱
+
+#### 1. Partial 不影响嵌套对象
+
+```typescript
+interface User {
+  id: number;
+  profile: {
+    name: string;
+    age: number;
+  };
+}
+
+const partialUser: Partial<User> = {
+  profile: { name: "Alice" }, // ✗ 错误：age 仍然是必需的
+};
+
+// 解决：使用 DeepPartial
+type DeepPartial<T> = {
+  [K in keyof T]?: T[K] extends object ? DeepPartial<T[K]> : T[K];
+};
+```
+
+#### 2. Pick/Omit 的键必须是联合类型
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+}
+
+// ✗ 错误：字符串不能直接用
+type Wrong = Pick<User, "id">; // 实际上这可以工作
+
+// 但动态使用时要注意
+const keys = ["id", "name"] as const;
+type Keys = (typeof keys)[number]; // "id" | "name"
+type Correct = Pick<User, Keys>; // ✓
+```
+
+#### 3. Record 的键类型限制
+
+```typescript
+// Record 的键必须是 string | number | symbol
+type Good = Record<string, number>; // ✓
+type AlsoGood = Record<"a" | "b", number>; // ✓
+type Bad = Record<boolean, number>; // ✗ 错误
+```
+
+#### 4. 工具类型不保留方法的 this 绑定
+
+```typescript
+class Counter {
+  count = 0;
+  increment() {
+    this.count++;
+  }
+}
+
+type CounterMethods = Pick<Counter, "increment">;
+const methods: CounterMethods = {
+  increment() {
+    // this 不是 Counter 实例
+  },
+};
+```
+
+## 练习
+
+实现一个类型安全的对象合并函数，要求：
+
+1. 接受两个对象，第二个对象的部分属性覆盖第一个
+2. 第二个对象可以包含第一个对象不存在的属性
+3. 返回合并后的完整类型
+
+```typescript
+// 期望用法
+const defaults = { a: 1, b: 2 };
+const overrides = { b: 3, c: 4 };
+
+const result = merge(defaults, overrides);
+// result 类型应该是 { a: number; b: number; c: number }
+```
+
+<details>
+<summary>答案</summary>
+
+```typescript
+function merge<T extends object, U extends object>(defaults: T, overrides: U): T & U {
+  return { ...defaults, ...overrides };
+}
+
+// 或者更精确的类型（第二个对象覆盖第一个）
+type Merge<T, U> = Omit<T, keyof U> & U;
+
+function mergeExact<T extends object, U extends object>(defaults: T, overrides: U): Merge<T, U> {
+  return { ...defaults, ...overrides } as Merge<T, U>;
+}
+
+const defaults = { a: 1, b: 2 };
+const overrides = { b: 3, c: 4 };
+
+const result = mergeExact(defaults, overrides);
+// result.a: number
+// result.b: number (来自 overrides)
+// result.c: number
+```
+
+</details>
+
+## 面试追问
+
+1. **Partial 和 Required 的底层实现原理是什么？**
+   - 答：Partial 使用映射类型 `[K in keyof T]?` 添加可选标记，Required 使用 `[K in keyof T]-?` 移除可选标记。
+
+2. **Pick 和 Omit 有什么关系？**
+   - 答：`Omit<T, K> = Pick<T, Exclude<keyof T, K>>`，Omit 是 Pick 和 Exclude 的组合。
+
+3. **infer 关键字的作用是什么？**
+   - 答：在条件类型中推断并提取类型，常用于从函数参数、返回值、Promise 等结构中提取内部类型。
+
+4. **如何实现一个将对象所有函数属性转为异步函数的工具类型？**
+   - 答：
+   ```typescript
+   type AsyncFunctions<T> = {
+     [K in keyof T]: T[K] extends (...args: infer A) => infer R ? (...args: A) => Promise<R> : T[K];
+   };
+   ```
+
+---
+**下一步：** [装饰器与元编程](/paths/advanced/decorators)

@@ -5,53 +5,102 @@ kind: page
 ---
 
 import { CardGrid, Card } from "@astrojs/starlight/components";
+import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.astro";
 
-# 进阶路径
+<LessonProgressMarkers />
 
 适合已经掌握基础语法和迁移知识，准备深入工程实践与面试的学习者。
 
 ## 课程列表
 
-<CardGrid stagger>
+<CardGrid>
   <Card title="1. 泛型深入" icon="seti:generic">
     掌握 TypeScript 最强大的类型系统特性
-    
+
     - 泛型函数与类
     - 泛型约束
     - 条件类型与推断
-    
+
     [开始学习 →](/paths/advanced/generics)
+
   </Card>
-  
+
   <Card title="2. 类型守卫与收窄" icon="seti:search">
     精确控制类型收窄，编写类型安全的代码
-    
+
     - typeof / instanceof 守卫
     - 自定义类型谓词
     - 穷尽检查
-    
+
     [开始学习 →](/paths/advanced/type-guards)
+
   </Card>
-  
-  <Card title="3. 装饰器与元编程" icon="seti:tag">
+
+  <Card title="3. 工具类型详解" icon="seti:typescript">
+    掌握 TypeScript 内置工具类型
+
+    - Partial, Required, Readonly
+    - Pick, Omit, Record
+    - ReturnType, Parameters
+
+    [开始学习 →](/paths/advanced/utility-types)
+
+  </Card>
+
+  <Card title="4. 类型声明与配置" icon="seti:settings">
+    理解类型声明文件和项目配置
+
+    - .d.ts 文件编写
+    - @types 包的使用
+    - tsconfig.json 核心配置
+
+    [开始学习 →](/paths/advanced/declarations-config)
+
+  </Card>
+
+  <Card title="5. 装饰器与元编程" icon="seti:tag">
     理解装饰器模式和元数据反射
-    
+
     - 方法/类装饰器
     - 装饰器工厂
     - reflect-metadata
-    
+
     [开始学习 →](/paths/advanced/decorators)
+
   </Card>
-  
-  <Card title="4. 设计模式实践" icon="seti:structure">
+
+  <Card title="6. 设计模式实践" icon="seti:structure">
     用 TypeScript 实现常见设计模式
-    
+
     - 工厂模式
     - 观察者模式
     - 策略模式
     - 适配器模式
-    
+
     [开始学习 →](/paths/advanced/design-patterns)
+
+  </Card>
+
+  <Card title="7. 日期时间处理" icon="seti:clock">
+    掌握日期时间操作的差异与最佳实践
+
+    - Python datetime vs JavaScript Date
+    - 时区处理差异
+    - 第三方库推荐
+
+    [开始学习 →](/paths/advanced/datetime)
+
+  </Card>
+
+  <Card title="8. Node.js 基础" icon="seti:node">
+    掌握 Node.js 开发的基础知识
+
+    - 文件操作 fs 模块
+    - Buffer 和 Stream
+    - process 对象
+
+    [开始学习 →](/paths/advanced/nodejs-basics)
+
   </Card>
 </CardGrid>
 
@@ -66,8 +115,11 @@ import { CardGrid, Card } from "@astrojs/starlight/components";
 
 - ✓ 编写类型安全且可复用的泛型代码
 - ✓ 精确控制类型收窄和类型守卫
+- ✓ 使用工具类型简化类型定义
+- ✓ 配置 TypeScript 项目并编写类型声明
 - ✓ 使用装饰器增强代码功能
 - ✓ 在项目中应用常见设计模式
+- ✓ 处理日期时间和文件操作
 - ✓ 自信地回答高级 TypeScript 面试题
 
 ## 推荐实践

@@ -7,19 +7,77 @@ time_complexity: "O(log n)"
 space_complexity: "O(1)"
 description: 在有序数组中查找目标值的位置
 ---
-
 ## 问题描述
 
 给定一个有序数组 `nums` 和目标值 `target`，返回目标值在数组中的索引。如果不存在，返回 -1。
 
-## 思路分析
+## 💡 思路引导
 
-利用数组有序的特性，每次将搜索范围缩小一半。比较中间元素与目标值，决定搜索左半部分还是右半部分。
+**第一步：理解问题**
 
-## 复杂度分析
+- 输入：有序数组 + 目标值
+- 输出：目标值的索引（或 -1）
+- 关键线索：数组是有序的！
+
+**第二步：暴力解法**
+从头到尾遍历，逐个检查是否等于目标值。
+
+```python
+# 暴力解法 O(n)
+for i in range(len(nums)):
+    if nums[i] == target:
+        return i
+return -1
+```
+
+时间复杂度 O(n)，最坏要检查每个元素。有没有更快的方法？
+
+**第三步：利用有序特性**
+数组有序意味着什么？看中间元素：
+
+- 如果中间值 < 目标值 → 目标一定在右半边（可以扔掉左半边）
+- 如果中间值 > 目标值 → 目标一定在左半边（可以扔掉右半边）
+- 每次排除一半元素！
+
+**第四步：得出算法**
+这就是二分查找：每次将搜索范围缩小一半。
+
+```
+[1, 2, 3, 4, 5, 6, 7, 8, 9]  找 7
+              ↑ 中间值 5
+5 < 7，目标在右边，扔掉左半边
+
+        [6, 7, 8, 9]  剩下 4 个
+            ↑ 中间值 7
+7 == 7，找到了！
+```
+
+## 🎨 直观理解
+
+二分查找就像玩"猜数字"游戏：
+
+- 我想一个 1-100 的数字，你每次猜一个数
+- 我告诉你"大了"还是"小了"
+- 你怎么猜最快？
+
+笨办法：从 1 开始猜 → 最坏要猜 100 次
+
+聪明的办法：每次猜中间值
+
+- 第一次猜 50，我说"大了"
+- 猜 25，我说"小了"
+- 猜 37，我说"大了"
+- 猜 31...
+- 每次排除一半，最多 7 次就能猜中！
+
+这就是 O(log n) 的威力：100 万个元素，最多查 20 次。
+
+## 📊 复杂度分析
 
 - **时间复杂度**：O(log n)，每次将搜索范围减半
-- **空间复杂度**：O(1)，只使用常数额外空间
+- **空间复杂度**：O(1)，只使用两个指针
+
+对比暴力 O(n)：100 万个元素，暴力要 100 万次，二分只要 20 次！
 
 ## Python 实现
 
@@ -27,26 +85,26 @@ description: 在有序数组中查找目标值的位置
 def binary_search(nums: list[int], target: int) -> int:
     """
     二分查找 - Python 实现
-    
+
     Args:
         nums: 有序整数数组
         target: 目标值
-    
+
     Returns:
         目标值的索引，不存在返回 -1
     """
     left, right = 0, len(nums) - 1
-    
+
     while left <= right:
         mid = left + (right - left) // 2  # 防止溢出
-        
+
         if nums[mid] == target:
             return mid
         elif nums[mid] < target:
             left = mid + 1
         else:
             right = mid - 1
-    
+
     return -1  # 未找到
 
 
@@ -65,37 +123,136 @@ print(binary_search([-1, 0, 3, 5, 9, 12], 2))   # -1
  * @returns 目标值的索引，不存在返回 -1
  */
 function binarySearch(nums: number[], target: number): number {
-    let left = 0;
-    let right = nums.length - 1;
-    
-    while (left <= right) {
-        const mid = left + Math.floor((right - left) / 2); // 防止溢出
-        
-        if (nums[mid] === target) {
-            return mid;
-        } else if (nums[mid] < target) {
-            left = mid + 1;
-        } else {
-            right = mid - 1;
-        }
+  let left = 0;
+  let right = nums.length - 1;
+
+  while (left <= right) {
+    const mid = left + Math.floor((right - left) / 2); // 防止溢出
+
+    if (nums[mid] === target) {
+      return mid;
+    } else if (nums[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
     }
-    
-    return -1; // 未找到
+  }
+
+  return -1; // 未找到
 }
 
 // 测试用例
-console.log(binarySearch([-1, 0, 3, 5, 9, 12], 9));  // 4
-console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2));  // -1
+console.log(binarySearch([-1, 0, 3, 5, 9, 12], 9)); // 4
+console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2)); // -1
 ```
+
+## 🤔 互动练习
+
+### 练习 1：预测每一步
+
+给定数组 `[1, 3, 5, 7, 9, 11, 13]`，目标值 `11`。
+
+你能预测每一步的 `left`、`right`、`mid` 吗？
+
+<details>
+<summary>点击查看答案</summary>
+
+```
+初始：left=0, right=6, mid=3 (nums[3]=7)
+第1步：7 < 11, left = mid+1 = 4
+
+第2步：left=4, right=6, mid=5 (nums[5]=11)
+第2步：11 == 11, 返回 5
+```
+
+只用了 2 步就找到！暴力查找需要 6 步。
+
+</details>
+
+### 练习 2：找错误
+
+下面的代码有什么问题？
+
+```typescript
+function binarySearch(nums: number[], target: number): number {
+  let left = 0;
+  let right = nums.length - 1;
+
+  while (left < right) {
+    // 有问题！
+    const mid = Math.floor((left + right) / 2); // 有问题！
+
+    if (nums[mid] === target) {
+      return mid;
+    } else if (nums[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+
+  return -1;
+}
+```
+
+<details>
+<summary>点击查看问题</summary>
+
+**错误 1**：`left < right` 应该是 `left <= right`。当数组只有一个元素时，`left == right`，但循环不会执行，会漏掉最后一个元素的检查。
+
+**错误 2**：`(left + right) / 2` 可能溢出。当 `left` 和 `right` 都很大时，`left + right` 可能超出数字范围。正确写法：`left + Math.floor((right - left) / 2)`
+
+</details>
+
+## ⚠️ 常见错误详解
+
+### ❌ 错误 1：mid 计算溢出
+
+```typescript
+// 错误写法 - 大数可能溢出
+const mid = Math.floor((left + right) / 2);
+
+// 正确写法 - 防止溢出
+const mid = left + Math.floor((right - left) / 2);
+```
+
+**为什么？** 当 `left` 和 `right` 都接近 `Number.MAX_SAFE_INTEGER` 时，`left + right` 可能溢出变成负数，导致计算错误。
+
+### ❌ 错误 2：循环条件错误
+
+```typescript
+// 错误：会漏掉最后一个元素
+while (left < right)
+
+// 正确：包含 left == right 的情况
+while (left <= right)
+```
+
+**为什么？** 当目标值在数组最后位置时，`left == right`，但 `left < right` 不满足，循环提前退出。
+
+### ❌ 错误 3：指针更新错误
+
+```typescript
+// 错误：可能死循环
+left = mid;
+right = mid;
+
+// 正确：排除已检查的元素
+left = mid + 1;
+right = mid - 1;
+```
+
+**为什么？** 如果 `left = mid` 且只剩两个元素，`mid` 永远是左边的那个，`left` 永远不会变，死循环！
+
+## 🎯 记忆口诀
+
+- **循环条件**：`<=` 不是 `<`（要检查最后一个）
+- **mid 计算**：`left + (right - left) / 2`（防止溢出）
+- **指针更新**：`mid + 1` 或 `mid - 1`（排除已检查的）
 
 ## 面试变体
 
 1. **查找插入位置**：如果不存在，返回应该插入的位置
 2. **查找左右边界**：找到第一个等于目标的位置和最后一个等于目标的位置
-3. **旋转数组查找**：数组在某个位置旋转过
-
-## 常见错误
-
-1. `mid = (left + right) / 2` 可能溢出，应使用 `left + (right - left) / 2`
-2. 循环条件应该是 `left <= right` 而不是 `left < right`
-3. 更新指针时应该是 `mid + 1` 或 `mid - 1`，而不是 `mid`
+3. **旋转数组查找**：数组在某个位置旋转过，如何查找？
+4. **平方根**：不用 `Math.sqrt`，用二分查找求平方根

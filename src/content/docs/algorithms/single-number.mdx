@@ -1,0 +1,253 @@
+---
+title: 只出现一次的数字 (Single Number)
+kind: algorithm
+difficulty: easy
+tags: ["bit-manipulation", "array"]
+time_complexity: "O(n)"
+space_complexity: "O(1)"
+description: 给定非空数组，除一个元素外其余均出现两次，找出那个只出现一次的元素
+---
+## 问题描述 (LeetCode 136)
+
+给定一个非空整数数组 `nums`，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现一次的元素。
+
+**要求**：线性时间复杂度，不使用额外空间。
+
+**示例**：
+
+```
+输入: nums = [2, 2, 1]
+输出: 1
+
+输入: nums = [4, 1, 2, 1, 2]
+输出: 4
+
+输入: nums = [1]
+输出: 1
+```
+
+## 思路分析
+
+### 核心思路：异或运算 (XOR)
+
+异或运算有以下关键性质：
+
+1. **任何数和 0 异或，结果仍然是原来的数**：`a ^ 0 = a`
+2. **任何数和自身异或，结果是 0**：`a ^ a = 0`
+3. **异或运算满足交换律和结合律**：`a ^ b ^ a = (a ^ a) ^ b = 0 ^ b = b`
+
+基于这些性质，对数组所有元素进行异或运算：
+
+- 出现两次的元素会相互抵消变成 0
+- 最终结果就是只出现一次的那个元素
+
+### 为什么这行得通？
+
+```
+数组: [4, 1, 2, 1, 2]
+
+异或过程:
+4 ^ 1 ^ 2 ^ 1 ^ 2
+= 4 ^ (1 ^ 1) ^ (2 ^ 2)    // 交换律、结合律
+= 4 ^ 0 ^ 0                 // 相同数异或为 0
+= 4                         // 任何数与 0 异或为自身
+```
+
+## 复杂度分析
+
+- **时间复杂度**：O(n)，只需遍历一次数组
+- **空间复杂度**：O(1)，只使用一个变量存储结果
+
+## Python 实现
+
+```python
+def single_number(nums: list[int]) -> int:
+    """
+    只出现一次的数字 - Python 实现
+
+    使用异或运算的性质：
+    1. a ^ 0 = a
+    2. a ^ a = 0
+    3. 异或满足交换律和结合律
+
+    Args:
+        nums: 非空整数数组，其中只有一个元素出现一次，其余出现两次
+
+    Returns:
+        只出现一次的元素
+    """
+    result = 0  # 初始化为 0，因为任何数 ^ 0 = 任何数
+
+    for num in nums:
+        result ^= num  # 异或运算：相同为 0，不同为 1
+
+    return result
+
+
+# 测试用例
+print(single_number([2, 2, 1]))           # 输出: 1
+print(single_number([4, 1, 2, 1, 2]))     # 输出: 4
+print(single_number([1]))                  # 输出: 1
+
+# 验证异或性质
+print(5 ^ 5)   # 输出: 0 (相同数异或为 0)
+print(5 ^ 0)   # 输出: 5 (与 0 异或保持不变)
+print(3 ^ 4 ^ 3)  # 输出: 4 (交换律: 3^3^4 = 0^4 = 4)
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 只出现一次的数字 - TypeScript 实现
+ *
+ * 使用异或运算的性质：
+ * 1. a ^ 0 = a
+ * 2. a ^ a = 0
+ * 3. 异或满足交换律和结合律
+ *
+ * @param nums 非空整数数组，其中只有一个元素出现一次，其余出现两次
+ * @returns 只出现一次的元素
+ */
+function singleNumber(nums: number[]): number {
+  let result = 0; // 初始化为 0，因为任何数 ^ 0 = 任何数
+
+  for (const num of nums) {
+    result ^= num; // 异或运算：相同为 0，不同为 1
+  }
+
+  return result;
+}
+
+// 测试用例
+console.log(singleNumber([2, 2, 1])); // 输出: 1
+console.log(singleNumber([4, 1, 2, 1, 2])); // 输出: 4
+console.log(singleNumber([1])); // 输出: 1
+
+// 验证异或性质
+console.log(5 ^ 5); // 输出: 0 (相同数异或为 0)
+console.log(5 ^ 0); // 输出: 5 (与 0 异或保持不变)
+console.log(3 ^ 4 ^ 3); // 输出: 4 (交换律: 3^3^4 = 0^4 = 4)
+```
+
+## 面试变体
+
+### 变体 1：出现三次的数字 (LeetCode 137)
+
+除一个元素出现一次外，其余元素均出现三次，找出那个只出现一次的元素。
+
+```typescript
+function singleNumberII(nums: number[]): number {
+  // 统计每一位 1 出现的次数
+  // 如果某位 1 的次数不是 3 的倍数，说明结果在该位为 1
+  let result = 0;
+
+  for (let i = 0; i < 32; i++) {
+    let sum = 0;
+    for (const num of nums) {
+      sum += (num >> i) & 1; // 统计第 i 位有多少个 1
+    }
+    if (sum % 3 !== 0) {
+      result |= 1 << i; // 设置结果的第 i 位为 1
+    }
+  }
+
+  return result;
+}
+```
+
+### 变体 2：两个只出现一次的数字 (LeetCode 260)
+
+数组中有两个元素只出现一次，其余元素均出现两次，找出这两个元素。
+
+```typescript
+function singleNumberIII(nums: number[]): number[] {
+  // 第一次异或得到两个数的异或结果
+  let xor = 0;
+  for (const num of nums) {
+    xor ^= num;
+  }
+
+  // 找到最右边的 1 位（两个数在这一位不同）
+  const rightmostBit = xor & -xor;
+
+  // 根据这一位将数组分成两组，分别异或
+  let a = 0,
+    b = 0;
+  for (const num of nums) {
+    if (num & rightmostBit) {
+      a ^= num;
+    } else {
+      b ^= num;
+    }
+  }
+
+  return [a, b];
+}
+```
+
+### 变体 3：使用 Set 实现（空间 O(n)）
+
+```python
+def single_number_set(nums: list[int]) -> int:
+    """
+    使用集合的实现方式（不满足 O(1) 空间要求）
+    但更容易理解思路
+    """
+    seen = set()
+
+    for num in nums:
+        if num in seen:
+            seen.remove(num)  # 第二次出现，移除
+        else:
+            seen.add(num)      # 第一次出现，添加
+
+    # 集合中只剩下一个元素
+    return seen.pop()
+```
+
+## 常见错误
+
+1. **不理解异或性质**：直接使用哈希表统计，虽然正确但空间复杂度为 O(n)
+
+```typescript
+// 不推荐：空间复杂度 O(n)
+function singleNumberHash(nums: number[]): number {
+  const count = new Map<number, number>();
+  for (const num of nums) {
+    count.set(num, (count.get(num) ?? 0) + 1);
+  }
+  for (const [num, freq] of count) {
+    if (freq === 1) return num;
+  }
+  return -1;
+}
+```
+
+2. **初始化值错误**：将 `result` 初始化为数组第一个元素而非 0
+
+```typescript
+// 可以工作，但逻辑不够清晰
+// 正确做法：初始化为 0，利用 a ^ 0 = a 的性质
+let result = nums[0]; // 不推荐
+for (let i = 1; i < nums.length; i++) {
+  // 需要从索引 1 开始
+  result ^= nums[i];
+}
+```
+
+3. **使用减法或除法**：误以为可以用数学运算解决，但会导致溢出或精度问题
+
+4. **忽略边界条件**：忘记处理数组只有一个元素的情况（此时异或方法仍然正确）
+
+## Python 与 TypeScript 的差异
+
+| 特性     | Python               | TypeScript                          |
+| -------- | -------------------- | ----------------------------------- | ---- |
+| 整数类型 | 无限精度             | 64 位浮点数（位运算时转 32 位整数） |
+| 位运算符 | `^` `&` `            | ` `~` `<<` `>>`                     | 相同 |
+| 右移行为 | 算术右移（保留符号） | 算术右移                            |
+| 循环语法 | `for num in nums`    | `for (const num of nums)`           |
+| 变量声明 | 动态类型             | 需要 `let`/`const` 声明类型         |
+
+**注意**：TypeScript 中的位运算会将操作数转换为 32 位有符号整数，对于超出此范围的数值需要特别注意。

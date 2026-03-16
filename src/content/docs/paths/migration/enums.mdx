@@ -1,0 +1,741 @@
+---
+title: 枚举与常量定义
+kind: lesson
+level: migration
+topic: enums
+difficulty: medium
+prerequisites: ["types"]
+python_tags: ["enum", "Enum", "constant"]
+ts_tags: ["enum", "const enum", "union type", "as const"]
+description: 理解 Python 和 TypeScript 枚举与常量定义的差异
+---
+## 🎯 为什么这个很重要
+
+在 Python 里定义常量，习惯用全大写变量：
+
+```python
+# Python 常量定义
+MAX_RETRIES = 3
+DEFAULT_TIMEOUT = 30
+STATUS_ACTIVE = "active"
+```
+
+或者用枚举：
+
+```python
+from enum import Enum
+
+class Status(Enum):
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    PENDING = "pending"
+```
+
+转到 TypeScript 后，发现有多种选择：
+
+```typescript
+// 方式 1：普通常量
+const MAX_RETRIES = 3;
+
+// 方式 2：枚举
+enum Status {
+  Active = "active",
+  Inactive = "inactive",
+  Pending = "pending",
+}
+
+// 方式 3：联合类型（社区推荐）
+type Status = "active" | "inactive" | "pending";
+```
+
+哪种更好？为什么社区不推荐 `enum`？`const enum` 又是什么？这些问题的答案会影响代码质量和打包体积。
+
+## 💡 核心概念
+
+### 枚举 = 有名字的编号
+
+把一堆相关的常量放一起，给每个值一个名字：
+
+| 语言       | 比喻               | 特点                       |
+| ---------- | ------------------ | -------------------------- |
+| Python     | 带标签的盒子       | 运行时存在，可迭代，有方法 |
+| TypeScript | 编译时生成的映射表 | 编译后变成对象或直接删除   |
+| Union Type | 贴纸集合           | 零运行时开销，类型层面约束 |
+
+### TypeScript 枚举的三种形态
+
+```typescript
+// 1. 数字枚举（默认）
+enum Direction {
+  Up, // 0
+  Down, // 1
+  Left, // 2
+  Right, // 3
+}
+
+// 2. 字符串枚举
+enum Status {
+  Active = "ACTIVE",
+  Inactive = "INACTIVE",
+}
+
+// 3. const enum（编译后删除）
+const enum Colors {
+  Red = "RED",
+  Blue = "BLUE",
+}
+```
+
+### Union Type = 更轻量的枚举
+
+```typescript
+// 传统枚举
+enum Status {
+  Active = "active",
+  Inactive = "inactive",
+}
+
+// Union Type（推荐）
+type Status = "active" | "inactive";
+
+// 使用起来几乎一样
+function setUserStatus(status: Status) {
+  // ...
+}
+
+setUserStatus("active"); // 类型检查通过
+setUserStatus("pending"); // 编译报错
+```
+
+Union Type 没有运行时开销，编译后就是字符串，这也是社区更推荐它的原因。
+
+## 📚 Python 回顾
+
+### 基本枚举
+
+```python
+from enum import Enum
+
+# 定义枚举
+class Color(Enum):
+    RED = "red"
+    GREEN = "green"
+    BLUE = "blue"
+
+# 使用
+print(Color.RED)          # <Color.RED: 'red'>
+print(Color.RED.value)    # 'red'
+print(Color.RED.name)     # 'RED'
+
+# 遍历
+for color in Color:
+    print(color)
+# <Color.RED: 'red'>
+# <Color.GREEN: 'green'>
+# <Color.BLUE: 'blue'>
+```
+
+### 自动编号
+
+```python
+from enum import Enum, auto
+
+class Priority(Enum):
+    LOW = auto()      # 1
+    MEDIUM = auto()   # 2
+    HIGH = auto()     # 3
+
+print(Priority.LOW.value)  # 1
+```
+
+### 枚举比较
+
+```python
+from enum import Enum
+
+class Status(Enum):
+    ACTIVE = 1
+    INACTIVE = 2
+
+# 比较（只能用枚举成员比较）
+if Status.ACTIVE == Status.ACTIVE:
+    print("Same")
+
+# 不能和值比较
+if Status.ACTIVE == 1:  # False！
+    print("Never runs")
+
+# 要比较值
+if Status.ACTIVE.value == 1:  # True
+    print("Value match")
+```
+
+### Python 常量约定
+
+```python
+# Python 没有真正的常量，用全大写约定
+MAX_CONNECTIONS = 100
+DEFAULT_TIMEOUT = 30
+API_BASE_URL = "https://api.example.com"
+
+# 但技术上仍可修改
+MAX_CONNECTIONS = 200  # 可以修改，只是不推荐
+```
+
+## 🔧 TypeScript 等价写法
+
+### 数字枚举
+
+```typescript
+// TypeScript 数字枚举（默认从 0 开始）
+enum Direction {
+  Up, // 0
+  Down, // 1
+  Left, // 2
+  Right, // 3
+}
+
+// 可以指定起始值
+enum Priority {
+  Low = 1,
+  Medium, // 2
+  High, // 3
+}
+
+console.log(Direction.Up); // 0
+console.log(Direction[0]); // "Up"（反向映射）
+```
+
+### 字符串枚举
+
+```typescript
+// 字符串枚举（必须显式赋值）
+enum Status {
+  Active = "ACTIVE",
+  Inactive = "INACTIVE",
+  Pending = "PENDING",
+}
+
+console.log(Status.Active); // "ACTIVE"
+// 注意：字符串枚举没有反向映射
+console.log(Status["ACTIVE"]); // undefined
+```
+
+### const enum
+
+```typescript
+// const enum 会在编译时内联
+const enum Colors {
+  Red = "RED",
+  Green = "GREEN",
+  Blue = "BLUE",
+}
+
+// 编译前
+const myColor = Colors.Red;
+
+// 编译后（直接替换成值）
+const myColor = "RED";
+```
+
+### Union Type 替代枚举
+
+```typescript
+// 推荐：使用 Union Type
+type Status = "active" | "inactive" | "pending";
+
+type Direction = "up" | "down" | "left" | "right";
+
+type Priority = 1 | 2 | 3;
+
+// 配合 as const 锁定数组
+const STATUSES = ["active", "inactive", "pending"] as const;
+type Status = (typeof STATUSES)[number];
+// Status = "active" | "inactive" | "pending"
+```
+
+### 常量定义
+
+```typescript
+// 简单常量
+const MAX_RETRIES = 3;
+
+// 对象常量（用 as const 锁定）
+const CONFIG = {
+  maxRetries: 3,
+  timeout: 30,
+  baseUrl: "https://api.example.com",
+} as const;
+
+// CONFIG 的类型是 readonly，不能修改
+CONFIG.maxRetries = 5; // ❌ 编译错误
+```
+
+## ⚠️ 差异与常见陷阱
+
+### 1. 编译产物差异
+
+```typescript
+// 源代码
+enum Status {
+  Active = "ACTIVE",
+  Inactive = "INACTIVE",
+}
+
+// 编译后（会生成额外代码）
+var Status;
+(function (Status) {
+  Status["Active"] = "ACTIVE";
+  Status["Inactive"] = "INACTIVE";
+})(Status || (Status = {}));
+```
+
+Union Type 编译后完全消失：
+
+```typescript
+// 源代码
+type Status = "active" | "inactive";
+
+// 编译后
+// （什么都没有，类型被擦除）
+```
+
+### 2. 反向映射只有数字枚举有
+
+```typescript
+enum Direction {
+  Up,
+  Down,
+}
+
+console.log(Direction.Up); // 0
+console.log(Direction[0]); // "Up" ✅ 反向映射
+
+enum Status {
+  Active = "ACTIVE",
+}
+
+console.log(Status.Active); // "ACTIVE"
+console.log(Status["ACTIVE"]); // undefined ❌ 没有反向映射
+```
+
+### 3. const enum 的陷阱
+
+```typescript
+// ❌ 危险：const enum 在跨模块时可能出问题
+// ambient-context.d.ts
+declare const enum Colors {
+  Red = "RED",
+}
+
+// 其他文件中使用
+const c = Colors.Red; // 编译时需要能访问枚举定义
+```
+
+如果项目使用 `isolatedModules` 或 `preserveConstEnums`，`const enum` 行为会变化。
+
+### 4. 枚举无法 tree-shake
+
+```typescript
+// 即使只用了一个值，整个枚举都会被打包
+enum Status {
+  Active = "ACTIVE",
+  Inactive = "INACTIVE",
+  Pending = "PENDING",
+  Cancelled = "CANCELLED",
+}
+
+function isActive(s: Status) {
+  return s === Status.Active;
+}
+// 打包时，整个 Status 枚举都会被包含
+```
+
+Union Type 可以 tree-shake：
+
+```typescript
+type Status = "active" | "inactive" | "pending" | "cancelled";
+
+function isActive(s: Status) {
+  return s === "active";
+}
+// 打包时，只包含字符串 "active"
+```
+
+### 5. 计算成员 vs 常量成员
+
+```typescript
+// 常量成员（编译时确定）
+enum Size {
+  Small = 1,
+  Medium = 2,
+  Large = 3,
+}
+
+// 计算成员（运行时计算）
+enum Random {
+  A = Math.random(), // ✅ 允许，但不能在 const enum
+  B = "hello".length, // ✅ 允许
+}
+
+// ❌ const enum 不允许计算成员
+const enum Bad {
+  A = Math.random(), // 编译错误
+}
+```
+
+## 💬 开发者对话
+
+**Python 开发者**：TypeScript 的枚举为什么编译出来那么多代码？
+
+**TypeScript 开发者**：因为 TypeScript 枚举在运行时是真实存在的对象。数字枚举还有反向映射，所以生成了双向查找表。
+
+```typescript
+// 数字枚举编译后
+var Direction;
+(function (Direction) {
+  Direction[(Direction["Up"] = 0)] = "Up";
+  Direction[(Direction["Down"] = 1)] = "Down";
+})(Direction || (Direction = {}));
+// 相当于 { Up: 0, Down: 1, 0: "Up", 1: "Down" }
+```
+
+**Python 开发者**：那 `const enum` 是不是更好？
+
+**TypeScript 开发者**：`const enum` 编译后会被内联，没有运行时开销。但跨模块时有坑，而且社区普遍认为"显式优于隐式"。
+
+**Python 开发者**：所以推荐用 Union Type？
+
+**TypeScript 开发者**：是的。Union Type 更轻量，类型安全，而且打包后体积更小：
+
+```typescript
+// ❌ 不推荐
+enum Status {
+  Active = "active",
+  Inactive = "inactive",
+}
+
+// ✅ 推荐
+type Status = "active" | "inactive";
+
+// 如果需要运行时访问所有值
+const STATUSES = ["active", "inactive"] as const;
+type Status = (typeof STATUSES)[number];
+```
+
+**Python 开发者**：那遍历枚举怎么办？
+
+**TypeScript 开发者**：用数组 + `as const`：
+
+```typescript
+const DIRECTIONS = ["up", "down", "left", "right"] as const;
+type Direction = (typeof DIRECTIONS)[number];
+
+// 遍历
+for (const dir of DIRECTIONS) {
+  console.log(dir);
+}
+```
+
+**Python 开发者**：`as const` 是什么？
+
+**TypeScript 开发者**：锁定类型为字面量类型。没有 `as const`，数组类型是 `string[]`；有了 `as const`，类型是 `readonly ["up", "down", "left", "right"]`。
+
+```typescript
+const arr1 = ["a", "b"]; // string[]
+const arr2 = ["a", "b"] as const; // readonly ["a", "b"]
+
+arr1.push("c"); // ✅ 可以修改
+arr2.push("c"); // ❌ 只读，不能修改
+```
+
+## 🤔 试试看
+
+### 预测输出
+
+下面这段 TypeScript 代码编译后会变成什么？
+
+```typescript
+const enum Colors {
+  Red = "#ff0000",
+  Green = "#00ff00",
+  Blue = "#0000ff",
+}
+
+function getPrimaryColor(): string {
+  return Colors.Red;
+}
+
+console.log(getPrimaryColor());
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+编译后：
+
+```javascript
+function getPrimaryColor() {
+  return "#ff0000" /* Colors.Red */;
+}
+
+console.log(getPrimaryColor());
+```
+
+`const enum` 的值直接内联到代码中，枚举定义被完全删除。这是 `const enum` 的优势：零运行时开销。
+
+</details>
+
+### 找错误
+
+下面这段代码有什么问题？
+
+```typescript
+enum Status {
+  Active = "active",
+  Inactive = "inactive",
+}
+
+function isActive(status: Status): boolean {
+  return status === "active"; // 类型错误？
+}
+
+const current: Status = "active";
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+问题在于类型不匹配。`Status` 是枚举类型，不是字符串字面量。
+
+```typescript
+// ❌ 错误：类型 "active" 不能赋给 Status
+const current: Status = "active";
+
+// ✅ 正确：使用枚举成员
+const current: Status = Status.Active;
+
+// ✅ 函数里也要用枚举成员
+function isActive(status: Status): boolean {
+  return status === Status.Active;
+}
+```
+
+如果想直接用字符串，应该用 Union Type：
+
+```typescript
+type Status = "active" | "inactive";
+
+const current: Status = "active"; // ✅ 正确
+```
+
+</details>
+
+### 代码翻译
+
+将以下 Python 代码转换为 TypeScript：
+
+```python
+from enum import Enum
+
+class HttpMethod(Enum):
+    GET = "GET"
+    POST = "POST"
+    PUT = "PUT"
+    DELETE = "DELETE"
+
+def send_request(method: HttpMethod, url: str) -> dict:
+    print(f"Sending {method.value} request to {url}")
+    return {"status": 200}
+
+# 使用
+send_request(HttpMethod.GET, "https://api.example.com")
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+推荐使用 Union Type：
+
+```typescript
+// 方式 1：Union Type（推荐）
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+
+function sendRequest(method: HttpMethod, url: string): Record<string, number> {
+  console.log(`Sending ${method} request to ${url}`);
+  return { status: 200 };
+}
+
+sendRequest("GET", "https://api.example.com");
+
+// 方式 2：数组 + as const（需要遍历时用）
+const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE"] as const;
+type HttpMethod = (typeof HTTP_METHODS)[number];
+
+function sendRequest(method: HttpMethod, url: string): Record<string, number> {
+  console.log(`Sending ${method} request to ${url}`);
+  return { status: 200 };
+}
+
+// 可以遍历
+for (const m of HTTP_METHODS) {
+  console.log(m);
+}
+```
+
+如果必须用枚举：
+
+```typescript
+enum HttpMethod {
+  GET = "GET",
+  POST = "POST",
+  PUT = "PUT",
+  DELETE = "DELETE",
+}
+
+function sendRequest(method: HttpMethod, url: string): Record<string, number> {
+  console.log(`Sending ${method} request to ${url}`);
+  return { status: 200 };
+}
+
+sendRequest(HttpMethod.GET, "https://api.example.com");
+```
+
+</details>
+
+## 📊 优势对比
+
+| 特性         | Python Enum | TypeScript Enum | Union Type |
+| ------------ | ----------- | --------------- | ---------- |
+| 运行时存在   | 是          | 是              | 否         |
+| 反向映射     | 有          | 数字枚举有      | 无         |
+| 遍历支持     | 原生支持    | 原生支持        | 需额外数组 |
+| 打包体积     | 小          | 较大            | 零开销     |
+| Tree-shaking | 不适用      | 不支持          | 支持       |
+| 类型安全     | 运行时      | 编译时          | 编译时     |
+| 计算成员     | 支持        | 支持            | 不适用     |
+| 跨模块兼容   | 无问题      | const enum 有坑 | 无问题     |
+
+## 🎓 面试实战
+
+### 基础问题
+
+**Q: TypeScript 的 `enum` 和 `type Status = 'a' | 'b'` 有什么区别？**
+
+:::tip[答案要点]
+
+- `enum` 编译后生成运行时代码，Union Type 会被完全擦除
+- `enum` 支持反向映射（数字枚举），Union Type 不支持
+- Union Type 更轻量，支持 tree-shaking
+- 社区推荐使用 Union Type 除非需要运行时遍历
+
+```typescript
+// enum 编译后
+var Status;
+(function (Status) {
+  Status["Active"] = "ACTIVE";
+})(Status || (Status = {}));
+
+// Union Type 编译后
+// （空）
+```
+
+:::
+
+**Q: 什么时候用 `const enum`？**
+
+:::tip[答案要点]
+
+`const enum` 编译时内联，零运行时开销。但有风险：
+
+```typescript
+// 编译前
+const enum Colors {
+  Red = "#ff0000",
+}
+const c = Colors.Red;
+
+// 编译后
+const c = "#ff0000";
+```
+
+风险：
+
+1. 跨模块时依赖编译器设置
+2. `isolatedModules` 模式下不能用
+3. 调试时看不到枚举名
+
+推荐：直接用 Union Type，避免 `const enum`。
+
+:::
+
+### 进阶问题
+
+**Q: 如何实现可遍历的 Union Type？**
+
+:::tip[答案要点]
+
+用数组 + `as const` + 类型推导：
+
+```typescript
+// 定义数组和类型
+const STATUSES = ["active", "inactive", "pending"] as const;
+type Status = (typeof STATUSES)[number];
+
+// 类型检查
+function setStatus(status: Status) {
+  console.log(status);
+}
+
+setStatus("active"); // ✅
+setStatus("unknown"); // ❌ 编译错误
+
+// 遍历
+for (const s of STATUSES) {
+  console.log(s);
+}
+
+// 判断是否有效
+function isValidStatus(s: string): s is Status {
+  return STATUSES.includes(s as Status);
+}
+```
+
+技巧：`(typeof ARR)[number]` 从数组推导出联合类型。
+
+:::
+
+**Q: 数字枚举的反向映射是怎么实现的？**
+
+:::tip[答案要点]
+
+编译后生成双向对象：
+
+```typescript
+// 源代码
+enum Direction {
+  Up,
+  Down,
+}
+
+// 编译后
+var Direction;
+(function (Direction) {
+  Direction[(Direction["Up"] = 0)] = "Up";
+  Direction[(Direction["Down"] = 1)] = "Down";
+})(Direction || (Direction = {}));
+
+// 实际生成的对象
+// Direction = {
+//   Up: 0,
+//   Down: 1,
+//   0: "Up",
+//   1: "Down"
+// }
+```
+
+所以 `Direction.Up` 是 `0`，`Direction[0]` 是 `"Up"`。
+
+字符串枚举没有反向映射，因为值就是字符串，没有额外信息需要存储。
+
+:::

@@ -7,26 +7,144 @@ time_complexity: "O(n)"
 space_complexity: "O(1)"
 description: 反转一个单链表
 ---
-
-## 问题描述
+## 📝 问题描述
 
 给你单链表的头节点 `head`，请你反转链表，并返回反转后的链表。
 
-## 思路分析
+```
+输入: 1 → 2 → 3 → 4 → 5 → None
+输出: 5 → 4 → 3 → 2 → 1 → None
+```
 
-使用三指针法迭代反转：
-- `prev`：前一个节点
-- `curr`：当前节点
-- `next`：临时保存下一个节点
+## 💡 思路引导
 
-遍历链表，将每个节点的 `next` 指向前一个节点。
+**第一步：理解问题**
 
-## 复杂度分析
+链表反转，就是要把箭头方向全部反过来：
 
-- **时间复杂度**：O(n)，遍历链表一次
-- **空间复杂度**：O(1)，只使用常数额外空间
+- 原来：1 → 2 → 3 → 4 → 5 → None
+- 目标：None ← 1 ← 2 ← 3 ← 4 ← 5
 
-## Python 实现
+**第二步：关键观察**
+
+每个节点有个 `next` 指针，指向下一个节点。要反转链表，就要把每个节点的 `next` 指针"调头"，指向前一个节点。
+
+但问题来了：如果我先把节点 1 的 `next` 改成 None，那节点 2 去哪找？链表断了！
+
+**第三步：需要哪些变量？**
+
+为了避免"链表断了"的问题，需要三个指针：
+
+| 变量        | 作用                       | 初始值 |
+| ----------- | -------------------------- | ------ |
+| `prev`      | 前一个节点（反转后指向它） | `None` |
+| `curr`      | 当前正在处理的节点         | `head` |
+| `next_temp` | 暂存下一个节点（防止断链） | -      |
+
+**第四步：每一步做什么？**
+
+对于每个节点，执行四步操作：
+
+1. **保存后路**：`next_temp = curr.next`（先记住下一个是谁，不然改完就找不到了）
+2. **反转指针**：`curr.next = prev`（把箭头指向前一个）
+3. **前进准备**：`prev = curr`（前一个节点变成当前节点）
+4. **移动指针**：`curr = next_temp`（处理下一个节点）
+
+**第五步：什么时候结束？**
+
+当 `curr` 变成 `None` 时，说明已经处理完所有节点。此时 `prev` 就是新的头节点。
+
+## 🎯 生活化类比
+
+反转链表就像**翻书**：
+
+想象你手里有一叠连在一起的书签，每张书签用绳子连着下一张：
+
+```
+[书签1] —绳子→ [书签2] —绳子→ [书签3] —绳子→ [书签4]
+```
+
+现在要把绳子方向反过来，但你只有两只手，不能同时抓住所有书签。
+
+**解决办法**：
+
+1. 左手拿"上一张"（prev，一开始是空的）
+2. 右手拿"当前这张"（curr）
+3. 先用备用夹子夹住"下一张"的位置（next_temp）
+4. 把当前这张的绳子解下来，绑到左手那张上
+5. 左右手各往前挪一张
+6. 重复，直到右手拿的是空气（None）
+
+最后左手拿的就是新的第一张！
+
+## 🎨 可视化图示
+
+**初始状态：**
+
+```
+prev=None    curr=1
+               ↓
+            ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐
+            │  1  │ ──→│  2  │ ──→│  3  │ ──→│  4  │ ──→ None
+            └─────┘    └─────┘    └─────┘    └─────┘
+```
+
+**第一轮循环后：**
+
+```
+             prev=1    curr=2
+               ↓         ↓
+            ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐
+      None ←│  1  │    │  2  │ ──→│  3  │ ──→│  4  │ ──→ None
+            └─────┘    └─────┘    └─────┘    └─────┘
+```
+
+**第二轮循环后：**
+
+```
+                        prev=2    curr=3
+                          ↓         ↓
+            ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐
+      None ←│  1  │ ←──│  2  │    │  3  │ ──→│  4  │ ──→ None
+            └─────┘    └─────┘    └─────┘    └─────┘
+```
+
+**第三轮循环后：**
+
+```
+                                   prev=3    curr=4
+                                     ↓         ↓
+            ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐
+      None ←│  1  │ ←──│  2  │ ←──│  3  │    │  4  │ ──→ None
+            └─────┘    └─────┘    └─────┘    └─────┘
+```
+
+**第四轮循环后：**
+
+```
+                                              prev=4    curr=None
+                                                ↓
+            ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐
+      None ←│  1  │ ←──│  2  │ ←──│  3  │ ←──│  4  │
+            └─────┘    └─────┘    └─────┘    └─────┘
+```
+
+**循环结束，返回 prev：**
+
+```
+            ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐
+      None ←│  1  │ ←──│  2  │ ←──│  3  │ ←──│  4  │ ← None
+            └─────┘    └─────┘    └─────┘    └─────┘
+               ↑
+             head
+```
+
+## 📊 复杂度分析
+
+- **时间复杂度**：O(n)，遍历链表一次，每个节点处理一次
+- **空间复杂度**：O(1)，只使用三个指针变量
+
+## 🐍 Python 实现
 
 ```python
 class ListNode:
@@ -37,22 +155,22 @@ class ListNode:
 def reverse_list(head: ListNode | None) -> ListNode | None:
     """
     反转链表 - Python 实现
-    
+
     Args:
         head: 链表头节点
-    
+
     Returns:
         反转后的链表头节点
     """
     prev = None
     curr = head
-    
+
     while curr:
         next_temp = curr.next  # 保存下一个节点
         curr.next = prev       # 反转当前节点的指向
         prev = curr            # 移动 prev
         curr = next_temp       # 移动 curr
-    
+
     return prev
 
 
@@ -77,20 +195,20 @@ reversed_head = reverse_list(head)
 print(print_list(reversed_head))  # [5, 4, 3, 2, 1]
 ```
 
-## TypeScript 实现
+## 📘 TypeScript 实现
 
 ```typescript
 /**
  * 链表节点定义
  */
 class ListNode {
-    val: number;
-    next: ListNode | null;
-    
-    constructor(val?: number, next?: ListNode | null) {
-        this.val = val === undefined ? 0 : val;
-        this.next = next === undefined ? null : next;
-    }
+  val: number;
+  next: ListNode | null;
+
+  constructor(val?: number, next?: ListNode | null) {
+    this.val = val === undefined ? 0 : val;
+    this.next = next === undefined ? null : next;
+  }
 }
 
 /**
@@ -99,52 +217,219 @@ class ListNode {
  * @returns 反转后的链表头节点
  */
 function reverseList(head: ListNode | null): ListNode | null {
-    let prev: ListNode | null = null;
-    let curr: ListNode | null = head;
-    
-    while (curr !== null) {
-        const nextTemp = curr.next;  // 保存下一个节点
-        curr.next = prev;            // 反转当前节点的指向
-        prev = curr;                 // 移动 prev
-        curr = nextTemp;             // 移动 curr
-    }
-    
-    return prev;
+  let prev: ListNode | null = null;
+  let curr: ListNode | null = head;
+
+  while (curr !== null) {
+    const nextTemp = curr.next; // 保存下一个节点
+    curr.next = prev; // 反转当前节点的指向
+    prev = curr; // 移动 prev
+    curr = nextTemp; // 移动 curr
+  }
+
+  return prev;
 }
 
 // 测试用例
 function createList(values: number[]): ListNode | null {
-    const dummy = new ListNode(0);
-    let curr: ListNode = dummy;
-    for (const v of values) {
-        curr.next = new ListNode(v);
-        curr = curr.next;
-    }
-    return dummy.next;
+  const dummy = new ListNode(0);
+  let curr: ListNode = dummy;
+  for (const v of values) {
+    curr.next = new ListNode(v);
+    curr = curr.next;
+  }
+  return dummy.next;
 }
 
 function printList(head: ListNode | null): number[] {
-    const result: number[] = [];
-    while (head !== null) {
-        result.push(head.val);
-        head = head.next;
-    }
-    return result;
+  const result: number[] = [];
+  while (head !== null) {
+    result.push(head.val);
+    head = head.next;
+  }
+  return result;
 }
 
 const head = createList([1, 2, 3, 4, 5]);
 const reversedHead = reverseList(head);
-console.log(printList(reversedHead));  // [5, 4, 3, 2, 1]
+console.log(printList(reversedHead)); // [5, 4, 3, 2, 1]
 ```
 
-## 面试变体
+## 🤔 互动练习
+
+### 练习 1：预测指针变化
+
+给定链表：`1 → 2 → 3 → None`
+
+填写下表每轮循环后三个指针的值：
+
+| 循环次数  | prev | curr | next_temp |
+| --------- | ---- | ---- | --------- |
+| 初始      | None | 1    | -         |
+| 第 1 轮后 | ?    | ?    | ?         |
+| 第 2 轮后 | ?    | ?    | ?         |
+| 第 3 轮后 | ?    | ?    | ?         |
+
+<details>
+<summary>点击查看答案</summary>
+
+| 循环次数  | prev  | curr  | next_temp |
+| --------- | ----- | ----- | --------- |
+| 初始      | None  | 节点1 | -         |
+| 第 1 轮后 | 节点1 | 节点2 | 节点2     |
+| 第 2 轮后 | 节点2 | 节点3 | 节点3     |
+| 第 3 轮后 | 节点3 | None  | None      |
+
+循环结束时，`prev` 指向节点 3，就是反转后的新头节点。
+
+</details>
+
+### 练习 2：找错误
+
+下面这段反转链表的代码有 bug，请找出问题：
+
+```python
+def reverse_list(head):
+    prev = None
+    curr = head
+
+    while curr:
+        curr.next = prev      # 第一行
+        prev = curr           # 第二行
+        curr = curr.next      # 第三行
+
+    return prev
+```
+
+<details>
+<summary>点击查看问题所在</summary>
+
+**问题**：第三行 `curr = curr.next` 是错的！
+
+**原因**：在第一行已经把 `curr.next` 改成了 `prev`，所以第三行拿到的不是"下一个节点"，而是"前一个节点"！
+
+**正确写法**：必须在修改 `curr.next` 之前保存下一个节点：
+
+```python
+while curr:
+    next_temp = curr.next     # 先保存！
+    curr.next = prev          # 再反转
+    prev = curr
+    curr = next_temp          # 用保存的值
+```
+
+</details>
+
+### 练习 3：返回值陷阱
+
+下面这段代码能正确反转链表，但返回值有问题：
+
+```python
+def reverse_list(head):
+    prev = None
+    curr = head
+
+    while curr:
+        next_temp = curr.next
+        curr.next = prev
+        prev = curr
+        curr = next_temp
+
+    return curr  # 这里返回什么？
+```
+
+如果输入 `1 → 2 → 3 → None`，这个函数会返回什么？
+
+<details>
+<summary>点击查看答案</summary>
+
+返回 `None`！
+
+循环结束时，`curr` 已经走到链表末尾，变成 `None` 了。正确的返回值应该是 `prev`，它指向反转后的头节点。
+
+</details>
+
+## 🎯 面试变体
 
 1. **递归实现**：使用递归方式反转链表
 2. **反转指定区间**：只反转从位置 m 到 n 的链表部分
-3. **k个一组反转**：每 k 个节点为一组进行反转
+3. **k 个一组反转**：每 k 个节点为一组进行反转
 
-## 常见错误
+## ⚠️ 常见错误分析
 
-1. 忘记保存下一个节点就修改当前节点的 next
-2. 返回的是 curr 而不是 prev（curr 已经是 null）
-3. 递归实现时忘记递归返回新的头节点
+### 错误 1：忘记保存下一个节点
+
+```python
+# ❌ 错误写法
+while curr:
+    curr.next = prev    # 先改了指针
+    prev = curr
+    curr = curr.next    # 这里 curr.next 已经是 prev 了！
+```
+
+**后果**：链表断了，`curr` 指向了前一个节点而不是下一个节点，导致死循环或提前退出。
+
+**正确写法**：
+
+```python
+# ✅ 正确写法
+while curr:
+    next_temp = curr.next   # 先保存下一个节点
+    curr.next = prev        # 再反转
+    prev = curr
+    curr = next_temp        # 用保存的值
+```
+
+### 错误 2：返回错误的节点
+
+```python
+# ❌ 错误写法
+return curr    # 循环结束时 curr 是 None！
+```
+
+**原因**：循环条件是 `while curr`，当 `curr` 变成 `None` 时才退出。此时 `curr` 是空指针，不是头节点。
+
+**正确写法**：
+
+```python
+# ✅ 正确写法
+return prev    # prev 指向反转后的最后一个节点，也就是新头
+```
+
+### 错误 3：递归忘记返回新头
+
+```python
+# ❌ 错误写法（递归版本）
+def reverse_list(head):
+    if not head or not head.next:
+        return head
+    reverse_list(head.next)    # 忘记接收返回值
+    head.next.next = head
+    head.next = None
+    # 忘记返回新头！
+```
+
+**后果**：外层调用拿不到新头节点，返回 `None`。
+
+**正确写法**：
+
+```python
+# ✅ 正确写法（递归版本）
+def reverse_list(head):
+    if not head or not head.next:
+        return head
+    new_head = reverse_list(head.next)  # 接收返回值
+    head.next.next = head
+    head.next = None
+    return new_head                      # 返回新头
+```
+
+### 📝 记忆口诀
+
+反转链表三步走：
+
+1. **先存后**：`next_temp = curr.next`
+2. **再反指**：`curr.next = prev`
+3. **往前移**：`prev = curr, curr = next_temp`
+
+最后返回 `prev`，不是 `curr`！

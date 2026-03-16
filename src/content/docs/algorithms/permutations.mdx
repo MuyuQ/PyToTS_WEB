@@ -1,0 +1,353 @@
+---
+title: 全排列 (Permutations)
+kind: algorithm
+difficulty: medium
+tags: ["backtracking", "recursion"]
+time_complexity: "O(n × n!)"
+space_complexity: "O(n)"
+description: 生成数组的所有全排列，回溯法经典应用
+---
+## 问题描述
+
+给定一个**不含重复数字**的数组 `nums`，返回其所有可能的全排列。
+
+**要求**：可以按任意顺序返回答案。
+
+**示例**：
+
+- 输入：`nums = [1, 2, 3]`
+- 输出：`[[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]`
+
+## 思路分析
+
+### 方法一：回溯（交换法）
+
+全排列问题可以看作：在每个位置上选择一个未使用的元素。
+
+1. 从第一个位置开始，依次将每个元素放到当前位置
+2. 交换当前位置元素与目标元素
+3. 递归处理下一个位置
+4. 回溯时交换回来（恢复现场）
+
+关键点：通过交换保证每个元素只使用一次。
+
+### 方法二：回溯（标记法）
+
+使用一个 `used` 数组标记已使用的元素：
+
+1. 遍历所有元素，选择未使用的元素加入当前路径
+2. 标记该元素为已使用
+3. 递归处理下一位置
+4. 回溯时取消标记，移除元素
+
+### 方法三：迭代法（字典序）
+
+利用下一个排列的性质：
+
+1. 将数组排序作为初始排列
+2. 不断生成下一个排列，直到无法生成为止
+
+## 复杂度分析
+
+- **时间复杂度**：O(n × n!)，共 n! 个排列，每个排列需要 O(n) 时间拷贝
+- **空间复杂度**：O(n)，递归栈深度（不计结果集）
+
+## Python 实现
+
+```python
+from typing import List
+
+def permute_swap(nums: List[int]) -> List[List[int]]:
+    """
+    全排列 - 交换法回溯
+
+    Args:
+        nums: 整数数组（元素互不相同）
+
+    Returns:
+        所有可能的全排列
+    """
+    result = []
+    n = len(nums)
+
+    def backtrack(first: int) -> None:
+        """
+        回溯函数 - 交换法
+
+        Args:
+            first: 当前要确定的位置
+        """
+        # 所有位置都已确定
+        if first == n:
+            result.append(nums[:])  # 拷贝当前排列
+            return
+
+        # 尝试将每个未确定的元素放到 first 位置
+        for i in range(first, n):
+            # 交换
+            nums[first], nums[i] = nums[i], nums[first]
+            # 递归处理下一位置
+            backtrack(first + 1)
+            # 撤销交换（回溯）
+            nums[first], nums[i] = nums[i], nums[first]
+
+    backtrack(0)
+    return result
+
+
+def permute_used(nums: List[int]) -> List[List[int]]:
+    """
+    全排列 - 标记法回溯
+
+    Args:
+        nums: 整数数组（元素互不相同）
+
+    Returns:
+        所有可能的全排列
+    """
+    result = []
+    n = len(nums)
+    used = [False] * n  # 标记元素是否已使用
+
+    def backtrack(path: List[int]) -> None:
+        """
+        回溯函数 - 标记法
+
+        Args:
+            path: 当前已选择的元素
+        """
+        # 所有元素都已选择
+        if len(path) == n:
+            result.append(path[:])  # 拷贝
+            return
+
+        # 遍历所有元素
+        for i in range(n):
+            if used[i]:
+                continue  # 跳过已使用的元素
+
+            # 选择当前元素
+            used[i] = True
+            path.append(nums[i])
+            # 递归
+            backtrack(path)
+            # 撤销选择（回溯）
+            path.pop()
+            used[i] = False
+
+    backtrack([])
+    return result
+
+
+def permute_iterative(nums: List[int]) -> List[List[int]]:
+    """
+    全排列 - 迭代法（字典序）
+
+    Args:
+        nums: 整数数组（元素互不相同）
+
+    Returns:
+        所有可能的全排列（字典序）
+    """
+    def next_permutation(arr: List[int]) -> bool:
+        """
+        生成下一个排列（原地修改）
+
+        Returns:
+            是否存在下一个排列
+        """
+        n = len(arr)
+        # 从后向前找第一个升序对
+        i = n - 2
+        while i >= 0 and arr[i] >= arr[i + 1]:
+            i -= 1
+
+        if i < 0:
+            return False  # 已是最大排列
+
+        # 从后向前找第一个大于 arr[i] 的元素
+        j = n - 1
+        while arr[j] <= arr[i]:
+            j -= 1
+
+        # 交换
+        arr[i], arr[j] = arr[j], arr[i]
+        # 反转 i+1 到末尾
+        arr[i + 1:] = arr[i + 1:][::-1]
+        return True
+
+    result = []
+    nums = sorted(nums)  # 从最小排列开始
+    result.append(nums[:])
+
+    while next_permutation(nums):
+        result.append(nums[:])
+
+    return result
+
+
+# 测试用例
+nums = [1, 2, 3]
+
+print("交换法:", permute_swap(nums))
+print("标记法:", permute_used(nums))
+print("迭代法:", permute_iterative(nums))
+
+# 验证结果数量
+print(f"排列总数: {len(permute_swap(nums))}")  # 6 = 3!
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * 全排列 - 交换法回溯
+ * @param nums 整数数组（元素互不相同）
+ * @returns 所有可能的全排列
+ */
+function permuteSwap(nums: number[]): number[][] {
+  const result: number[][] = [];
+  const n = nums.length;
+
+  /**
+   * 回溯函数 - 交换法
+   * @param first 当前要确定的位置
+   */
+  function backtrack(first: number): void {
+    // 所有位置都已确定
+    if (first === n) {
+      result.push([...nums]); // 拷贝当前排列
+      return;
+    }
+
+    // 尝试将每个未确定的元素放到 first 位置
+    for (let i = first; i < n; i++) {
+      // 交换
+      [nums[first], nums[i]] = [nums[i], nums[first]];
+      // 递归处理下一位置
+      backtrack(first + 1);
+      // 撤销交换（回溯）
+      [nums[first], nums[i]] = [nums[i], nums[first]];
+    }
+  }
+
+  backtrack(0);
+  return result;
+}
+
+/**
+ * 全排列 - 标记法回溯
+ * @param nums 整数数组（元素互不相同）
+ * @returns 所有可能的全排列
+ */
+function permuteUsed(nums: number[]): number[][] {
+  const result: number[][] = [];
+  const n = nums.length;
+  const used = new Array(n).fill(false); // 标记元素是否已使用
+
+  /**
+   * 回溯函数 - 标记法
+   * @param path 当前已选择的元素
+   */
+  function backtrack(path: number[]): void {
+    // 所有元素都已选择
+    if (path.length === n) {
+      result.push([...path]); // 拷贝
+      return;
+    }
+
+    // 遍历所有元素
+    for (let i = 0; i < n; i++) {
+      if (used[i]) continue; // 跳过已使用的元素
+
+      // 选择当前元素
+      used[i] = true;
+      path.push(nums[i]);
+      // 递归
+      backtrack(path);
+      // 撤销选择（回溯）
+      path.pop();
+      used[i] = false;
+    }
+  }
+
+  backtrack([]);
+  return result;
+}
+
+/**
+ * 全排列 - 迭代法（字典序）
+ * @param nums 整数数组（元素互不相同）
+ * @returns 所有可能的全排列（字典序）
+ */
+function permuteIterative(nums: number[]): number[][] {
+  /**
+   * 生成下一个排列（原地修改）
+   * @returns 是否存在下一个排列
+   */
+  function nextPermutation(arr: number[]): boolean {
+    const n = arr.length;
+    // 从后向前找第一个升序对
+    let i = n - 2;
+    while (i >= 0 && arr[i] >= arr[i + 1]) {
+      i--;
+    }
+
+    if (i < 0) return false; // 已是最大排列
+
+    // 从后向前找第一个大于 arr[i] 的元素
+    let j = n - 1;
+    while (arr[j] <= arr[i]) {
+      j--;
+    }
+
+    // 交换
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+    // 反转 i+1 到末尾
+    let left = i + 1;
+    let right = n - 1;
+    while (left < right) {
+      [arr[left], arr[right]] = [arr[right], arr[left]];
+      left++;
+      right--;
+    }
+    return true;
+  }
+
+  const result: number[][] = [];
+  const sorted = [...nums].sort((a, b) => a - b); // 从最小排列开始
+  result.push([...sorted]);
+
+  while (nextPermutation(sorted)) {
+    result.push([...sorted]);
+  }
+
+  return result;
+}
+
+// 测试用例
+const nums = [1, 2, 3];
+
+console.log("交换法:", permuteSwap(nums));
+console.log("标记法:", permuteUsed(nums));
+console.log("迭代法:", permuteIterative(nums));
+
+// 验证结果数量
+console.log(`排列总数: ${permuteSwap(nums).length}`); // 6 = 3!
+```
+
+## 面试变体
+
+1. **全排列 II**：数组包含重复元素，返回不重复的排列（需要排序 + 跳过重复）
+2. **第 k 个排列**：直接计算第 k 个排列，不生成全部
+3. **下一个排列**：LeetCode 31，原地修改得到下一个排列
+4. **排列序列**：给定 n 和 k，返回第 k 个排列
+5. **字符串排列**：输入为字符串的全排列
+
+## 常见错误
+
+1. **忘记拷贝**：`result.append(path)` 而不是 `result.append(path[:])`，导致结果全为空
+2. **交换法范围错误**：`for i in range(first + 1, n)` 漏掉了 first 本身
+3. **标记法忘记重置**：递归后忘记 `used[i] = False`
+4. **重复元素未处理**：全排列 II 中忘记排序和跳过重复元素
+5. **迭代法反转范围错误**：`arr[i + 1:]` 反转时索引计算错误

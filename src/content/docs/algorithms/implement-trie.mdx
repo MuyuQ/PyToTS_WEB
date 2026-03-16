@@ -1,0 +1,437 @@
+---
+title: 实现 Trie (Implement Trie)
+kind: algorithm
+difficulty: medium
+tags: ["trie", "design", "hash-table"]
+time_complexity: "O(m) for insert/search/startsWith, m = key length"
+space_complexity: "O(total characters)"
+description: 实现一个 Trie (前缀树)，支持插入、搜索单词和前缀匹配
+---
+## 问题描述
+
+请你实现一个 Trie (前缀树)，包含 `insert`、`search` 和 `startsWith` 三个操作：
+
+- `void insert(String word)` 向 Trie 中插入字符串 `word`
+- `boolean search(String word)` 如果 `word` 在 Trie 中，返回 `true`，否则返回 `false`
+- `boolean startsWith(String prefix)` 如果之前插入的字符串中有以 `prefix` 为前缀的，返回 `true`，否则返回 `false`
+
+**示例：**
+
+```
+Trie trie = new Trie();
+trie.insert("apple");
+trie.search("apple");   // 返回 true
+trie.search("app");      // 返回 false
+trie.startsWith("app");  // 返回 true
+trie.insert("app");
+trie.search("app");      // 返回 true
+```
+
+## 💡 思路引导
+
+**第一步：理解前缀树**
+
+Trie 是一种树形数据结构，专门用于处理字符串集合：
+
+- 每个节点代表一个字符
+- 从根节点到某节点的路径代表一个前缀
+- 根节点代表空字符串
+
+```
+         root
+        / | \
+       a  b  c
+       |  |  |
+       p  a  a
+       |  |  |
+       p  t  t
+       |     |
+       l     (end)
+       |
+       e
+       |
+      (end)
+
+插入: "app", "apple", "bat", "cat"
+```
+
+**第二步：节点设计**
+
+每个节点需要：
+
+1. 子节点映射：`字符 -> 子节点`
+2. 结束标记：是否是某个单词的结尾
+
+**第三步：操作实现**
+
+- `insert`：遍历字符，不存在则创建，最后标记结束
+- `search`：遍历字符，必须完整匹配且是单词结尾
+- `startsWith`：遍历字符，只要路径存在就返回 true
+
+## 🎨 直观理解
+
+想象一个自动补全系统：
+
+- 输入 "app"，系统可以补全 "apple"、"application"、"append"
+- Trie 就是让这种补全变得高效的秘密武器
+
+为什么不用简单的数组或哈希表？
+
+```
+问题：找出所有以 "app" 开头的单词
+
+方法 1：遍历所有单词，检查前缀
+["apple", "banana", "appetite", "cherry", "application"]
+时间：O(n * m)，n = 单词数，m = 平均长度
+
+方法 2：Trie
+只需走到 "app" 节点，子树所有单词都是答案
+时间：O(3)，3 是 "app" 的长度
+```
+
+Trie 的优势：前缀相关操作极其高效。
+
+## 📊 复杂度分析
+
+- **时间复杂度**：
+  - `insert`：O(m)，m 是单词长度
+  - `search`：O(m)
+  - `startsWith`：O(m)
+- **空间复杂度**：O(N)，N 是所有插入字符串的字符总数
+
+## Python 实现
+
+```python
+class TrieNode:
+    """Trie 节点"""
+    def __init__(self):
+        self.children = {}     # 字符 -> 子节点
+        self.is_end = False    # 是否是单词结尾
+
+
+class Trie:
+    """
+    Trie (前缀树) - Python 实现
+    """
+
+    def __init__(self):
+        self.root = TrieNode()
+
+    def insert(self, word: str) -> None:
+        """插入单词"""
+        node = self.root
+        for char in word:
+            # 字符不存在则创建新节点
+            if char not in node.children:
+                node.children[char] = TrieNode()
+            node = node.children[char]
+        # 标记单词结尾
+        node.is_end = True
+
+    def search(self, word: str) -> bool:
+        """搜索单词，必须完整匹配"""
+        node = self._find_node(word)
+        # 必须存在且是单词结尾
+        return node is not None and node.is_end
+
+    def startsWith(self, prefix: str) -> bool:
+        """检查前缀是否存在"""
+        return self._find_node(prefix) is not None
+
+    def _find_node(self, prefix: str):
+        """辅助方法：找到前缀对应的节点"""
+        node = self.root
+        for char in prefix:
+            if char not in node.children:
+                return None
+            node = node.children[char]
+        return node
+
+
+# 测试用例
+trie = Trie()
+trie.insert("apple")
+print(trie.search("apple"))     # True
+print(trie.search("app"))       # False
+print(trie.startsWith("app"))   # True
+trie.insert("app")
+print(trie.search("app"))       # True
+print(trie.startsWith("ap"))    # True
+print(trie.search("ap"))        # False
+```
+
+## TypeScript 实现
+
+```typescript
+/**
+ * Trie 节点
+ */
+class TrieNode {
+  children: Map<string, TrieNode>;
+  isEnd: boolean;
+
+  constructor() {
+    this.children = new Map();
+    this.isEnd = false;
+  }
+}
+
+/**
+ * Trie (前缀树) - TypeScript 实现
+ */
+class Trie {
+  private root: TrieNode;
+
+  constructor() {
+    this.root = new TrieNode();
+  }
+
+  insert(word: string): void {
+    let node = this.root;
+    for (const char of word) {
+      // 字符不存在则创建新节点
+      if (!node.children.has(char)) {
+        node.children.set(char, new TrieNode());
+      }
+      node = node.children.get(char)!;
+    }
+    // 标记单词结尾
+    node.isEnd = true;
+  }
+
+  search(word: string): boolean {
+    const node = this.findNode(word);
+    // 必须存在且是单词结尾
+    return node !== null && node.isEnd;
+  }
+
+  startsWith(prefix: string): boolean {
+    return this.findNode(prefix) !== null;
+  }
+
+  /**
+   * 辅助方法：找到前缀对应的节点
+   */
+  private findNode(prefix: string): TrieNode | null {
+    let node = this.root;
+    for (const char of prefix) {
+      const child = node.children.get(char);
+      if (child === undefined) {
+        return null;
+      }
+      node = child;
+    }
+    return node;
+  }
+}
+
+// 测试用例
+const trie = new Trie();
+trie.insert("apple");
+console.log(trie.search("apple")); // true
+console.log(trie.search("app")); // false
+console.log(trie.startsWith("app")); // true
+trie.insert("app");
+console.log(trie.search("app")); // true
+console.log(trie.startsWith("ap")); // true
+console.log(trie.search("ap")); // false
+```
+
+## 🤔 互动练习
+
+### 练习 1：跟踪插入过程
+
+在空 Trie 中依次插入 "to"、"tea"、"ted"、"ten"，画出最终的树结构。
+
+<details>
+<summary>点击查看答案</summary>
+
+```
+        root
+         |
+         t
+         |
+         o (end)
+         |
+         e
+        /|\
+       a d n
+       | | |
+     (end)| (end)
+           |
+          (end)
+
+解释：
+- "to": root -> t -> o(end)
+- "tea": t -> o -> e -> a(end)
+- "ted": t -> o -> e -> d(end)
+- "ten": t -> o -> e -> n(end)
+
+等等，这不对！应该是：
+
+        root
+         |
+         t
+         |
+         o (end)
+        /
+       e
+      /|\
+     a d n
+     | | |
+   (end)|(end)
+         |
+       (end)
+
+实际上更简洁：
+
+root
+ └─ t
+     └─ o (end)
+         └─ e
+             ├─ a (end)
+             ├─ d (end)
+             └─ n (end)
+
+"to" 和 "tea" 共享 "to" 路径？不对，它们不共享。
+
+正确答案：
+
+root
+ └─ t
+     └─ o (end)
+ └─ t
+     └─ e
+         ├─ a (end)
+         ├─ d (end)
+         └─ n (end)
+
+等等，让我重新分析：
+
+"to": t -> o (end)
+"tea": t -> e -> a (end)
+"ted": t -> e -> d (end)
+"ten": t -> e -> n (end)
+
+最终结构：
+
+        root
+         |
+         t
+        / \
+       o   e
+       |  /|\
+    (end) a d n
+          | | |
+       (end)(end)(end)
+
+- "to": t -> o (end)
+- "tea": t -> e -> a (end)
+- "ted": t -> e -> d (end)
+- "ten": t -> e -> n (end)
+```
+
+</details>
+
+### 练习 2：实现 delete 方法
+
+如何从 Trie 中删除一个单词？需要考虑哪些边界情况？
+
+<details>
+<summary>点击查看思路</summary>
+
+删除需要考虑：
+
+1. **单词不存在**：什么都不做
+2. **单词是其他单词的前缀**：只清除 `is_end` 标记
+3. **其他单词是该单词的前缀**：不能删除公共路径
+4. **完全独立**：可以删除整个路径
+
+实现思路：递归从叶子往根删除，遇到分支点停止。
+
+</details>
+
+## ⚠️ 常见错误详解
+
+### ❌ 错误 1：忘记标记单词结尾
+
+```typescript
+// 错误：没有标记结尾
+insert(word: string): void {
+    let node = this.root;
+    for (const char of word) {
+        if (!node.children.has(char)) {
+            node.children.set(char, new TrieNode());
+        }
+        node = node.children.get(char)!;
+    }
+    // 忘了 node.isEnd = true;
+}
+```
+
+**后果**：`search("apple")` 返回 false，因为没有单词结尾标记。
+
+### ❌ 错误 2：search 和 startsWith 混淆
+
+```typescript
+// 错误：search 返回了 startsWith 的结果
+search(word: string): boolean {
+    return this.findNode(word) !== null;  // 缺少 isEnd 检查
+}
+```
+
+**后果**：插入 "apple" 后，`search("app")` 错误地返回 true。
+
+### ❌ 错误 3：使用对象而非 Map
+
+```typescript
+// 不推荐：对象作为字典
+children: Record<string, TrieNode>;
+
+// 推荐：Map 更类型安全
+children: Map<string, TrieNode>;
+```
+
+**为什么？** TypeScript 中 `Map` 提供更好的类型推断，避免 `undefined` 问题。
+
+### ❌ 错误 4：Python 使用 setdefault 的陷阱
+
+```python
+# 不推荐：可读性差
+node = node.children.setdefault(char, TrieNode())
+
+# 推荐：更清晰
+if char not in node.children:
+    node.children[char] = TrieNode()
+node = node.children[char]
+```
+
+## 🎯 记忆口诀
+
+- **节点结构**：`children` + `is_end`，子节点映射加结束标记
+- **插入**：不存在就创建，最后标记结尾
+- **搜索**：必须完整路径 + 结尾标记
+- **前缀**：只要路径存在，不检查结尾
+
+## 面试变体
+
+1. **添加 delete 方法**：删除单词，考虑共享路径
+2. **统计以某前缀开头的单词数量**：每个节点存储子树单词数
+3. **实现自动补全**：返回所有以某前缀开头的单词
+4. **最长公共前缀**：找出一组字符串的最长公共前缀
+5. **单词搜索 II**：在字符矩阵中找出所有字典中的单词（LeetCode 212）
+
+## TypeScript vs Python 对比
+
+| 特性       | Python                         | TypeScript                            |
+| ---------- | ------------------------------ | ------------------------------------- |
+| 子节点存储 | `dict` 或 `defaultdict`        | `Map<K, V>`                           |
+| 空值判断   | `if char not in node.children` | `if (!node.children.has(char))`       |
+| 获取值     | `node.children.get(char)`      | `node.children.get(char)!` (非空断言) |
+| 类型安全   | 运行时检查                     | 编译时检查                            |
+
+**TypeScript 注意点**：
+
+- 使用 `Map` 而非 `Record` 或 `{}`，类型更安全
+- `get()` 返回 `undefined`，需要显式检查或用 `!` 非空断言
+- `for...of` 遍历字符串比 `for...in` 更直接

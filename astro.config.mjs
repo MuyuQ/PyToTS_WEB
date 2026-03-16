@@ -12,6 +12,12 @@ export default defineConfig({
         "./src/styles/custom-layout.css",
       ],
       disable404Route: true,
+      components: {
+        Banner: "./src/components/Banner.astro",
+        Pagination: "./src/components/Pagination.astro",
+        ThemeSelect: "./src/components/ThemeToggle.astro",
+        Header: "./src/components/Header.astro",
+      },
       sidebar: [
         {
           label: "学习路径",

@@ -1,0 +1,1245 @@
+---
+title: Node.js 基础
+kind: lesson
+level: advanced
+topic: nodejs
+difficulty: medium
+prerequisites: ["async", "modules", "error-handling"]
+python_tags: ["open", "os", "pathlib", "hashlib", "io"]
+ts_tags: ["fs", "Buffer", "Stream", "process", "path", "crypto"]
+description: 从 Python 开发者视角学习 Node.js 核心模块，掌握文件操作、Buffer、Stream 和 process 对象
+---
+## 场景与问题
+
+Python 开发者习惯使用 `open()`、`os.path` 和 `pathlib` 处理文件系统操作。迁移到 Node.js 后，需要理解回调风格、Promise 化 API、Buffer 和 Stream 等概念。这些是构建命令行工具、后端服务和处理大文件的基础。
+
+## 核心概念
+
+Node.js 是 JavaScript 运行时，提供了丰富的内置模块用于系统编程。与 Python 的标准库相比，Node.js 的 API 设计更强调异步非阻塞。
+
+| 功能       | Python               | Node.js          |
+| ---------- | -------------------- | ---------------- |
+| 文件读写   | `open()`, `io`       | `fs` 模块        |
+| 路径处理   | `os.path`, `pathlib` | `path` 模块      |
+| 环境变量   | `os.environ`         | `process.env`    |
+| 命令行参数 | `sys.argv`           | `process.argv`   |
+| 进程退出   | `sys.exit()`         | `process.exit()` |
+| 哈希计算   | `hashlib`            | `crypto` 模块    |
+
+## 文件操作
+
+### 基础读写
+
+Python 使用 `open()` 函数进行文件操作，Node.js 提供 `fs` 模块。
+
+#### Python 实现
+
+```python
+# 读取文件
+with open("data.txt", "r", encoding="utf-8") as f:
+    content = f.read()
+
+# 写入文件
+with open("output.txt", "w", encoding="utf-8") as f:
+    f.write("Hello, World!")
+
+# 追加写入
+with open("log.txt", "a", encoding="utf-8") as f:
+    f.write("New log entry\n")
+
+# 逐行读取
+with open("data.txt", "r", encoding="utf-8") as f:
+    for line in f:
+        print(line.strip())
+```
+
+#### Node.js 实现（回调风格）
+
+```typescript
+import fs from "fs";
+
+// 读取文件（异步回调）
+fs.readFile("data.txt", "utf-8", (err, data) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log(data);
+});
+
+// 写入文件（异步回调）
+fs.writeFile("output.txt", "Hello, World!", "utf-8", (err) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log("File written");
+});
+
+// 追加写入
+fs.appendFile("log.txt", "New log entry\n", (err) => {
+  if (err) console.error(err);
+});
+```
+
+#### Node.js 实现（Promise 风格）
+
+```typescript
+import fs from "fs/promises";
+
+// 读取文件
+async function readFileExample(): Promise<void> {
+  try {
+    const content = await fs.readFile("data.txt", "utf-8");
+    console.log(content);
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// 写入文件
+async function writeFileExample(): Promise<void> {
+  try {
+    await fs.writeFile("output.txt", "Hello, World!", "utf-8");
+    console.log("File written");
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+// 检查文件是否存在
+async function checkFile(path: string): Promise<boolean> {
+  try {
+    await fs.access(path, fs.constants.R_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// 获取文件信息
+async function getFileInfo(path: string): Promise<void> {
+  const stats = await fs.stat(path);
+  console.log(`Size: ${stats.size}`);
+  console.log(`Is directory: ${stats.isDirectory()}`);
+  console.log(`Modified: ${stats.mtime}`);
+}
+```
+
+### 同步 vs 异步
+
+Node.js 提供三种风格的文件操作 API。
+
+```typescript
+import fs from "fs";
+import fsPromises from "fs/promises";
+
+// 1. 同步版本（阻塞事件循环）
+try {
+  const data = fs.readFileSync("data.txt", "utf-8");
+  console.log(data);
+} catch (err) {
+  console.error(err);
+}
+
+// 2. 回调版本（非阻塞，旧风格）
+fs.readFile("data.txt", "utf-8", (err, data) => {
+  if (err) throw err;
+  console.log(data);
+});
+
+// 3. Promise 版本（推荐，非阻塞，现代风格）
+async function readWithPromise(): Promise<void> {
+  const data = await fsPromises.readFile("data.txt", "utf-8");
+  console.log(data);
+}
+```
+
+**何时使用同步 API：**
+
+- 应用启动时加载配置文件
+- 命令行工具脚本
+- 性能要求不高的场景
+
+**何时使用异步 API：**
+
+- Web 服务器处理请求
+- 高并发场景
+- 处理大量文件 I/O
+
+### 文件操作常用方法对比
+
+#### Python 实现
+
+```python
+import os
+import shutil
+from pathlib import Path
+
+# 创建目录
+os.makedirs("subdir/nested", exist_ok=True)
+
+# 删除文件
+os.remove("temp.txt")
+
+# 删除目录
+shutil.rmtree("subdir")
+
+# 重命名
+os.rename("old.txt", "new.txt")
+
+# 复制文件
+shutil.copy("source.txt", "dest.txt")
+
+# 列出目录内容
+for item in os.listdir("."):
+    print(item)
+
+# 使用 pathlib（推荐）
+path = Path("data/subdir")
+path.mkdir(parents=True, exist_ok=True)
+
+# 遍历文件
+for file in Path(".").glob("*.txt"):
+    print(file)
+```
+
+#### Node.js 实现
+
+```typescript
+import fs from "fs/promises";
+import fsSync from "fs";
+import path from "path";
+
+// 创建目录
+await fs.mkdir("subdir/nested", { recursive: true });
+
+// 删除文件
+await fs.unlink("temp.txt");
+
+// 删除目录（非空目录需要递归）
+await fs.rm("subdir", { recursive: true, force: true });
+
+// 重命名
+await fs.rename("old.txt", "new.txt");
+
+// 复制文件
+await fs.copyFile("source.txt", "dest.txt");
+
+// 列出目录内容
+const files = await fs.readdir(".");
+for (const file of files) {
+  console.log(file);
+}
+
+// 遍历文件（使用 glob 需要 @types/node 20+）
+import { glob } from "glob";
+const txtFiles = await glob("*.txt");
+for (const file of txtFiles) {
+  console.log(file);
+}
+```
+
+### 路径处理
+
+#### Python 实现
+
+```python
+import os
+from pathlib import Path
+
+# 当前工作目录
+cwd = os.getcwd()
+
+# 脚本所在目录
+script_dir = Path(__file__).parent
+
+# 路径拼接
+full_path = os.path.join("data", "subdir", "file.txt")
+full_path = Path("data") / "subdir" / "file.txt"
+
+# 路径分解
+print(os.path.dirname("/a/b/c.txt"))   # /a/b
+print(os.path.basename("/a/b/c.txt")) # c.txt
+print(os.path.splitext("file.txt"))    # ('file', '.txt')
+
+# 绝对路径与相对路径
+abs_path = os.path.abspath("data.txt")
+rel_path = os.path.relpath("/a/b/c.txt", "/a")
+
+# 路径是否存在
+exists = os.path.exists("data.txt")
+is_file = os.path.isfile("data.txt")
+is_dir = os.path.isdir("data")
+```
+
+#### Node.js 实现
+
+```typescript
+import path from "path";
+import { fileURLToPath } from "url";
+
+// 当前工作目录
+const cwd = process.cwd();
+
+// 脚本所在目录（ESM 模块）
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 路径拼接
+const fullPath = path.join("data", "subdir", "file.txt");
+
+// 路径分解
+console.log(path.dirname("/a/b/c.txt")); // /a/b
+console.log(path.basename("/a/b/c.txt")); // c.txt
+console.log(path.extname("file.txt")); // .txt
+console.log(path.parse("/a/b/c.txt"));
+// { root: '/', dir: '/a/b', base: 'c.txt', ext: '.txt', name: 'c' }
+
+// 绝对路径与相对路径
+const absPath = path.resolve("data.txt");
+const relPath = path.relative("/a", "/a/b/c.txt"); // b/c.txt
+
+// 路径规范化
+const normalized = path.normalize("a//b/../c"); // a/c
+
+// 常用常量
+console.log(path.sep); // / (Unix) 或 \ (Windows)
+console.log(path.delimiter); // : (Unix) 或 ; (Windows)
+```
+
+### **dirname 和 **filename 的区别
+
+```typescript
+import path from "path";
+import { fileURLToPath } from "url";
+
+// ESM 模块中获取 __dirname 和 __filename
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+console.log("__filename:", __filename);
+// /project/src/utils/file.ts
+
+console.log("__dirname:", __dirname);
+// /project/src/utils
+
+console.log("process.cwd():", process.cwd());
+// /project （当前工作目录，可能不同）
+
+// 使用场景示例
+// 读取配置文件（相对于脚本位置）
+const configPath = path.join(__dirname, "config.json");
+
+// 读取用户文件（相对于工作目录）
+const userPath = path.join(process.cwd(), "user-data.json");
+```
+
+## Buffer 和 Stream
+
+### Buffer 类型
+
+Buffer 是 Node.js 处理二进制数据的核心类型，类似 Python 的 `bytes`。
+
+#### Python 实现
+
+```python
+# 创建 bytes
+data = b"Hello"
+data = bytes([72, 101, 108, 108, 111])
+
+# 字符串与 bytes 转换
+text = "你好"
+encoded = text.encode("utf-8")  # b'\xe4\xbd\xa0\xe5\xa5\xbd'
+decoded = encoded.decode("utf-8")  # "你好"
+
+# 十六进制转换
+hex_str = encoded.hex()  # "e4bda0e5a5bd"
+from_hex = bytes.fromhex("e4bda0e5a5bd")
+
+# 字节操作
+data = bytearray(b"Hello")
+data[0] = 74  # 修改字节
+print(bytes(data))  # b"Jello"
+
+# 读取二进制文件
+with open("image.png", "rb") as f:
+    binary_data = f.read()
+```
+
+#### Node.js 实现
+
+```typescript
+// 创建 Buffer
+const buf1 = Buffer.from("Hello", "utf-8");
+const buf2 = Buffer.from([72, 101, 108, 108, 111]);
+const buf3 = Buffer.alloc(10); // 分配 10 字节，填充 0
+const buf4 = Buffer.allocUnsafe(10); // 分配 10 字节，不初始化（更快但有旧数据）
+
+// 字符串与 Buffer 转换
+const text = "你好";
+const encoded = Buffer.from(text, "utf-8"); // <Buffer e4 bd a0 e5 a5 bd>
+const decoded = encoded.toString("utf-8"); // "你好"
+
+// 十六进制转换
+const hexStr = encoded.toString("hex"); // "e4bda0e5a5bd"
+const fromHex = Buffer.from("e4bda0e5a5bd", "hex");
+
+// Buffer 操作
+const buf = Buffer.from("Hello");
+console.log(buf[0]); // 72 (H 的 ASCII 码)
+console.log(buf.length); // 5
+console.log(buf.toString("base64")); // "SGVsbG8="
+
+// Buffer 拼接
+const combined = Buffer.concat([Buffer.from("Hello"), Buffer.from(" World")]);
+console.log(combined.toString()); // "Hello World"
+
+// Buffer 切片
+const slice = buf.subarray(0, 3);
+console.log(slice.toString()); // "Hel"
+
+// Buffer 比较
+const a = Buffer.from("abc");
+const b = Buffer.from("abc");
+console.log(a.equals(b)); // true
+console.log(a.compare(Buffer.from("abd"))); // -1 (a < abd)
+```
+
+### Buffer 常用编码
+
+```typescript
+// 支持的编码
+const buf = Buffer.from("Hello 世界");
+
+// UTF-8（默认）
+const utf8 = buf.toString("utf-8"); // "Hello 世界"
+
+// Base64
+const base64 = buf.toString("base64"); // "SGVsbG8g5LiW55WM"
+
+// 十六进制
+const hex = buf.toString("hex"); // "48656c6c6f20e4b896e7958c"
+
+// JSON
+const json = buf.toJSON();
+// { type: 'Buffer', data: [72, 101, 108, 108, 111, ...] }
+
+// Latin1 / Binary
+const binary = buf.toString("latin1");
+```
+
+### Stream 基础
+
+Stream 是 Node.js 处理流式数据的抽象，适合处理大文件或实时数据。
+
+#### 四种 Stream 类型
+
+| 类型      | 说明                     | Python 对比   |
+| --------- | ------------------------ | ------------- |
+| Readable  | 可读流                   | `io.StringIO` |
+| Writable  | 可写流                   | 文件写入模式  |
+| Duplex    | 双工流（可读可写）       | Socket 连接   |
+| Transform | 转换流（读写时转换数据） | 管道处理      |
+
+#### Python 实现（文件流）
+
+```python
+# 分块读取大文件
+def process_large_file(filepath, chunk_size=8192):
+    with open(filepath, "rb") as f:
+        while chunk := f.read(chunk_size):
+            yield chunk  # 使用生成器模拟流
+
+# 流式处理（使用管道）
+import sys
+for line in sys.stdin:
+    processed = line.upper()
+    sys.stdout.write(processed)
+
+# StringIO 内存流
+from io import StringIO
+buffer = StringIO()
+buffer.write("Hello")
+buffer.write(" World")
+print(buffer.getvalue())  # "Hello World"
+```
+
+#### Node.js 实现
+
+```typescript
+import fs from "fs";
+import { Transform, pipeline } from "stream";
+
+// 1. Readable Stream - 读取大文件
+const readStream = fs.createReadStream("large-file.txt", {
+  encoding: "utf-8",
+  highWaterMark: 64 * 1024, // 64KB 缓冲区
+});
+
+readStream.on("data", (chunk: string | Buffer) => {
+  console.log(`Received ${chunk.length} bytes`);
+});
+
+readStream.on("end", () => {
+  console.log("File reading completed");
+});
+
+readStream.on("error", (err: Error) => {
+  console.error("Error:", err);
+});
+
+// 2. Writable Stream - 写入文件
+const writeStream = fs.createWriteStream("output.txt");
+
+writeStream.write("Hello\n");
+writeStream.write("World\n");
+writeStream.end(); // 必须调用 end() 来关闭流
+
+writeStream.on("finish", () => {
+  console.log("Write completed");
+});
+
+// 3. Transform Stream - 数据转换
+const upperCaseTransform = new Transform({
+  transform(
+    chunk: Buffer | string,
+    encoding: BufferEncoding,
+    callback: (error?: Error | null, data?: Buffer | string) => void
+  ): void {
+    const text = chunk.toString().toUpperCase();
+    callback(null, text);
+  },
+});
+
+// 4. 使用 pipe 连接流
+fs.createReadStream("input.txt").pipe(upperCaseTransform).pipe(fs.createWriteStream("output.txt"));
+
+// 5. 使用 pipeline（更好的错误处理）
+pipeline(
+  fs.createReadStream("input.txt"),
+  upperCaseTransform,
+  fs.createWriteStream("output.txt"),
+  (err) => {
+    if (err) {
+      console.error("Pipeline failed:", err);
+    } else {
+      console.log("Pipeline succeeded");
+    }
+  }
+);
+
+// 6. 异步迭代器（Node.js 10+）
+async function processStream(): Promise<void> {
+  const stream = fs.createReadStream("large-file.txt", "utf-8");
+  for await (const chunk of stream) {
+    console.log(`Processing chunk of ${chunk.length} chars`);
+  }
+}
+```
+
+### Stream 实际应用：复制大文件
+
+#### Python 实现
+
+```python
+import shutil
+
+# 简单复制
+shutil.copy2("source.mp4", "dest.mp4")
+
+# 流式复制（适合超大文件）
+def copy_large_file(src, dst, chunk_size=1024 * 1024):
+    with open(src, "rb") as f_src, open(dst, "wb") as f_dst:
+        while chunk := f_src.read(chunk_size):
+            f_dst.write(chunk)
+
+# 使用管道模式
+def transform_copy(src, dst, transform_func):
+    with open(src, "rb") as f_src, open(dst, "wb") as f_dst:
+        while chunk := f_src.read(8192):
+            transformed = transform_func(chunk)
+            f_dst.write(transformed)
+```
+
+#### Node.js 实现
+
+```typescript
+import fs from "fs";
+import { pipeline } from "stream";
+import { createGzip, createGunzip } from "zlib";
+import { promisify } from "util";
+
+const pipelineAsync = promisify(pipeline);
+
+// 简单复制
+async function copyFile(src: string, dst: string): Promise<void> {
+  await pipelineAsync(fs.createReadStream(src), fs.createWriteStream(dst));
+  console.log("Copy completed");
+}
+
+// 复制并压缩
+async function compressFile(src: string, dst: string): Promise<void> {
+  await pipelineAsync(fs.createReadStream(src), createGzip(), fs.createWriteStream(dst));
+  console.log("Compress completed");
+}
+
+// 解压文件
+async function decompressFile(src: string, dst: string): Promise<void> {
+  await pipelineAsync(fs.createReadStream(src), createGunzip(), fs.createWriteStream(dst));
+  console.log("Decompress completed");
+}
+
+// 使用示例
+compressFile("data.txt", "data.txt.gz").catch(console.error);
+```
+
+## process 对象
+
+process 对象是 Node.js 全局对象，提供进程相关信息和控制能力。
+
+### 环境变量
+
+#### Python 实现
+
+```python
+import os
+
+# 读取环境变量
+db_host = os.environ.get("DB_HOST", "localhost")
+db_port = os.environ.get("PORT", "5432")
+
+# 设置环境变量（当前进程）
+os.environ["MY_VAR"] = "value"
+
+# 检查环境变量是否存在
+if "NODE_ENV" in os.environ:
+    print(f"Environment: {os.environ['NODE_ENV']}")
+
+# 获取所有环境变量
+for key, value in os.environ.items():
+    print(f"{key}={value}")
+```
+
+#### Node.js 实现
+
+```typescript
+// 读取环境变量
+const dbHost = process.env.DB_HOST ?? "localhost";
+const dbPort = process.env.PORT ?? "5432";
+const debug = process.env.DEBUG === "true";
+
+// 设置环境变量（当前进程）
+process.env.MY_VAR = "value";
+
+// 检查环境变量是否存在
+if (process.env.NODE_ENV) {
+  console.log(`Environment: ${process.env.NODE_ENV}`);
+}
+
+// 类型转换
+const port = parseInt(process.env.PORT ?? "3000", 10);
+const timeout = Number(process.env.TIMEOUT ?? "5000");
+
+// 环境变量对象
+console.log(Object.keys(process.env).length); // 环境变量数量
+
+// 删除环境变量
+delete process.env.TEMP_VAR;
+```
+
+### 命令行参数
+
+#### Python 实现
+
+```python
+import sys
+
+# sys.argv[0] 是脚本名
+print(f"Script: {sys.argv[0]}")
+print(f"Arguments: {sys.argv[1:]}")
+
+# 使用 argparse 解析参数
+import argparse
+
+parser = argparse.ArgumentParser(description="Process some files")
+parser.add_argument("file", help="Input file path")
+parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+parser.add_argument("-o", "--output", default="output.txt", help="Output file")
+
+args = parser.parse_args()
+print(f"File: {args.file}")
+print(f"Verbose: {args.verbose}")
+print(f"Output: {args.output}")
+```
+
+#### Node.js 实现
+
+```typescript
+// process.argv[0] 是 Node.js 可执行文件路径
+// process.argv[1] 是脚本路径
+// process.argv[2:] 是命令行参数
+
+console.log("Node path:", process.argv[0]);
+console.log("Script:", process.argv[1]);
+console.log("Arguments:", process.argv.slice(2));
+
+// 简单参数解析
+const args = process.argv.slice(2);
+const options: Record<string, string | boolean> = {};
+const positional: string[] = [];
+
+for (let i = 0; i < args.length; i++) {
+  if (args[i].startsWith("--")) {
+    const key = args[i].slice(2);
+    const next = args[i + 1];
+    if (next && !next.startsWith("-")) {
+      options[key] = next;
+      i++;
+    } else {
+      options[key] = true;
+    }
+  } else if (args[i].startsWith("-")) {
+    const key = args[i].slice(1);
+    options[key] = true;
+  } else {
+    positional.push(args[i]);
+  }
+}
+
+console.log("Options:", options);
+console.log("Positional:", positional);
+
+// 使用 commander 库（推荐用于 CLI 工具）
+// import { Command } from "commander";
+// const program = new Command();
+// program.argument("<file>", "input file")
+//   .option("-v, --verbose", "verbose output")
+//   .option("-o, --output <file>", "output file", "output.txt")
+//   .parse();
+```
+
+### 进程控制
+
+#### Python 实现
+
+```python
+import sys
+import signal
+import time
+
+# 退出进程
+sys.exit(0)  # 正常退出
+sys.exit(1)  # 错误退出
+
+# 退出码
+print(f"Exit code: {sys.exit()}")  # 这行不会执行
+
+# 信号处理
+def handle_signal(signum, frame):
+    print(f"Received signal {signum}")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, handle_signal)
+signal.signal(signal.SIGTERM, handle_signal)
+
+# 进程信息
+print(f"PID: {os.getpid()}")
+print(f"PPID: {os.getppid()}")  # 父进程 ID
+```
+
+#### Node.js 实现
+
+```typescript
+// 退出进程
+process.exit(0); // 正常退出
+process.exit(1); // 错误退出
+
+// 退出码
+console.log(`Exit code: ${process.exitCode}`); // 获取/设置退出码
+process.exitCode = 1; // 设置退出码（不立即退出）
+
+// 进程信息
+console.log(`PID: ${process.pid}`);
+console.log(`Platform: ${process.platform}`);
+console.log(`Node version: ${process.version}`);
+console.log(`Architecture: ${process.arch}`);
+
+// 内存使用
+const memory = process.memoryUsage();
+console.log(`RSS: ${memory.rss / 1024 / 1024} MB`); // 常驻内存
+console.log(`Heap: ${memory.heapUsed / 1024 / 1024} MB`);
+
+// CPU 使用
+const cpuUsage = process.cpuUsage();
+console.log(`User: ${cpuUsage.user} μs`);
+console.log(`System: ${cpuUsage.system} μs`);
+
+// 运行时间
+console.log(`Uptime: ${process.uptime()} seconds`);
+
+// 信号处理
+process.on("SIGINT", () => {
+  console.log("Received SIGINT (Ctrl+C)");
+  process.exit(0);
+});
+
+process.on("SIGTERM", () => {
+  console.log("Received SIGTERM");
+  // 清理资源
+  process.exit(0);
+});
+
+// 未捕获异常处理
+process.on("uncaughtException", (error: Error) => {
+  console.error("Uncaught Exception:", error);
+  process.exit(1);
+});
+
+// 未处理的 Promise 拒绝
+process.on("unhandledRejection", (reason: unknown, promise: Promise<unknown>) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+```
+
+## 常用 Node.js API
+
+### crypto 模块（哈希与加密）
+
+#### Python 实现
+
+```python
+import hashlib
+import hmac
+import secrets
+import base64
+
+# 计算哈希
+data = "Hello, World!"
+hash_md5 = hashlib.md5(data.encode()).hexdigest()
+hash_sha256 = hashlib.sha256(data.encode()).hexdigest()
+hash_sha512 = hashlib.sha512(data.encode()).hexdigest()
+
+print(f"MD5: {hash_md5}")
+print(f"SHA256: {hash_sha256}")
+print(f"SHA512: {hash_sha512}")
+
+# HMAC
+key = b"secret-key"
+h = hmac.new(key, data.encode(), hashlib.sha256)
+print(f"HMAC: {h.hexdigest()}")
+
+# 随机字节
+random_bytes = secrets.token_bytes(32)
+random_hex = secrets.token_hex(32)
+random_url = secrets.token_urlsafe(32)
+
+# Base64 编码
+encoded = base64.b64encode(data.encode()).decode()
+decoded = base64.b64decode(encoded).decode()
+```
+
+#### Node.js 实现
+
+```typescript
+import crypto from "crypto";
+
+const data = "Hello, World!";
+
+// 计算哈希
+const hashMd5 = crypto.createHash("md5").update(data).digest("hex");
+const hashSha256 = crypto.createHash("sha256").update(data).digest("hex");
+const hashSha512 = crypto.createHash("sha512").update(data).digest("hex");
+
+console.log(`MD5: ${hashMd5}`);
+console.log(`SHA256: ${hashSha256}`);
+console.log(`SHA512: ${hashSha512}`);
+
+// HMAC
+const key = "secret-key";
+const hmac = crypto.createHmac("sha256", key).update(data).digest("hex");
+console.log(`HMAC: ${hmac}`);
+
+// 随机字节
+const randomBytes = crypto.randomBytes(32);
+const randomHex = randomBytes.toString("hex");
+console.log(`Random: ${randomHex}`);
+
+// UUID
+const uuid = crypto.randomUUID();
+console.log(`UUID: ${uuid}`);
+
+// Base64 编码
+const encoded = Buffer.from(data).toString("base64");
+const decoded = Buffer.from(encoded, "base64").toString("utf-8");
+console.log(`Base64: ${encoded} -> ${decoded}`);
+
+// 密码哈希（PBKDF2）
+async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.randomBytes(16).toString("hex");
+  return new Promise((resolve, reject) => {
+    crypto.pbkdf2(password, salt, 100000, 64, "sha512", (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(`${salt}:${derivedKey.toString("hex")}`);
+    });
+  });
+}
+
+async function verifyPassword(password: string, stored: string): Promise<boolean> {
+  const [salt, hash] = stored.split(":");
+  return new Promise((resolve, reject) => {
+    crypto.pbkdf2(password, salt, 100000, 64, "sha512", (err, derivedKey) => {
+      if (err) reject(err);
+      resolve(hash === derivedKey.toString("hex"));
+    });
+  });
+}
+```
+
+### util 模块（工具函数）
+
+#### Python 实现
+
+```python
+import asyncio
+import inspect
+from functools import wraps
+from typing import Any, Callable
+import textwrap
+
+# 异步转同步
+def run_async(coro):
+    return asyncio.run(coro)
+
+# 函数名和文档字符串
+def greet():
+    """Say hello"""
+    pass
+
+print(greet.__name__)  # "greet"
+print(greet.__doc__)   # "Say hello"
+
+# 文本缩进处理
+text = "Hello\nWorld"
+indented = textwrap.indent(text, "  ")
+
+# 继承检查
+class Animal: pass
+class Dog(Animal): pass
+
+print(issubclass(Dog, Animal))  # True
+
+# 回调风格转协程（Python 3.9+）
+# 需要手动使用 asyncio
+```
+
+#### Node.js 实现
+
+```typescript
+import util from "util";
+import fs from "fs";
+import { exec } from "child_process";
+
+// 1. promisify - 回调风格转 Promise
+const readFileAsync = util.promisify(fs.readFile);
+const writeFileAsync = util.promisify(fs.writeFile);
+const execAsync = util.promisify(exec);
+
+async function example(): Promise<void> {
+  const data = await readFileAsync("file.txt", "utf-8");
+  console.log(data);
+
+  const { stdout, stderr } = await execAsync("ls -la");
+  console.log(stdout);
+}
+
+// 2. callbackify - Promise 转回调风格
+async function asyncAdd(a: number, b: number): Promise<number> {
+  return a + b;
+}
+
+const callbackAdd = util.callbackify(asyncAdd);
+callbackAdd(1, 2, (err, result) => {
+  if (err) console.error(err);
+  else console.log(result); // 3
+});
+
+// 3. format - 格式化字符串
+console.log(util.format("%s:%d", "score", 100)); // "score:100"
+console.log(util.format("%j", { a: 1 })); // '{"a":1}'
+
+// 4. inspect - 深度检查对象
+const obj = { a: { b: { c: { d: "deep" } } } };
+console.log(util.inspect(obj, { depth: null, colors: true }));
+
+// 5. types - 类型检查
+console.log(util.types.isDate(new Date())); // true
+console.log(util.types.isMap(new Map())); // true
+console.log(util.types.isSet(new Set())); // true
+console.log(util.types.isRegExp(/test/)); // true
+console.log(util.types.isAsyncFunction(async () => {})); // true
+
+// 6. deprecate - 标记废弃函数
+const oldFunction = util.deprecate(() => {
+  console.log("This function is deprecated");
+}, "oldFunction() is deprecated. Use newFunction() instead.");
+
+oldFunction(); // 会打印废弃警告
+
+// 7. inherits - 继承（已不推荐，建议使用 ES6 class）
+function Animal(name: string) {
+  this.name = name;
+}
+Animal.prototype.speak = function () {
+  console.log(`${this.name} makes a sound`);
+};
+
+function Dog(name: string) {
+  Animal.call(this, name);
+}
+util.inherits(Dog, Animal);
+// 现代替代方案：
+// class Dog extends Animal { ... }
+
+// 8. isDeepStrictEqual - 深度严格相等比较
+const obj1 = { a: 1, b: { c: 2 } };
+const obj2 = { a: 1, b: { c: 2 } };
+console.log(util.isDeepStrictEqual(obj1, obj2)); // true
+```
+
+## 差异与常见陷阱
+
+### 文件路径问题
+
+```typescript
+// ✗ 错误：硬编码路径分隔符
+const wrongPath = "data" + "\\" + "file.txt"; // Windows only
+const alsoWrong = "data" + "/" + "file.txt"; // Unix only
+
+// ✓ 正确：使用 path.join
+import path from "path";
+const correctPath = path.join("data", "file.txt"); // 自动处理分隔符
+
+// ✗ 错误：使用相对路径访问脚本目录外的文件
+const configPath = "../config.json"; // 相对于当前工作目录
+
+// ✓ 正确：使用 __dirname 构建绝对路径
+const configPath = path.join(__dirname, "..", "config.json");
+```
+
+### 编码问题
+
+```typescript
+// ✗ 错误：不指定编码，得到 Buffer
+const data = fs.readFileSync("text.txt"); // 返回 Buffer
+
+// ✓ 正确：指定编码得到字符串
+const data = fs.readFileSync("text.txt", "utf-8");
+
+// ✗ 错误：处理二进制文件时用 utf-8
+const image = fs.readFileSync("image.png", "utf-8"); // 会损坏数据
+
+// ✓ 正确：二进制文件使用 Buffer
+const image = fs.readFileSync("image.png"); // 返回 Buffer
+```
+
+### 异步陷阱
+
+```typescript
+// ✗ 错误：混用回调和 async/await
+fs.readFile("file.txt", (err, data) => {
+  if (err) throw err;
+  return data; // 无法正确返回
+});
+
+// ✓ 正确：统一使用 Promise
+const data = await fs.promises.readFile("file.txt", "utf-8");
+
+// ✗ 错误：忘记 await
+async function bad() {
+  const promise = fs.promises.readFile("file.txt", "utf-8");
+  console.log(promise); // Promise { <pending> }
+}
+
+// ✓ 正确：使用 await
+async function good() {
+  const data = await fs.promises.readFile("file.txt", "utf-8");
+  console.log(data); // 实际内容
+}
+
+// ✗ 错误：循环中的异步操作
+for (const file of files) {
+  fs.promises.readFile(file); // 并发执行，不等待
+}
+
+// ✓ 正确：顺序执行
+for (const file of files) {
+  const data = await fs.promises.readFile(file);
+  console.log(data);
+}
+
+// ✓ 正确：并发执行并等待所有完成
+const results = await Promise.all(files.map((file) => fs.promises.readFile(file, "utf-8")));
+```
+
+### Buffer 拼接陷阱
+
+```typescript
+// ✗ 错误：字符串拼接 Buffer
+const chunks: Buffer[] = [];
+stream.on("data", (chunk: Buffer) => {
+  chunks.push(chunk);
+});
+stream.on("end", () => {
+  const result = chunks.join(""); // 错误！会调用 toString()
+});
+
+// ✓ 正确：使用 Buffer.concat
+stream.on("end", () => {
+  const result = Buffer.concat(chunks).toString("utf-8");
+});
+```
+
+### process.exit() 陷阱
+
+```typescript
+// ✗ 错误：process.exit() 立即终止，不等待异步操作
+console.log("Starting cleanup...");
+process.exit(0); // 清理可能未完成
+
+// ✓ 正确：设置退出码，让进程自然退出
+process.exitCode = 0;
+// 执行清理操作...
+
+// ✓ 正确：优雅退出
+async function gracefulShutdown(signal: string) {
+  console.log(`Received ${signal}, shutting down...`);
+  // 关闭数据库连接
+  // 停止接受新请求
+  // 等待现有请求完成
+  process.exit(0);
+}
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+```
+
+## 练习
+
+实现一个简单的文件监控工具，监控指定文件的变更并记录日志。
+
+要求：
+
+1. 监控文件内容变化
+2. 记录变更时间戳
+3. 支持异步处理
+4. 使用 Stream 处理大文件
+
+```typescript
+// 期望用法
+const watcher = new FileWatcher("data.txt", "changes.log");
+watcher.start();
+// 当 data.txt 变更时，在 changes.log 中记录时间戳
+```
+
+<details>
+<summary>答案</summary>
+
+```typescript
+import fs from "fs/promises";
+import fsSync from "fs";
+import path from "path";
+
+class FileWatcher {
+  private targetFile: string;
+  private logFile: string;
+  private watcher: fsSync.FSWatcher | null = null;
+
+  constructor(targetFile: string, logFile: string) {
+    this.targetFile = path.resolve(targetFile);
+    this.logFile = path.resolve(logFile);
+  }
+
+  async start(): Promise<void> {
+    // 初始化日志文件
+    await fs.appendFile(this.logFile, `=== Watching ${this.targetFile} ===\n`);
+
+    // 使用 fs.watch 监控文件
+    this.watcher = fsSync.watch(
+      this.targetFile,
+      async (eventType: string, filename: string | null) => {
+        if (eventType === "change") {
+          await this.logChange();
+        }
+      }
+    );
+
+    this.watcher.on("error", (err: Error) => {
+      console.error(`Watcher error: ${err.message}`);
+    });
+
+    console.log(`Watching ${this.targetFile}...`);
+  }
+
+  private async logChange(): Promise<void> {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] File changed\n`;
+
+    try {
+      await fs.appendFile(this.logFile, logEntry);
+      console.log(`Change logged at ${timestamp}`);
+    } catch (err) {
+      console.error(`Failed to log change: ${err}`);
+    }
+  }
+
+  stop(): void {
+    if (this.watcher) {
+      this.watcher.close();
+      this.watcher = null;
+      console.log("Watcher stopped");
+    }
+  }
+}
+
+// 使用示例
+const watcher = new FileWatcher("data.txt", "changes.log");
+watcher.start();
+
+// 优雅退出
+process.on("SIGINT", () => {
+  watcher.stop();
+  process.exit(0);
+});
+```
+
+</details>
+
+## 面试追问
+
+1. **fs.readFile 和 fs.createReadStream 有什么区别？什么时候用哪个？**
+   - 答：`readFile` 一次性读取整个文件到内存，适合小文件。`createReadStream` 创建可读流，分块读取，适合大文件。当文件超过可用内存或处理流式数据时，必须用 Stream。
+
+2. **Buffer.alloc 和 Buffer.allocUnsafe 有什么区别？**
+   - 答：`alloc` 初始化内存为 0，更安全但稍慢。`allocUnsafe` 不初始化，可能包含旧数据，更快但有安全风险。生产环境推荐 `alloc`，性能敏感场景确认数据会被覆盖时可用 `allocUnsafe`。
+
+3. **process.nextTick 和 setImmediate 有什么区别？**
+   - 答：`process.nextTick` 在当前操作完成后、事件循环继续前执行，优先级更高。`setImmediate` 在下一个事件循环迭代中执行。`nextTick` 可能导致 I/O 饥饿，大量使用时要注意。
+
+4. **如何在 Node.js 中实现大文件复制而不占用过多内存？**
+   - 答：使用 Stream 和 pipe 或 pipeline：
+
+   ```typescript
+   import { pipeline } from "stream";
+   import fs from "fs";
+
+   await pipeline(fs.createReadStream("large.mp4"), fs.createWriteStream("copy.mp4"));
+   ```
+
+   这样数据分块流动，内存中只保留当前处理的块。
+
+5. **Node.js 的 event loop 和 Python 的 asyncio 有什么区别？**
+   - 答：Node.js 事件循环是运行时内置的，所有 I/O 操作默认非阻塞。Python 的 asyncio 需要显式使用 async/await 和事件循环，同步 I/O 会阻塞整个循环。Node.js 的非阻塞 I/O 是系统级的，Python 需要 asyncio 兼容的库。
+
+---
+**下一步：** [设计模式实践](/paths/advanced/design-patterns)

@@ -1,0 +1,76 @@
+---
+/**
+ * 课程进度标记组件
+ * 在课程列表和导航中显示完成状态
+ */
+---
+
+<span class="completion-badge" data-path="" aria-label="未完成" title="未完成">
+  <span class="badge-icon" aria-hidden="true">○</span>
+</span>
+
+<script>
+  import { isCompleted } from '../lib/progress-store';
+
+  function initCompletionBadges() {
+    // 查找所有带有 data-lesson-path 的元素
+    const lessonLinks = document.querySelectorAll('[data-lesson-path]');
+    
+    lessonLinks.forEach(link => {
+      const path = link.getAttribute('data-lesson-path');
+      if (!path) return;
+
+      const badge = link.querySelector('.completion-badge');
+      if (!badge) return;
+
+      if (isCompleted(path)) {
+        badge.classList.add('completed');
+        badge.setAttribute('aria-label', '已完成');
+        badge.setAttribute('title', '已完成');
+        const icon = badge.querySelector('.badge-icon');
+        if (icon) {
+          icon.textContent = '✓';
+        }
+      }
+
+      // 更新 data-path 属性
+      badge.setAttribute('data-path', path);
+    });
+  }
+
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initCompletionBadges);
+  } else {
+    initCompletionBadges();
+  }
+
+  // 监听进度更新
+  window.addEventListener('progress-updated', initCompletionBadges);
+</script>
+
+<style>
+  .completion-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .completion-badge:not(.completed) {
+    color: var(--sl-color-gray-4);
+  }
+
+  .completion-badge.completed {
+    color: #22c55e;
+  }
+
+  .badge-icon {
+    line-height: 1;
+  }
+</style>

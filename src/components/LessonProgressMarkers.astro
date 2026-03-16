@@ -1,0 +1,115 @@
+---
+/**
+ * 课程进度标记脚本
+ * 自动为课程列表中的链接添加完成状态标记
+ */
+---
+
+<script>
+  import { isCompleted } from '../lib/progress-store';
+
+  // 所有课程路径
+  const lessonPaths = [
+    // Foundation
+    '/paths/foundation/variables',
+    '/paths/foundation/control-flow',
+    '/paths/foundation/data-structures',
+    '/paths/foundation/functions-basics',
+    '/paths/foundation/classes-objects',
+    // Migration
+    '/paths/migration/types/',
+    '/paths/migration/functions/',
+    '/paths/migration/async/',
+    '/paths/migration/modules/',
+    '/paths/migration/error-handling/',
+    '/paths/migration/enums/',
+    '/paths/migration/strings-regex/',
+    // Advanced
+    '/paths/advanced/generics',
+    '/paths/advanced/type-guards',
+    '/paths/advanced/utility-types',
+    '/paths/advanced/declarations-config',
+    '/paths/advanced/decorators',
+    '/paths/advanced/design-patterns',
+    '/paths/advanced/datetime',
+    '/paths/advanced/nodejs-basics',
+    // Algorithms
+    '/algorithms/3sum/',
+    '/algorithms/binary-search/',
+    '/algorithms/binary-tree-inorder-traversal/',
+    '/algorithms/climbing-stairs/',
+    '/algorithms/clone-graph/',
+    '/algorithms/coin-change/',
+    '/algorithms/container-with-most-water/',
+    '/algorithms/counting-bits/',
+    '/algorithms/course-schedule/',
+    '/algorithms/decode-ways/',
+    '/algorithms/edit-distance/',
+    '/algorithms/find-median-from-data-stream/',
+    '/algorithms/house-robber/',
+    '/algorithms/implement-trie/',
+    '/algorithms/linked-list-cycle/',
+    '/algorithms/longest-common-subsequence/',
+    '/algorithms/longest-increasing-subsequence/',
+    '/algorithms/longest-substring-without-repeating/',
+    '/algorithms/lru-cache/',
+    '/algorithms/maximum-subarray/',
+    '/algorithms/merge-intervals/',
+    '/algorithms/merge-k-sorted-lists/',
+    '/algorithms/minimum-window-substring/',
+    '/algorithms/network-delay-time/',
+    '/algorithms/number-of-islands/',
+    '/algorithms/partition-equal-subset-sum/',
+    '/algorithms/permutations/',
+    '/algorithms/reverse-linked-list/',
+    '/algorithms/rotting-oranges/',
+    '/algorithms/single-number/',
+    '/algorithms/subsets/',
+    '/algorithms/two-sum/',
+    '/algorithms/validate-bst/',
+    '/algorithms/valid-parentheses/',
+    '/algorithms/word-break/',
+    '/algorithms/word-search/'
+  ];
+
+  function addCompletionMarkers() {
+    lessonPaths.forEach((path) => {
+      // 只查找页面内容区域的链接，排除侧边栏
+      const links = document.querySelectorAll(`.sl-markdown-content a[href="${path}"], .sl-markdown-content a[href="${path.replace(/\/$/, '')}"]`);
+
+      links.forEach((link) => {
+        // 检查是否已经添加过标记
+        if (link.querySelector('.lesson-completion-marker')) return;
+
+        // 创建完成标记
+        const marker = document.createElement('span');
+        marker.className = 'lesson-completion-marker';
+        marker.style.cssText = 'margin-left: 0.25rem; font-size: 0.875rem;';
+
+        if (isCompleted(path) || isCompleted(path.replace(/\/$/, ''))) {
+          marker.textContent = ' ✓';
+          marker.style.color = '#22c55e';
+          marker.setAttribute('aria-label', '已完成');
+          marker.setAttribute('title', '已完成');
+        } else {
+          marker.textContent = ' ○';
+          marker.style.color = 'var(--sl-color-gray-4)';
+          marker.setAttribute('aria-label', '未完成');
+          marker.setAttribute('title', '未完成');
+        }
+
+        link.appendChild(marker);
+      });
+    });
+  }
+
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addCompletionMarkers);
+  } else {
+    addCompletionMarkers();
+  }
+
+  // 监听进度更新
+  window.addEventListener('progress-updated', addCompletionMarkers);
+</script>

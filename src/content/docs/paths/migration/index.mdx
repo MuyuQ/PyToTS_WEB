@@ -5,14 +5,15 @@ kind: page
 ---
 
 import { CardGrid, Card } from "@astrojs/starlight/components";
+import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.astro";
 
-# 迁移路径
+<LessonProgressMarkers />
 
 适合已经有 Python 开发经验，希望系统迁移到 TypeScript 的工程师。
 
 ## 课程列表
 
-<CardGrid stagger>
+<CardGrid>
   <Card title="1. 类型系统对比" icon="seti:typescript">
     建立 Python 与 TypeScript 类型系统的映射
 
@@ -21,6 +22,7 @@ import { CardGrid, Card } from "@astrojs/starlight/components";
     - 类型推断与类型注解
 
     [开始学习 →](/paths/migration/types/)
+
   </Card>
 
   <Card title="2. 函数与参数" icon="seti:function">
@@ -31,6 +33,7 @@ import { CardGrid, Card } from "@astrojs/starlight/components";
     - 对象参数替代 kwargs
 
     [开始学习 →](/paths/migration/functions/)
+
   </Card>
 
   <Card title="3. 异步编程" icon="seti:clock">
@@ -41,6 +44,7 @@ import { CardGrid, Card } from "@astrojs/starlight/components";
     - 错误处理模式
 
     [开始学习 →](/paths/migration/async/)
+
   </Card>
 
   <Card title="4. 模块与包管理" icon="seti:package">
@@ -51,14 +55,49 @@ import { CardGrid, Card } from "@astrojs/starlight/components";
     - 项目组织方式
 
     [开始学习 →](/paths/migration/modules/)
+
+  </Card>
+
+  <Card title="5. 错误处理机制" icon="seti:alert">
+    掌握错误捕获和处理的差异
+
+    - try/except vs try/catch
+    - Error 对象与自定义错误
+    - 可选链与空值合并
+
+    [开始学习 →](/paths/migration/error-handling/)
+
+  </Card>
+
+  <Card title="6. 枚举与常量定义" icon="seti:enum">
+    理解枚举类型和常量定义方式
+
+    - Python Enum vs TypeScript enum
+    - 数字枚举与字符串枚举
+    - Union Type 替代方案
+
+    [开始学习 →](/paths/migration/enums/)
+
+  </Card>
+
+  <Card title="7. 字符串与正则处理" icon="seti:text">
+    掌握字符串操作和正则表达式差异
+
+    - f-string vs 模板字符串
+    - 字符串方法对照表
+    - 正则表达式语法差异
+
+    [开始学习 →](/paths/migration/strings-regex/)
+
   </Card>
 </CardGrid>
 
 ## 学习建议
 
-1. 按顺序学习四节核心课，先建立类型心智再进入异步与模块。
+1. 按顺序学习核心课程，先建立类型心智再进入异步与模块。
 2. 每节课都把 Python 示例手动改写为 TypeScript，强化迁移肌肉记忆。
-3. 学完后立即进入 [算法练习](/algorithms/) 做双语实战。
+3. 重点关注错误处理和字符串处理，这是日常开发的高频操作。
+4. 学完后立即进入 [算法练习](/algorithms/) 做双语实战。
 
 ---
 

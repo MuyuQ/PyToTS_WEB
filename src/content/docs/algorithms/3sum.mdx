@@ -4,77 +4,227 @@ kind: algorithm
 difficulty: medium
 tags: ["array", "two-pointers", "sorting"]
 time_complexity: "O(n²)"
-space_complexity: "O(1)" 
+space_complexity: "O(1)"
 description: 找出数组中所有和为0的三元组
 ---
-
 ## 问题描述
 
 给你一个整数数组 `nums`，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k`，同时还满足 `nums[i] + nums[j] + nums[k] == 0`。
 
 请你返回所有和为 `0` 且不重复的三元组。
 
-## 思路分析
+**示例：**
 
-排序 + 双指针：
-1. 先对数组排序
-2. 固定一个数，然后用双指针在剩余部分找两数之和等于目标值
-3. 注意去重：跳过相同的数
+```
+输入: nums = [-1, 0, 1, 2, -1, -4]
+排序后: [-4, -1, -1, 0, 1, 2]
+输出: [[-1, -1, 2], [-1, 0, 1]]
+解释:
+  -1 + -1 + 2 = 0
+  -1 + 0 + 1 = 0
+```
 
-## 复杂度分析
+## 💡 思路分析
 
-- **时间复杂度**：O(n²)，排序 O(n log n)，双指针遍历 O(n²)
-- **空间复杂度**：O(1)，不考虑输出数组，只使用常数空间
+### 第一步：理解问题
 
-## Python 实现
+核心目标是什么？
+
+- 找到所有三个数，它们的和为 0
+- 不能重复：`[1, -1, 0]` 和 `[-1, 1, 0]` 算同一个答案
+- 索引必须不同：不能用同一个位置的数两次
+
+**关键观察：** 如果三个数之和为 0，那么至少有一个非正数，至少有一个非负数。排序后，正数在右边，负数在左边，这给我们优化的空间。
+
+### 第二步：暴力解法
+
+最直接的想法是什么？三层循环枚举所有三元组：
+
+```python
+# 暴力解法 O(n³)
+for i in range(n):
+    for j in range(i + 1, n):
+        for k in range(j + 1, n):
+            if nums[i] + nums[j] + nums[k] == 0:
+                # 找到一个答案
+```
+
+问题？
+
+- 时间复杂度 O(n³)
+- 数组长度 1000 时，需要 10 亿次计算
+- 还要处理去重
+
+**太慢了！** 面试官肯定会让你优化。
+
+### 第三步：优化思路
+
+如果把数组排序，问题就变成：
+
+- 固定第一个数 `nums[i]`
+- 在剩下的数里找两个数，和为 `-nums[i]`
+- 这不就是我们熟悉的 Two Sum 问题吗？
+
+**关键洞察：** 排序后，我们可以用双指针在 O(n) 时间内找到两数之和！
+
+### 第四步：双指针技巧
+
+排序后，用左右两个指针：
+
+- 固定 `nums[i]` 作为第一个数
+- `left` 从 `i + 1` 开始，`right` 从末尾开始
+- 计算三数之和 `sum = nums[i] + nums[left] + nums[right]`
+- 如果 `sum < 0`：左指针右移（需要更大的数）
+- 如果 `sum > 0`：右指针左移（需要更小的数）
+- 如果 `sum == 0`：找到一个答案！
+
+时间复杂度从 O(n³) 降到 O(n²)，好多了！
+
+## 🎨 可视化说明
+
+### 双指针移动过程
+
+假设 `nums = [-4, -1, -1, 0, 1, 2]`，已经排序。
+
+**第一轮：固定 nums[0] = -4**
+
+```
+数组:  [-4, -1, -1,  0,  1,  2]
+         i   L               R
+
+sum = -4 + (-1) + 2 = -3 < 0
+左指针右移，需要更大的数
+
+数组:  [-4, -1, -1,  0,  1,  2]
+         i        L          R
+
+sum = -4 + (-1) + 2 = -3 < 0
+左指针继续右移...
+
+数组:  [-4, -1, -1,  0,  1,  2]
+         i            L      R
+
+sum = -4 + 0 + 2 = -2 < 0
+继续右移...
+
+数组:  [-4, -1, -1,  0,  1,  2]
+         i                L  R
+
+sum = -4 + 1 + 2 = -1 < 0
+继续右移...
+
+L >= R，这一轮结束，没有找到答案
+```
+
+**第二轮：固定 nums[1] = -1**
+
+```
+数组:  [-4, -1, -1,  0,  1,  2]
+             i    L          R
+
+sum = -1 + (-1) + 2 = 0 ✓
+找到答案 [-1, -1, 2]！
+
+数组:  [-4, -1, -1,  0,  1,  2]
+             i        L      R
+
+sum = -1 + 0 + 1 = 0 ✓
+找到答案 [-1, 0, 1]！
+
+L >= R，这一轮结束
+```
+
+**第三轮：固定 nums[2] = -1**
+
+```
+注意：nums[2] == nums[1]，跳过！避免重复答案
+```
+
+### 去重的关键
+
+排序后的好处：
+
+1. 跳过相同的 `nums[i]`：第一个数相同，后面找的答案也会相同
+2. 找到答案后，跳过相同的 `nums[left]` 和 `nums[right]`：避免重复三元组
+
+## 🎯 生活化类比
+
+3Sum 就像**找三个人组队**：
+
+- **目标：** 三人体重之和为 0（有正有负，可以理解为重量和浮力的平衡）
+- **排序：** 把所有人按体重排队，轻的在左，重的在右
+- **固定一个人：** 先选第一个人，然后找另外两个
+- **双指针：**
+  - 左边的人太轻了 → 往右找个更重的
+  - 右边的人太重了 → 往左找个更轻的
+- **去重：** 同样体重的人站在一起，跳过相同体重的人，避免重复组队
+
+**为什么排序有帮助？**
+就像打扑克牌，整理好手牌后，找牌就容易多了。排序把混乱变成有序，让双指针移动有规律可循。
+
+## 📋 复杂度分析
+
+- **时间复杂度**：O(n²)
+  - 排序：O(n log n)
+  - 外层循环 n 次，内层双指针 O(n)，总共 O(n²)
+  - 取最大值：O(n²)
+- **空间复杂度**：O(1) 或 O(n)
+  - 不考虑输出数组：O(1)
+  - 排序可能需要 O(log n) 或 O(n) 的额外空间（取决于排序算法）
+
+## 🐍 Python 实现
 
 ```python
 def three_sum(nums: list[int]) -> list[list[int]]:
     """
     三数之和 - Python 实现
-    
-    Args:
-        nums: 整数数组
-    
-    Returns:
-        所有和为0的不重复三元组
+
+    核心思路：
+    1. 排序数组
+    2. 固定第一个数，双指针找另外两个
+    3. 关键是去重！
     """
-    nums.sort()
+    nums.sort()  # 排序是基础
     result = []
     n = len(nums)
-    
-    for i in range(n - 2):
-        # 去重：跳过相同的第一个数
+
+    for i in range(n - 2):  # 至少需要 3 个数
+        # ===== 去重 1：跳过相同的第一个数 =====
         if i > 0 and nums[i] == nums[i - 1]:
             continue
-        
-        # 剪枝
+
+        # ===== 剪枝优化 =====
+        # 如果最小的数都 > 0，后面不可能凑出 0
         if nums[i] > 0:
             break
-        
+
         left, right = i + 1, n - 1
-        target = -nums[i]
-        
+        target = -nums[i]  # 找两个数，和为 -nums[i]
+
         while left < right:
             current_sum = nums[left] + nums[right]
-            
+
             if current_sum == target:
                 result.append([nums[i], nums[left], nums[right]])
-                
-                # 去重：跳过相同的第二个数
+
+                # ===== 去重 2：跳过相同的第二个数 =====
                 while left < right and nums[left] == nums[left + 1]:
                     left += 1
-                # 去重：跳过相同的第三个数
+                # ===== 去重 3：跳过相同的第三个数 =====
                 while left < right and nums[right] == nums[right - 1]:
                     right -= 1
-                
+
+                # 找到一个答案后，两个指针都要移动！
                 left += 1
                 right -= 1
+
             elif current_sum < target:
+                # 和太小，需要更大的数
                 left += 1
             else:
+                # 和太大，需要更小的数
                 right -= 1
-    
+
     return result
 
 
@@ -82,7 +232,98 @@ def three_sum(nums: list[int]) -> list[list[int]]:
 print(three_sum([-1, 0, 1, 2, -1, -4]))  # [[-1,-1,2], [-1,0,1]]
 print(three_sum([0, 1, 1]))              # []
 print(three_sum([0, 0, 0]))              # [[0,0,0]]
+print(three_sum([-2, 0, 1, 1, 2]))       # [[-2,0,2], [-2,1,1]]
 ```
+
+## 📦 TypeScript 实现
+
+```typescript
+/**
+ * 三数之和 - TypeScript 实现
+ *
+ * 核心思路：
+ * 1. 排序数组
+ * 2. 固定第一个数，双指针找另外两个
+ * 3. 关键是去重！
+ */
+function threeSum(nums: number[]): number[][] {
+  nums.sort((a, b) => a - b); // 排序是基础
+  const result: number[][] = [];
+  const n = nums.length;
+
+  for (let i = 0; i < n - 2; i++) {
+    // 至少需要 3 个数
+    // ===== 去重 1：跳过相同的第一个数 =====
+    if (i > 0 && nums[i] === nums[i - 1]) {
+      continue;
+    }
+
+    // ===== 剪枝优化 =====
+    // 如果最小的数都 > 0，后面不可能凑出 0
+    if (nums[i] > 0) {
+      break;
+    }
+
+    let left = i + 1;
+    let right = n - 1;
+    const target = -nums[i]; // 找两个数，和为 -nums[i]
+
+    while (left < right) {
+      const currentSum = nums[left] + nums[right];
+
+      if (currentSum === target) {
+        result.push([nums[i], nums[left], nums[right]]);
+
+        // ===== 去重 2：跳过相同的第二个数 =====
+        while (left < right && nums[left] === nums[left + 1]) {
+          left++;
+        }
+        // ===== 去重 3：跳过相同的第三个数 =====
+        while (left < right && nums[right] === nums[right - 1]) {
+          right--;
+        }
+
+        // 找到一个答案后，两个指针都要移动！
+        left++;
+        right--;
+      } else if (currentSum < target) {
+        // 和太小，需要更大的数
+        left++;
+      } else {
+        // 和太大，需要更小的数
+        right--;
+      }
+    }
+  }
+
+  return result;
+}
+
+// 测试用例
+console.log(threeSum([-1, 0, 1, 2, -1, -4])); // [[-1,-1,2], [-1,0,1]]
+console.log(threeSum([0, 1, 1])); // []
+console.log(threeSum([0, 0, 0])); // [[0,0,0]]
+console.log(threeSum([-2, 0, 1, 1, 2])); // [[-2,0,2], [-2,1,1]]
+```
+
+## 🧠 代码要点
+
+### 三处去重
+
+| 位置     | 代码                                            | 作用               |
+| -------- | ----------------------------------------------- | ------------------ |
+| 第一个数 | `if (i > 0 && nums[i] === nums[i-1]) continue`  | 跳过重复的 `i`     |
+| 第二个数 | `while (nums[left] === nums[left+1]) left++`    | 跳过重复的 `left`  |
+| 第三个数 | `while (nums[right] === nums[right-1]) right--` | 跳过重复的 `right` |
+
+### 剪枝优化
+
+```python
+if nums[i] > 0:
+    break  # 排序后，最小的数都 > 0，后面不可能凑出 0
+```
+
+这个优化很有用！如果 `nums[i] > 0`，那么 `nums[left] > 0`，`nums[right] > 0`，三数之和不可能为 0。
 
 ## TypeScript 实现
 
@@ -93,67 +334,444 @@ print(three_sum([0, 0, 0]))              # [[0,0,0]]
  * @returns 所有和为0的不重复三元组
  */
 function threeSum(nums: number[]): number[][] {
-    nums.sort((a, b) => a - b);
-    const result: number[][] = [];
-    const n = nums.length;
-    
-    for (let i = 0; i < n - 2; i++) {
-        // 去重：跳过相同的第一个数
-        if (i > 0 && nums[i] === nums[i - 1]) {
-            continue;
-        }
-        
-        // 剪枝
-        if (nums[i] > 0) {
-            break;
-        }
-        
-        let left = i + 1;
-        let right = n - 1;
-        const target = -nums[i];
-        
-        while (left < right) {
-            const currentSum = nums[left] + nums[right];
-            
-            if (currentSum === target) {
-                result.push([nums[i], nums[left], nums[right]]);
-                
-                // 去重：跳过相同的第二个数
-                while (left < right && nums[left] === nums[left + 1]) {
-                    left++;
-                }
-                // 去重：跳过相同的第三个数
-                while (left < right && nums[right] === nums[right - 1]) {
-                    right--;
-                }
-                
-                left++;
-                right--;
-            } else if (currentSum < target) {
-                left++;
-            } else {
-                right--;
-            }
-        }
+  nums.sort((a, b) => a - b);
+  const result: number[][] = [];
+  const n = nums.length;
+
+  for (let i = 0; i < n - 2; i++) {
+    // 去重：跳过相同的第一个数
+    if (i > 0 && nums[i] === nums[i - 1]) {
+      continue;
     }
-    
-    return result;
+
+    // 剪枝
+    if (nums[i] > 0) {
+      break;
+    }
+
+    let left = i + 1;
+    let right = n - 1;
+    const target = -nums[i];
+
+    while (left < right) {
+      const currentSum = nums[left] + nums[right];
+
+      if (currentSum === target) {
+        result.push([nums[i], nums[left], nums[right]]);
+
+        // 去重：跳过相同的第二个数
+        while (left < right && nums[left] === nums[left + 1]) {
+          left++;
+        }
+        // 去重：跳过相同的第三个数
+        while (left < right && nums[right] === nums[right - 1]) {
+          right--;
+        }
+
+        left++;
+        right--;
+      } else if (currentSum < target) {
+        left++;
+      } else {
+        right--;
+      }
+    }
+  }
+
+  return result;
 }
 
 // 测试用例
-console.log(threeSum([-1, 0, 1, 2, -1, -4]));  // [[-1,-1,2], [-1,0,1]]
-console.log(threeSum([0, 1, 1]));              // []
-console.log(threeSum([0, 0, 0]));              // [[0,0,0]]
+console.log(threeSum([-1, 0, 1, 2, -1, -4])); // [[-1,-1,2], [-1,0,1]]
+console.log(threeSum([0, 1, 1])); // []
+console.log(threeSum([0, 0, 0])); // [[0,0,0]]
 ```
 
-## 面试变体
+## 🤔 互动练习
 
-1. **最接近的三数之和**：找到和最接近目标值的三元组
-2. **四数之和**：扩展到四个数
-3. **K数之和**：通用解法
+### 练习 1：预测输出
 
-## 常见错误
+给定 `nums = [0, 0, 0, 0]`，请预测：
 
-1. 忘记去重，导致结果中有重复的三元组
-2. 边界条件处理错误，如 `range(n - 2)` 写成 `range(n)`
-3. 排序后忘记处理原数组索引的问题
+1. 最终有几个答案？
+2. 去重逻辑执行了几次？
+3. `left` 和 `right` 的变化过程？
+
+<details>
+<summary>点击查看答案</summary>
+
+**答案分析：**
+
+排序后仍然是 `[0, 0, 0, 0]`。
+
+```
+i = 0, nums[i] = 0
+初始: left = 1, right = 3
+
+第一轮双指针：
+  nums[1] + nums[3] = 0 + 0 = 0 = target ✓
+  找到答案 [0, 0, 0]
+  去重 left: nums[1] == nums[2], left++ → left = 2
+  去重 right: 无
+  left++, right-- → left = 3, right = 2
+
+left >= right，退出
+
+i = 1, nums[1] = 0
+去重：nums[1] == nums[0]，跳过！
+
+i = 2, nums[2] = 0
+去重：nums[2] == nums[1]，跳过！
+```
+
+**结果：**
+
+1. 只有 1 个答案 `[[0, 0, 0]]`
+2. 去重逻辑只执行了 1 次（因为外层 i 被跳过）
+3. `left` 从 1 到 3，`right` 从 3 到 2
+
+</details>
+
+### 练习 2：找错误
+
+下面的代码有什么 bug？
+
+```python
+def three_sum_buggy(nums: list[int]) -> list[list[int]]:
+    nums.sort()
+    result = []
+    n = len(nums)
+
+    for i in range(n - 2):
+        # Bug 1: 这里应该是 i > 0 还是 i > 1？
+        if i > 1 and nums[i] == nums[i - 1]:
+            continue
+
+        left, right = i + 1, n - 1
+        target = -nums[i]
+
+        while left < right:
+            current_sum = nums[left] + nums[right]
+
+            if current_sum == target:
+                result.append([nums[i], nums[left], nums[right]])
+
+                # Bug 2: 去重后忘记移动指针？
+                while left < right and nums[left] == nums[left + 1]:
+                    left += 1
+                while left < right and nums[right] == nums[right - 1]:
+                    right -= 1
+
+                # Bug 3: 这里有问题吗？
+                # left += 1  # 注释掉了！
+                # right -= 1  # 注释掉了！
+
+            elif current_sum < target:
+                left += 1
+            else:
+                right -= 1
+
+    return result
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+**三个 Bug：**
+
+**Bug 1：** `i > 1` 应该是 `i > 0`
+
+- `i > 1` 会漏掉第二个元素的去重检查
+- 正确写法：`if i > 0 and nums[i] == nums[i - 1]`
+
+**Bug 2 和 Bug 3：** 去重后忘记移动指针
+
+- 去重只是跳过相同的值，找到答案后仍然需要移动指针
+- 没有这两行代码，`left` 和 `right` 不会移动，会陷入死循环
+
+**测试验证：**
+
+```python
+three_sum_buggy([0, 0, 0])
+# 死循环！left 和 right 永远停在原地
+```
+
+</details>
+
+### 练习 3：代码翻译
+
+将下面的 Python 代码翻译成 TypeScript：
+
+```python
+# 找出所有和为 target 的三元组（不是 0）
+def three_sum_target(nums: list[int], target: int) -> list[list[int]]:
+    nums.sort()
+    result = []
+    n = len(nums)
+
+    for i in range(n - 2):
+        if i > 0 and nums[i] == nums[i - 1]:
+            continue
+
+        left, right = i + 1, n - 1
+        t = target - nums[i]  # 注意这里的变化
+
+        while left < right:
+            current = nums[left] + nums[right]
+            if current == t:
+                result.append([nums[i], nums[left], nums[right]])
+                while left < right and nums[left] == nums[left + 1]:
+                    left += 1
+                while left < right and nums[right] == nums[right - 1]:
+                    right -= 1
+                left += 1
+                right -= 1
+            elif current < t:
+                left += 1
+            else:
+                right -= 1
+
+    return result
+```
+
+<details>
+<summary>点击查看 TypeScript 答案</summary>
+
+```typescript
+function threeSumTarget(nums: number[], target: number): number[][] {
+  nums.sort((a, b) => a - b);
+  const result: number[][] = [];
+  const n = nums.length;
+
+  for (let i = 0; i < n - 2; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) {
+      continue;
+    }
+
+    let left = i + 1;
+    let right = n - 1;
+    const t = target - nums[i]; // 注意这里的变化
+
+    while (left < right) {
+      const current = nums[left] + nums[right];
+      if (current === t) {
+        result.push([nums[i], nums[left], nums[right]]);
+        while (left < right && nums[left] === nums[left + 1]) {
+          left++;
+        }
+        while (left < right && nums[right] === nums[right - 1]) {
+          right--;
+        }
+        left++;
+        right--;
+      } else if (current < t) {
+        left++;
+      } else {
+        right--;
+      }
+    }
+  }
+
+  return result;
+}
+```
+
+**关键差异：**
+
+- `range(n - 2)` → `let i = 0; i < n - 2; i++`
+- `nums.sort()` → `nums.sort((a, b) => a - b)`
+- `result.append()` → `result.push()`
+
+</details>
+
+## ⚠️ 常见错误分析
+
+### 错误 1：去重不完整
+
+❌ **错误代码：**
+
+```python
+for i in range(n - 2):
+    # 只跳过相同的第一个数，忘记处理 left 和 right
+    if i > 0 and nums[i] == nums[i - 1]:
+        continue
+
+    # ... 找到答案后直接 left++, right--
+```
+
+**后果：** `[-1, 0, 1, 2, -1, -4]` 会输出 `[[-1, 0, 1], [-1, 0, 1]]`（重复）
+
+✅ **正确做法：** 找到答案后，跳过相同的 `left` 和 `right`，再移动指针
+
+### 错误 2：忘记排序
+
+❌ **错误代码：**
+
+```python
+def three_sum(nums: list[int]) -> list[list[int]]:
+    result = []
+    # 忘记排序！双指针无法正常工作
+    for i in range(len(nums) - 2):
+        left, right = i + 1, len(nums) - 1
+        # ...
+```
+
+**后果：** 双指针依赖有序性，不排序会导致：
+
+1. 指针移动逻辑失效
+2. 无法用 `nums[i] > 0` 剪枝
+3. 去重逻辑不完整
+
+✅ **正确做法：** 必须先排序
+
+### 错误 3：边界条件错误
+
+❌ **错误代码：**
+
+```python
+for i in range(n - 1):  # 应该是 n - 2
+    left, right = i, n - 1  # left 应该是 i + 1
+```
+
+**后果：**
+
+- `range(n - 1)` 会导致 `i` 可能等于 `n - 2`，只剩 2 个元素
+- `left = i` 会导致同一个数被使用两次
+
+✅ **正确做法：**
+
+```python
+for i in range(n - 2):  # 至少留 2 个元素给 left 和 right
+    left, right = i + 1, n - 1  # left 从 i + 1 开始
+```
+
+### 错误 4：只移动一个指针
+
+❌ **错误代码：**
+
+```python
+if current_sum == target:
+    result.append(...)
+    left += 1  # 只移动 left，忘记移动 right
+```
+
+**后果：** 死循环或漏解
+
+✅ **正确做法：** 找到答案后，两个指针都要移动
+
+## 📝 记忆口诀
+
+```
+排序固定双指针，
+三处去重不能少。
+找到答案双指针移，
+left++ 同时 right--。
+
+外层循环 n-2，
+内层判断 left < right。
+剪枝优化 num[i] > 0，
+提前退出效率高。
+```
+
+## 🔥 面试变体
+
+### 变体 1：最接近的三数之和
+
+给定数组和目标值，找到和最接近目标值的三元组。
+
+```python
+def three_sum_closest(nums: list[int], target: int) -> int:
+    nums.sort()
+    closest = float('inf')
+    n = len(nums)
+
+    for i in range(n - 2):
+        left, right = i + 1, n - 1
+
+        while left < right:
+            current = nums[i] + nums[left] + nums[right]
+
+            if abs(current - target) < abs(closest - target):
+                closest = current
+
+            if current < target:
+                left += 1
+            elif current > target:
+                right -= 1
+            else:
+                return target  # 完全匹配
+
+    return closest
+```
+
+### 变体 2：四数之和
+
+扩展到四个数，思路类似：固定两个数，双指针找另外两个。
+
+时间复杂度：O(n³)
+
+```python
+def four_sum(nums: list[int], target: int) -> list[list[int]]:
+    nums.sort()
+    result = []
+    n = len(nums)
+
+    for i in range(n - 3):
+        if i > 0 and nums[i] == nums[i - 1]:
+            continue
+
+        for j in range(i + 1, n - 2):
+            if j > i + 1 and nums[j] == nums[j - 1]:
+                continue
+
+            left, right = j + 1, n - 1
+            t = target - nums[i] - nums[j]
+
+            while left < right:
+                current = nums[left] + nums[right]
+
+                if current == t:
+                    result.append([nums[i], nums[j], nums[left], nums[right]])
+                    while left < right and nums[left] == nums[left + 1]:
+                        left += 1
+                    while left < right and nums[right] == nums[right - 1]:
+                        right -= 1
+                    left += 1
+                    right -= 1
+                elif current < t:
+                    left += 1
+                else:
+                    right -= 1
+
+    return result
+```
+
+### 变体 3：K 数之和
+
+通用解法：递归 + 双指针
+
+- K > 2：递归到 K-1
+- K = 2：双指针
+
+时间复杂度：O(n^(k-1))
+
+## 💬 面试追问
+
+1. **为什么先排序？**
+   - 双指针依赖有序性
+   - 方便去重（相同元素相邻）
+   - 可以剪枝优化
+
+2. **三处去重分别有什么作用？**
+   - 第一个数去重：避免相同的 `i` 找出相同答案
+   - 第二个数去重：避免同一个 `i` 找出重复答案
+   - 第三个数去重：配合第二个数去重
+
+3. **时间复杂度为什么是 O(n²)？**
+   - 外层循环 n 次
+   - 内层双指针移动 O(n) 次
+   - 排序 O(n log n) 被主导
+
+4. **可以优化到 O(n) 吗？**
+   - 不可以，这是理论上证明的下界
+   - 3SUM 问题没有比 O(n²) 更好的解法（目前公认）

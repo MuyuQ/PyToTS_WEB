@@ -1,0 +1,867 @@
+---
+title: 字符串与正则处理
+kind: lesson
+level: migration
+topic: strings
+difficulty: medium
+prerequisites: ["types"]
+python_tags: ["f-string", "str methods", "re module"]
+ts_tags: ["template literal", "string methods", "RegExp"]
+description: 掌握 Python 和 TypeScript 字符串处理与正则表达式的差异
+---
+## 🎯 为什么这个很重要
+
+处理用户输入、解析日志、提取数据...字符串操作是日常开发中最常见的任务之一。
+
+Python 开发者习惯了 f-string 的简洁：
+
+```python
+name = "Alice"
+age = 25
+message = f"{name} is {age} years old"
+```
+
+转到 TypeScript 后，发现没有 f-string，第一反应可能是：
+
+```typescript
+// ❌ TypeScript 没有 f-string！
+const message = f"{name} is {age} years old"; // 语法错误
+```
+
+正则表达式更让人头疼。Python 用 `re` 模块，JavaScript 用内置 `RegExp`，方法名和返回值都不一样：
+
+```python
+# Python
+import re
+matches = re.findall(r'\d+', "a1b2c3")  # ['1', '2', '3']
+```
+
+```typescript
+// TypeScript
+const matches = "a1b2c3".match(/\d+/g); // ['1', '2', '3']
+```
+
+看起来差不多？但返回值类型、空匹配的处理、命名捕获组...处处是坑。
+
+---
+## 💡 核心概念
+
+### 字符串格式化 = 填空题
+
+| 方式            | 类比       | 特点                       |
+| --------------- | ---------- | -------------------------- |
+| Python f-string | 直接填空   | `{name}` 直接嵌入变量      |
+| Python format() | 模板填空   | `{}.format(value)` 顺序填  |
+| Python %        | 老式占位符 | `%s` 占位，类似 C 语言     |
+| TS 模板字符串   | 反引号填空 | `` `${name}` `` 反引号包裹 |
+
+### 字符串方法 = 工具箱
+
+Python 的字符串方法是"函数调用"风格，TypeScript 是"对象方法"风格：
+
+```python
+# Python: 函数调用
+len("hello")
+"hello".upper()
+```
+
+```typescript
+// TypeScript: 对象方法
+"hello".length;
+"hello".toUpperCase();
+```
+
+### 正则表达式 = 模式匹配器
+
+| Python         | TypeScript       | 说明           |
+| -------------- | ---------------- | -------------- |
+| `re.match()`   | `.match()`       | 从开头匹配     |
+| `re.search()`  | `.search()`      | 搜索第一个匹配 |
+| `re.findall()` | `.match(/.../g)` | 全局匹配所有   |
+| `re.sub()`     | `.replace()`     | 替换匹配内容   |
+| `re.compile()` | `new RegExp()`   | 预编译正则     |
+
+---
+## 📚 Python 回顾
+
+### 字符串格式化
+
+```python
+# f-string（推荐）
+name = "Alice"
+age = 25
+message = f"{name} is {age} years old"
+
+# format() 方法
+message = "{} is {} years old".format(name, age)
+message = "{0} is {1} years old. {0} is happy.".format(name, age)
+message = "{name} is {age} years old".format(name="Alice", age=25)
+
+# % 格式化（老式）
+message = "%s is %d years old" % (name, age)
+
+# 格式化选项
+price = 19.99
+print(f"Price: ${price:.2f}")  # Price: $19.99
+print(f"Hex: {255:x}")  # Hex: ff
+```
+
+### 字符串方法
+
+```python
+# 长度
+len("hello")  # 5
+
+# 大小写
+"hello".upper()  # "HELLO"
+"HELLO".lower()  # "hello"
+
+# 去空白
+"  hello  ".strip()  # "hello"
+"  hello  ".lstrip()  # "hello  "
+"  hello  ".rstrip()  # "  hello"
+
+# 分割与连接
+"a,b,c".split(",")  # ["a", "b", "c"]
+",".join(["a", "b", "c"])  # "a,b,c"
+
+# 替换
+"hello world".replace("world", "TypeScript")  # "hello TypeScript"
+
+# 查找
+"hello".startswith("he")  # True
+"hello".endswith("lo")  # True
+"hello".find("ll")  # 2（找不到返回 -1）
+"hello".index("ll")  # 2（找不到抛异常）
+
+# 判断
+"123".isdigit()  # True
+"abc".isalpha()  # True
+"abc123".isalnum()  # True
+```
+
+### 正则表达式
+
+```python
+import re
+
+# 匹配（从开头）
+match = re.match(r'(\w+)@(\w+)', 'alice@example.com')
+if match:
+    print(match.group(1))  # "alice"
+    print(match.group(2))  # "example"
+
+# 搜索（任意位置）
+match = re.search(r'\d+', 'abc123def')
+if match:
+    print(match.group())  # "123"
+
+# 查找所有
+numbers = re.findall(r'\d+', 'a1b2c3')  # ['1', '2', '3']
+
+# 替换
+result = re.sub(r'\d+', 'X', 'a1b2c3')  # "aXbXcX"
+
+# 分割
+parts = re.split(r'[,.]', 'a,b.c')  # ['a', 'b', 'c']
+
+# 命名捕获组
+match = re.search(r'(?P<name>\w+)@(?P<domain>\w+)', 'alice@example')
+if match:
+    print(match.group('name'))  # "alice"
+    print(match.group('domain'))  # "example"
+
+# 预编译（性能优化）
+pattern = re.compile(r'\d+')
+pattern.findall('a1b2c3')  # ['1', '2', '3']
+```
+
+---
+## 🔧 TypeScript 等价写法
+
+### 字符串格式化
+
+```typescript
+// 模板字符串（推荐）
+const name = "Alice";
+const age = 25;
+const message = `${name} is ${age} years old`;
+
+// 格式化选项（需要手动处理）
+const price = 19.99;
+console.log(`Price: $${price.toFixed(2)}`); // Price: $19.99
+
+const num = 255;
+console.log(`Hex: ${num.toString(16)}`); // Hex: ff
+
+// 多行字符串
+const html = `
+  <div>
+    <h1>${name}</h1>
+    <p>Age: ${age}</p>
+  </div>
+`;
+
+// 表达式嵌入
+const a = 1;
+const b = 2;
+console.log(`${a} + ${b} = ${a + b}`); // "1 + 2 = 3"
+
+// 条件表达式
+const status = age >= 18 ? "adult" : "minor";
+console.log(`${name} is an ${age >= 18 ? "adult" : "minor"}`);
+```
+
+### 字符串方法
+
+```typescript
+// 长度（属性，不是方法）
+"hello".length; // 5
+
+// 大小写
+"hello".toUpperCase(); // "HELLO"
+"HELLO".toLowerCase(); // "hello"
+
+// 去空白
+"  hello  ".trim(); // "hello"
+"  hello  ".trimStart(); // "hello  "
+"  hello  ".trimEnd(); // "  hello"
+
+// 分割与连接
+"a,b,c".split(","); // ["a", "b", "c"]
+["a", "b", "c"].join(","); // "a,b,c"
+
+// 替换
+"hello world".replace("world", "TypeScript"); // "hello TypeScript"
+"aaa".replace("a", "X"); // "Xaa"（只替换第一个！）
+"aaa".replaceAll("a", "X"); // "XXX"（替换所有）
+
+// 查找
+"hello".startsWith("he"); // true
+"hello".endsWith("lo"); // true
+"hello".indexOf("ll"); // 2（找不到返回 -1）
+"hello".includes("ll"); // true（是否存在）
+
+// 判断
+"123".match(/^\d+$/) !== null; // 是否全是数字
+"abc".match(/^[a-z]+$/) !== null; // 是否全是字母
+```
+
+### 正则表达式
+
+```typescript
+// 匹配（从开头）
+const match = "alice@example.com".match(/^(\w+)@(\w+)/);
+if (match) {
+  console.log(match[1]); // "alice"
+  console.log(match[2]); // "example"
+}
+
+// 搜索（任意位置）
+const searchResult = "abc123def".search(/\d+/);
+console.log(searchResult); // 3（返回位置，不是匹配结果）
+
+// 查找所有（需要 g 标志）
+const numbers = "a1b2c3".match(/\d+/g); // ['1', '2', '3']
+
+// 替换
+const result = "a1b2c3".replace(/\d+/g, "X"); // "aXbXcX"
+
+// 分割
+const parts = "a,b.c".split(/[,\.]/); // ['a', 'b', 'c']
+
+// 命名捕获组
+const namedMatch = "alice@example".match(/(?<name>\w+)@(?<domain>\w+)/);
+if (namedMatch?.groups) {
+  console.log(namedMatch.groups.name); // "alice"
+  console.log(namedMatch.groups.domain); // "example"
+}
+
+// 预编译（性能优化）
+const pattern = /\d+/g;
+pattern.test("a1b2c3"); // true
+```
+
+---
+## 📊 语法速查表
+
+### 字符串格式化
+
+| 功能       | Python              | TypeScript          |
+| ---------- | ------------------- | ------------------- |
+| 变量嵌入   | `f"{name}"`         | `` `${name}` ``     |
+| 表达式嵌入 | `f"{a + b}"`        | `` `${a + b}` ``    |
+| 格式化数字 | `f"{price:.2f}"`    | `price.toFixed(2)`  |
+| 多行字符串 | `"""multi\nline"""` | `` `multi\nline` `` |
+| 原始字符串 | `r"\n"`             | `String.raw`\n``    |
+
+### 字符串方法
+
+| 功能       | Python                   | TypeScript                       |
+| ---------- | ------------------------ | -------------------------------- |
+| 长度       | `len(s)`                 | `s.length`                       |
+| 大写       | `s.upper()`              | `s.toUpperCase()`                |
+| 小写       | `s.lower()`              | `s.toLowerCase()`                |
+| 去两端空白 | `s.strip()`              | `s.trim()`                       |
+| 去左空白   | `s.lstrip()`             | `s.trimStart()`                  |
+| 去右空白   | `s.rstrip()`             | `s.trimEnd()`                    |
+| 分割       | `s.split(",")`           | `s.split(",")`                   |
+| 连接       | `",".join(list)`         | `list.join(",")`                 |
+| 替换全部   | `s.replace("a", "b")`    | `s.replaceAll("a", "b")`         |
+| 替换第一个 | `s.replace("a", "b", 1)` | `s.replace("a", "b")`            |
+| 前缀判断   | `s.startswith("he")`     | `s.startsWith("he")`             |
+| 后缀判断   | `s.endswith("lo")`       | `s.endsWith("lo")`               |
+| 查找位置   | `s.find("ll")`           | `s.indexOf("ll")`                |
+| 是否包含   | `"ll" in s`              | `s.includes("ll")`               |
+| 重复       | `s * 3`                  | `s.repeat(3)`                    |
+| 反转       | `s[::-1]`                | `s.split("").reverse().join("")` |
+
+### 正则表达式
+
+| 功能       | Python                     | TypeScript                 |
+| ---------- | -------------------------- | -------------------------- |
+| 从开头匹配 | `re.match(pattern, s)`     | `s.match(/^pattern/)`      |
+| 搜索       | `re.search(pattern, s)`    | `s.search(pattern)`        |
+| 查找所有   | `re.findall(pattern, s)`   | `s.match(/pattern/g)`      |
+| 替换       | `re.sub(pattern, repl, s)` | `s.replace(pattern, repl)` |
+| 分割       | `re.split(pattern, s)`     | `s.split(pattern)`         |
+| 测试匹配   | `re.search(pattern, s)`    | `/pattern/.test(s)`        |
+| 命名组     | `(?P<name>...)`            | `(?<name>...)`             |
+| 预编译     | `re.compile(pattern)`      | `new RegExp(pattern)`      |
+
+---
+## ⚠️ 差异与常见陷阱
+
+### 1. replace 行为不同
+
+Python 的 `replace` 默认替换所有，TypeScript 的 `replace` 只替换第一个：
+
+```python
+# Python: 替换所有
+"aaa".replace("a", "X")  # "XXX"
+```
+
+```typescript
+// TypeScript: 只替换第一个！
+"aaa".replace("a", "X"); // "Xaa"
+
+// 替换所有需要用 replaceAll
+"aaa".replaceAll("a", "X"); // "XXX"
+
+// 或者用正则 + g 标志
+"aaa".replace(/a/g, "X"); // "XXX"
+```
+
+### 2. match 返回值类型
+
+TypeScript 的 `match` 返回值可能是 `null`：
+
+```python
+# Python: 找不到返回空列表
+re.findall(r'\d+', 'abc')  # []
+```
+
+```typescript
+// TypeScript: 找不到返回 null！
+"abc".match(/\d+/g); // null
+
+// 安全写法
+const matches = "abc".match(/\d+/g) ?? [];
+```
+
+### 3. search 返回位置而非结果
+
+```python
+# Python: 返回 Match 对象
+match = re.search(r'\d+', 'abc123')
+if match:
+    print(match.group())  # "123"
+```
+
+```typescript
+// TypeScript: 返回位置索引！
+const pos = "abc123".search(/\d+/);
+console.log(pos); // 3（位置，不是结果）
+
+// 要获取匹配结果，用 match
+const matchResult = "abc123".match(/\d+/);
+console.log(matchResult?.[0]); // "123"
+```
+
+### 4. 命名捕获组语法不同
+
+```python
+# Python: ?P<name>
+match = re.search(r'(?P<name>\w+)@(?P<domain>\w+)', 'alice@example')
+print(match.group('name'))  # "alice"
+```
+
+```typescript
+// TypeScript: ?<name>（没有 P）
+const match = "alice@example".match(/(?<name>\w+)@(?<domain>\w+)/);
+console.log(match?.groups?.name); // "alice"
+```
+
+### 5. 字符串反转
+
+Python 的切片语法很方便，TypeScript 需要组合方法：
+
+```python
+# Python: 切片反转
+"hello"[::-1]  # "olleh"
+```
+
+```typescript
+// TypeScript: 组合方法
+"hello".split("").reverse().join(""); // "olleh"
+
+// 或者用展开运算符
+[..."hello"].reverse().join(""); // "olleh"
+```
+
+### 6. 多行字符串处理
+
+```python
+# Python: 三引号
+text = """
+第一行
+第二行
+第三行
+"""
+# 注意：开头会有换行符
+```
+
+```typescript
+// TypeScript: 反引号
+const text = `
+第一行
+第二行
+第三行
+`;
+// 同样，开头会有换行符
+
+// 去除首尾空白
+const cleanText = text.trim();
+```
+
+### 7. 字符串遍历
+
+```python
+# Python: 直接遍历
+for char in "hello":
+    print(char)
+
+# 带索引
+for i, char in enumerate("hello"):
+    print(i, char)
+```
+
+```typescript
+// TypeScript: for...of
+for (const char of "hello") {
+  console.log(char);
+}
+
+// 带索引
+for (let i = 0; i < "hello".length; i++) {
+  console.log(i, "hello"[i]);
+}
+
+// 或者用 entries
+[..."hello"].entries().forEach(([i, char]) => {
+  console.log(i, char);
+});
+```
+
+### 8. Unicode 处理差异
+
+```python
+# Python 3: 字符串默认 Unicode
+len("你好")  # 2（字符数）
+```
+
+```typescript
+// TypeScript: 需要注意代理对
+"你好".length; // 2（正确）
+
+// 但某些 Unicode 字符有问题
+"👍".length; // 2（应该是 1！）
+
+// 正确处理方式
+[..."👍"].length; // 1
+```
+
+---
+## 💬 开发者对话
+
+**Python 开发者**：TypeScript 没有 f-string，那怎么格式化字符串？
+
+**TypeScript 开发者**：用模板字符串，反引号包裹，`${}` 嵌入变量：
+
+```typescript
+const name = "Alice";
+const age = 25;
+
+// Python f-string
+// f"{name} is {age} years old"
+
+// TypeScript 模板字符串
+const message = `${name} is ${age} years old`;
+```
+
+**Python 开发者**：看起来差不多。那格式化数字呢？比如保留两位小数？
+
+**TypeScript 开发者**：用 `toFixed()` 方法：
+
+```typescript
+const price = 19.99;
+const tax = 0.08;
+
+// Python: f"Total: ${price * (1 + tax):.2f}"
+// TypeScript:
+const total = price * (1 + tax);
+console.log(`Total: $${total.toFixed(2)}`);
+```
+
+**Python 开发者**：正则表达式的 `match` 方法返回值为什么可能是 `null`？
+
+**TypeScript 开发者**：这是 JavaScript 的设计。找不到匹配时返回 `null`，而不是空数组。所以要用空值合并运算符：
+
+```typescript
+// 安全写法
+const matches = text.match(/\d+/g) ?? [];
+
+// 或者先检查
+const result = text.match(/\d+/g);
+if (result) {
+  // result 是 string[]
+}
+```
+
+**Python 开发者**：`replace` 只替换第一个匹配？这太坑了！
+
+**TypeScript 开发者**：确实容易踩坑。记住：
+
+- `replace()`：只替换第一个
+- `replaceAll()`：替换所有（ES2021+）
+- `replace(/pattern/g, repl)`：用正则全局替换
+
+```typescript
+"aaa".replace("a", "X"); // "Xaa"
+"aaa".replaceAll("a", "X"); // "XXX"
+"aaa".replace(/a/g, "X"); // "XXX"
+```
+
+**Python 开发者**：命名捕获组的语法也不一样？
+
+**TypeScript 开发者**：对，Python 用 `(?P<name>...)`，TypeScript 用 `(?<name>...)`，少了那个 `P`。访问方式也不同：
+
+```python
+# Python
+match.group('name')
+```
+
+```typescript
+// TypeScript
+match.groups.name;
+```
+
+---
+## 🤔 试试看
+
+### 预测输出
+
+下面这段 TypeScript 代码的输出是什么？
+
+```typescript
+const text = "  Hello World  ";
+
+console.log(text.trim().toLowerCase());
+console.log(text.replace(" ", "-"));
+console.log(text.replaceAll(" ", "-"));
+console.log(text.split(" ").length);
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+```
+hello world
+  Hello-World
+  -Hello-World--
+3
+```
+
+**解析**：
+
+1. `trim()` 去掉两端空白，`toLowerCase()` 转小写
+2. `replace(" ", "-")` 只替换第一个空格
+3. `replaceAll(" ", "-")` 替换所有空格（包括两端的）
+4. `split(" ")` 按空格分割，得到 `["", "", "Hello", "World", "", ""]`，长度是 6... 等等，让我重新算：
+   - `"  Hello World  ".split(" ")` 得到 `["", "", "Hello", "World", "", ""]`
+   - 长度是 6，不是 3
+
+修正答案：
+
+```
+hello world
+  Hello-World
+  -Hello-World--
+6
+```
+
+</details>
+
+### 找错误
+
+下面这段代码有什么问题？
+
+```typescript
+function extractEmails(text: string): string[] {
+  const matches = text.match(/\b[\w.]+@[\w.]+\b/);
+  return matches;
+}
+
+const emails = extractEmails("Contact: alice@example.com, bob@test.org");
+console.log(emails.length); // 期望输出 2
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+**问题 1**：`match` 没有 `g` 标志，只返回第一个匹配。
+
+**问题 2**：`match` 返回值可能是 `null`，不能直接返回。
+
+**修复**：
+
+```typescript
+function extractEmails(text: string): string[] {
+  const matches = text.match(/\b[\w.]+@[\w.]+\b/g); // 加 g 标志
+  return matches ?? []; // 处理 null
+}
+
+const emails = extractEmails("Contact: alice@example.com, bob@test.org");
+console.log(emails.length); // 2
+```
+
+</details>
+
+---
+## 📝 练习
+
+将以下 Python 代码转换为 TypeScript：
+
+```python
+import re
+
+def parse_log_line(line: str) -> dict | None:
+    """解析日志行，提取时间、级别、消息"""
+    pattern = r'\[(?P<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] \[(?P<level>\w+)\] (?P<message>.+)'
+    match = re.search(pattern, line)
+    if match:
+        return {
+            'time': match.group('time'),
+            'level': match.group('level'),
+            'message': match.group('message')
+        }
+    return None
+
+def mask_emails(text: str) -> str:
+    """隐藏邮箱地址，保留首尾字符"""
+    return re.sub(r'(\w)\w+@(\w+)', r'\1***@\2', text)
+
+# 测试
+log_line = "[2024-01-15 10:30:45] [ERROR] Connection timeout"
+print(parse_log_line(log_line))
+# {'time': '2024-01-15 10:30:45', 'level': 'ERROR', 'message': 'Connection timeout'}
+
+print(mask_emails("Contact alice@example.com for help"))
+# Contact a***@example.com for help
+```
+
+<details>
+<summary>点击查看参考答案</summary>
+
+```typescript
+interface LogEntry {
+  time: string;
+  level: string;
+  message: string;
+}
+
+function parseLogLine(line: string): LogEntry | null {
+  // 解析日志行，提取时间、级别、消息
+  const pattern =
+    /\[(?<time>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] \[(?<level>\w+)\] (?<message>.+)/;
+  const match = line.match(pattern);
+  if (match?.groups) {
+    return {
+      time: match.groups.time,
+      level: match.groups.level,
+      message: match.groups.message,
+    };
+  }
+  return null;
+}
+
+function maskEmails(text: string): string {
+  // 隐藏邮箱地址，保留首尾字符
+  return text.replace(/(\w)\w+@(\w+)/g, "$1***@$2");
+}
+
+// 测试
+const logLine = "[2024-01-15 10:30:45] [ERROR] Connection timeout";
+console.log(parseLogLine(logLine));
+// { time: '2024-01-15 10:30:45', level: 'ERROR', message: 'Connection timeout' }
+
+console.log(maskEmails("Contact alice@example.com for help"));
+// Contact a***@example.com for help
+```
+
+**注意点**：
+
+1. 命名捕获组：`(?P<name>...)` → `(?<name>...)`
+2. 访问命名组：`match.group('name')` → `match.groups.name`
+3. 替换引用：`\1` → `$1`
+4. 全局替换：`re.sub()` 默认全局，TypeScript 需要 `g` 标志
+5. 返回类型：`dict | None` → `LogEntry | null`
+
+</details>
+
+---
+## 🎓 面试实战
+
+### 问题 1：如何判断一个字符串是否是回文？
+
+:::tip[答案要点]
+
+```typescript
+function isPalindrome(s: string): boolean {
+  // 方法 1：反转比较
+  const reversed = s.split("").reverse().join("");
+  return s === reversed;
+
+  // 方法 2：双指针（更高效）
+  let left = 0;
+  let right = s.length - 1;
+  while (left < right) {
+    if (s[left] !== s[right]) {
+      return false;
+    }
+    left++;
+    right--;
+  }
+  return true;
+}
+```
+
+:::
+
+### 问题 2：如何实现字符串的 trim() 方法？
+
+:::tip[答案要点]
+
+```typescript
+function myTrim(s: string): string {
+  // 方法 1：正则
+  return s.replace(/^\s+|\s+$/g, "");
+
+  // 方法 2：手动实现
+  let start = 0;
+  let end = s.length - 1;
+
+  while (start <= end && s[start] === " ") {
+    start++;
+  }
+
+  while (end >= start && s[end] === " ") {
+    end--;
+  }
+
+  return s.slice(start, end + 1);
+}
+```
+
+:::
+
+### 问题 3：如何统计字符串中每个字符的出现次数？
+
+:::tip[答案要点]
+
+```typescript
+function charCount(s: string): Map<string, number> {
+  const count = new Map<string, number>();
+
+  for (const char of s) {
+    count.set(char, (count.get(char) ?? 0) + 1);
+  }
+
+  return count;
+}
+
+// 或者用对象
+function charCountObject(s: string): Record<string, number> {
+  const count: Record<string, number> = {};
+
+  for (const char of s) {
+    count[char] = (count[char] ?? 0) + 1;
+  }
+
+  return count;
+}
+```
+
+:::
+
+### 问题 4：正则表达式的贪婪匹配和非贪婪匹配有什么区别？
+
+:::tip[答案要点]
+
+```typescript
+const html = "<div>content1</div><div>content2</div>";
+
+// 贪婪匹配：匹配尽可能多的内容
+const greedy = html.match(/<div>.*<\/div>/);
+console.log(greedy?.[0]);
+// "<div>content1</div><div>content2</div>"
+
+// 非贪婪匹配：匹配尽可能少的内容
+const nonGreedy = html.match(/<div>.*?<\/div>/);
+console.log(nonGreedy?.[0]);
+// "<div>content1</div>"
+
+// 全局非贪婪匹配
+const allMatches = html.match(/<div>.*?<\/div>/g);
+console.log(allMatches);
+// ["<div>content1</div>", "<div>content2</div>"]
+```
+
+贪婪匹配用 `*` 和 `+`，非贪婪匹配用 `*?` 和 `+?`。
+
+:::
+
+### 问题 5：如何验证邮箱地址格式？
+
+:::tip[答案要点]
+
+```typescript
+function isValidEmail(email: string): boolean {
+  // 简单验证
+  const simplePattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  // 更严格的验证
+  const strictPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
+  return strictPattern.test(email);
+}
+
+// 测试
+console.log(isValidEmail("alice@example.com")); // true
+console.log(isValidEmail("invalid-email")); // false
+console.log(isValidEmail("user@.com")); // false
+```
+
+注意：完美的邮箱验证非常复杂，实际项目中建议发送验证邮件确认。
+
+:::

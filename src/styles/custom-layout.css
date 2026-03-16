@@ -48,6 +48,7 @@
 .sl-markdown-content .card-grid {
   gap: 1.25rem;
   margin: 1.5rem 0;
+  align-items: start;
 }
 
 .sl-markdown-content .card-grid .card {
@@ -58,6 +59,7 @@
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
+  align-self: start;
 }
 
 .sl-markdown-content .card-grid .card:hover {
@@ -177,27 +179,130 @@
   }
 }
 
-/* ===== DARK THEME ENHANCEMENTS ===== */
+/* ===== DARK THEME ENHANCEMENTS (MkDocs Material Slate) ===== */
 
 [data-theme="dark"] {
   background-color: var(--sl-color-bg);
+  color-scheme: dark;
 }
 
+/* Site title - warm tone for visibility */
+[data-theme="dark"] .site-title {
+  color: #ff9f43;
+}
+
+[data-theme="dark"] .site-title:hover {
+  color: #ffb366;
+}
+
+/* TOC current item - warm tone for active tracking */
+[data-theme="dark"] starlight-toc a[aria-current="true"],
+[data-theme="dark"] mobile-starlight-toc a[aria-current="true"] {
+  color: #ff9f43 !important;
+}
+
+[data-theme="dark"] starlight-toc a[aria-current="true"]:hover,
+[data-theme="dark"] mobile-starlight-toc a[aria-current="true"]:hover {
+  color: #ffb366 !important;
+}
+
+/* Card styling */
 [data-theme="dark"] .sl-markdown-content .card-grid .card {
   background: var(--sl-color-bg-card);
+  border-color: var(--sl-color-hairline);
 }
 
 [data-theme="dark"] .sl-markdown-content .card-grid .card:hover {
   border-color: var(--sl-color-accent);
-  box-shadow: 0 4px 16px rgba(88, 166, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(84, 136, 232, 0.15);
 }
 
+/* Link styling */
 [data-theme="dark"] .sl-markdown-content a {
   color: var(--sl-color-accent);
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
 }
 
 [data-theme="dark"] .sl-markdown-content a:hover {
   color: var(--sl-color-white);
+  text-decoration-color: var(--sl-color-accent);
+}
+
+/* Code blocks - deeper background for contrast */
+[data-theme="dark"] .sl-markdown-content pre {
+  background: var(--sl-color-bg-inline-code);
+  border: 1px solid var(--sl-color-hairline);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Inline code */
+[data-theme="dark"] .sl-markdown-content code:not(pre code) {
+  background: var(--sl-color-bg-inline-code);
+  border: 1px solid var(--sl-color-hairline-light);
+  border-radius: 4px;
+  padding: 0.125em 0.375em;
+}
+
+/* Tables */
+[data-theme="dark"] .sl-markdown-content table {
+  border-color: var(--sl-color-hairline);
+}
+
+[data-theme="dark"] .sl-markdown-content th {
+  background: var(--sl-color-bg-card);
+  border-color: var(--sl-color-hairline);
+}
+
+[data-theme="dark"] .sl-markdown-content td {
+  border-color: var(--sl-color-hairline);
+}
+
+[data-theme="dark"] .sl-markdown-content tr:hover td {
+  background: rgba(84, 136, 232, 0.05);
+}
+
+/* Blockquotes */
+[data-theme="dark"] .sl-markdown-content blockquote {
+  border-left-color: var(--sl-color-accent);
+  background: rgba(84, 136, 232, 0.05);
+  color: var(--sl-color-gray-2);
+}
+
+/* Horizontal rules */
+[data-theme="dark"] .sl-markdown-content hr {
+  background: var(--sl-color-hairline);
+}
+
+/* Selection */
+[data-theme="dark"] ::selection {
+  background: rgba(84, 136, 232, 0.3);
+  color: var(--sl-color-white);
+}
+
+/* Focus states */
+[data-theme="dark"] :focus-visible {
+  outline: 2px solid var(--sl-color-accent);
+  outline-offset: 2px;
+}
+
+/* Scrollbar styling */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: var(--sl-color-bg);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: var(--sl-color-gray-5);
+  border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: var(--sl-color-gray-4);
 }
 
 /* ===== LIGHT THEME ===== */

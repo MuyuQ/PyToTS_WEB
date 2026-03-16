@@ -1,0 +1,227 @@
+---
+title: TS vs JS 对比
+kind: lesson
+level: preparation
+topic: comparison
+difficulty: easy
+prerequisites: []
+python_tags: []
+ts_tags: ["typescript", "javascript", "comparison"]
+description: 深入对比 TypeScript 与 JavaScript 的差异
+---
+
+## 核心差异一览
+
+| 维度       | JavaScript | TypeScript               |
+| ---------- | ---------- | ------------------------ |
+| 类型检查   | 运行时     | 编译时                   |
+| 类型声明   | 无         | 支持                     |
+| 接口       | 无         | 支持                     |
+| 泛型       | 无         | 支持                     |
+| 枚举       | 无         | 支持                     |
+| 抽象类     | 无         | 支持                     |
+| 访问修饰符 | 无         | public/private/protected |
+| 编译产物   | -          | JavaScript               |
+
+## 类型系统对比
+
+### JavaScript：动态类型
+
+```javascript
+let value = 42; // number
+value = "hello"; // 现在是 string
+value = { x: 1 }; // 现在是 object
+// 一切都合法，运行时才知道问题
+```
+
+### TypeScript：静态类型
+
+```typescript
+let value: number = 42;
+value = "hello"; // 错误：不能将类型 "string" 分配给类型 "number"
+```
+
+## 类型推断
+
+TypeScript 可以自动推断类型，不需要每次都显式声明：
+
+```typescript
+let name = "Alice"; // 推断为 string
+let age = 25; // 推断为 number
+let items = [1, 2, 3]; // 推断为 number[]
+
+// 但显式声明更清晰
+let name: string = "Alice";
+let age: number = 25;
+let items: number[] = [1, 2, 3];
+```
+
+## 接口 vs JavaScript 对象
+
+### JavaScript
+
+```javascript
+function createUser(user) {
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  };
+}
+
+createUser({ id: 1, name: "Alice" }); // email 是 undefined
+```
+
+### TypeScript
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
+
+function createUser(user: User): User {
+  return user;
+}
+
+createUser({ id: 1, name: "Alice" }); // 错误：缺少 email
+createUser({ id: 1, name: "Alice", email: "a@example.com" }); // 正确
+```
+
+## 函数签名
+
+### JavaScript
+
+```javascript
+function add(a, b) {
+  return a + b;
+}
+
+add(1, 2); // 3
+add("1", "2"); // "12"（可能不是预期行为）
+add(1); // NaN
+```
+
+### TypeScript
+
+```typescript
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+add(1, 2); // 3
+add("1", "2"); // 错误
+add(1); // 错误：缺少参数
+```
+
+## 可选参数
+
+```typescript
+function greet(name: string, greeting?: string): string {
+  return greeting ? `${greeting}, ${name}!` : `Hello, ${name}!`;
+}
+
+greet("Alice"); // "Hello, Alice!"
+greet("Alice", "Hi"); // "Hi, Alice!"
+greet("Alice", "Hi", "!"); // 错误：参数过多
+```
+
+## 默认参数
+
+```typescript
+function greet(name: string, greeting: string = "Hello"): string {
+  return `${greeting}, ${name}!`;
+}
+
+greet("Alice"); // "Hello, Alice!"
+greet("Alice", "Hi"); // "Hi, Alice!"
+```
+
+## 联合类型
+
+TypeScript 特有，JavaScript 不支持：
+
+```typescript
+let id: string | number;
+
+id = 123; // 正确
+id = "abc"; // 正确
+id = true; // 错误
+
+function formatId(id: string | number): string {
+  if (typeof id === "string") {
+    return id.toUpperCase();
+  }
+  return id.toString();
+}
+```
+
+## 类型守卫
+
+```typescript
+function process(value: string | number) {
+  if (typeof value === "string") {
+    // 这里 TypeScript 知道 value 是 string
+    console.log(value.toUpperCase());
+  } else {
+    // 这里 TypeScript 知道 value 是 number
+    console.log(value.toFixed(2));
+  }
+}
+```
+
+## 编译时 vs 运行时
+
+| 检查时机 | JavaScript | TypeScript       |
+| -------- | ---------- | ---------------- |
+| 编辑器   | 无提示     | 即时错误提示     |
+| 编译时   | 不适用     | 类型错误阻断编译 |
+| 运行时   | 可能报错   | 编译后无类型检查 |
+
+## 性能影响
+
+TypeScript 编译为 JavaScript 后，运行时性能与原生 JavaScript 相同：
+
+- 类型信息在编译时被移除
+- 无额外的运行时开销
+- 生成的代码可以优化
+
+```typescript
+// TypeScript
+function add(a: number, b: number): number {
+  return a + b;
+}
+
+// 编译后的 JavaScript
+function add(a, b) {
+  return a + b;
+}
+```
+
+## 迁移策略
+
+从 JavaScript 迁移到 TypeScript：
+
+1. **重命名文件**：`.js` → `.ts`
+2. **添加 `tsconfig.json`**：配置编译选项
+3. **渐进式添加类型**：从核心模块开始
+4. **启用严格模式**：逐步提高类型检查级别
+
+```json
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}
+```
+
+## 下一步
+
+了解差异后，接下来搭建开发环境：
+
+→ [开发环境准备](/paths/preparation/setup/)
