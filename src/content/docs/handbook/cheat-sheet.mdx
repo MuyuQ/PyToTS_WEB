@@ -3,116 +3,113 @@ title: Python ↔ TypeScript 语法对照表
 description: 快速查阅 Python 和 TypeScript 的语法差异
 kind: page
 ---
-
-# Python ↔ TypeScript 语法对照表
-
 这份手册用于快速对照两种语言的高频语法和工程概念。
 
 ## 变量声明
 
-| Python | TypeScript | 说明 |
-|--------|-----------|------|
-| `x = 5` | `let x = 5` | 可变变量 |
-| `X = 5` (常量) | `const x = 5` | 常量（约定大写） |
-| `x: int = 5` | `let x: number = 5` | 显式类型注解 |
+| Python         | TypeScript          | 说明             |
+| -------------- | ------------------- | ---------------- |
+| `x = 5`        | `let x = 5`         | 可变变量         |
+| `X = 5` (常量) | `const x = 5`       | 常量（约定大写） |
+| `x: int = 5`   | `let x: number = 5` | 显式类型注解     |
 
 ## 数据类型
 
-| Python | TypeScript | 说明 |
-|--------|-----------|------|
-| `int` / `float` | `number` | 数字类型统一 |
-| `str` | `string` | 字符串 |
-| `bool` | `boolean` | 布尔值（注意：Python 是 `True/False`，TS 是 `true/false`） |
-| `list[int]` | `number[]` | 数组 |
-| `dict[str, int]` | `Record<string, number>` | 字典/对象 |
-| `tuple[int, str]` | `[number, string]` | 元组 |
-| `set[int]` | `Set<number>` | 集合 |
-| `Union[int, str]` | `number \| string` | 联合类型 |
-| `Optional[int]` | `number \| undefined` | 可选类型 |
+| Python            | TypeScript               | 说明                                                       |
+| ----------------- | ------------------------ | ---------------------------------------------------------- |
+| `int` / `float`   | `number`                 | 数字类型统一                                               |
+| `str`             | `string`                 | 字符串                                                     |
+| `bool`            | `boolean`                | 布尔值（注意：Python 是 `True/False`，TS 是 `true/false`） |
+| `list[int]`       | `number[]`               | 数组                                                       |
+| `dict[str, int]`  | `Record<string, number>` | 字典/对象                                                  |
+| `tuple[int, str]` | `[number, string]`       | 元组                                                       |
+| `set[int]`        | `Set<number>`            | 集合                                                       |
+| `Union[int, str]` | `number \| string`       | 联合类型                                                   |
+| `Optional[int]`   | `number \| undefined`    | 可选类型                                                   |
 
 ## 函数定义
 
-| Python | TypeScript | 说明 |
-|--------|-----------|------|
-| `def add(a, b):` | `function add(a, b) {}` | 基本函数 |
-| `def add(a: int) -> int:` | `function add(a: number): number {}` | 带类型注解 |
-| `lambda x: x + 1` | `(x) => x + 1` | 箭头函数 |
-| `*args` | `...args: T[]` | 剩余参数 |
-| `**kwargs` | `options?: Options` | 关键字参数用对象替代 |
+| Python                    | TypeScript                           | 说明                 |
+| ------------------------- | ------------------------------------ | -------------------- |
+| `def add(a, b):`          | `function add(a, b) {}`              | 基本函数             |
+| `def add(a: int) -> int:` | `function add(a: number): number {}` | 带类型注解           |
+| `lambda x: x + 1`         | `(x) => x + 1`                       | 箭头函数             |
+| `*args`                   | `...args: T[]`                       | 剩余参数             |
+| `**kwargs`                | `options?: Options`                  | 关键字参数用对象替代 |
 
 ## 控制流
 
-| Python | TypeScript | 说明 |
-|--------|-----------|------|
-| `if x > 0:` | `if (x > 0) {}` | 条件语句（TS 需要括号） |
-| `elif` | `else if` | 多条件分支 |
-| `for x in items:` | `for (const x of items) {}` | for...of 循环 |
-| `for i in range(10):` | `for (let i = 0; i < 10; i++) {}` | 传统 for 循环 |
-| `while x < 10:` | `while (x < 10) {}` | while 循环 |
-| 无 | `switch (x) { case 1: ... }` | switch 语句 |
+| Python                | TypeScript                        | 说明                    |
+| --------------------- | --------------------------------- | ----------------------- |
+| `if x > 0:`           | `if (x > 0) {}`                   | 条件语句（TS 需要括号） |
+| `elif`                | `else if`                         | 多条件分支              |
+| `for x in items:`     | `for (const x of items) {}`       | for...of 循环           |
+| `for i in range(10):` | `for (let i = 0; i < 10; i++) {}` | 传统 for 循环           |
+| `while x < 10:`       | `while (x < 10) {}`               | while 循环              |
+| 无                    | `switch (x) { case 1: ... }`      | switch 语句             |
 
 ## 类与对象
 
-| Python | TypeScript | 说明 |
-|--------|-----------|------|
-| `class Person:` | `class Person {}` | 类定义 |
-| `def __init__(self):` | `constructor() {}` | 构造函数 |
-| `self.name` | `this.name` | 实例属性访问 |
-| `@classmethod` | `static` | 静态方法 |
-| `@staticmethod` | `static` | 静态方法 |
-| `@property` | `get name() {}` | Getter |
-| 无接口 | `interface Person {}` | 接口定义 |
-| `class Student(Person):` | `class Student extends Person {}` | 继承 |
+| Python                   | TypeScript                        | 说明         |
+| ------------------------ | --------------------------------- | ------------ |
+| `class Person:`          | `class Person {}`                 | 类定义       |
+| `def __init__(self):`    | `constructor() {}`                | 构造函数     |
+| `self.name`              | `this.name`                       | 实例属性访问 |
+| `@classmethod`           | `static`                          | 静态方法     |
+| `@staticmethod`          | `static`                          | 静态方法     |
+| `@property`              | `get name() {}`                   | Getter       |
+| 无接口                   | `interface Person {}`             | 接口定义     |
+| `class Student(Person):` | `class Student extends Person {}` | 继承         |
 
 ## 异步编程
 
-| Python | TypeScript | 说明 |
-|--------|-----------|------|
-| `async def fetch():` | `async function fetch() {}` | 异步函数 |
-| `await fetch()` | `await fetch()` | 等待异步操作 |
-| `asyncio.gather(*tasks)` | `Promise.all(tasks)` | 并发执行 |
-| `asyncio.sleep(1)` | 无直接对应 | 使用 `new Promise(r => setTimeout(r, 1000))` |
+| Python                   | TypeScript                  | 说明                                         |
+| ------------------------ | --------------------------- | -------------------------------------------- |
+| `async def fetch():`     | `async function fetch() {}` | 异步函数                                     |
+| `await fetch()`          | `await fetch()`             | 等待异步操作                                 |
+| `asyncio.gather(*tasks)` | `Promise.all(tasks)`        | 并发执行                                     |
+| `asyncio.sleep(1)`       | 无直接对应                  | 使用 `new Promise(r => setTimeout(r, 1000))` |
 
 ## 模块导入
 
-| Python | TypeScript | 说明 |
-|--------|-----------|------|
-| `import os` | `import * as os from 'os'` | 导入整个模块 |
-| `from os import path` | `import { path } from 'os'` | 导入特定成员 |
-| `from . import module` | `import module from './module'` | 相对导入 |
+| Python                 | TypeScript                      | 说明         |
+| ---------------------- | ------------------------------- | ------------ |
+| `import os`            | `import * as os from 'os'`      | 导入整个模块 |
+| `from os import path`  | `import { path } from 'os'`     | 导入特定成员 |
+| `from . import module` | `import module from './module'` | 相对导入     |
 
 ## 常用方法对照
 
 ### 数组/列表
 
-| Python | TypeScript |
-|--------|-----------|
-| `len(list)` | `array.length` |
-| `list.append(x)` | `array.push(x)` |
-| `list.pop()` | `array.pop()` |
-| `list[0]` | `array[0]` |
-| `list[1:4]` | `array.slice(1, 4)` |
-| `x in list` | `array.includes(x)` |
+| Python                       | TypeScript                 |
+| ---------------------------- | -------------------------- |
+| `len(list)`                  | `array.length`             |
+| `list.append(x)`             | `array.push(x)`            |
+| `list.pop()`                 | `array.pop()`              |
+| `list[0]`                    | `array[0]`                 |
+| `list[1:4]`                  | `array.slice(1, 4)`        |
+| `x in list`                  | `array.includes(x)`        |
 | `[x for x in list if x > 0]` | `array.filter(x => x > 0)` |
-| `map(func, list)` | `array.map(func)` |
+| `map(func, list)`            | `array.map(func)`          |
 
 ### 字典/对象
 
-| Python | TypeScript |
-|--------|-----------|
-| `dict.keys()` | `Object.keys(obj)` |
-| `dict.values()` | `Object.values(obj)` |
-| `dict.items()` | `Object.entries(obj)` |
-| `key in dict` | `key in obj` |
+| Python                   | TypeScript            |
+| ------------------------ | --------------------- |
+| `dict.keys()`            | `Object.keys(obj)`    |
+| `dict.values()`          | `Object.values(obj)`  |
+| `dict.items()`           | `Object.entries(obj)` |
+| `key in dict`            | `key in obj`          |
 | `dict.get(key, default)` | `obj[key] ?? default` |
 
 ## 相等性判断
 
-| Python | TypeScript | 说明 |
-|--------|-----------|------|
-| `==` | `===` | 严格相等（推荐） |
-| `==` | `==` | 松散相等（会进行类型转换） |
-| `is` | 无直接对应 | Python 比较引用，TS 比较引用用 `===` |
+| Python | TypeScript | 说明                                 |
+| ------ | ---------- | ------------------------------------ |
+| `==`   | `===`      | 严格相等（推荐）                     |
+| `==`   | `==`       | 松散相等（会进行类型转换）           |
+| `is`   | 无直接对应 | Python 比较引用，TS 比较引用用 `===` |
 
 ## 常见陷阱
 
@@ -128,11 +125,16 @@ if None:    # False
 
 ```typescript
 // TypeScript
-if ([]) {}     // True（空数组是 truthy）
-if ("") {}     // False
-if (0) {}      // False
-if (null) {}   // False
-if (undefined) {}  // False
+if ([]) {
+} // True（空数组是 truthy）
+if ("") {
+} // False
+if (0) {
+} // False
+if (null) {
+} // False
+if (undefined) {
+} // False
 ```
 
 ### 2. 类型检查
@@ -146,7 +148,7 @@ if isinstance(x, int):
 ```typescript
 // TypeScript
 if (typeof x === "number") {
-    // 注意：typeof null === "object"
+  // 注意：typeof null === "object"
 }
 ```
 
@@ -165,5 +167,56 @@ const [first, ...rest] = [1, 2, 3, 4, 5];
 ```
 
 ---
+_持续更新中... 如果你发现有遗漏或错误，欢迎提交 PR！_
 
-*持续更新中... 如果你发现有遗漏或错误，欢迎提交 PR！*
+## 错误处理
+
+| Python                           | TypeScript               | 说明                                                         |
+| -------------------------------- | ------------------------ | ------------------------------------------------------------ |
+| `try/except ValueError as e`     | `try/catch (e)`          | Python 使用 except 捕获特定异常类型，TypeScript 使用 catch   |
+| `raise ValueError("msg")`        | `throw new Error("msg")` | Python 使用 raise 抛出异常，TypeScript 使用 throw            |
+| `except (ValueError, TypeError)` | 需要在 catch 内判断      | Python 可在单个 except 中捕获多种异常                        |
+| `finally: cleanup()`             | `finally { cleanup() }`  | finally 块在两种语言中都会执行                               |
+| `obj.get("key", default)`        | `obj.key ?? default`     | Python 使用字典 get 方法，TypeScript 使用 nullish coalescing |
+| `user.profile?.email`            | `user.profile?.email`    | Optional chaining 语法相同                                   |
+
+## 高级类型
+
+| Python                        | TypeScript                          | 说明                                          |
+| ----------------------------- | ----------------------------------- | --------------------------------------------- |
+| `class Container(Generic[T])` | `class Container[T]`                | Python 使用 Generic[T]，TypeScript 使用方括号 |
+| 无直接对应                    | `keyof User`                        | TypeScript 的 keyof 获取对象类型的所有键      |
+| `type(obj).__name__`          | `typeof obj`                        | 获取类型信息                                  |
+| 无直接对应                    | `T extends string ? true : false`   | TypeScript 条件类型                           |
+| 无直接对应                    | `{ readonly [K in keyof T]: T[K] }` | TypeScript 映射类型                           |
+| `Union[str, int]`             | `string \| number`                  | 联合类型语法                                  |
+
+## 作用域与提升
+
+| Python             | TypeScript               | 说明                                     |
+| ------------------ | ------------------------ | ---------------------------------------- |
+| 无块级作用域       | `let/const` 有块级作用域 | TypeScript 变量不会泄漏到块外            |
+| 变量赋值前访问报错 | `var` 有变量提升         | TypeScript 的 var 会提升但值为 undefined |
+| 无此概念           | TDZ（暂时性死区）        | `let/const` 声明前访问报错               |
+| `nonlocal` 声明    | 闭包自动捕获             | 闭包模式在两种语言中都支持               |
+| for 循环变量泄漏   | `let` 防止泄漏           | TypeScript 的 let 确保循环变量不泄漏     |
+
+## 装饰器
+
+| Python          | TypeScript      | 说明                                           |
+| --------------- | --------------- | ---------------------------------------------- |
+| `@dataclass`    | 需第三方库      | Python 内置 dataclass 装饰器                   |
+| `@staticmethod` | `static` 关键字 | Python 装饰器，TypeScript 关键字               |
+| `@property`     | `get` 语法      | Python 用装饰器创建 getter                     |
+| 默认启用        | 需配置          | TypeScript 需要 `experimentalDecorators: true` |
+
+## 测试框架
+
+| Python                 | TypeScript               | 说明                             |
+| ---------------------- | ------------------------ | -------------------------------- |
+| `unittest.TestCase`    | `describe/test`          | unittest 用类组织，Jest 用函数   |
+| `assert x == y`        | `expect(x).toBe(y)`      | pytest 用 assert，Jest 用 expect |
+| `test_*.py`            | `*.test.ts`              | 测试文件命名约定不同             |
+| `unittest.mock.Mock()` | `vi.fn()` 或 `jest.fn()` | Mock 函数                        |
+| `@pytest.fixture`      | `beforeEach`             | 测试数据准备                     |
+| `python -m pytest`     | `npm test`               | 运行测试命令                     |

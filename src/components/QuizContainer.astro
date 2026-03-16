@@ -166,6 +166,851 @@ const quizData: Record<string, QuizQuestion[]> = {
         { text: "switch 语句", correct: false, explanation: "不能用 switch 处理异步错误" }
       ]
     }
+  ],
+  prediction: [
+    {
+      question: "【预测输出】预测以下 Python 代码的输出结果",
+      options: [
+        { text: "【预期:3】列表长度仍为3", correct: true, explanation: "pop从末尾取出元素后重新append，数量不变" },
+        { text: "【预期:1】列表长度变为1", correct: false, explanation: "虽然pop删除了一个元素，但立刻通过append加回去了" },
+        { text: "【预期:2】列表长度变为2", correct: false, explanation: "pop删除一个，append加回一个，总数不变" },
+        { text: "【预期:Runtime Error】运行时错误", correct: false, explanation: "list operations不会引发此错误" }
+      ]
+    },
+    {
+      question: "【预测输出】预测以下 TypeScript 代码段的执行结果",
+      options: [
+        { text: "【预期:2】长度是2", correct: false, explanation: "扩展运算符拆开前两个元素，然后添加第3个元素，共3个" },
+        { text: "【预期:3】长度是3", correct: true, explanation: "创建包含三项的新数组 [1, 2, 3]" },
+        { text: "【预期:undefined】undefined", correct: false, explanation: "length属性始终存在并返回数值" },
+        { text: "【预期:Runtime Error】运行时错误", correct: false, explanation: "这是合法的ES6语法" }
+      ]
+    },
+    {
+      question: "【预测输出】Python 和 TypeScript 分别输出什么值？",
+      options: [
+        { text: "【预期:1, 2 在两种语言中】Python: 1, 2; TypeScript: 1, 2", correct: false, explanation: "Python的默认参数在多次调用间共享，而TS不会" },
+        { text: "【预期:1, 1 和 1, 2 分别为Python和TS】Python: 1, 1; TypeScript: 1, 2", correct: false, explanation: "Python默认参数在函数定义阶段创建一次，导致行为不同" },
+        { text: "【预期:1, 2 和 1, 1 分别为Python和TS】Python: 1, 2; TypeScript: 1, 1", correct: true, explanation: "Python: 默认列表被持续修改；TS: 每次调用生成新空数组" },
+        { text: "【预期:都会报错】执行错误", correct: false, explanation: "这些都是有效的函数调用" }
+      ]
+    }
+  ],
+  // Foundation: 变量与基础
+  variables: [
+    {
+      question: "Python 中 x = 5 对应 TypeScript 的哪种声明方式？",
+      options: [
+        { text: "let x = 5", correct: true, explanation: "let 声明可变变量，const 声明常量" },
+        { text: "var x = 5", correct: false, explanation: "var 有变量提升问题，不推荐使用" },
+        { text: "x = 5", correct: false, explanation: "TypeScript 需要显式声明关键字" },
+        { text: "int x = 5", correct: false, explanation: "TypeScript 没有 int 类型，统一使用 number" }
+      ]
+    },
+    {
+      question: "TypeScript 中 const 和 let 的主要区别？",
+      options: [
+        { text: "const 声明的变量不能重新赋值", correct: true, explanation: "const 用于常量，let 用于可变变量" },
+        { text: "const 有块级作用域，let 没有", correct: false, explanation: "两者都有块级作用域" },
+        { text: "let 只能在函数内使用", correct: false, explanation: "let 和 const 都可在任何作用域使用" },
+        { text: "const 声明的值不可变", correct: false, explanation: "const 防止重新赋值，但对象属性仍可修改" }
+      ]
+    },
+    {
+      question: "Python 的命名习惯中使用 snake_case，TypeScript 推荐使用？",
+      options: [
+        { text: "camelCase", correct: true, explanation: "TypeScript/JavaScript 使用 camelCase 作为变量和函数命名" },
+        { text: "snake_case", correct: false, explanation: "Python 风格，不推荐用于 TypeScript" },
+        { text: "PascalCase", correct: false, explanation: "用于类名、类型名，不用于变量" },
+        { text: "kebab-case", correct: false, explanation: "用于 CSS 类名，不用于变量" }
+      ]
+    },
+    {
+      question: "TypeScript 中如何声明一个不可重新赋值但内容可变的数组？",
+      options: [
+        { text: "const arr = [1, 2, 3]", correct: true, explanation: "const 防止 arr 被重新赋值，但 arr.push() 仍可用" },
+        { text: "let arr = [1, 2, 3]", correct: false, explanation: "let 允许重新赋值整个数组" },
+        { text: "readonly arr = [1, 2, 3]", correct: false, explanation: "语法错误，readonly 用于类型定义" },
+        { text: "final arr = [1, 2, 3]", correct: false, explanation: "TypeScript 没有 final 关键字" }
+      ]
+    },
+    {
+      question: "Python 的 type(x) 在 TypeScript 中对应什么？",
+      options: [
+        { text: "typeof x", correct: true, explanation: "typeof 返回值的类型字符串" },
+        { text: "x.constructor", correct: false, explanation: "获取构造函数，不是类型检查的标准方式" },
+        { text: "instanceof", correct: false, explanation: "用于检查原型链，不是类型查询" },
+        { text: "x.type", correct: false, explanation: "JavaScript 对象没有 type 属性" }
+      ]
+    }
+  ],
+  // Foundation: 控制流
+  controlFlow: [
+    {
+      question: "Python 的 elif 在 TypeScript 中写作？",
+      options: [
+        { text: "else if", correct: true, explanation: "TypeScript 使用 else if，需要空格" },
+        { text: "elif", correct: false, explanation: "Python 语法，TypeScript 不支持" },
+        { text: "elseif", correct: false, explanation: "语法错误，需要空格分开" },
+        { text: "case", correct: false, explanation: "case 用于 switch 语句" }
+      ]
+    },
+    {
+      question: "TypeScript 的 switch 语句中，每个 case 后需要？",
+      options: [
+        { text: "break 语句", correct: true, explanation: "缺少 break 会发生穿透（fall-through）" },
+        { text: "return 语句", correct: false, explanation: "return 用于函数返回，不是 switch 必需" },
+        { text: "continue 语句", correct: false, explanation: "continue 用于循环，不适用于 switch" },
+        { text: "不需要任何语句", correct: false, explanation: "会导致穿透到下一个 case" }
+      ]
+    },
+    {
+      question: "Python 的 for item in list 对应 TypeScript 的？",
+      options: [
+        { text: "for (const item of list)", correct: true, explanation: "for...of 遍历值，for...in 遍历键" },
+        { text: "for (const item in list)", correct: false, explanation: "for...in 遍历索引/键，不是值" },
+        { text: "for (let i = 0; i < list.length; i++)", correct: false, explanation: "传统 for 循环，可工作但更繁琐" },
+        { text: "list.forEach(item => {})", correct: false, explanation: "forEach 是数组方法，不是语句" }
+      ]
+    },
+    {
+      question: "Python 的 for i in range(5) 对应 TypeScript 的？",
+      options: [
+        { text: "for (let i = 0; i < 5; i++)", correct: true, explanation: "TypeScript 没有内置 range，使用传统 for 循环" },
+        { text: "for (const i in 5)", correct: false, explanation: "语法错误，in 需要对象" },
+        { text: "for (let i = 1; i <= 5; i++)", correct: false, explanation: "range(5) 是 0-4，不是 1-5" },
+        { text: "range(5).forEach()", correct: false, explanation: "TypeScript 没有 range 函数" }
+      ]
+    },
+    {
+      question: "TypeScript 中 while 和 do...while 的区别？",
+      options: [
+        { text: "do...while 至少执行一次", correct: true, explanation: "do...while 先执行后判断，while 先判断后执行" },
+        { text: "while 执行更快", correct: false, explanation: "性能差异可忽略" },
+        { text: "没有区别", correct: false, explanation: "执行顺序不同" },
+        { text: "do...while 不需要条件", correct: false, explanation: "两者都需要条件表达式" }
+      ]
+    }
+  ],
+  // Foundation: 数据结构
+  dataStructures: [
+    {
+      question: "Python 的 list[int] 对应 TypeScript 的？",
+      options: [
+        { text: "number[]", correct: true, explanation: "TypeScript 数组类型使用 [] 或 Array<T>" },
+        { text: "List<number>", correct: false, explanation: "TypeScript 没有 List 类型" },
+        { text: "int[]", correct: false, explanation: "TypeScript 没有 int，统一使用 number" },
+        { text: "[number]", correct: false, explanation: "这是元组类型，不是数组" }
+      ]
+    },
+    {
+      question: "Python 的 dict[str, int] 对应 TypeScript 的？",
+      options: [
+        { text: "Record<string, number>", correct: true, explanation: "Record<K, V> 表示键值对映射" },
+        { text: "Map<string, number>", correct: false, explanation: "Map 是运行时对象，不是纯类型" },
+        { text: "{string: number}", correct: false, explanation: "语法错误，对象类型用 Record 或索引签名" },
+        { text: "Dictionary<string, number>", correct: false, explanation: "TypeScript 没有 Dictionary 类型" }
+      ]
+    },
+    {
+      question: "Python 的 set[int] 对应 TypeScript 的？",
+      options: [
+        { text: "Set<number>", correct: true, explanation: "Set 是 ES6 内置类型" },
+        { text: "number[]", correct: false, explanation: "数组允许重复，集合不允许" },
+        { text: "Record<number, boolean>", correct: false, explanation: "可以用对象模拟，但 Set 更标准" },
+        { text: "Unique<number>", correct: false, explanation: "TypeScript 没有 Unique 类型" }
+      ]
+    },
+    {
+      question: "Python 的 tuple[int, str] 对应 TypeScript 的？",
+      options: [
+        { text: "[number, string]", correct: true, explanation: "TypeScript 元组使用固定长度数组类型" },
+        { text: "(number, string)", correct: false, explanation: "语法错误，元组用方括号" },
+        { text: "Tuple<number, string>", correct: false, explanation: "TypeScript 没有 Tuple 泛型" },
+        { text: "{0: number, 1: string}", correct: false, explanation: "对象类型，不是元组" }
+      ]
+    },
+    {
+      question: "Python 的 None 对应 TypeScript 的？",
+      options: [
+        { text: "null 或 undefined", correct: true, explanation: "TypeScript 有 null 和 undefined 两种空值" },
+        { text: "只有 null", correct: false, explanation: "TypeScript 同时有 undefined" },
+        { text: "只有 undefined", correct: false, explanation: "TypeScript 同时有 null" },
+        { text: "None", correct: false, explanation: "Python 语法，TypeScript 不支持" }
+      ]
+    }
+  ],
+  // Foundation: 函数基础
+  functionsBasics: [
+    {
+      question: "Python 的 def func(): 对应 TypeScript 的？",
+      options: [
+        { text: "function func(): void {}", correct: true, explanation: "TypeScript 函数需要函数体 {}" },
+        { text: "def func(): void", correct: false, explanation: "def 是 Python 语法" },
+        { text: "func(): void", correct: false, explanation: "缺少 function 关键字" },
+        { text: "void func() {}", correct: false, explanation: "返回类型在参数列表之后" }
+      ]
+    },
+    {
+      question: "Python 的 lambda x: x + 1 对应 TypeScript 的？",
+      options: [
+        { text: "(x) => x + 1", correct: true, explanation: "箭头函数是 TypeScript 的 lambda 表达式" },
+        { text: "lambda x: x + 1", correct: false, explanation: "Python 语法" },
+        { text: "function(x) { return x + 1 }", correct: false, explanation: "普通函数，不是箭头函数" },
+        { text: "x => x + 1", correct: false, explanation: "单参数可省略括号，但建议保留" }
+      ]
+    },
+    {
+      question: "Python 的 def func(x=10): 对应 TypeScript 的？",
+      options: [
+        { text: "function func(x = 10) {}", correct: true, explanation: "TypeScript 默认参数语法与 Python 类似" },
+        { text: "function func(x: 10) {}", correct: false, explanation: "这是类型字面量，不是默认值" },
+        { text: "function func(x?: number = 10) {}", correct: false, explanation: "可选参数不能有默认值" },
+        { text: "function func(x ?? 10) {}", correct: false, explanation: "?? 是 nullish coalescing 运算符" }
+      ]
+    },
+    {
+      question: "Python 的 *args 对应 TypeScript 的？",
+      options: [
+        { text: "...args: number[]", correct: true, explanation: "TypeScript 使用展开运算符 ... 表示剩余参数" },
+        { text: "*args: number[]", correct: false, explanation: "Python 语法" },
+        { text: "args: ...number", correct: false, explanation: "语法错误，展开符在类型前" },
+        { text: "args?: number[]", correct: false, explanation: "可选参数，不是剩余参数" }
+      ]
+    },
+    {
+      question: "Python 的 **kwargs 对应 TypeScript 的？",
+      options: [
+        { text: "options?: Record<string, unknown>", correct: true, explanation: "TypeScript 用对象类型接收关键字参数" },
+        { text: "**kwargs: object", correct: false, explanation: "Python 语法" },
+        { text: "...kwargs: object", correct: false, explanation: "展开语法用于数组/对象，不是参数收集" },
+        { text: "kwargs: Dict", correct: false, explanation: "TypeScript 没有 Dict 类型" }
+      ]
+    }
+  ],
+  // Foundation: 类与对象
+  classesObjects: [
+    {
+      question: "Python 的 class Person: 对应 TypeScript 的？",
+      options: [
+        { text: "class Person {}", correct: true, explanation: "TypeScript 类定义需要花括号" },
+        { text: "class Person:", correct: false, explanation: "Python 语法" },
+        { text: "Person class {}", correct: false, explanation: "关键字顺序错误" },
+        { text: "def class Person:", correct: false, explanation: "Python 不使用 def 定义类" }
+      ]
+    },
+    {
+      question: "Python 的 __init__(self) 对应 TypeScript 的？",
+      options: [
+        { text: "constructor()", correct: true, explanation: "TypeScript 使用 constructor 关键字" },
+        { text: "__init__()", correct: false, explanation: "Python 语法" },
+        { text: "init()", correct: false, explanation: "没有 init 关键字" },
+        { text: "new()", correct: false, explanation: "没有 new 方法" }
+      ]
+    },
+    {
+      question: "Python 的 self.name 对应 TypeScript 的？",
+      options: [
+        { text: "this.name", correct: true, explanation: "TypeScript 使用 this 引用实例" },
+        { text: "self.name", correct: false, explanation: "Python 语法" },
+        { text: "name", correct: false, explanation: "需要 this 前缀" },
+        { text: "@name", correct: false, explanation: "@ 用于装饰器" }
+      ]
+    },
+    {
+      question: "Python 的 class Child(Parent): 对应 TypeScript 的？",
+      options: [
+        { text: "class Child extends Parent {}", correct: true, explanation: "TypeScript 使用 extends 继承" },
+        { text: "class Child(Parent) {}", correct: false, explanation: "Python 语法" },
+        { text: "class Child : Parent {}", correct: false, explanation: "语法错误" },
+        { text: "class Child inherits Parent {}", correct: false, explanation: "没有 inherits 关键字" }
+      ]
+    },
+    {
+      question: "Python 的 @staticmethod 对应 TypeScript 的？",
+      options: [
+        { text: "static 关键字", correct: true, explanation: "TypeScript 直接使用 static 关键字" },
+        { text: "@staticmethod 装饰器", correct: false, explanation: "Python 语法" },
+        { text: "@static", correct: false, explanation: "TypeScript 不使用装饰器定义静态方法" },
+        { text: "function static", correct: false, explanation: "语法错误" }
+      ]
+    }
+  ],
+  // Migration: 模块
+  modules: [
+    {
+      question: "Python 的 import os 对应 TypeScript 的？",
+      options: [
+        { text: "import * as os from 'os'", correct: true, explanation: "导入整个模块使用 import * as" },
+        { text: "import os from 'os'", correct: false, explanation: "这是默认导入，不是命名空间导入" },
+        { text: "require('os')", correct: false, explanation: "CommonJS 语法，推荐使用 ES 模块" },
+        { text: "using os", correct: false, explanation: "TypeScript 没有 using 关键字" }
+      ]
+    },
+    {
+      question: "Python 的 from os import path 对应 TypeScript 的？",
+      options: [
+        { text: "import { path } from 'os'", correct: true, explanation: "命名导入使用花括号" },
+        { text: "import path from 'os'", correct: false, explanation: "默认导入语法" },
+        { text: "import os.path", correct: false, explanation: "语法错误" },
+        { text: "from 'os' import path", correct: false, explanation: "Python 语法顺序" }
+      ]
+    },
+    {
+      question: "TypeScript 的 export default 用于？",
+      options: [
+        { text: "导出模块的默认成员", correct: true, explanation: "每个模块只能有一个默认导出" },
+        { text: "导出所有成员", correct: false, explanation: "export * 用于导出所有" },
+        { text: "导出常量", correct: false, explanation: "export const 用于命名导出" },
+        { text: "导出类型", correct: false, explanation: "export type 用于类型导出" }
+      ]
+    },
+    {
+      question: "Python 的 from . import module 对应 TypeScript 的？",
+      options: [
+        { text: "import module from './module'", correct: true, explanation: "TypeScript 使用 ./ 表示相对路径" },
+        { text: "import module from '.module'", correct: false, explanation: "路径格式错误" },
+        { text: "from './module' import module", correct: false, explanation: "Python 语法顺序" },
+        { text: "require('./module')", correct: false, explanation: "CommonJS 语法" }
+      ]
+    },
+    {
+      question: "TypeScript 中如何重新导出模块？",
+      options: [
+        { text: "export * from './module'", correct: true, explanation: "重新导出所有命名成员" },
+        { text: "re-export from './module'", correct: false, explanation: "语法错误" },
+        { text: "import * from './module'; export *", correct: false, explanation: "语法错误" },
+        { text: "export all from './module'", correct: false, explanation: "应该用 export * 而不是 all" }
+      ]
+    }
+  ],
+  // Migration: 错误处理
+  errorHandling: [
+    {
+      question: "Python 的 try/except 对应 TypeScript 的？",
+      options: [
+        { text: "try/catch", correct: true, explanation: "TypeScript 使用 catch 捕获异常" },
+        { text: "try/except", correct: false, explanation: "Python 语法" },
+        { text: "try/error", correct: false, explanation: "语法错误" },
+        { text: "catch/throw", correct: false, explanation: "顺序和关键字都错误" }
+      ]
+    },
+    {
+      question: "Python 的 raise ValueError() 对应 TypeScript 的？",
+      options: [
+        { text: "throw new Error()", correct: true, explanation: "TypeScript 使用 throw 抛出 Error 对象" },
+        { text: "raise new Error()", correct: false, explanation: "Python 使用 raise" },
+        { text: "throw ValueError()", correct: false, explanation: "TypeScript 没有 ValueError 类型" },
+        { text: "error new Error()", correct: false, explanation: "关键字错误" }
+      ]
+    },
+    {
+      question: "TypeScript 的 catch (e) 中 e 的类型是？",
+      options: [
+        { text: "unknown", correct: true, explanation: "TypeScript 4.4+ 默认 catch 参数为 unknown" },
+        { text: "Error", correct: false, explanation: "需要类型断言或类型守卫" },
+        { text: "any", correct: false, explanation: "不推荐使用 any，默认是 unknown" },
+        { text: "Exception", correct: false, explanation: "TypeScript 没有 Exception 类型" }
+      ]
+    },
+    {
+      question: "Python 的 finally 在 TypeScript 中？",
+      options: [
+        { text: "同样使用 finally", correct: true, explanation: "两种语言的 finally 语法相同" },
+        { text: "使用 else", correct: false, explanation: "else 在 TypeScript 中用于条件分支" },
+        { text: "使用 cleanup", correct: false, explanation: "没有 cleanup 关键字" },
+        { text: "不支持", correct: false, explanation: "TypeScript 支持 finally" }
+      ]
+    },
+    {
+      question: "Python 的 obj.get('key', default) 对应 TypeScript 的？",
+      options: [
+        { text: "obj.key ?? default", correct: true, explanation: "使用 nullish coalescing 处理 null/undefined" },
+        { text: "obj['key'] || default", correct: false, explanation: "|| 会处理 falsy 值，可能不符合预期" },
+        { text: "obj.get('key', default)", correct: false, explanation: "普通对象没有 get 方法" },
+        { text: "obj.key ? obj.key : default", correct: false, explanation: "冗长，推荐使用 ??" }
+      ]
+    }
+  ],
+  // Migration: 枚举
+  enums: [
+    {
+      question: "Python 定义枚举需要导入？",
+      options: [
+        { text: "from enum import Enum", correct: true, explanation: "Python 枚举需要导入 enum 模块" },
+        { text: "不需要导入", correct: false, explanation: "Python 枚举不是内置类型" },
+        { text: "import Enum", correct: false, explanation: "需要从 enum 模块导入" },
+        { text: "from typing import Enum", correct: false, explanation: "Enum 在 enum 模块中" }
+      ]
+    },
+    {
+      question: "TypeScript 定义枚举使用？",
+      options: [
+        { text: "enum Status { Active, Inactive }", correct: true, explanation: "TypeScript 枚举是内置特性" },
+        { text: "class Status extends Enum", correct: false, explanation: "TypeScript 不需要继承" },
+        { text: "const Status = { Active: 0, Inactive: 1 }", correct: false, explanation: "这是对象常量，不是枚举" },
+        { text: "type Status = 'Active' | 'Inactive'", correct: false, explanation: "这是联合类型，不是枚举" }
+      ]
+    },
+    {
+      question: "TypeScript 枚举默认值是？",
+      options: [
+        { text: "从 0 开始的数字", correct: true, explanation: "数字枚举默认从 0 递增" },
+        { text: "字符串", correct: false, explanation: "需要显式定义为字符串枚举" },
+        { text: "undefined", correct: false, explanation: "枚举成员有默认值" },
+        { text: "null", correct: false, explanation: "枚举成员有默认值" }
+      ]
+    },
+    {
+      question: "推荐使用 TypeScript 枚举还是联合类型？",
+      options: [
+        { text: "联合类型更轻量，推荐优先使用", correct: true, explanation: "联合类型编译后更简洁" },
+        { text: "枚举功能更强，总是推荐使用", correct: false, explanation: "枚举会生成额外代码" },
+        { text: "两者完全等价", correct: false, explanation: "编译产物和用法有差异" },
+        { text: "取决于个人喜好", correct: false, explanation: "有明确的最佳实践建议" }
+      ]
+    },
+    {
+      question: "TypeScript 的 const enum 有什么特点？",
+      options: [
+        { text: "编译时内联，不生成运行时代码", correct: true, explanation: "const enum 在编译时被替换为实际值" },
+        { text: "运行时性能更好", correct: false, explanation: "const enum 不生成运行时代码" },
+        { text: "可以动态修改", correct: false, explanation: "const enum 是编译时常量" },
+        { text: "必须手动指定值", correct: false, explanation: "可以自动分配" }
+      ]
+    }
+  ],
+  // Migration: 字符串与正则
+  stringsRegex: [
+    {
+      question: "Python 的 f\"Hello {name}\" 对应 TypeScript 的？",
+      options: [
+        { text: "`Hello ${name}`", correct: true, explanation: "TypeScript 使用模板字面量，用反引号" },
+        { text: "\"Hello \" + name", correct: false, explanation: "字符串拼接，不是模板字面量" },
+        { text: "f\"Hello {name}\"", correct: false, explanation: "Python 语法" },
+        { text: "\"Hello ${name}\"", correct: false, explanation: "需要反引号才能使用插值" }
+      ]
+    },
+    {
+      question: "Python 的 len(s) 对应 TypeScript 的？",
+      options: [
+        { text: "s.length", correct: true, explanation: "TypeScript 字符串有 length 属性" },
+        { text: "len(s)", correct: false, explanation: "TypeScript 没有 len 函数" },
+        { text: "s.size()", correct: false, explanation: "size 用于 Set/Map" },
+        { text: "s.count", correct: false, explanation: "没有 count 属性" }
+      ]
+    },
+    {
+      question: "Python 的 s.split(',') 对应 TypeScript 的？",
+      options: [
+        { text: "s.split(',')", correct: true, explanation: "两者语法相同" },
+        { text: "s.split(',').toList()", correct: false, explanation: "split 直接返回数组" },
+        { text: "s.explode(',')", correct: false, explanation: "PHP 语法" },
+        { text: "split(s, ',')", correct: false, explanation: "TypeScript 字符串方法是成员方法" }
+      ]
+    },
+    {
+      question: "Python 的 s.strip() 对应 TypeScript 的？",
+      options: [
+        { text: "s.trim()", correct: true, explanation: "TypeScript 使用 trim 去除首尾空白" },
+        { text: "s.strip()", correct: false, explanation: "Python 方法名" },
+        { text: "s.removeWhitespace()", correct: false, explanation: "没有这个方法" },
+        { text: "strip(s)", correct: false, explanation: "字符串方法是成员方法" }
+      ]
+    },
+    {
+      question: "TypeScript 正则表达式字面量使用什么符号？",
+      options: [
+        { text: "/pattern/", correct: true, explanation: "JavaScript/TypeScript 使用斜杠定义正则" },
+        { text: "r\"pattern\"", correct: false, explanation: "Python 原始字符串语法" },
+        { text: "\"pattern\"", correct: false, explanation: "普通字符串，不是正则" },
+        { text: "'pattern'", correct: false, explanation: "普通字符串，不是正则" }
+      ]
+    }
+  ],
+  // Advanced: 泛型
+  generics: [
+    {
+      question: "Python 的 Generic[T] 对应 TypeScript 的？",
+      options: [
+        { text: "<T>", correct: true, explanation: "TypeScript 使用尖括号定义泛型参数" },
+        { text: "Generic<T>", correct: false, explanation: "Python 语法" },
+        { text: "(T)", correct: false, explanation: "语法错误" },
+        { text: "[T]", correct: false, explanation: "数组类型语法" }
+      ]
+    },
+    {
+      question: "TypeScript 泛型函数定义正确的是？",
+      options: [
+        { text: "function identity<T>(arg: T): T", correct: true, explanation: "泛型参数放在函数名后" },
+        { text: "function identity(arg: T): T", correct: false, explanation: "缺少泛型参数声明" },
+        { text: "function<T> identity(arg: T): T", correct: false, explanation: "泛型参数位置错误" },
+        { text: "function identity(arg: <T>): T", correct: false, explanation: "语法错误" }
+      ]
+    },
+    {
+      question: "TypeScript 中 T extends U 表示？",
+      options: [
+        { text: "T 必须是 U 的子类型", correct: true, explanation: "泛型约束限制类型参数范围" },
+        { text: "T 继承 U", correct: false, explanation: "这不是类继承语法" },
+        { text: "T 等于 U", correct: false, explanation: "extends 表示约束，不是相等" },
+        { text: "T 包含 U", correct: false, explanation: "extends 用于类型约束" }
+      ]
+    },
+    {
+      question: "TypeScript 的 Array<T> 等价于？",
+      options: [
+        { text: "T[]", correct: true, explanation: "两种写法等价，T[] 更简洁" },
+        { text: "[T]", correct: false, explanation: "这是元组类型" },
+        { text: "List<T>", correct: false, explanation: "TypeScript 没有 List 类型" },
+        { text: "{T}", correct: false, explanation: "语法错误" }
+      ]
+    },
+    {
+      question: "泛型默认值如何设置？T = string",
+      options: [
+        { text: "function func<T = string>()", correct: true, explanation: "TypeScript 支持泛型默认类型" },
+        { text: "function func<T: string>()", correct: false, explanation: "冒号用于类型注解，不是默认值" },
+        { text: "function func<T ? string>()", correct: false, explanation: "语法错误" },
+        { text: "function func<T | string>()", correct: false, explanation: "这是联合类型，不是默认值" }
+      ]
+    }
+  ],
+  // Advanced: 类型守卫
+  typeGuards: [
+    {
+      question: "typeof x === 'number' 是什么？",
+      options: [
+        { text: "类型守卫", correct: true, explanation: "typeof 用于原始类型的类型守卫" },
+        { text: "类型断言", correct: false, explanation: "类型断言使用 as 或 <Type>" },
+        { text: "类型推断", correct: false, explanation: "推断是编译器自动完成的" },
+        { text: "类型别名", correct: false, explanation: "别名使用 type 定义" }
+      ]
+    },
+    {
+      question: "instanceof 用于检查？",
+      options: [
+        { text: "对象是否是某类的实例", correct: true, explanation: "检查原型链" },
+        { text: "原始类型", correct: false, explanation: "instanceof 用于对象" },
+        { text: "类型相等", correct: false, explanation: "使用 === 检查值相等" },
+        { text: "属性存在", correct: false, explanation: "使用 in 操作符检查属性" }
+      ]
+    },
+    {
+      question: "TypeScript 的 in 操作符用于？",
+      options: [
+        { text: "检查属性是否存在于对象中", correct: true, explanation: "'prop' in obj" },
+        { text: "检查值在数组中", correct: false, explanation: "数组使用 includes()" },
+        { text: "遍历对象", correct: false, explanation: "for...in 用于遍历" },
+        { text: "检查类型", correct: false, explanation: "typeof 用于类型检查" }
+      ]
+    },
+    {
+      question: "用户自定义类型守卫使用什么关键字？",
+      options: [
+        { text: "is", correct: true, explanation: "function isString(x: unknown): x is string" },
+        { text: "typeof", correct: false, explanation: "typeof 是内置操作符" },
+        { text: "guard", correct: false, explanation: "没有 guard 关键字" },
+        { text: "assert", correct: false, explanation: "assert 用于断言函数" }
+      ]
+    },
+    {
+      question: "类型收窄（Narrowing）的作用是？",
+      options: [
+        { text: "缩小类型的范围", correct: true, explanation: "根据条件判断缩小联合类型范围" },
+        { text: "创建新类型", correct: false, explanation: "不是创建新类型" },
+        { text: "转换类型", correct: false, explanation: "类型转换使用 as" },
+        { text: "删除类型", correct: false, explanation: "不是删除类型" }
+      ]
+    }
+  ],
+  // Advanced: 工具类型
+  utilityTypes: [
+    {
+      question: "Partial<T> 的作用是？",
+      options: [
+        { text: "将 T 的所有属性变为可选", correct: true, explanation: "Partial 表示部分属性" },
+        { text: "将 T 的所有属性变为必选", correct: false, explanation: "Required<T> 做相反操作" },
+        { text: "删除 T 的所有属性", correct: false, explanation: "不会删除属性" },
+        { text: "复制 T 的所有属性", correct: false, explanation: "不是复制操作" }
+      ]
+    },
+    {
+      question: "Pick<T, K> 的作用是？",
+      options: [
+        { text: "从 T 中选取指定属性 K", correct: true, explanation: "Pick<User, 'name' | 'age'>" },
+        { text: "从 T 中排除指定属性 K", correct: false, explanation: "Omit<T, K> 用于排除" },
+        { text: "合并 T 和 K", correct: false, explanation: "合并使用 & 或 Object.assign" },
+        { text: "替换 T 中的属性 K", correct: false, explanation: "不是替换操作" }
+      ]
+    },
+    {
+      question: "Omit<T, K> 与 Pick 的关系？",
+      options: [
+        { text: "Omit 是 Pick 的反向操作", correct: true, explanation: "Omit 排除，Pick 选取" },
+        { text: "两者功能相同", correct: false, explanation: "功能相反" },
+        { text: "Omit 是 Pick 的别名", correct: false, explanation: "不是别名" },
+        { text: "两者无关联", correct: false, explanation: "有明确的反向关系" }
+      ]
+    },
+    {
+      question: "Record<K, V> 的作用是？",
+      options: [
+        { text: "创建键为 K 类型、值为 V 类型的对象类型", correct: true, explanation: "Record<string, number>" },
+        { text: "记录类型信息", correct: false, explanation: "不是记录操作" },
+        { text: "创建数组类型", correct: false, explanation: "数组使用 T[] 或 Array<T>" },
+        { text: "创建元组类型", correct: false, explanation: "元组使用 [T, U]" }
+      ]
+    },
+    {
+      question: "ReturnType<T> 用于获取？",
+      options: [
+        { text: "函数 T 的返回值类型", correct: true, explanation: "ReturnType<typeof fn>" },
+        { text: "函数 T 的参数类型", correct: false, explanation: "Parameters<T> 获取参数类型" },
+        { text: "类型 T 的所有属性", correct: false, explanation: "keyof T 获取属性键" },
+        { text: "函数 T 的函数名", correct: false, explanation: "不是获取函数名" }
+      ]
+    }
+  ],
+  // Advanced: 声明与配置
+  declarationsConfig: [
+    {
+      question: "tsconfig.json 的作用是？",
+      options: [
+        { text: "配置 TypeScript 编译选项", correct: true, explanation: "指定编译选项、文件包含等" },
+        { text: "配置 Node.js 运行时", correct: false, explanation: "Node.js 使用 package.json" },
+        { text: "配置包管理器", correct: false, explanation: "npm/yarn 使用 package.json" },
+        { text: "配置测试框架", correct: false, explanation: "测试框架有自己的配置文件" }
+      ]
+    },
+    {
+      question: "interface 和 type 的主要区别？",
+      options: [
+        { text: "interface 可以被扩展和实现", correct: true, explanation: "type 更灵活但不能被 implements" },
+        { text: "type 功能更强大", correct: false, explanation: "各有优劣" },
+        { text: "没有区别", correct: false, explanation: "有语义和功能差异" },
+        { text: "interface 不能定义对象", correct: false, explanation: "interface 主要用于定义对象类型" }
+      ]
+    },
+    {
+      question: ".d.ts 文件的作用是？",
+      options: [
+        { text: "声明类型信息，无运行时代码", correct: true, explanation: "用于为 JS 库提供类型定义" },
+        { text: "包含 TypeScript 源码", correct: false, explanation: ".ts 文件包含源码" },
+        { text: "编译后的 JavaScript", correct: false, explanation: ".js 是编译产物" },
+        { text: "配置文件", correct: false, explanation: "配置使用 .json 文件" }
+      ]
+    },
+    {
+      question: "strict 模式开启后？",
+      options: [
+        { text: "启用所有严格类型检查选项", correct: true, explanation: "包括 strictNullChecks, noImplicitAny 等" },
+        { text: "代码运行更快", correct: false, explanation: "strict 是编译时选项" },
+        { text: "禁用类型检查", correct: false, explanation: "相反，启用更严格的检查" },
+        { text: "只检查 null 和 undefined", correct: false, explanation: "包含更多检查" }
+      ]
+    },
+    {
+      question: "declaration 选项的作用是？",
+      options: [
+        { text: "生成 .d.ts 声明文件", correct: true, explanation: "用于发布库时提供类型定义" },
+        { text: "声明全局变量", correct: false, explanation: "与全局变量无关" },
+        { text: "声明模块", correct: false, explanation: "与模块声明无关" },
+        { text: "启用严格模式", correct: false, explanation: "strict 启用严格模式" }
+      ]
+    }
+  ],
+  // Advanced: 装饰器
+  decorators: [
+    {
+      question: "TypeScript 装饰器默认是？",
+      options: [
+        { text: "实验性功能，需要显式启用", correct: true, explanation: "tsconfig.json 设置 experimentalDecorators: true" },
+        { text: "默认启用", correct: false, explanation: "需要配置启用" },
+        { text: "不支持", correct: false, explanation: "支持但需要配置" },
+        { text: "只在类中支持", correct: false, explanation: "支持多种装饰器" }
+      ]
+    },
+    {
+      question: "Python 的 @dataclass 对应 TypeScript 需要？",
+      options: [
+        { text: "第三方库或自定义装饰器", correct: true, explanation: "TypeScript 没有内置 dataclass" },
+        { text: "内置装饰器", correct: false, explanation: "没有内置 dataclass 装饰器" },
+        { text: "不支持", correct: false, explanation: "可以通过装饰器实现" },
+        { text: "使用 class 关键字替代", correct: false, explanation: "普通类没有 dataclass 功能" }
+      ]
+    },
+    {
+      question: "TypeScript 装饰器可以应用于？",
+      options: [
+        { text: "类、方法、属性、参数", correct: true, explanation: "支持多种装饰器类型" },
+        { text: "只有类", correct: false, explanation: "不仅限于类" },
+        { text: "只有方法", correct: false, explanation: "支持多种" },
+        { text: "只有属性", correct: false, explanation: "支持多种" }
+      ]
+    },
+    {
+      question: "方法装饰器接收的参数不包括？",
+      options: [
+        { text: "函数返回值", correct: true, explanation: "装饰器接收 target, key, descriptor" },
+        { text: "目标对象", correct: false, explanation: "第一个参数是目标对象" },
+        { text: "属性名", correct: false, explanation: "第二个参数是属性名" },
+        { text: "属性描述符", correct: false, explanation: "第三个参数是描述符" }
+      ]
+    },
+    {
+      question: "Python 装饰器与 TypeScript 装饰器的主要区别？",
+      options: [
+        { text: "Python 装饰器是函数包装，TS 装饰器修改描述符", correct: true, explanation: "实现机制不同" },
+        { text: "功能完全相同", correct: false, explanation: "实现和应用方式不同" },
+        { text: "Python 功能更强", correct: false, explanation: "各有特点" },
+        { text: "TypeScript 功能更强", correct: false, explanation: "各有特点" }
+      ]
+    }
+  ],
+  // Advanced: 设计模式
+  designPatterns: [
+    {
+      question: "Python 单例模式使用 __new__，TypeScript 推荐使用？",
+      options: [
+        { text: "私有构造函数 + 静态实例", correct: true, explanation: "TypeScript 类的单例实现方式" },
+        { text: "__new__ 方法", correct: false, explanation: "Python 语法" },
+        { text: "全局变量", correct: false, explanation: "不推荐使用全局变量" },
+        { text: "module 模式", correct: false, explanation: "模块级单例是另一种方式" }
+      ]
+    },
+    {
+      question: "工厂模式在 TypeScript 中的优势？",
+      options: [
+        { text: "类型安全的对象创建", correct: true, explanation: "利用泛型实现类型推断" },
+        { text: "运行更快", correct: false, explanation: "设计模式与性能无关" },
+        { text: "代码更短", correct: false, explanation: "可能增加代码量" },
+        { text: "不需要接口", correct: false, explanation: "接口是工厂模式的重要组成部分" }
+      ]
+    },
+    {
+      question: "观察者模式在 TypeScript 中常用什么实现？",
+      options: [
+        { text: "EventEmitter 或 RxJS Subject", correct: true, explanation: "事件或响应式编程库" },
+        { text: "内置 Observer 类", correct: false, explanation: "TypeScript 没有内置 Observer" },
+        { text: "只有回调函数", correct: false, explanation: "回调是基础，但有更好的抽象" },
+        { text: "Promise", correct: false, explanation: "Promise 用于一次性异步操作" }
+      ]
+    },
+    {
+      question: "依赖注入在 TypeScript 中常用的库是？",
+      options: [
+        { text: "Inversify 或 tsyringe", correct: true, explanation: "TypeScript DI 框架" },
+        { text: "内置 DI", correct: false, explanation: "TypeScript 没有内置 DI" },
+        { text: "unittest.mock", correct: false, explanation: "Python 测试库" },
+        { text: "pytest fixtures", correct: false, explanation: "Python 测试框架功能" }
+      ]
+    },
+    {
+      question: "策略模式在 TypeScript 中如何实现类型安全？",
+      options: [
+        { text: "使用接口定义策略类型", correct: true, explanation: "interface Strategy { execute(): void }" },
+        { text: "使用 any 类型", correct: false, explanation: "不推荐使用 any" },
+        { text: "不需要类型", correct: false, explanation: "TypeScript 的优势是类型安全" },
+        { text: "使用函数重载", correct: false, explanation: "重载用于函数签名，不是策略模式" }
+      ]
+    }
+  ],
+  // Advanced: 日期时间
+  datetime: [
+    {
+      question: "Python 的 datetime.now() 对应 TypeScript 的？",
+      options: [
+        { text: "new Date()", correct: true, explanation: "Date 对象获取当前时间" },
+        { text: "Date.now()", correct: false, explanation: "Date.now() 返回时间戳数字" },
+        { text: "datetime.now()", correct: false, explanation: "Python 语法" },
+        { text: "currentTime()", correct: false, explanation: "没有这个内置函数" }
+      ]
+    },
+    {
+      question: "TypeScript Date 对象的月份范围是？",
+      options: [
+        { text: "0-11", correct: true, explanation: "JavaScript Date 月份从 0 开始" },
+        { text: "1-12", correct: false, explanation: "这是 Python datetime 的范围" },
+        { text: "0-12", correct: false, explanation: "超出范围" },
+        { text: "取决于时区", correct: false, explanation: "与时区无关" }
+      ]
+    },
+    {
+      question: "推荐在 TypeScript 中使用的日期库是？",
+      options: [
+        { text: "date-fns 或 dayjs", correct: true, explanation: "现代、轻量、类型友好" },
+        { text: "moment.js", correct: false, explanation: "Moment.js 已进入维护模式" },
+        { text: "原生 Date 就够了", correct: false, explanation: "原生 Date API 不友好，推荐使用库" },
+        { text: "datetime", correct: false, explanation: "Python 模块" }
+      ]
+    },
+    {
+      question: "Python 的 datetime.strftime('%Y-%m-%d') 对应 date-fns 的？",
+      options: [
+        { text: "format(date, 'yyyy-MM-dd')", correct: true, explanation: "date-fns 使用不同的格式字符串" },
+        { text: "format(date, '%Y-%m-%d')", correct: false, explanation: "date-fns 不使用 % 格式" },
+        { text: "date.toString()", correct: false, explanation: "toString 格式不可控" },
+        { text: "strftime(date, '%Y-%m-%d')", correct: false, explanation: "Python 函数名" }
+      ]
+    },
+    {
+      question: "TypeScript 中处理时区推荐使用？",
+      options: [
+        { text: "Luxon 或 date-fns-tz", correct: true, explanation: "时区处理需要专门的库" },
+        { text: "原生 Date", correct: false, explanation: "原生 Date 时区支持有限" },
+        { text: "不需要处理", correct: false, explanation: "国际化应用必须处理时区" },
+        { text: "手动计算偏移", correct: false, explanation: "容易出错，推荐使用库" }
+      ]
+    }
+  ],
+  // Advanced: Node.js 基础
+  nodejsBasics: [
+    {
+      question: "Python 的 os.path.join 对应 Node.js 的？",
+      options: [
+        { text: "path.join()", correct: true, explanation: "Node.js path 模块处理路径" },
+        { text: "fs.join()", correct: false, explanation: "fs 模块处理文件系统操作" },
+        { text: "os.join()", correct: false, explanation: "Node.js 没有 os.join" },
+        { text: "join()", correct: false, explanation: "需要导入 path 模块" }
+      ]
+    },
+    {
+      question: "Python 的 open() 读取文件对应 Node.js 的？",
+      options: [
+        { text: "fs.readFile() 或 fs.readFileSync()", correct: true, explanation: "Node.js 区分同步和异步" },
+        { text: "open()", correct: false, explanation: "Node.js 没有 open 函数" },
+        { text: "file.read()", correct: false, explanation: "不是标准 API" },
+        { text: "read()", correct: false, explanation: "需要 fs 模块前缀" }
+      ]
+    },
+    {
+      question: "Node.js 中推荐使用同步还是异步文件操作？",
+      options: [
+        { text: "异步，避免阻塞事件循环", correct: true, explanation: "Node.js 单线程，异步更高效" },
+        { text: "同步，代码更简单", correct: false, explanation: "同步会阻塞整个进程" },
+        { text: "都可以", correct: false, explanation: "有明确的最佳实践" },
+        { text: "取决于文件大小", correct: false, explanation: "异步总是更好的选择" }
+      ]
+    },
+    {
+      question: "Python 的 pathlib.Path 对应 Node.js 的？",
+      options: [
+        { text: "path 模块，但功能较简单", correct: true, explanation: "Node.js path 模块是纯函数" },
+        { text: "完全相同", correct: false, explanation: "pathlib 是面向对象的" },
+        { text: "fs 模块", correct: false, explanation: "fs 是文件系统操作" },
+        { text: "Node.js 没有对应", correct: false, explanation: "path 模块提供类似功能" }
+      ]
+    },
+    {
+      question: "Python 的 __dirname 对应 Node.js 的？",
+      options: [
+        { text: "__dirname（两者相同）", correct: true, explanation: "Node.js 也使用 __dirname" },
+        { text: "os.cwd()", correct: false, explanation: "Python 是 os.getcwd()" },
+        { text: "process.cwd()", correct: false, explanation: "process.cwd() 是当前工作目录" },
+        { text: "path.dirname()", correct: false, explanation: "path.dirname 需要参数" }
+      ]
+    }
   ]
 };
 
@@ -188,7 +1033,7 @@ const questions = quizData[quizId] || [];
 <script>
   import { QuizManager, type QuizQuestion } from '../lib/quiz-manager';
 
-  // Initialize quizzes
+  // Initialize quizzes 
   document.addEventListener('DOMContentLoaded', () => {
     const containers = document.querySelectorAll('.quiz-container[data-quiz-id]');
     
@@ -231,52 +1076,136 @@ const questions = quizData[quizId] || [];
       // Update progress
       progressEl.textContent = `问题 ${state.currentQuestion + 1} / ${questions.length}`;
       
-      // Update question
-      questionEl.textContent = currentQ.question;
+      // Check if this is a prediction question (based on presence of special keywords)
+      const isPredictionQuestion = currentQ.question.includes('【预测输出】');
+      
+      // Update question text
+      questionEl.innerHTML = '';
+      
+      if (isPredictionQuestion) {
+        // Create question header (excluding the marker)
+        const questionText = document.createElement('p');
+        const cleanQuestion = currentQ.question.replace('【预测输出】', '').trim();
+        questionText.textContent = cleanQuestion;
+        questionEl.appendChild(questionText);
+        
+        // Add a label indicating this is a prediction question
+        const predictionLabel = document.createElement('div');
+        predictionLabel.textContent = '预测输出题目：';
+        predictionLabel.style.fontWeight = 'bold';
+        predictionLabel.style.marginTop = '0.5rem';
+        predictionLabel.style.color = '#facc15'; // yellow color
+        questionEl.appendChild(predictionLabel);
+      } else {
+        // Normal question
+        questionEl.textContent = currentQ.question;
+      }
+
+      // Get current selected option (may be null if none selected)
+      const currentSelected = state.selectedOption;
       
       // Update options
       optionsEl.innerHTML = '';
-      currentQ.options.forEach((option, index) => {
-        const btn = document.createElement('button');
-        btn.className = 'quiz-option';
-        btn.textContent = option.text;
-        btn.setAttribute('role', 'radio');
-        btn.setAttribute('aria-checked', state.selectedOption === index ? 'true' : 'false');
-        btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text}`);
-        btn.setAttribute('tabindex', '0');
-        
-        if (state.selectedOption === index) {
-          btn.classList.add('selected');
-          btn.setAttribute('aria-selected', 'true');
-        }
-        
-        if (state.showExplanation) {
-          btn.disabled = true;
-          btn.setAttribute('aria-disabled', 'true');
-          if (option.correct) {
-            btn.classList.add('correct');
-            btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text} - 正确答案`);
-          } else if (state.selectedOption === index) {
-            btn.classList.add('incorrect');
-            btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text} - 回答错误`);
+      
+      if (isPredictionQuestion) {
+        // Render prediction question options specially
+        currentQ.options.forEach((option: any, index: number) => {
+          const btn = document.createElement('button');
+          btn.className = 'quiz-option';
+          
+          // Show the expected output in bold and description
+          if (option.text.includes('【预期:')) {
+            // Extract and format expected output from specially formatted text
+            const textParts = option.text.split('】');
+            const expectedValue = textParts[0].replace('【预期:', '');
+            const desc = textParts.slice(1).join('】');
+            
+            btn.innerHTML = `<strong>预测输出:</strong> ${expectedValue} - <em>${desc}</em>`;
+          } else {
+            btn.textContent = option.text;
           }
-        }
-        
-        btn.addEventListener('click', () => {
-          quiz.selectOption(index);
-          render();
-        });
-        
-        btn.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
+          
+          btn.setAttribute('role', 'radio');
+          btn.setAttribute('aria-checked', currentSelected === index ? 'true' : 'false');
+          btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text}`);
+          btn.setAttribute('tabindex', '0');
+          
+          if (currentSelected === index) {
+            btn.classList.add('selected');
+            btn.setAttribute('aria-selected', 'true');
+          }
+          
+          if (state.showExplanation) {
+            btn.disabled = true;
+            btn.setAttribute('aria-disabled', 'true');
+            if (option.correct) {
+              btn.classList.add('correct');
+              btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text} - 正确答案`);
+            } else if (currentSelected === index) {
+              btn.classList.add('incorrect');
+              btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text} - 回答错误`);
+            }
+          }
+          
+          btn.addEventListener('click', () => {
             quiz.selectOption(index);
             render();
-          }
+          });
+          
+          btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              quiz.selectOption(index);
+              render();
+            }
+          });
+          
+          optionsEl.appendChild(btn);
         });
-        
-        optionsEl.appendChild(btn);
-      });
+      } else {
+        // Original rendering logic for multiple choice questions
+        currentQ.options.forEach((option: any, index: number) => {
+          const btn = document.createElement('button');
+          btn.className = 'quiz-option';
+          btn.textContent = option.text;
+          btn.setAttribute('role', 'radio');
+          btn.setAttribute('aria-checked', currentSelected === index ? 'true' : 'false');
+          btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text}`);
+          btn.setAttribute('tabindex', '0');
+          
+          if (currentSelected === index) {
+            btn.classList.add('selected');
+            btn.setAttribute('aria-selected', 'true');
+          }
+          
+          if (state.showExplanation) {
+            btn.disabled = true;
+            btn.setAttribute('aria-disabled', 'true');
+            if (option.correct) {
+              btn.classList.add('correct');
+              btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text} - 正确答案`);
+            } else if (currentSelected === index) {
+              btn.classList.add('incorrect');
+              btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text} - 回答错误`);
+            }
+          }
+          
+          btn.addEventListener('click', () => {
+            quiz.selectOption(index);
+            render();
+          });
+          
+          btn.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              quiz.selectOption(index);
+              render();
+            }
+          });
+          
+          optionsEl.appendChild(btn);
+        });
+      }
       
       // Update action button
       if (state.showExplanation) {

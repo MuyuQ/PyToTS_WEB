@@ -4,9 +4,10 @@ import { getNextPathStep, getPrevPathStep } from "../lib/path-map";
 interface Props {
   track: string;
   current: string;
+  currentTitle?: string;
 }
 
-const { track, current } = Astro.props;
+const { track, current, currentTitle } = Astro.props;
 const nextStep = getNextPathStep(track, current);
 const prevStep = getPrevPathStep(track, current);
 ---
@@ -18,7 +19,10 @@ const prevStep = getPrevPathStep(track, current);
       <span class="nav-label">上一课</span>
     </a>
   )}
-  <span class="nav-current" aria-current="page">{current}</span>
+  <span class="nav-current" aria-current="page" data-lesson-path={`/${current}`}>
+    <span class="current-title">{currentTitle || current}</span>
+    <span class="completion-indicator" aria-label="未完成" title="未完成">○</span>
+  </span>
   {nextStep && (
     <a href={`/${nextStep}`} class="nav-link nav-next" aria-label="下一课">
       <span class="nav-label">下一课</span>
@@ -26,6 +30,38 @@ const prevStep = getPrevPathStep(track, current);
     </a>
   )}
 </nav>
+
+<script>
+  import { isCompleted } from '../lib/progress-store';
+
+  function updateCompletionIndicator() {
+    const currentEl = document.querySelector('.nav-current[data-lesson-path]');
+    if (!currentEl) return;
+
+    const path = currentEl.getAttribute('data-lesson-path');
+    if (!path) return;
+
+    const indicator = currentEl.querySelector('.completion-indicator');
+    if (!indicator) return;
+
+    if (isCompleted(path)) {
+      indicator.textContent = '✓';
+      indicator.classList.add('completed');
+      indicator.setAttribute('aria-label', '已完成');
+      indicator.setAttribute('title', '已完成');
+    }
+  }
+
+  // 初始化
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', updateCompletionIndicator);
+  } else {
+    updateCompletionIndicator();
+  }
+
+  // 监听进度更新
+  window.addEventListener('progress-updated', updateCompletionIndicator);
+</script>
 
 <style>
   .path-navigator {
@@ -77,9 +113,29 @@ const prevStep = getPrevPathStep(track, current);
   }
 
   .nav-current {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     font-weight: 600;
     color: var(--color-text);
     padding: 0 var(--space-md);
+  }
+
+  .current-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+
+  .completion-indicator {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-4);
+    transition: color 0.2s ease;
+  }
+
+  .completion-indicator.completed {
+    color: #22c55e;
   }
 
   .nav-arrow {
@@ -105,12 +161,20 @@ const prevStep = getPrevPathStep(track, current);
     }
 
     .nav-current {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
       font-size: 0.875rem;
       padding: 0 var(--space-sm);
       order: -1;
       flex-basis: 100%;
       text-align: center;
       margin-bottom: var(--space-sm);
+    }
+
+    .current-title {
+      max-width: 150px;
     }
 
     .nav-arrow {

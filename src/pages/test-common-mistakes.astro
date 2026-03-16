@@ -1,0 +1,30 @@
+---
+import CommonMistakes from '../components/CommonMistakes.astro';
+
+const sampleMistakes = [
+  {
+    title: "Incorrect Array Method Usage",
+    wrong: "const result = arr.forEach(item => item * 2);",
+    correct: "const result = arr.map(item => item * 2);",
+    explanation: "forEach returns undefined, map returns a new array with transformed elements."
+  },
+  {
+    title: "Mutating State Directly",
+    wrong: "state.list.push(newItem);",
+    correct: "setState({ ...state, list: [...state.list, newItem] });",
+    explanation: "In React and similar frameworks, state should be treated as immutable."
+  }
+];
+---
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Common Mistakes Component Test</title>
+</head>
+<body>
+  <h1>Common Mistakes Component Test</h1>
+  <CommonMistakes mistakes={sampleMistakes} />
+</body>
+</html>

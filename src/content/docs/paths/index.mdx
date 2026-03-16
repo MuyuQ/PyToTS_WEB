@@ -5,39 +5,61 @@ kind: page
 ---
 
 import { CardGrid, Card } from "@astrojs/starlight/components";
+import LessonProgressMarkers from "../../../components/LessonProgressMarkers.astro";
 
-# 学习路径
+<LessonProgressMarkers />
 
-根据你的 Python 水平选择合适的学习路径。
+根据你的 Python 水平选择合适的学习路径。**推荐按顺序学习：基础 → 迁移 → 进阶**。
 
 <CardGrid stagger>
   <Card title="🌱 基础路径 (Foundation)" icon="repo">
-    适合：Python 初学者，了解基本语法但缺乏前端经验
+    **难度**: ⭐ 入门级 | **适合**: Python 初学者或 TypeScript 零基础
     
-    **目标**：掌握 TypeScript 核心语法和类型系统
-  </Card>
-  
-  <Card title="🔄 迁移路径 (Migration)" icon="git-branch">
-    适合：有 Python 后端经验的工程师
+    建立 TypeScript 核心概念，掌握变量、函数、控制流等基础语法。
     
-    **目标**：建立 Python 到 TypeScript 的心智模型映射
+    [开始学习 →](/paths/foundation/)
   </Card>
-  
+
+<Card title="🔄 迁移路径 (Migration)" icon="git-branch">
+  **难度**: ⭐⭐ 进阶级 | **适合**: 有 Python 开发经验的工程师 建立 Python 到 TypeScript
+  的心智模型映射，理解类型系统、异步编程等核心差异。 [开始学习 →](/paths/migration/)
+</Card>
+
   <Card title="🚀 进阶路径 (Advanced)" icon="star">
-    适合：准备 TypeScript 面试或深入学习
+    **难度**: ⭐⭐⭐ 高阶级 | **适合**: 已掌握基础，准备深入学习
     
-    **目标**：掌握工程实践和设计模式
+    掌握泛型、装饰器、设计模式等工程实践，为面试和实际项目做准备。
+    
+    [开始学习 →](/paths/advanced/)
   </Card>
 </CardGrid>
 
-## 迁移路径内容
+## 📚 学习顺序建议
 
-- [类型系统对比](/paths/migration/types) - 理解 Python 和 TypeScript 类型系统的核心差异
-- [函数与参数](/paths/migration/functions) - 掌握函数定义的差异
-- [异步编程](/paths/migration/async) - 理解 Promise 和 async/await
-- [模块与包管理](/paths/migration/modules) - 掌握模块系统的差异
+### 第一条：基础路径（必学）
 
-## 其他路径入口
+适合所有人，建立 TypeScript 基础：
 
-- [基础路径](/paths/foundation/) - TypeScript 入门与核心语法
-- [进阶路径](/paths/advanced/) - 工程实践与面试强化
+1. [变量与数据类型](/paths/foundation/variables) - TypeScript 的类型系统基础
+2. [函数基础](/paths/foundation/functions-basics) - 函数定义与类型注解
+3. [控制流](/paths/foundation/control-flow) - 条件语句与循环
+4. [数据结构](/paths/foundation/data-structures) - Array、Object、Map、Set
+5. [类与对象](/paths/foundation/classes-objects) - 面向对象编程
+
+### 第二条：迁移路径（有 Python 经验必学）
+
+系统对比 Python 与 TypeScript 的差异：
+
+1. [类型系统对比](/paths/migration/types) - 理解类型检查的核心差异
+2. [函数与参数](/paths/migration/functions) - 参数传递与返回值差异
+3. [异步编程](/paths/migration/async) - Promise vs asyncio
+4. [模块与包管理](/paths/migration/modules) - ES6 模块 vs Python 导入
+
+### 第三条：进阶路径（深入学习）
+
+工程实践与面试准备：
+
+1. [泛型](/paths/advanced/generics) - 可复用的类型抽象
+2. [类型守卫](/paths/advanced/type-guards) - 类型收窄与类型推断
+3. [装饰器](/paths/advanced/decorators) - 元编程与 AOP
+4. [设计模式](/paths/advanced/design-patterns) - 常见设计模式的 TS 实现

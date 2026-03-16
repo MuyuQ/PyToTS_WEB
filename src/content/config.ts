@@ -5,7 +5,7 @@ import { docsSchema } from "@astrojs/starlight/schema";
 const learningMetadataSchema = z
   .object({
     kind: z.enum(["page", "lesson", "algorithm"]).default("page"),
-    level: z.enum(["foundation", "migration", "advanced"]).optional(),
+    level: z.enum(["preparation", "foundation", "migration", "advanced"]).optional(),
     topic: z.string().optional(),
     difficulty: z.enum(["easy", "medium", "hard"]).optional(),
     prerequisites: z.array(z.string()).optional(),

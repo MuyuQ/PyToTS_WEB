@@ -3,27 +3,97 @@ title: 编程测验
 description: 检验你的 Python 到 TypeScript 迁移知识
 kind: page
 ---
-
-import QuizContainer from '../../../../components/QuizContainer.astro';
-
-# 编程测验
+import QuizContainer from "../../../../components/QuizContainer.astro";
 
 通过互动测验检验你对 Python 和 TypeScript 差异的理解。
 
-## 类型系统测验
+## Foundation 基础测验
+
+### 变量声明测验
+
+<QuizContainer quizId="variables" />
+
+### 控制流测验
+
+<QuizContainer quizId="controlFlow" />
+
+### 数据结构测验
+
+<QuizContainer quizId="dataStructures" />
+
+### 函数基础测验
+
+<QuizContainer quizId="functionsBasics" />
+
+### 类与对象测验
+
+<QuizContainer quizId="classesObjects" />
+
+## Migration 迁移测验
+
+### 类型系统测验
 
 <QuizContainer quizId="types" />
 
-## 函数与参数测验
+### 函数与参数测验
 
 <QuizContainer quizId="functions" />
 
-## 异步编程测验
+### 模块导入测验
+
+<QuizContainer quizId="modules" />
+
+### 异步编程测验
 
 <QuizContainer quizId="async" />
 
----
+### 错误处理测验
 
+<QuizContainer quizId="errorHandling" />
+
+### 枚举类型测验
+
+<QuizContainer quizId="enums" />
+
+### 字符串与正则测验
+
+<QuizContainer quizId="stringsRegex" />
+
+## Advanced 进阶测验
+
+### 泛型测验
+
+<QuizContainer quizId="generics" />
+
+### 类型守卫测验
+
+<QuizContainer quizId="typeGuards" />
+
+### 工具类型测验
+
+<QuizContainer quizId="utilityTypes" />
+
+### 声明与配置测验
+
+<QuizContainer quizId="declarationsConfig" />
+
+### 装饰器测验
+
+<QuizContainer quizId="decorators" />
+
+### 设计模式测验
+
+<QuizContainer quizId="designPatterns" />
+
+### 日期时间测验
+
+<QuizContainer quizId="datetime" />
+
+### Node.js 基础测验
+
+<QuizContainer quizId="nodejsBasics" />
+
+---
 ## 如何有效利用测验
 
 1. **先学习再测验**：建议先完成对应的 [学习路径](/paths/) 内容
@@ -36,7 +106,8 @@ import QuizContainer from '../../../../components/QuizContainer.astro';
 - **类型系统**：这是 Python 开发者学习 TypeScript 最大的障碍，建议重点练习
 - **异步编程**：Promise 和 async/await 的概念需要理解其执行机制
 - **函数差异**：箭头函数、默认参数、剩余参数等语法需要熟练
+- **泛型**：TypeScript 泛型比 Python 更强大，需要多加练习
+- **工具类型**：Partial、Pick、Omit 等工具类型能极大提高开发效率
 
 ---
-
-*更多测验题目正在持续更新中...*
+_更多测验题目正在持续更新中..._

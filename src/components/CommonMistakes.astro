@@ -1,0 +1,94 @@
+---
+interface Mistake {
+  title: string;
+  wrong: string;
+  correct: string;
+  explanation: string;
+}
+
+interface Props {
+  mistakes: Mistake[];
+}
+
+const { mistakes }: Props = Astro.props;
+---
+
+<style>
+.common-mistakes-container {
+  margin: 1rem 0;
+}
+
+.mistake-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+.mistake-summary {
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mistake-details {
+  padding: 1rem;
+  background-color: #fff;
+}
+
+.code-block {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  overflow-x: auto;
+}
+
+.wrong-code {
+  border-left: 3px solid #dc2626; /* Red */
+}
+
+.correct-code {
+  border-left: 3px solid #16a34a; /* Green */
+}
+
+.explanation {
+  margin-top: 0.75rem;
+  padding: 0.75rem;
+  background-color: #fefce8;
+  border: 1px solid #fef3c7;
+  border-radius: 0.375rem;
+}
+</style>
+
+<div class="common-mistakes-container">
+  {mistakes.map((mistake) => (
+    <div class="mistake-item">
+      <details>
+        <summary class="mistake-summary">
+          <span>{mistake.title}</span>
+        </summary>
+        <div class="mistake-details">
+          <div class="code-block wrong-code">
+            <strong>❌ Wrong:</strong>
+            <pre><code>{mistake.wrong}</code></pre>
+          </div>
+          
+          <div class="code-block correct-code">
+            <strong>✅ Correct:</strong>
+            <pre><code>{mistake.correct}</code></pre>
+          </div>
+          
+          <div class="explanation">
+            <strong>Explanation:</strong> {mistake.explanation}
+          </div>
+        </div>
+      </details>
+    </div>
+  ))}
+</div>

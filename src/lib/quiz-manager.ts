@@ -6,6 +6,11 @@ export interface QuizOption {
 
 export interface QuizQuestion {
   question: string;
+  questionType?: "multiple-choice" | "prediction";
+  codeSnippets?: {
+    python?: string;
+    typescript?: string;
+  };
   options: QuizOption[];
 }
 
