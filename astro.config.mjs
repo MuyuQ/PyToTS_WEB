@@ -2,7 +2,8 @@ import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 
 export default defineConfig({
-  site: "https://typescript-python-web.github.io",
+  site: "https://muyuq.github.io",
+  base: "/PyToTS_WEB/",
   integrations: [
     starlight({
       title: "Python to TypeScript",
