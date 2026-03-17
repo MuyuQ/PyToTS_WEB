@@ -1,0 +1,58 @@
+# .github/workflows/deploy-pages.yml
+name: Deploy to GitHub Pages
+
+# 触发条件：推送到 main/master 分支（可根据你的分支名修改）
+on:
+  push:
+    branches: [ main ]  # 若你的主分支是 master，改为 master
+
+# 权限配置（必须，否则无法部署 Pages）
+permissions:
+  contents: read        # 读取仓库内容
+  pages: write          # 写入 Pages 资源
+  id-token: write       # 生成部署令牌
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages  # 关联 GitHub Pages 环境
+      url: ${{ steps.deployment.outputs.page_url }}
+    
+    steps:
+      # 1. 拉取代码（升级到 v5，支持 Node.js 24）
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # 拉取完整提交历史（部分打包工具需要）
+
+      # 2. 配置 Node.js（升级到 v5，支持 Node.js 24）
+      - name: Set up Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 20  # 项目运行的 Node 版本（可改为 18/24，根据项目需求）
+          cache: 'npm'      # 缓存 npm 依赖，加速构建
+
+      # 3. 安装依赖 + 打包构建（核心步骤，根据你的项目修改）
+      - name: Install dependencies
+        run: npm install   # 若用 yarn/pnpm，改为 yarn install / pnpm install
+
+      - name: Build static files
+        run: npm run build # 改为你项目的打包命令（如 vite build / react-scripts build）
+
+      # 4. 配置 GitHub Pages 环境
+      - name: Setup Pages
+        uses: actions/configure-pages@v5  # 升级到 v5，支持 Node.js 24
+
+      # 5. 上传构建产物
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3  # 升级到 v3，支持 Node.js 24
+        with:
+          # 打包后的静态文件目录（根据你的项目修改！）
+          # Vue/Vite 默认：dist；React 默认：build；Next.js 静态导出：out；纯静态：./
+          path: './dist'  
+
+      # 6. 部署到 GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4  # 升级到 v4，支持 Node.js 24
