@@ -100,14 +100,16 @@
       setTheme(current === 'dark' ? 'light' : 'dark');
     }
     
-    customElements.define('starlight-theme-toggle', class extends HTMLElement {
-      constructor() {
-        super();
-        var btn = this.querySelector('button');
-        if (btn) {
-          btn.addEventListener('click', toggleTheme);
+    if (!customElements.get('starlight-theme-toggle')) {
+      customElements.define('starlight-theme-toggle', class extends HTMLElement {
+        constructor() {
+          super();
+          var btn = this.querySelector('button');
+          if (btn) {
+            btn.addEventListener('click', toggleTheme);
+          }
         }
-      }
-    });
+      });
+    }
   })();
 </script>
