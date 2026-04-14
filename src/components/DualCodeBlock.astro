@@ -1,5 +1,6 @@
 ---
 import { normalizeDualCodeInput } from "../lib/code-example";
+import { codeToHtml } from 'shiki';
 
 interface Props {
   python: string;
@@ -16,6 +17,23 @@ const { python, typescript, title } = {
 };
 
 const codeId = crypto.randomUUID();
+
+// 使用 Shiki 生成语法高亮 HTML
+const pythonHtml = await codeToHtml(python, {
+  lang: 'python',
+  themes: {
+    light: 'github-light',
+    dark: 'github-dark',
+  },
+});
+
+const typescriptHtml = await codeToHtml(typescript, {
+  lang: 'typescript',
+  themes: {
+    light: 'github-light',
+    dark: 'github-dark',
+  },
+});
 ---
 
 <div class="dual-code-block" role="region" aria-label={title ? `${title} - 双语代码对比` : "双语代码对比"} data-code-id={codeId}>
@@ -47,7 +65,8 @@ const codeId = crypto.randomUUID();
           </svg>
         </button>
       </div>
-      <pre class="code" tabindex="0" aria-label="Python 代码"><code class="language-python">{python}</code></pre>
+      <!-- Shiki 生成的 HTML 包含 <pre> 和 <code> -->
+      <div class="code code-highlighted" set:html={pythonHtml}></div>
     </div>
     <div class="code-panel">
       <div class="panel-header">
@@ -59,7 +78,8 @@ const codeId = crypto.randomUUID();
           </svg>
         </button>
       </div>
-      <pre class="code" tabindex="0" aria-label="TypeScript 代码"><code class="language-typescript">{typescript}</code></pre>
+      <!-- Shiki 生成的 HTML 包含 <pre> 和 <code> -->
+      <div class="code code-highlighted" set:html={typescriptHtml}></div>
     </div>
   </div>
 </div>
@@ -96,8 +116,9 @@ const codeId = crypto.randomUUID();
 
     if (copyAllBtn && container) {
       copyAllBtn.addEventListener('click', async () => {
-        const codes = container.querySelectorAll('code');
-        const text = Array.from(codes).map(code => code.textContent).join('\n\n');
+        // 从 Shiki 生成的 pre 中提取纯文本
+        const pres = container.querySelectorAll('pre');
+        const text = Array.from(pres).map(pre => pre.textContent).join('\n\n');
 
         await navigator.clipboard.writeText(text);
         copyAllBtn.classList.add('copied');
@@ -108,9 +129,10 @@ const codeId = crypto.randomUUID();
     document.querySelectorAll(`.copy-lang-btn[data-code-id="${codeId}"]`).forEach(btn => {
       btn.addEventListener('click', async () => {
         const lang = (btn as HTMLElement).dataset.lang;
-        const code = container?.querySelector(`.language-${lang}`);
-        if (code) {
-          await navigator.clipboard.writeText(code.textContent || '');
+        const panel = container?.querySelector(`.code-panel:nth-child(${lang === 'python' ? '1' : '2'})`);
+        const pre = panel?.querySelector('pre');
+        if (pre) {
+          await navigator.clipboard.writeText(pre.textContent || '');
           btn.classList.add('copied');
           setTimeout(() => btn.classList.remove('copied'), 2000);
         }
@@ -177,7 +199,7 @@ const codeId = crypto.randomUUID();
     border: 1px solid var(--color-border);
     border-radius: var(--radius-sm);
     background: transparent;
-    color: var(--color-gray-2);
+    color: var(--sl-color-gray-2);
     cursor: pointer;
     font-size: 0.75rem;
     transition: all var(--transition-fast);
@@ -213,6 +235,8 @@ const codeId = crypto.randomUUID();
   .code-panel {
     border-right: 1px solid var(--color-border);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   .code-panel:last-child {
@@ -226,6 +250,7 @@ const codeId = crypto.randomUUID();
     padding: var(--space-xs) var(--space-sm);
     background: var(--color-bg);
     border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
   }
 
   .lang-badge {
@@ -252,7 +277,7 @@ const codeId = crypto.randomUUID();
     padding: var(--space-xs);
     border: none;
     background: transparent;
-    color: var(--color-gray-3);
+    color: var(--sl-color-gray-3);
     cursor: pointer;
     border-radius: var(--radius-sm);
     transition: all var(--transition-fast);
@@ -268,19 +293,34 @@ const codeId = crypto.randomUUID();
     color: white;
   }
 
-  .code {
+  /* Shiki 生成的代码样式 */
+  .code-highlighted {
+    flex: 1;
+    overflow: auto;
+    max-height: 400px;
+  }
+
+  /* 覆盖 Shiki 的默认样式 */
+  .code-highlighted pre {
     margin: 0;
     padding: var(--space-md);
-    overflow-x: auto;
-    overflow-y: auto;
-    max-height: 400px;
+    background: var(--color-code-bg) !important;
     font-family: var(--font-mono);
     font-size: 0.875rem;
     line-height: 1.6;
-    background: var(--color-code-bg);
+    tab-size: 2;
   }
 
-  .code:focus {
+  .code-highlighted code {
+    font-family: inherit;
+  }
+
+  /* 确保 Shiki 的 span 继承字体 */
+  .code-highlighted span {
+    font-family: var(--font-mono) !important;
+  }
+
+  .code-highlighted:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: -2px;
   }
@@ -299,14 +339,14 @@ const codeId = crypto.randomUUID();
       border-bottom: none;
     }
 
-    .code {
+    .code-highlighted pre {
       font-size: 0.75rem;
       padding: var(--space-sm);
     }
   }
 
   @media (max-width: 480px) {
-    .code {
+    .code-highlighted pre {
       font-size: 0.6875rem;
       line-height: 1.4;
     }
@@ -329,7 +369,7 @@ const codeId = crypto.randomUUID();
   }
 
   @media (hover: none) {
-    .code {
+    .code-highlighted {
       min-height: 44px;
     }
   }
