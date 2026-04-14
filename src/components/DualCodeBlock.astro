@@ -83,26 +83,15 @@ const typescriptHtml = await codeToHtml(typescript, {
 </div>
 
 <script>
-  // Sync height between code panels
-  function syncPanelHeights(codeId: string) {
+  // Remove Shiki inline background-color and color so CSS variables take effect
+  function removeShikiInlineStyles(codeId: string) {
     const container = document.querySelector(`.code-container[data-code-id="${codeId}"]`);
     if (!container) return;
 
-    const panels = container.querySelectorAll('.code-panel');
-    if (panels.length !== 2) return;
-
-    // Reset heights to auto to measure natural height
-    panels.forEach(panel => {
-      (panel as HTMLElement).style.height = 'auto';
-    });
-
-    // Get the taller panel's height
-    const heights = Array.from(panels).map(panel => panel.scrollHeight);
-    const maxHeight = Math.max(...heights);
-
-    // Set both panels to the same height
-    panels.forEach(panel => {
-      (panel as HTMLElement).style.height = `${maxHeight}px`;
+    container.querySelectorAll('pre.shiki').forEach(pre => {
+      const el = pre as HTMLElement;
+      el.style.removeProperty('background-color');
+      el.style.removeProperty('color');
     });
   }
 
@@ -178,7 +167,7 @@ const typescriptHtml = await codeToHtml(typescript, {
     document.querySelectorAll('.dual-code-block').forEach(block => {
       const codeId = (block as HTMLElement).dataset.codeId;
       if (codeId) {
-        syncPanelHeights(codeId);
+        removeShikiInlineStyles(codeId);
         initSyncScroll(codeId);
         initCopyButtons(codeId);
         initToggle(codeId);
