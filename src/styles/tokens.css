@@ -1,37 +1,37 @@
 :root,
 [data-theme="light"] {
-  /* Light theme - warm education style */
-  --color-bg: #fafafa;
-  --color-text: #1a1a2e;
+  /* Light theme - warm beige/cream style */
+  --color-bg: #faf6f0;
+  --color-text: #2c2416;
   --color-primary: #5b7fff;
   --color-secondary: #8b5cf6;
   --color-accent: #ff9f43;
-  --color-border: #e5e7eb;
-  --color-code-bg: #f8fafc;
+  --color-border: #e8e0d5;
+  --color-code-bg: #f5f0e8;
   --color-card: #ffffff;
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #f59e0b;
 
   /* Starlight overrides */
-  --sl-color-bg: #fafafa;
+  --sl-color-bg: #faf6f0;
   --sl-color-bg-nav: #ffffff;
   --sl-color-bg-aside: #ffffff;
   --sl-color-bg-card: #ffffff;
-  --sl-color-bg-inline-code: #f1f5f9;
-  --sl-color-white: #1a1a2e;
+  --sl-color-bg-inline-code: #f0ebe3;
+  --sl-color-white: #2c2416;
   --sl-color-gray-1: #374151;
   --sl-color-gray-2: #6b7280;
   --sl-color-gray-3: #9ca3af;
-  --sl-color-gray-4: #d1d5db;
-  --sl-color-gray-5: #e5e7eb;
-  --sl-color-gray-6: #f3f4f6;
+  --sl-color-gray-4: #d1c8bb;
+  --sl-color-gray-5: #e8e0d5;
+  --sl-color-gray-6: #f5f0e8;
   --sl-color-accent: #5b7fff;
   --sl-color-accent-low: rgba(91, 127, 255, 0.1);
   --sl-color-accent-high: rgba(91, 127, 255, 0.2);
-  --sl-color-hairline: #e5e7eb;
-  --sl-color-hairline-shade: #d1d5db;
-  --sl-color-hairline-light: #f3f4f6;
+  --sl-color-hairline: #e8e0d5;
+  --sl-color-hairline-shade: #d1c8bb;
+  --sl-color-hairline-light: #f5f0e8;
 
   /* Fonts */
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;

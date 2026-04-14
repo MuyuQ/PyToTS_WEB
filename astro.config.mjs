@@ -11,7 +11,7 @@ export default defineConfig({
         {
           tag: "style",
           content: `
-            html { background-color: #fafafa; }
+            html { background-color: #faf6f0; }
             [data-theme="dark"] html, [data-theme="dark"] body { background-color: #0f172a !important; }
             [data-theme="high-contrast"] html, [data-theme="high-contrast"] body { background-color: #000000 !important; }
             [data-theme="sepia"] html, [data-theme="sepia"] body { background-color: #f4ecd8 !important; }
