@@ -30,6 +30,7 @@ const currentTheme = readTheme(typeof window !== 'undefined' ? localStorage.getI
 
 <script>
   import { initThemeDetector, applyTheme } from '../lib/theme-detector';
+  import type { Theme } from '../lib/theme-detector';
 
   // Initialize theme on load
   initThemeDetector();
@@ -40,7 +41,7 @@ const currentTheme = readTheme(typeof window !== 'undefined' ? localStorage.getI
       const theme = (btn as HTMLElement).dataset.theme;
       if (theme) {
         localStorage.setItem('site-theme', theme);
-        applyTheme(theme as any);
+        applyTheme(theme as Theme);
         
         // Update pressed state
         document.querySelectorAll('.theme-btn').forEach(b => {
