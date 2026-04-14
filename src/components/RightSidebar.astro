@@ -1,0 +1,267 @@
+---
+interface Props {
+  headings?: Array<{ id: string; text: string }>;
+  progress?: { completed: number; total: number };
+}
+
+const { headings, progress } = Astro.props;
+
+const defaultHeadings = [
+  { id: "场景与问题", text: "场景与问题" },
+  { id: "python-回顾", text: "Python 回顾" },
+  { id: "typescript-等价写法", text: "TypeScript 等价写法" },
+  { id: "差异与常见陷阱", text: "差异与常见陷阱" },
+  { id: "练习", text: "练习" },
+];
+
+const tocItems = headings || defaultHeadings;
+const stats = progress || { completed: 0, total: 20 };
+const progressPercent = Math.round((stats.completed / stats.total) * 100);
+---
+
+<aside class="right-sidebar" aria-label="页面工具">
+  <div class="sidebar-section toc-section">
+    <h3 class="section-title">目录</h3>
+    <nav aria-label="页面目录">
+      <ul class="toc-list">
+        {tocItems.map((item) => (
+          <li>
+            <a href={`#${item.id}`} class="toc-link">{item.text}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+
+  <div class="sidebar-section tools-section">
+    <h3 class="section-title">工具</h3>
+    <div class="tool-buttons">
+      <button class="tool-btn bookmark-btn" aria-label="添加书签">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>书签</span>
+      </button>
+      <button class="tool-btn share-btn" aria-label="分享此页">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>
+        </svg>
+        <span>分享</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="sidebar-section progress-section">
+    <h3 class="section-title">学习进度</h3>
+    <div class="progress-stats">
+      <div class="stat-item">
+        <span class="stat-label">已完成</span>
+        <span class="stat-value">{stats.completed}/{stats.total}</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style={`width: ${progressPercent}%`}></div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<script>
+  // Highlight current TOC item on scroll
+  function updateTocHighlight() {
+    const headings = document.querySelectorAll('.sl-markdown-content h2');
+    const tocLinks = document.querySelectorAll('.toc-link');
+    
+    let currentHeading = null;
+    headings.forEach(heading => {
+      const rect = heading.getBoundingClientRect();
+      if (rect.top < 100) {
+        currentHeading = heading;
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (currentHeading && link.getAttribute('href') === `#${currentHeading.id}`) {
+        link.classList.add('active');
+      }
+    });
+  }
+
+  window.addEventListener('scroll', updateTocHighlight);
+  updateTocHighlight();
+
+  // Bookmark functionality
+  const bookmarkBtn = document.querySelector('.bookmark-btn');
+  if (bookmarkBtn) {
+    bookmarkBtn.addEventListener('click', () => {
+      const path = window.location.pathname;
+      const bookmarks = JSON.parse(localStorage.getItem('ts-py-learning-progress') || '{}');
+      if (!bookmarks.bookmarks) bookmarks.bookmarks = [];
+      
+      if (bookmarks.bookmarks.includes(path)) {
+        bookmarks.bookmarks = bookmarks.bookmarks.filter((b: string) => b !== path);
+        bookmarkBtn.classList.remove('bookmarked');
+      } else {
+        bookmarks.bookmarks.push(path);
+        bookmarkBtn.classList.add('bookmarked');
+      }
+      
+      localStorage.setItem('ts-py-learning-progress', JSON.stringify(bookmarks));
+    });
+  }
+
+  // Share functionality
+  const shareBtn = document.querySelector('.share-btn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: document.title,
+            url: window.location.href,
+          });
+        } catch {
+          // User cancelled share
+        }
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        shareBtn.classList.add('copied');
+        setTimeout(() => shareBtn.classList.remove('copied'), 2000);
+      }
+    });
+  }
+</script>
+
+<style>
+  .right-sidebar {
+    width: 240px;
+    padding: var(--space-lg) var(--space-md);
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+  }
+
+  .sidebar-section {
+    margin-bottom: var(--space-xl);
+  }
+
+  .section-title {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-gray-3);
+    margin-bottom: var(--space-sm);
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .toc-link {
+    display: block;
+    padding: var(--space-xs) var(--space-sm);
+    color: var(--color-gray-2);
+    text-decoration: none;
+    font-size: 0.875rem;
+    border-left: 2px solid transparent;
+    transition: all var(--transition-fast);
+  }
+
+  .toc-link:hover {
+    color: var(--color-primary);
+  }
+
+  .toc-link.active {
+    color: var(--color-primary);
+    border-left-color: var(--color-primary);
+    font-weight: 500;
+  }
+
+  .tool-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .tool-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-card);
+    color: var(--color-text);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+  }
+
+  .tool-btn:hover {
+    border-color: var(--color-primary);
+    background: var(--sl-color-accent-low);
+  }
+
+  .tool-btn.bookmarked {
+    background: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+  }
+
+  .tool-btn.copied {
+    background: var(--color-success);
+    color: white;
+    border-color: var(--color-success);
+  }
+
+  .tool-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .progress-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+  }
+
+  .stat-label {
+    color: var(--color-gray-2);
+  }
+
+  .stat-value {
+    font-weight: 600;
+    color: var(--color-primary);
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-slow);
+  }
+
+  @media (max-width: 1280px) {
+    .right-sidebar {
+      display: none;
+    }
+  }
+</style>
