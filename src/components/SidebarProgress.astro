@@ -231,13 +231,13 @@
     justify-content: center;
     margin-left: 0.375rem;
     font-size: 0.625rem;
-    transition: color 0.2s ease;
+    transition: color var(--transition-fast);
     vertical-align: middle;
     line-height: 1;
   }
 
   .progress-dot.completed {
-    color: #22c55e;
+    color: var(--color-success);
   }
 
   .progress-dot:not(.completed) {
@@ -255,11 +255,28 @@
   }
 
   .group-progress.has-progress {
-    color: #22c55e;
+    color: var(--color-success);
   }
 
   .group-progress.no-progress {
     color: var(--sl-color-gray-4, #6b7280);
+  }
+
+  .completion-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    background: var(--color-success);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .completion-badge svg {
+    width: 12px;
+    height: 12px;
   }
 
   [data-theme="dark"] .progress-dot:not(.completed),
