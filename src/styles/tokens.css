@@ -1,44 +1,43 @@
+/* ===== ZENSICAL-INSPIRED THEME ===== */
+
 :root,
 [data-theme="light"] {
-  /* Light theme - warm paper style */
-  --color-bg: #f5f1e8;
-  --color-text: #2c2416;
-  --color-primary: #5b7fff;
-  --color-secondary: #8b5cf6;
-  --color-accent: #ff9f43;
-  --color-border: #e0d8c8;
-  --color-code-bg: #ede8df;
+  /* Light theme - Zensical default */
+  --color-bg: #ffffff;
+  --color-text: #1a1a2e;
+  --color-primary: #4051b5;
+  --color-secondary: #5d6cc0;
+  --color-accent: #526cfe;
+  --color-border: #e1e4e8;
+  --color-code-bg: #f6f8fa;
   --color-card: #ffffff;
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #f59e0b;
 
-  /* Paper texture - SVG noise pattern */
-  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.83 0 0 0 0 0.77 0 0 0 0 0.69 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)'/%3E%3C/svg%3E");
-
   /* Starlight overrides */
-  --sl-color-bg: #f5f1e8;
-  --sl-color-bg-nav: #ede8df;
+  --sl-color-bg: #ffffff;
+  --sl-color-bg-nav: #ffffff;
   --sl-color-bg-aside: #ffffff;
   --sl-color-bg-card: #ffffff;
-  --sl-color-bg-inline-code: #e8e3da;
-  --sl-color-white: #2c2416;
-  --sl-color-gray-1: #374151;
-  --sl-color-gray-2: #6b7280;
-  --sl-color-gray-3: #9ca3af;
-  --sl-color-gray-4: #c8bfb0;
-  --sl-color-gray-5: #e0d8c8;
-  --sl-color-gray-6: #ede8df;
-  --sl-color-accent: #5b7fff;
-  --sl-color-accent-low: rgba(91, 127, 255, 0.1);
-  --sl-color-accent-high: rgba(91, 127, 255, 0.2);
-  --sl-color-hairline: #e0d8c8;
-  --sl-color-hairline-shade: #c8bfb0;
-  --sl-color-hairline-light: #ede8df;
+  --sl-color-bg-inline-code: #f6f8fa;
+  --sl-color-white: #1a1a2e;
+  --sl-color-gray-1: #24292f;
+  --sl-color-gray-2: #57606a;
+  --sl-color-gray-3: #8b949e;
+  --sl-color-gray-4: #c9d1d9;
+  --sl-color-gray-5: #e1e4e8;
+  --sl-color-gray-6: #f6f8fa;
+  --sl-color-accent: #4051b5;
+  --sl-color-accent-low: rgba(64, 81, 181, 0.1);
+  --sl-color-accent-high: rgba(64, 81, 181, 0.2);
+  --sl-color-hairline: #e1e4e8;
+  --sl-color-hairline-shade: #c9d1d9;
+  --sl-color-hairline-light: #f6f8fa;
 
-  /* Fonts */
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "Fira Code", "Cascadia Code", "Consolas", monospace;
+  /* Fonts - Zensical style */
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "Fira Code", monospace;
 
   /* Spacing */
   --space-xs: 0.25rem;
@@ -63,67 +62,56 @@
 html,
 body {
   background-color: var(--color-bg);
-  background-image: var(--paper-texture);
-  background-size: 100px 100px;
-  background-repeat: repeat;
   color-scheme: light;
 }
 
-/* Performance degradation for reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  html,
-  body {
-    background-image: none;
-  }
-}
-
 [data-theme="dark"] {
-  /* Dark theme - developer friendly */
-  --color-bg: #0f172a;
-  --color-text: #f1f5f9;
-  --color-primary: #5b7fff;
-  --color-secondary: #a78bfa;
-  --color-accent: #ff9f43;
-  --color-border: #334155;
-  --color-code-bg: #0f172a;
-  --color-card: #1e293b;
+  /* Dark theme - Zensical slate */
+  --color-bg: #0c0e12;
+  --color-text: rgba(224, 226, 230, 0.82);
+  --color-primary: #5488e8;
+  --color-secondary: #6b9aef;
+  --color-accent: #5488e8;
+  --color-border: rgba(224, 226, 230, 0.12);
+  --color-code-bg: #1a1d24;
+  --color-card: #191c24;
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #f59e0b;
 
   /* Starlight overrides */
-  --sl-color-bg: #0f172a;
-  --sl-color-bg-nav: #1e293b;
-  --sl-color-bg-aside: #1e293b;
-  --sl-color-bg-card: #1e293b;
-  --sl-color-bg-inline-code: #0f172a;
-  --sl-color-white: #f1f5f9;
-  --sl-color-gray-1: #e2e8f0;
-  --sl-color-gray-2: #94a3b8;
-  --sl-color-gray-3: #64748b;
-  --sl-color-gray-4: #475569;
-  --sl-color-gray-5: #334155;
-  --sl-color-gray-6: #1e293b;
-  --sl-color-accent: #5b7fff;
-  --sl-color-accent-low: rgba(91, 127, 255, 0.15);
-  --sl-color-accent-high: rgba(91, 127, 255, 0.25);
-  --sl-color-hairline: #334155;
-  --sl-color-hairline-shade: #475569;
-  --sl-color-hairline-light: #1e293b;
+  --sl-color-bg: #0c0e12;
+  --sl-color-bg-nav: #191c24;
+  --sl-color-bg-aside: #191c24;
+  --sl-color-bg-card: #191c24;
+  --sl-color-bg-inline-code: #1a1d24;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: rgba(224, 226, 230, 0.82);
+  --sl-color-gray-2: rgba(224, 226, 230, 0.56);
+  --sl-color-gray-3: rgba(224, 226, 230, 0.32);
+  --sl-color-gray-4: rgba(224, 226, 230, 0.12);
+  --sl-color-gray-5: rgba(224, 226, 230, 0.07);
+  --sl-color-gray-6: #191c24;
+  --sl-color-accent: #5488e8;
+  --sl-color-accent-low: rgba(84, 136, 232, 0.15);
+  --sl-color-accent-high: rgba(84, 136, 232, 0.25);
+  --sl-color-hairline: rgba(224, 226, 230, 0.12);
+  --sl-color-hairline-shade: rgba(224, 226, 230, 0.07);
+  --sl-color-hairline-light: #191c24;
 
-  /* Code syntax colors - Night Owl inspired */
-  --sl-color-syntax-number: #ff9f43;
-  --sl-color-syntax-string: #22c55e;
-  --sl-color-syntax-keyword: #5b7fff;
-  --sl-color-syntax-function: #a78bfa;
-  --sl-color-syntax-constant: #f472b6;
-  --sl-color-syntax-special: #ef4444;
-  --sl-color-syntax-comment: #64748b;
+  /* Code syntax colors - Zensical slate inspired */
+  --sl-color-syntax-number: #e6695b;
+  --sl-color-syntax-string: #2fb170;
+  --sl-color-syntax-keyword: #6791e0;
+  --sl-color-syntax-function: #c973d9;
+  --sl-color-syntax-constant: #9383e2;
+  --sl-color-syntax-special: #f06090;
+  --sl-color-syntax-comment: rgba(224, 226, 230, 0.56);
 }
 
 [data-theme="dark"] html,
 [data-theme="dark"] body {
-  background-color: #0f172a;
+  background-color: #0c0e12;
   color-scheme: dark;
 }
 
@@ -159,7 +147,7 @@ body {
   color-scheme: dark;
 }
 
-/* Sepia theme for eye comfort */
+/* Sepia theme */
 [data-theme="sepia"] {
   --color-bg: #f4ecd8;
   --color-text: #433422;
