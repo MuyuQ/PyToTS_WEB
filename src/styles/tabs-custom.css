@@ -1,4 +1,4 @@
-/* ===== CUSTOM TABS STYLING ===== */
+/* ===== ZENSICAL-STYLE TABS ===== */
 
 /* Tab list container */
 starlight-tabs .tablist-wrapper {
@@ -10,14 +10,14 @@ starlight-tabs .tablist-wrapper {
 /* Tab list */
 starlight-tabs [role="tablist"] {
   background: var(--color-bg);
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
   padding: 0 var(--space-sm);
   gap: 0;
 }
 
 /* Individual tab */
 starlight-tabs .tab {
-  margin-bottom: -2px;
+  margin-bottom: -1px;
 }
 
 starlight-tabs .tab > [role="tab"] {
@@ -35,14 +35,14 @@ starlight-tabs .tab > [role="tab"] {
 }
 
 starlight-tabs .tab > [role="tab"]:hover {
-  color: var(--color-text);
-  background: var(--sl-color-accent-low);
+  color: var(--sl-color-gray-1);
+  background: var(--sl-color-gray-6);
 }
 
 /* Active tab */
 starlight-tabs .tab [role="tab"][aria-selected="true"] {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  color: var(--sl-color-accent);
+  border-bottom-color: var(--sl-color-accent);
   font-weight: 600;
   background: var(--color-card);
 }
@@ -70,17 +70,18 @@ starlight-tabs .tab [role="tab"] svg {
 
 /* Dark theme adjustments */
 [data-theme="dark"] starlight-tabs .tab > [role="tab"] {
-  color: var(--sl-color-gray-2);
+  color: rgba(224, 226, 230, 0.56);
 }
 
 [data-theme="dark"] starlight-tabs .tab > [role="tab"]:hover {
-  color: var(--sl-color-white);
-  background: var(--sl-color-accent-low);
+  color: rgba(224, 226, 230, 0.82);
+  background: #191c24;
 }
 
 [data-theme="dark"] starlight-tabs .tab [role="tab"][aria-selected="true"] {
-  color: var(--color-primary);
-  background: var(--sl-color-bg-card);
+  color: #5488e8;
+  border-bottom-color: #5488e8;
+  background: #191c24;
 }
 
 /* Responsive */
@@ -89,7 +90,7 @@ starlight-tabs .tab [role="tab"] svg {
     padding: var(--space-xs) var(--space-sm);
     font-size: 0.75rem;
   }
-
+  
   starlight-tabs .tab [role="tab"] svg {
     width: 14px;
     height: 14px;
