@@ -22,7 +22,11 @@
   margin-bottom: 1rem;
   color: var(--sl-color-white);
   padding-bottom: 0.5rem;
+  padding-left: 0.75rem;
   border-bottom: 1px solid var(--sl-color-hairline);
+  border-left: 3px solid var(--sl-color-accent);
+  border-radius: 0 4px 4px 0;
+  background: linear-gradient(90deg, var(--sl-color-accent-low) 0%, transparent 100%);
 }
 
 .sl-markdown-content h3 {
@@ -136,6 +140,81 @@
   line-height: 1.6;
 }
 
+/* ===== SIDEBAR NAVIGATION ENHANCEMENTS ===== */
+
+/* Current page link - highlighted background */
+.sidebar-content a[aria-current="page"] {
+  background: var(--sl-color-accent-low);
+  border-left: 3px solid var(--sl-color-accent);
+  padding-left: calc(0.75rem - 3px);
+  border-radius: 0 4px 4px 0;
+  font-weight: 600;
+}
+
+/* Sidebar link hover effect */
+.sidebar-content a:hover:not([aria-current="page"]) {
+  background: var(--sl-color-gray-6);
+  border-radius: 4px;
+}
+
+/* Sidebar group labels */
+.sidebar-content .group-label {
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+
+/* Caret icon for collapsible groups */
+.sidebar-content .caret {
+  color: var(--sl-color-gray-3);
+  transition: transform var(--transition-fast);
+}
+
+/* ===== CODE BLOCKS WITH LANGUAGE INDICATORS ===== */
+
+.sl-markdown-content pre {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Python code block - blue top bar */
+.sl-markdown-content pre:has(code.language-python)::before,
+.sl-markdown-content pre.expressive-code:has(.language-python)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #3776ab;
+  z-index: 1;
+}
+
+/* TypeScript code block - dark blue top bar */
+.sl-markdown-content pre:has(code.language-typescript)::before,
+.sl-markdown-content pre.expressve-code:has(.language-typescript)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #3178c6;
+  z-index: 1;
+}
+
+/* JavaScript code block - yellow top bar */
+.sl-markdown-content pre:has(code.language-javascript)::before,
+.sl-markdown-content pre:has(code.language-js)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #f7df1e;
+  z-index: 1;
+}
+
 /* ===== HORIZONTAL RULE ===== */
 
 .sl-markdown-content hr {
@@ -184,6 +263,16 @@
 [data-theme="dark"] {
   background-color: var(--sl-color-bg);
   color-scheme: dark;
+}
+
+/* Dark theme sidebar current page */
+[data-theme="dark"] .sidebar-content a[aria-current="page"] {
+  background: rgba(91, 127, 255, 0.15);
+  border-left-color: #5b7fff;
+}
+
+[data-theme="dark"] .sidebar-content a:hover:not([aria-current="page"]) {
+  background: var(--sl-color-gray-6);
 }
 
 /* Site title - warm tone for visibility */
