@@ -32,20 +32,29 @@ const shouldRenderSearch =
     justify-content: space-between;
     align-items: center;
     height: 100%;
+    padding: 0 var(--space-md);
+    background: var(--sl-color-bg-nav);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .title-wrapper {
     overflow: hidden;
   }
 
+  .title-wrapper :global(.site-title) {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--color-primary);
+  }
+
   .right-group {
-    gap: 0.5rem;
+    gap: var(--space-sm);
     align-items: center;
     margin-left: auto;
   }
 
   .social-icons {
-    gap: 0.75rem;
+    gap: var(--space-sm);
     align-items: center;
   }
 
@@ -56,7 +65,7 @@ const shouldRenderSearch =
   .social-icons::after {
     content: '';
     height: 1.5rem;
-    border-inline-end: 1px solid var(--sl-color-gray-5);
+    border-inline-end: 1px solid var(--color-border);
   }
 
   .social-icons:empty::after {

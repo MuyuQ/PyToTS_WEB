@@ -11,6 +11,8 @@ export default defineConfig({
         "./src/styles/tokens.css",
         "./src/styles/accessibility.css",
         "./src/styles/custom-layout.css",
+        "./src/styles/responsive.css",
+        "./src/styles/components.css",
       ],
       disable404Route: true,
       components: {

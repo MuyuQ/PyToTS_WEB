@@ -21,16 +21,23 @@ const banner = entry?.data?.banner;
 
 <style>
   .sl-banner {
-    --__sl-banner-text: var(--sl-color-banner-text, var(--sl-color-text-invert));
-    padding: var(--sl-nav-pad-y) var(--sl-nav-pad-x);
-    background-color: var(--sl-color-banner-bg, var(--sl-color-bg-accent));
+    --__sl-banner-text: var(--sl-color-banner-text, var(--sl-color-bg));
+    padding: var(--space-sm) var(--space-md);
+    background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
     color: var(--__sl-banner-text);
-    line-height: var(--sl-line-height-headings);
+    line-height: 1.6;
     text-align: center;
     text-wrap: balance;
-    box-shadow: var(--sl-shadow-sm);
+    font-size: 0.875rem;
   }
+
   .sl-banner :global(a) {
     color: var(--__sl-banner-text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .sl-banner :global(a):hover {
+    text-decoration-thickness: 2px;
   }
 </style>
