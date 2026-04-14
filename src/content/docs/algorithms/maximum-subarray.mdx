@@ -7,6 +7,9 @@ time_complexity: "O(n)"
 space_complexity: "O(1)"
 description: 找到一个具有最大和的连续子数组
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给你一个整数数组 `nums`，请你找出一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
@@ -14,6 +17,7 @@ description: 找到一个具有最大和的连续子数组
 ## 思路分析
 
 使用 Kadane 算法（动态规划）：
+
 - 维护当前子数组和 `current_sum`
 - 如果 `current_sum < 0`，说明前面的子数组对后续无贡献，从当前元素重新开始
 - 更新全局最大和 `max_sum`
@@ -23,71 +27,84 @@ description: 找到一个具有最大和的连续子数组
 - **时间复杂度**：O(n)，只需遍历一次数组
 - **空间复杂度**：O(1)，只使用常数额外空间
 
-## Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="核心实现"
+  python={`# 最大子数组和 - Python 实现 (Kadane算法)
+# 时间复杂度: O(n), 空间复杂度: O(1)
+# 核心思路: 动态规划
+# 对于每个位置，决定是"延续前面的子数组"还是"从当前位置重新开始"
+# 如果前面的子数组和为负，延续只会让结果更小，不如重新开始
 def max_sub_array(nums: list[int]) -> int:
-    """
-    最大子数组和 - Python 实现 (Kadane算法)
-    
-    Args:
-        nums: 整数数组
-    
-    Returns:
-        最大子数组和
-    """
+    # 边界条件: 空数组返回0
     if not nums:
         return 0
     
+    # 初始化: max_sum 和 current_sum 都从第一个元素开始
+    # 注意: 不能初始化为0，因为数组可能全是负数
+    # 必须初始化为 nums[0]，确保至少包含一个元素
     max_sum = current_sum = nums[0]
     
+    # 从第二个元素开始遍历
     for num in nums[1:]:
-        # 如果当前和为负，从当前元素重新开始
+        # 核心决策: 是延续前面的子数组，还是从当前元素重新开始?
+        # max(num, current_sum + num):
+        #   - 如果 current_sum < 0，则 num > current_sum + num，选择重新开始
+        #   - 如果 current_sum >= 0，则 current_sum + num >= num，选择延续
         current_sum = max(num, current_sum + num)
-        # 更新全局最大
+        
+        # 更新全局最大值
+        # 每次计算完 current_sum 后，检查是否打破了历史最高记录
         max_sum = max(max_sum, current_sum)
     
     return max_sum
 
-
 # 测试用例
-print(max_sub_array([-2, 1, -3, 4, -1, 2, 1, -5, 4]))  # 6 ([4,-1,2,1])
-print(max_sub_array([1]))                              # 1
-print(max_sub_array([5, 4, -1, 7, 8]))                 # 23
-```
 
-## TypeScript 实现
-
-```typescript
-/**
- * 最大子数组和 - TypeScript 实现 (Kadane算法)
- * @param nums 整数数组
- * @returns 最大子数组和
- */
+print(max_sub_array([-2, 1, -3, 4, -1, 2, 1, -5, 4])) # 6, 子数组 [4,-1,2,1]
+print(max_sub_array([1])) # 1, 只有一个元素
+print(max_sub_array([5, 4, -1, 7, 8])) # 23, 整个数组`}
+  typescript={`// 最大子数组和 - TypeScript 实现 (Kadane算法)
+// 时间复杂度: O(n), 空间复杂度: O(1)
+// 核心思路: 动态规划
+// 对于每个位置，决定是"延续前面的子数组"还是"从当前位置重新开始"
+// 如果前面的子数组和为负，延续只会让结果更小，不如重新开始
 function maxSubArray(nums: number[]): number {
-    if (nums.length === 0) {
-        return 0;
-    }
-    
+// 边界条件: 空数组返回0
+if (nums.length === 0) {
+return 0;
+}
+
+    // 初始化: maxSum 和 currentSum 都从第一个元素开始
+    // 注意: 不能初始化为0，因为数组可能全是负数
+    // 必须初始化为 nums[0]，确保至少包含一个元素
     let maxSum = nums[0];
     let currentSum = nums[0];
-    
+
+    // 从第二个元素开始遍历
     for (let i = 1; i < nums.length; i++) {
         const num = nums[i];
-        // 如果当前和为负，从当前元素重新开始
+        // 核心决策: 是延续前面的子数组，还是从当前元素重新开始?
+        // Math.max(num, currentSum + num):
+        //   - 如果 currentSum < 0，则 num > currentSum + num，选择重新开始
+        //   - 如果 currentSum >= 0，则 currentSum + num >= num，选择延续
         currentSum = Math.max(num, currentSum + num);
-        // 更新全局最大
+
+        // 更新全局最大值
+        // 每次计算完 currentSum 后，检查是否打破了历史最高记录
         maxSum = Math.max(maxSum, currentSum);
     }
-    
+
     return maxSum;
+
 }
 
 // 测试用例
-console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4]));  // 6
-console.log(maxSubArray([1]));                               // 1
-console.log(maxSubArray([5, 4, -1, 7, 8]));                  // 23
-```
+console.log(maxSubArray([-2, 1, -3, 4, -1, 2, 1, -5, 4])); // 6, 子数组 [4,-1,2,1]
+console.log(maxSubArray([1])); // 1, 只有一个元素
+console.log(maxSubArray([5, 4, -1, 7, 8])); // 23, 整个数组`}
+/>
 
 ## 面试变体
 

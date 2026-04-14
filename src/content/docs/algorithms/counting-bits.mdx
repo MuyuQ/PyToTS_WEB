@@ -7,6 +7,9 @@ time_complexity: "O(n)"
 space_complexity: "O(n)"
 description: 计算0到n每个数的二进制中1的个数
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给你一个整数 `n`，对于 `0 <= i <= n` 中的每个 `i`，计算其二进制表示中 `1` 的个数，返回一个长度为 `n + 1` 的数组 `ans`。
@@ -72,93 +75,93 @@ dp[i] = dp[i & (i - 1)] + 1
 - **时间复杂度**：O(n)，遍历一次即可
 - **空间复杂度**：O(n)，存储结果数组
 
-## Python 实现
+## 双语实现
 
-```python
-def count_bits(n: int) -> list[int]:
-    """
-    比特位计数 - Python 实现 (DP + 最低有效位)
+<DualCodeBlock
+  title="核心实现"
+  python={`# 比特位计数 - 动态规划 + 位运算
+# 算法: Counting Bits
+# 时间复杂度: O(n), 遍历一次即可
+# 空间复杂度: O(n), 存储结果数组
 
-    Args:
-        n: 上界整数
+def count_bits(n: int) -> list[int]: # dp[i] 表示数字 i 二进制中 1 的个数 # 初始化长度为 n+1 的数组，所有值默认为 0 # dp[0] = 0 已经正确（0的二进制没有1）
+dp = [0] \* (n + 1)
 
-    Returns:
-        每个数二进制中1的个数数组
-    """
-    # dp[i] 表示数字 i 二进制中 1 的个数
-    dp = [0] * (n + 1)
-
+    # 从 1 开始遍历到 n（0 已经正确）
     for i in range(1, n + 1):
-        # i >> 1: 去掉最低位
-        # i & 1: 最低位是否为1
+        # 状态转移方程：dp[i] = dp[i >> 1] + (i & 1)
+        # i >> 1: 右移一位，去掉最低位，等价于 i // 2
+        # dp[i >> 1]: 去掉最低位后的数字的1的个数（已经计算过）
+        # i & 1: 按位与，判断最低位是否为1（0或1）
+        # 原理：i 的1的个数 = i/2 的1的个数 + 最低位是否为1
         dp[i] = dp[i >> 1] + (i & 1)
 
     return dp
 
+def count_bits_kernighan(n: int) -> list[int]: # dp[i] 表示数字 i 二进制中 1 的个数
+dp = [0] \* (n + 1)
 
-def count_bits_kernighan(n: int) -> list[int]:
-    """
-    比特位计数 - Python 实现 (Brian Kernighan 技巧)
-
-    Args:
-        n: 上界整数
-
-    Returns:
-        每个数二进制中1的个数数组
-    """
-    dp = [0] * (n + 1)
-
+    # 从 1 开始遍历到 n
     for i in range(1, n + 1):
-        # i & (i - 1): 去掉最低位的1
+        # 状态转移方程：dp[i] = dp[i & (i - 1)] + 1
+        # i & (i - 1): Brian Kernighan 技巧，去掉最低位的1
+        # 例如：6 (110) & 5 (101) = 4 (100)，去掉了最低位的1
+        # dp[i & (i - 1)]: 去掉最低位1后的数字的1的个数（已经计算过）
+        # +1: 加上被去掉的那个1
+        # 原理：i 的1的个数 = (i去掉最低位1后) 的1的个数 + 1
         dp[i] = dp[i & (i - 1)] + 1
 
     return dp
 
-
 # 测试用例
-print(count_bits(5))   # [0, 1, 1, 2, 1, 2]
-print(count_bits(0))   # [0]
-print(count_bits(10))  # [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2]
+
+print(count_bits(5)) # [0, 1, 1, 2, 1, 2]
+print(count_bits(0)) # [0]
+print(count_bits(10)) # [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2]
 
 # 两种方法结果一致
-assert count_bits(100) == count_bits_kernighan(100)
-```
 
-## TypeScript 实现
+assert count_bits(100) == count_bits_kernighan(100)`}
+  typescript={`// 比特位计数 - 动态规划 + 位运算
+// 算法: Counting Bits
+// 时间复杂度: O(n), 遍历一次即可
+// 空间复杂度: O(n), 存储结果数组
 
-```typescript
-/**
- * 比特位计数 - TypeScript 实现 (DP + 最低有效位)
- * @param n 上界整数
- * @returns 每个数二进制中1的个数数组
- */
 function countBits(n: number): number[] {
-  // dp[i] 表示数字 i 二进制中 1 的个数
-  const dp: number[] = new Array(n + 1).fill(0);
+// dp[i] 表示数字 i 二进制中 1 的个数
+// 初始化长度为 n+1 的数组，所有值默认为 0
+// dp[0] = 0 已经正确（0的二进制没有1）
+const dp: number[] = new Array(n + 1).fill(0);
 
-  for (let i = 1; i <= n; i++) {
-    // i >> 1: 去掉最低位
-    // i & 1: 最低位是否为1
-    dp[i] = dp[i >> 1] + (i & 1);
-  }
-
-  return dp;
+// 从 1 开始遍历到 n（0 已经正确）
+for (let i = 1; i <= n; i++) {
+// 状态转移方程：dp[i] = dp[i >> 1] + (i & 1)
+// i >> 1: 右移一位，去掉最低位，等价于 Math.floor(i / 2)
+// dp[i >> 1]: 去掉最低位后的数字的1的个数（已经计算过）
+// i & 1: 按位与，判断最低位是否为1（0或1）
+// 原理：i 的1的个数 = i/2 的1的个数 + 最低位是否为1
+dp[i] = dp[i >> 1] + (i & 1);
 }
 
-/**
- * 比特位计数 - TypeScript 实现 (Brian Kernighan 技巧)
- * @param n 上界整数
- * @returns 每个数二进制中1的个数数组
- */
+return dp;
+}
+
 function countBitsKernighan(n: number): number[] {
-  const dp: number[] = new Array(n + 1).fill(0);
+// dp[i] 表示数字 i 二进制中 1 的个数
+const dp: number[] = new Array(n + 1).fill(0);
 
-  for (let i = 1; i <= n; i++) {
-    // i & (i - 1): 去掉最低位的1
-    dp[i] = dp[i & (i - 1)] + 1;
-  }
+// 从 1 开始遍历到 n
+for (let i = 1; i <= n; i++) {
+// 状态转移方程：dp[i] = dp[i & (i - 1)] + 1
+// i & (i - 1): Brian Kernighan 技巧，去掉最低位的1
+// 例如：6 (110) & 5 (101) = 4 (100)，去掉了最低位的1
+// dp[i & (i - 1)]: 去掉最低位1后的数字的1的个数（已经计算过）
+// +1: 加上被去掉的那个1
+// 原理：i 的1的个数 = (i去掉最低位1后) 的1的个数 + 1
+dp[i] = dp[i & (i - 1)] + 1;
+}
 
-  return dp;
+return dp;
 }
 
 // 测试用例
@@ -167,8 +170,8 @@ console.log(countBits(0)); // [0]
 console.log(countBits(10)); // [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2]
 
 // 两种方法结果一致
-console.log(JSON.stringify(countBits(100)) === JSON.stringify(countBitsKernighan(100))); // true
-```
+console.log(JSON.stringify(countBits(100)) === JSON.stringify(countBitsKernighan(100))); // true`}
+/>
 
 ## 面试变体
 

@@ -7,6 +7,9 @@ time_complexity: "O(m + n)"
 space_complexity: "O(m)"
 description: 找出包含目标字符串所有字符的最小子串
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给定两个字符串 `s` 和 `t` 。返回 `s` 中涵盖 `t` 所有字符的最小子串。如果不存在符合条件的子串，则返回空字符串 `""`。
@@ -14,6 +17,7 @@ description: 找出包含目标字符串所有字符的最小子串
 ## 思路分析
 
 滑动窗口 + 哈希表：
+
 1. 用哈希表记录 `t` 中每个字符需要的次数
 2. 右指针扩展窗口，包含字符
 3. 当窗口包含所有需要的字符时，尝试收缩左指针
@@ -24,111 +28,142 @@ description: 找出包含目标字符串所有字符的最小子串
 - **时间复杂度**：O(m + n)，m 和 n 分别是两个字符串的长度
 - **空间复杂度**：O(m)，哈希表存储字符频率
 
-## Python 实现
+## 双语实现
 
-```python
-def min_window(s: str, t: str) -> str:
-    """
-    最小覆盖子串 - Python 实现
-    
-    Args:
-        s: 源字符串
-        t: 目标字符串
-    
-    Returns:
-        最小覆盖子串
-    """
-    from collections import Counter
-    
-    need = Counter(t)  # 需要的字符及次数
-    missing = len(t)   # 还需要匹配的字符数
-    left = 0
-    min_len = float('inf')
-    min_start = 0
-    
+<DualCodeBlock
+  title="核心实现"
+  python={`# 最小覆盖子串 - 滑动窗口算法
+# 时间复杂度: O(m + n), 空间复杂度: O(m)
+# m 为字符串 t 的长度, n 为字符串 s 的长度
+
+from collections import Counter
+
+def min_window(s: str, t: str) -> str: # need: Counter 记录 t 中每个字符需要的次数 (正数表示还缺, 负数表示多余)
+need = Counter(t) # missing: 还需要匹配的字符总数, 初始为 t 的长度
+missing = len(t) # left: 滑动窗口左边界, 初始为 0
+left = 0 # min_len: 记录最小窗口长度, 初始为正无穷
+min_len = float('inf') # min_start: 记录最小窗口的起始位置
+min_start = 0
+
+    # right: 滑动窗口右边界, 遍历字符串 s 的每个字符
     for right, char in enumerate(s):
+        # 如果该字符是 t 中需要的 (need[char] > 0)
+        # 说明这个字符对匹配有贡献, missing 减 1
         if need[char] > 0:
             missing -= 1
+        # 无论是否需要, 都将该字符的计数减 1
+        # 正数表示还需要, 0 表示刚好, 负数表示窗口中该字符有多余
         need[char] -= 1
-        
-        # 窗口已包含所有需要的字符，尝试收缩
+
+        # 当 missing == 0 时, 说明窗口已包含 t 的所有字符
+        # 此时尝试收缩左边界以找到更小的窗口
         while missing == 0:
-            # 更新最小窗口
+            # 如果当前窗口长度更小, 更新最小窗口记录
             if right - left + 1 < min_len:
-                min_len = right - left + 1
-                min_start = left
-            
-            # 移动左指针
+                min_len = right - left + 1  # 更新最小长度
+                min_start = left             # 更新最小窗口起始位置
+
+            # 准备移动左边界, 先将左边界字符的计数加 1
             need[s[left]] += 1
+            # 如果加 1 后计数变为正数, 说明该字符不再满足需求
+            # missing 加 1, 窗口不再包含所有 t 的字符
             if need[s[left]] > 0:
                 missing += 1
+            # 左边界右移一位
             left += 1
-    
+
+    # 如果 min_len 仍为无穷大, 说明没找到符合条件的子串, 返回空字符串
+    # 否则返回 s 中从 min_start 开始、长度为 min_len 的子串
     return "" if min_len == float('inf') else s[min_start:min_start + min_len]
 
+# 测试用例 1: s="ADOBECODEBANC", t="ABC" -> 最小覆盖子串为 "BANC"
 
-# 测试用例
-print(min_window("ADOBECODEBANC", "ABC"))  # "BANC"
-print(min_window("a", "a"))                 # "a"
-print(min_window("a", "aa"))                # ""
-```
+print(min_window("ADOBECODEBANC", "ABC")) # 输出: "BANC"
 
-## TypeScript 实现
+# 测试用例 2: s="a", t="a" -> 最小覆盖子串为 "a"
 
-```typescript
-/**
- * 最小覆盖子串 - TypeScript 实现
- * @param s 源字符串
- * @param t 目标字符串
- * @returns 最小覆盖子串
- */
+print(min_window("a", "a")) # 输出: "a"
+
+# 测试用例 3: s="a", t="aa" -> 不存在, 返回空字符串
+
+print(min_window("a", "aa")) # 输出: ""`}
+  typescript={`// 最小覆盖子串 - 滑动窗口算法
+// 时间复杂度: O(m + n), 空间复杂度: O(m)
+// m 为字符串 t 的长度, n 为字符串 s 的长度
+
 function minWindow(s: string, t: string): string {
-    const need = new Map<string, number>();  // 需要的字符及次数
-    for (const char of t) {
-        need.set(char, (need.get(char) || 0) + 1);
-    }
-    
-    let missing = t.length;  // 还需要匹配的字符数
+// need: Map 记录 t 中每个字符需要的次数 (正数表示还缺, 负数表示多余)
+const need = new Map<string, number>();
+// 初始化 need: 遍历 t, 统计每个字符的出现次数
+for (const char of t) {
+need.set(char, (need.get(char) || 0) + 1);
+}
+
+    // missing: 还需要匹配的字符总数, 初始为 t 的长度
+    let missing = t.length;
+    // left: 滑动窗口左边界, 初始为 0
     let left = 0;
+    // minLen: 记录最小窗口长度, 初始为正无穷
     let minLen = Infinity;
+    // minStart: 记录最小窗口的起始位置
     let minStart = 0;
-    
+
+    // right: 滑动窗口右边界, 遍历字符串 s 的每个字符
     for (let right = 0; right < s.length; right++) {
+        // 获取当前遍历到的字符
         const char = s[right];
+        // 获取该字符在 need 中的计数值
         const count = need.get(char);
-        
+
+        // 如果该字符是 t 中需要的 (count > 0)
+        // 说明这个字符对匹配有贡献, missing 减 1
         if (count !== undefined && count > 0) {
             missing--;
         }
+        // 无论是否需要, 都将该字符的计数减 1
+        // 正数表示还需要, 0 表示刚好, 负数表示窗口中该字符有多余
         need.set(char, (count || 0) - 1);
-        
-        // 窗口已包含所有需要的字符，尝试收缩
+
+        // 当 missing == 0 时, 说明窗口已包含 t 的所有字符
+        // 此时尝试收缩左边界以找到更小的窗口
         while (missing === 0) {
-            // 更新最小窗口
+            // 如果当前窗口长度更小, 更新最小窗口记录
             if (right - left + 1 < minLen) {
-                minLen = right - left + 1;
-                minStart = left;
+                minLen = right - left + 1;  // 更新最小长度
+                minStart = left;             // 更新最小窗口起始位置
             }
-            
-            // 移动左指针
+
+            // 准备移动左边界, 获取左边界字符
             const leftChar = s[left];
+            // 获取左边界字符的计数值
             const leftCount = need.get(leftChar)!;
+            // 将左边界字符的计数加 1
             need.set(leftChar, leftCount + 1);
+            // 如果加 1 后计数变为正数, 说明该字符不再满足需求
+            // missing 加 1, 窗口不再包含所有 t 的字符
             if (leftCount + 1 > 0) {
                 missing++;
             }
+            // 左边界右移一位
             left++;
         }
     }
-    
+
+    // 如果 minLen 仍为无穷大, 说明没找到符合条件的子串, 返回空字符串
+    // 否则返回 s 中从 minStart 开始、长度为 minLen 的子串
     return minLen === Infinity ? "" : s.substring(minStart, minStart + minLen);
+
 }
 
-// 测试用例
-console.log(minWindow("ADOBECODEBANC", "ABC"));  // "BANC"
-console.log(minWindow("a", "a"));                 // "a"
-console.log(minWindow("a", "aa"));                // ""
-```
+// 测试用例 1: s="ADOBECODEBANC", t="ABC" -> 最小覆盖子串为 "BANC"
+console.log(minWindow("ADOBECODEBANC", "ABC")); // 输出: "BANC"
+
+// 测试用例 2: s="a", t="a" -> 最小覆盖子串为 "a"
+console.log(minWindow("a", "a")); // 输出: "a"
+
+// 测试用例 3: s="a", t="aa" -> 不存在, 返回空字符串
+console.log(minWindow("a", "aa")); // 输出: ""`}
+/>
 
 ## 面试变体
 

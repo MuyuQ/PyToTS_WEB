@@ -7,17 +7,22 @@ time_complexity: "O(n)"
 space_complexity: "O(n)"
 description: 判断字符串中的括号是否有效匹配
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给定一个只包括 `'('`，`')'`，`'{'`，`'}'`，`'['`，`']'` 的字符串 `s`，判断字符串是否有效。
 
 有效字符串需满足：
+
 1. 左括号必须用相同类型的右括号闭合
 2. 左括号必须以正确的顺序闭合
 
 ## 思路分析
 
 使用栈来匹配括号：
+
 - 遇到左括号就压入栈
 - 遇到右括号就检查栈顶是否匹配
 - 最后栈应该为空
@@ -27,76 +32,97 @@ description: 判断字符串中的括号是否有效匹配
 - **时间复杂度**：O(n)，只需遍历一次字符串
 - **空间复杂度**：O(n)，栈最多存储 n 个字符
 
-## Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="核心实现"
+  python={`# 有效的括号 - Python 实现
+# 时间复杂度: O(n), 空间复杂度: O(n)
+# 核心思路: 使用栈(Stack)匹配括号
+# 遇到左括号入栈，遇到右括号检查栈顶是否匹配
+# 利用哈希表存储右括号到左括号的映射关系
 def is_valid(s: str) -> bool:
-    """
-    有效的括号 - Python 实现
-    
-    Args:
-        s: 括号字符串
-    
-    Returns:
-        括号是否有效
-    """
+    # 栈用于存储尚未匹配的左括号
     stack = []
+    
+    # 映射表: 右括号 -> 对应的左括号
+    # 这样遇到右括号时，可以快速查找期望的左括号类型
     mapping = {')': '(', '}': '{', ']': '['}
     
+    # 遍历字符串中的每个字符
     for char in s:
+        # 如果字符是右括号（在 mapping 的键中）
         if char in mapping:
-            # 右括号，检查栈顶
+            # 检查两个条件:
+            # 1. 栈是否为空? 空栈说明没有左括号可以匹配
+            # 2. 栈顶元素是否与当前右括号匹配?
+            # stack[-1] 获取栈顶元素（不弹出）
             if not stack or stack[-1] != mapping[char]:
                 return False
+            # 匹配成功，弹出栈顶的左括号
             stack.pop()
         else:
-            # 左括号，入栈
+            # 字符是左括号，压入栈中等待匹配
             stack.append(char)
     
+    # 遍历结束后，栈应该为空
+    # 如果栈非空，说明有左括号没有被匹配
     return len(stack) == 0
 
-
 # 测试用例
-print(is_valid("()"))      # True
-print(is_valid("()[]{}"))  # True
-print(is_valid("(]"))      # False
-print(is_valid("([)]"))    # False
-```
 
-## TypeScript 实现
-
-```typescript
-/**
- * 有效的括号 - TypeScript 实现
- * @param s 括号字符串
- * @returns 括号是否有效
- */
+print(is_valid("()")) # True: 简单匹配
+print(is_valid("()[]{}")) # True: 多种括号依次匹配
+print(is_valid("(]")) # False: 类型不匹配
+print(is_valid("([)]")) # False: 顺序错误，应该是 ([]) 才有效`}
+  typescript={`// 有效的括号 - TypeScript 实现
+// 时间复杂度: O(n), 空间复杂度: O(n)
+// 核心思路: 使用栈(Stack)匹配括号
+// 遇到左括号入栈，遇到右括号检查栈顶是否匹配
+// 利用对象存储右括号到左括号的映射关系
 function isValid(s: string): boolean {
-    const stack: string[] = [];
+// 栈用于存储尚未匹配的左括号
+// 用数组模拟栈，push 入栈，pop 出栈
+const stack: string[] = [];
+
+    // 映射表: 右括号 -> 对应的左括号
+    // Record<string, string> 表示键值都是字符串的对象
+    // 这样遇到右括号时，可以快速查找期望的左括号类型
     const mapping: Record<string, string> = { ')': '(', '}': '{', ']': '[' };
-    
+
+    // 遍历字符串中的每个字符
+    // for...of 直接遍历字符值
     for (const char of s) {
+        // 如果字符是右括号（在 mapping 的键中）
+        // in 运算符检查对象是否有该属性
         if (char in mapping) {
-            // 右括号，检查栈顶
+            // 检查两个条件:
+            // 1. 栈是否为空? 空栈说明没有左括号可以匹配
+            // 2. 栈顶元素是否与当前右括号匹配?
+            // stack[stack.length - 1] 获取栈顶元素（不弹出）
             if (stack.length === 0 || stack[stack.length - 1] !== mapping[char]) {
                 return false;
             }
+            // 匹配成功，弹出栈顶的左括号
             stack.pop();
         } else {
-            // 左括号，入栈
+            // 字符是左括号，压入栈中等待匹配
             stack.push(char);
         }
     }
-    
+
+    // 遍历结束后，栈应该为空
+    // 如果栈非空，说明有左括号没有被匹配
     return stack.length === 0;
+
 }
 
 // 测试用例
-console.log(isValid("()"));      // true
-console.log(isValid("()[]{}"));  // true
-console.log(isValid("(]"));      // false
-console.log(isValid("([)]"));    // false
-```
+console.log(isValid("()")); // true: 简单匹配
+console.log(isValid("()[]{}")); // true: 多种括号依次匹配
+console.log(isValid("(]")); // false: 类型不匹配
+console.log(isValid("([)]")); // false: 顺序错误，应该是 ([]) 才有效`}
+/>
 
 ## 面试变体
 

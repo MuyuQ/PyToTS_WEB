@@ -8,6 +8,8 @@ space_complexity: "O(k)"
 description: 将k个升序链表合并成一个升序链表
 ---
 
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给你一个链表数组，每个链表都已经按升序排列。
@@ -30,300 +32,249 @@ description: 将k个升序链表合并成一个升序链表
 ### 方法三：顺序合并
 
 - 逐个合并链表
-- 时间复杂度：O(N * k)
+- 时间复杂度：O(N \* k)
 
 ## 复杂度分析
 
 - **时间复杂度**：O(N log k)，N是所有节点总数，k是链表数
 - **空间复杂度**：O(k)，堆的大小
 
-## Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="最小堆实现"
+  python={`# 合并K个升序链表 - Python 实现 (最小堆法)
+# 时间复杂度: O(N log k), 空间复杂度: O(k)
+# 核心思路: 用最小堆维护k个链表的当前最小节点，每次取出堆顶并加入下一个节点
 from typing import Optional, List
 import heapq
 
 class ListNode:
-    """链表节点"""
-    def __init__(self, val=0, next=None):
-        self.val = val
-        self.next = next
+"""链表节点"""
+def **init**(self, val=0, next=None): # 节点值
+self.val = val # 指向下一个节点
+self.next = next
 
-    # 定义比较方法，用于堆
+    # 定义比较方法，用于堆排序
+    # 堆需要比较节点大小，这里按val比较
     def __lt__(self, other):
         return self.val < other.val
 
-def merge_k_lists_heap(lists: List[Optional[ListNode]]) -> Optional[ListNode]:
-    """
-    合并K个升序链表 - 最小堆法
+def merge_k_lists(lists: List[Optional[ListNode]]) -> Optional[ListNode]: # 过滤掉空链表，只保留非空链表
+lists = [lst for lst in lists if lst] # 如果没有有效链表，返回None
+if not lists:
+return None
 
-    Args:
-        lists: k个升序链表的头节点列表
-
-    Returns:
-        合并后的链表头节点
-    """
-    # 过滤空链表
-    lists = [lst for lst in lists if lst]
-    if not lists:
-        return None
-
-    # 初始化堆
+    # 初始化最小堆
     heap = []
+    # 将每个链表的头节点加入堆
     for i, node in enumerate(lists):
-        # 存储 (值, 索引, 节点)，索引用于打破平局
+        # 存储(值, 索引, 节点)
+        # 索引用于打破值相同时的比较（避免比较ListNode对象）
         heapq.heappush(heap, (node.val, i, node))
 
+    # 创建虚拟头节点，简化链表操作
     dummy = ListNode(0)
+    # current指向结果链表的当前末尾
     current = dummy
 
+    # 当堆不为空时，持续取出最小节点
     while heap:
+        # 弹出堆顶（值最小的节点）
         val, idx, node = heapq.heappop(heap)
+        # 将最小节点连接到结果链表
         current.next = node
+        # 移动current指针
         current = current.next
 
-        # 将下一个节点加入堆
+        # 如果该节点有下一个节点，将下一个节点加入堆
         if node.next:
             heapq.heappush(heap, (node.next.val, idx, node.next))
 
+    # 返回虚拟头节点的下一个节点（真实头节点）
     return dummy.next
-
-def merge_k_lists_divide_conquer(lists: List[Optional[ListNode]]) -> Optional[ListNode]]:
-    """
-    合并K个升序链表 - 分治法
-
-    Args:
-        lists: k个升序链表的头节点列表
-
-    Returns:
-        合并后的链表头节点
-    """
-    if not lists:
-        return None
-
-    def merge_two_lists(l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
-        """合并两个有序链表"""
-        dummy = ListNode(0)
-        current = dummy
-
-        while l1 and l2:
-            if l1.val < l2.val:
-                current.next = l1
-                l1 = l1.next
-            else:
-                current.next = l2
-                l2 = l2.next
-            current = current.next
-
-        current.next = l1 if l1 else l2
-        return dummy.next
-
-    def merge_range(lists: List[Optional[ListNode]], left: int, right: int) -> Optional[ListNode]:
-        """分治合并"""
-        if left == right:
-            return lists[left]
-        if left > right:
-            return None
-
-        mid = (left + right) // 2
-        l1 = merge_range(lists, left, mid)
-        l2 = merge_range(lists, mid + 1, right)
-        return merge_two_lists(l1, l2)
-
-    return merge_range(lists, 0, len(lists) - 1)
-
 
 # 测试用例
+
 def create_list(nums):
-    """创建链表"""
-    dummy = ListNode(0)
-    current = dummy
-    for num in nums:
-        current.next = ListNode(num)
-        current = current.next
-    return dummy.next
+"""从数组创建链表"""
+dummy = ListNode(0)
+current = dummy
+for num in nums:
+current.next = ListNode(num)
+current = current.next
+return dummy.next
 
 def print_list(node):
-    """打印链表"""
-    result = []
-    while node:
-        result.append(node.val)
-        node = node.next
-    return result
+"""将链表转为数组打印"""
+result = []
+while node:
+result.append(node.val)
+node = node.next
+return result
 
 # 创建3个链表
+
 list1 = create_list([1, 4, 5])
 list2 = create_list([1, 3, 4])
 list3 = create_list([2, 6])
 
-merged = merge_k_lists_heap([list1, list2, list3])
-print(print_list(merged))  # [1, 1, 2, 3, 4, 4, 5, 6]
-```
+merged = merge_k_lists([list1, list2, list3])
+print(print_list(merged)) # [1, 1, 2, 3, 4, 4, 5, 6]`}
+  typescript={`// 合并K个升序链表 - TypeScript 实现 (最小堆法)
+// 时间复杂度: O(N log k), 空间复杂度: O(k)
+// 核心思路: 用最小堆维护k个链表的当前最小节点，每次取出堆顶并加入下一个节点
 
-## TypeScript 实现
+/\*\*
 
-```typescript
-/**
- * 链表节点
- */
-class ListNode {
-    val: number;
-    next: ListNode | null;
+- 链表节点
+  \*/
+  class ListNode {
+  val: number;
+  next: ListNode | null;
+      constructor(val?: number, next?: ListNode | null) {
+          this.val = val ?? 0;
+          this.next = next ?? null;
+      }
+  }
 
-    constructor(val?: number, next?: ListNode | null) {
-        this.val = val ?? 0;
-        this.next = next ?? null;
-    }
-}
+/\*\*
 
-/**
- * 最小堆实现
- */
-class MinHeap {
-    private data: ListNode[] = [];
+- 最小堆实现
+  \*/
+  class MinHeap {
+  // 堆数据数组
+  private data: ListNode[] = [];
+      // 插入节点并维护堆性质
+      push(node: ListNode): void {
+          // 添加到数组末尾
+          this.data.push(node);
+          // 上浮操作，维护最小堆
+          this.heapifyUp(this.data.length - 1);
+      }
 
-    push(node: ListNode): void {
-        this.data.push(node);
-        this.heapifyUp(this.data.length - 1);
-    }
+      // 弹出堆顶节点
+      pop(): ListNode | undefined {
+          // 空堆返回undefined
+          if (this.data.length === 0) return undefined;
+          // 只有一个元素直接弹出
+          if (this.data.length === 1) return this.data.pop();
 
-    pop(): ListNode | undefined {
-        if (this.data.length === 0) return undefined;
-        if (this.data.length === 1) return this.data.pop();
+          // 保存堆顶元素
+          const root = this.data[0];
+          // 将最后一个元素移到堆顶
+          this.data[0] = this.data.pop()!;
+          // 下沉操作，维护最小堆
+          this.heapifyDown(0);
+          // 返回原堆顶
+          return root;
+      }
 
-        const root = this.data[0];
-        this.data[0] = this.data.pop()!;
-        this.heapifyDown(0);
-        return root;
-    }
+      // 获取堆的大小
+      size(): number {
+          return this.data.length;
+      }
 
-    size(): number {
-        return this.data.length;
-    }
+      // 上浮操作：将节点从底部移到正确位置
+      private heapifyUp(index: number): void {
+          while (index > 0) {
+              // 计算父节点索引
+              const parent = Math.floor((index - 1) / 2);
+              // 如果父节点值小于等于当前节点，堆性质已满足
+              if (this.data[parent].val <= this.data[index].val) break;
+              // 否则交换父节点和当前节点
+              [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
+              // 继续向上检查
+              index = parent;
+          }
+      }
 
-    private heapifyUp(index: number): void {
-        while (index > 0) {
-            const parent = Math.floor((index - 1) / 2);
-            if (this.data[parent].val <= this.data[index].val) break;
-            [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
-            index = parent;
-        }
-    }
+      // 下沉操作：将节点从顶部移到正确位置
+      private heapifyDown(index: number): void {
+          while (true) {
+              let smallest = index;
+              // 计算左右子节点索引
+              const left = 2 * index + 1;
+              const right = 2 * index + 2;
 
-    private heapifyDown(index: number): void {
-        while (true) {
-            let smallest = index;
-            const left = 2 * index + 1;
-            const right = 2 * index + 2;
+              // 如果左子节点值更小，更新smallest
+              if (left < this.data.length && this.data[left].val < this.data[smallest].val) {
+                  smallest = left;
+              }
+              // 如果右子节点值更小，更新smallest
+              if (right < this.data.length && this.data[right].val < this.data[smallest].val) {
+                  smallest = right;
+              }
 
-            if (left < this.data.length && this.data[left].val < this.data[smallest].val) {
-                smallest = left;
-            }
-            if (right < this.data.length && this.data[right].val < this.data[smallest].val) {
-                smallest = right;
-            }
+              // 如果smallest没变，说明堆性质已满足
+              if (smallest === index) break;
+              // 否则交换并继续下沉
+              [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
+              index = smallest;
+          }
+      }
+  }
 
-            if (smallest === index) break;
-            [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
-            index = smallest;
-        }
-    }
-}
+/\*\*
 
-/**
- * 合并K个升序链表 - 最小堆法
- * @param lists k个升序链表的头节点列表
- * @returns 合并后的链表头节点
- */
-function mergeKListsHeap(lists: Array<ListNode | null>): ListNode | null {
-    // 过滤空链表
-    const validLists = lists.filter(lst => lst !== null) as ListNode[];
-    if (validLists.length === 0) return null;
+- 合并K个升序链表 - 最小堆法
+- @param lists k个升序链表的头节点列表
+- @returns 合并后的链表头节点
+  \*/
+  function mergeKLists(lists: Array<ListNode | null>): ListNode | null {
+  // 过滤掉空链表，只保留非空链表
+  const validLists = lists.filter(lst => lst !== null) as ListNode[];
+  // 如果没有有效链表，返回null
+  if (validLists.length === 0) return null;
+      // 初始化最小堆
+      const heap = new MinHeap();
+      // 将每个链表的头节点加入堆
+      for (const node of validLists) {
+          heap.push(node);
+      }
 
-    // 初始化堆
-    const heap = new MinHeap();
-    for (const node of validLists) {
-        heap.push(node);
-    }
+      // 创建虚拟头节点，简化链表操作
+      const dummy = new ListNode(0);
+      // current指向结果链表的当前末尾
+      let current: ListNode = dummy;
 
-    const dummy = new ListNode(0);
-    let current: ListNode = dummy;
+      // 当堆不为空时，持续取出最小节点
+      while (heap.size() > 0) {
+          // 弹出堆顶（值最小的节点）
+          const node = heap.pop()!;
+          // 将最小节点连接到结果链表
+          current.next = node;
+          // 移动current指针
+          current = current.next;
 
-    while (heap.size() > 0) {
-        const node = heap.pop()!;
-        current.next = node;
-        current = current.next;
+          // 如果该节点有下一个节点，将下一个节点加入堆
+          if (node.next) {
+              heap.push(node.next);
+          }
+      }
 
-        // 将下一个节点加入堆
-        if (node.next) {
-            heap.push(node.next);
-        }
-    }
-
-    return dummy.next;
-}
-
-/**
- * 合并两个有序链表
- */
-function mergeTwoLists(l1: ListNode | null, l2: ListNode | null): ListNode | null {
-    const dummy = new ListNode(0);
-    let current: ListNode = dummy;
-
-    while (l1 && l2) {
-        if (l1.val < l2.val) {
-            current.next = l1;
-            l1 = l1.next;
-        } else {
-            current.next = l2;
-            l2 = l2.next;
-        }
-        current = current.next;
-    }
-
-    current.next = l1 ?? l2;
-    return dummy.next;
-}
-
-/**
- * 合并K个升序链表 - 分治法
- * @param lists k个升序链表的头节点列表
- * @returns 合并后的链表头节点
- */
-function mergeKListsDivideConquer(lists: Array<ListNode | null>): ListNode | null {
-    if (lists.length === 0) return null;
-
-    function mergeRange(left: number, right: number): ListNode | null {
-        if (left === right) return lists[left];
-        if (left > right) return null;
-
-        const mid = Math.floor((left + right) / 2);
-        const l1 = mergeRange(left, mid);
-        const l2 = mergeRange(mid + 1, right);
-        return mergeTwoLists(l1, l2);
-    }
-
-    return mergeRange(0, lists.length - 1);
-}
+      // 返回虚拟头节点的下一个节点（真实头节点）
+      return dummy.next;
+  }
 
 // 测试用例
 function createList(nums: number[]): ListNode | null {
-    const dummy = new ListNode(0);
-    let current: ListNode = dummy;
-    for (const num of nums) {
-        current.next = new ListNode(num);
-        current = current.next;
-    }
-    return dummy.next;
+const dummy = new ListNode(0);
+let current: ListNode = dummy;
+for (const num of nums) {
+current.next = new ListNode(num);
+current = current.next;
+}
+return dummy.next;
 }
 
 function printList(node: ListNode | null): number[] {
-    const result: number[] = [];
-    while (node) {
-        result.push(node.val);
-        node = node.next;
-    }
-    return result;
+const result: number[] = [];
+while (node) {
+result.push(node.val);
+node = node.next;
+}
+return result;
 }
 
 // 创建3个链表
@@ -331,9 +282,9 @@ const list1 = createList([1, 4, 5]);
 const list2 = createList([1, 3, 4]);
 const list3 = createList([2, 6]);
 
-const merged = mergeKListsHeap([list1, list2, list3]);
-console.log(printList(merged));  // [1, 1, 2, 3, 4, 4, 5, 6]
-```
+const merged = mergeKLists([list1, list2, list3]);
+console.log(printList(merged)); // [1, 1, 2, 3, 4, 4, 5, 6]`}
+/>
 
 ## 面试变体
 

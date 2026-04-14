@@ -7,6 +7,9 @@ time_complexity: "O(m) for insert/search/startsWith, m = key length"
 space_complexity: "O(total characters)"
 description: 实现一个 Trie (前缀树)，支持插入、搜索单词和前缀匹配
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 请你实现一个 Trie (前缀树)，包含 `insert`、`search` 和 `startsWith` 三个操作：
@@ -99,131 +102,160 @@ Trie 的优势：前缀相关操作极其高效。
   - `startsWith`：O(m)
 - **空间复杂度**：O(N)，N 是所有插入字符串的字符总数
 
-## Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="核心实现"
+  python={`# Trie (前缀树) - Python 实现
+# 时间复杂度: insert/search/startsWith 都是 O(m), m=单词长度
+# 空间复杂度: O(N), N=所有插入字符串的字符总数
+# 核心思路: 树形结构，每个节点存储子节点映射和结束标记
+
 class TrieNode:
-    """Trie 节点"""
-    def __init__(self):
-        self.children = {}     # 字符 -> 子节点
-        self.is_end = False    # 是否是单词结尾
-
+"""Trie 节点"""
+def **init**(self): # 子节点映射：字符 -> TrieNode # 使用字典存储，支持任意字符
+self.children = {} # 结束标记：是否是某个单词的结尾
+self.is_end = False
 
 class Trie:
-    """
-    Trie (前缀树) - Python 实现
-    """
+"""Trie (前缀树) 实现"""
 
     def __init__(self):
+        # 根节点不代表任何字符，是空字符串的起点
         self.root = TrieNode()
 
     def insert(self, word: str) -> None:
-        """插入单词"""
+        """插入单词到Trie中"""
+        # 从根节点开始遍历
         node = self.root
+        # 遍历单词的每个字符
         for char in word:
-            # 字符不存在则创建新节点
+            # 如果字符不存在于子节点中，创建新节点
             if char not in node.children:
                 node.children[char] = TrieNode()
+            # 移动到子节点
             node = node.children[char]
-        # 标记单词结尾
+        # 单词遍历完成后，标记当前节点为单词结尾
         node.is_end = True
 
     def search(self, word: str) -> bool:
-        """搜索单词，必须完整匹配"""
+        """搜索完整单词，必须存在且是单词结尾"""
+        # 先找到单词对应的节点
         node = self._find_node(word)
-        # 必须存在且是单词结尾
+        # 节点存在且是单词结尾才返回True
         return node is not None and node.is_end
 
     def startsWith(self, prefix: str) -> bool:
-        """检查前缀是否存在"""
+        """检查前缀是否存在，只要路径存在就返回True"""
+        # 只要找到前缀对应的节点就返回True
         return self._find_node(prefix) is not None
 
     def _find_node(self, prefix: str):
         """辅助方法：找到前缀对应的节点"""
+        # 从根节点开始遍历
         node = self.root
+        # 遍历前缀的每个字符
         for char in prefix:
+            # 如果字符不存在，说明前缀/单词不存在
             if char not in node.children:
                 return None
+            # 移动到子节点
             node = node.children[char]
+        # 返回前缀对应的最后一个节点
         return node
 
-
 # 测试用例
+
 trie = Trie()
 trie.insert("apple")
-print(trie.search("apple"))     # True
-print(trie.search("app"))       # False
-print(trie.startsWith("app"))   # True
+print(trie.search("apple")) # True
+print(trie.search("app")) # False
+print(trie.startsWith("app")) # True
 trie.insert("app")
-print(trie.search("app"))       # True
-print(trie.startsWith("ap"))    # True
-print(trie.search("ap"))        # False
-```
+print(trie.search("app")) # True
+print(trie.startsWith("ap")) # True
+print(trie.search("ap")) # False`}
+  typescript={`// Trie (前缀树) - TypeScript 实现
+// 时间复杂度: insert/search/startsWith 都是 O(m), m=单词长度
+// 空间复杂度: O(N), N=所有插入字符串的字符总数
+// 核心思路: 树形结构，每个节点存储子节点Map和结束标记
 
-## TypeScript 实现
+/\*\*
 
-```typescript
-/**
- * Trie 节点
- */
-class TrieNode {
+- Trie 节点
+  \*/
+  class TrieNode {
+  // 子节点映射：字符 -> TrieNode
+  // 使用Map存储，支持任意字符，类型安全
   children: Map<string, TrieNode>;
+  // 结束标记：是否是某个单词的结尾
   isEnd: boolean;
-
-  constructor() {
-    this.children = new Map();
-    this.isEnd = false;
+      constructor() {
+          this.children = new Map();
+          this.isEnd = false;
+      }
   }
-}
 
-/**
- * Trie (前缀树) - TypeScript 实现
- */
-class Trie {
+/\*\*
+
+- Trie (前缀树) 实现
+  \*/
+  class Trie {
+  // 根节点不代表任何字符，是空字符串的起点
   private root: TrieNode;
-
-  constructor() {
-    this.root = new TrieNode();
-  }
-
-  insert(word: string): void {
-    let node = this.root;
-    for (const char of word) {
-      // 字符不存在则创建新节点
-      if (!node.children.has(char)) {
-        node.children.set(char, new TrieNode());
+      constructor() {
+          this.root = new TrieNode();
       }
-      node = node.children.get(char)!;
-    }
-    // 标记单词结尾
-    node.isEnd = true;
-  }
 
-  search(word: string): boolean {
-    const node = this.findNode(word);
-    // 必须存在且是单词结尾
-    return node !== null && node.isEnd;
-  }
-
-  startsWith(prefix: string): boolean {
-    return this.findNode(prefix) !== null;
-  }
-
-  /**
-   * 辅助方法：找到前缀对应的节点
-   */
-  private findNode(prefix: string): TrieNode | null {
-    let node = this.root;
-    for (const char of prefix) {
-      const child = node.children.get(char);
-      if (child === undefined) {
-        return null;
+      insert(word: string): void {
+          // 从根节点开始遍历
+          let node = this.root;
+          // 遍历单词的每个字符
+          for (const char of word) {
+              // 如果字符不存在于子节点中，创建新节点
+              if (!node.children.has(char)) {
+                  node.children.set(char, new TrieNode());
+              }
+              // 移动到子节点
+              node = node.children.get(char)!;
+          }
+          // 单词遍历完成后，标记当前节点为单词结尾
+          node.isEnd = true;
       }
-      node = child;
-    }
-    return node;
+
+      search(word: string): boolean {
+          // 先找到单词对应的节点
+          const node = this.findNode(word);
+          // 节点存在且是单词结尾才返回True
+          return node !== null && node.isEnd;
+      }
+
+      startsWith(prefix: string): boolean {
+          // 只要找到前缀对应的节点就返回True
+          return this.findNode(prefix) !== null;
+      }
+
+      /**
+       * 辅助方法：找到前缀对应的节点
+       */
+      private findNode(prefix: string): TrieNode | null {
+          // 从根节点开始遍历
+          let node = this.root;
+          // 遍历前缀的每个字符
+          for (const char of prefix) {
+              // 获取子节点
+              const child = node.children.get(char);
+              // 如果字符不存在，说明前缀/单词不存在
+              if (child === undefined) {
+                  return null;
+              }
+              // 移动到子节点
+              node = child;
+          }
+          // 返回前缀对应的最后一个节点
+          return node;
+      }
   }
-}
 
 // 测试用例
 const trie = new Trie();
@@ -234,8 +266,8 @@ console.log(trie.startsWith("app")); // true
 trie.insert("app");
 console.log(trie.search("app")); // true
 console.log(trie.startsWith("ap")); // true
-console.log(trie.search("ap")); // false
-```
+console.log(trie.search("ap")); // false`}
+/>
 
 ## 🤔 互动练习
 
@@ -247,74 +279,6 @@ console.log(trie.search("ap")); // false
 <summary>点击查看答案</summary>
 
 ```
-        root
-         |
-         t
-         |
-         o (end)
-         |
-         e
-        /|\
-       a d n
-       | | |
-     (end)| (end)
-           |
-          (end)
-
-解释：
-- "to": root -> t -> o(end)
-- "tea": t -> o -> e -> a(end)
-- "ted": t -> o -> e -> d(end)
-- "ten": t -> o -> e -> n(end)
-
-等等，这不对！应该是：
-
-        root
-         |
-         t
-         |
-         o (end)
-        /
-       e
-      /|\
-     a d n
-     | | |
-   (end)|(end)
-         |
-       (end)
-
-实际上更简洁：
-
-root
- └─ t
-     └─ o (end)
-         └─ e
-             ├─ a (end)
-             ├─ d (end)
-             └─ n (end)
-
-"to" 和 "tea" 共享 "to" 路径？不对，它们不共享。
-
-正确答案：
-
-root
- └─ t
-     └─ o (end)
- └─ t
-     └─ e
-         ├─ a (end)
-         ├─ d (end)
-         └─ n (end)
-
-等等，让我重新分析：
-
-"to": t -> o (end)
-"tea": t -> e -> a (end)
-"ted": t -> e -> d (end)
-"ten": t -> e -> n (end)
-
-最终结构：
-
         root
          |
          t

@@ -7,6 +7,9 @@ time_complexity: "O(amount * n)"
 space_complexity: "O(amount)"
 description: 计算凑成总金额所需的最少硬币数
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给你一个整数数组 `coins`，表示不同面额的硬币；以及一个整数 `amount`，表示总金额。
@@ -18,85 +21,93 @@ description: 计算凑成总金额所需的最少硬币数
 ## 思路分析
 
 完全背包问题（动态规划）：
+
 - `dp[i]`：凑成金额 i 所需的最少硬币数
 - 状态转移：`dp[i] = min(dp[i], dp[i - coin] + 1)` 对于每个 coin
 - 初始化：`dp[0] = 0`，其他为无穷大
 
 ## 复杂度分析
 
-- **时间复杂度**：O(amount * n)，n 是硬币种类数
+- **时间复杂度**：O(amount \* n)，n 是硬币种类数
 - **空间复杂度**：O(amount)，dp数组
 
-## Python 实现
+## 双语实现
 
-```python
-def coin_change(coins: list[int], amount: int) -> int:
-    """
-    零钱兑换 - Python 实现
-    
-    Args:
-        coins: 硬币面额数组
-        amount: 总金额
-    
-    Returns:
-        最少硬币数，如果无解返回-1
-    """
-    # dp[i] 表示凑成金额 i 所需的最少硬币数
-    dp = [float('inf')] * (amount + 1)
+<DualCodeBlock
+  title="核心实现"
+  python={`# 零钱兑换 - 完全背包问题 (动态规划)
+# 算法: Coin Change
+# 时间复杂度: O(amount * n), n = 硬币种类数
+# 空间复杂度: O(amount), dp数组
+
+def coin_change(coins: list[int], amount: int) -> int: # dp[i] 表示凑成金额 i 所需的最少硬币数 # 初始化为无穷大，表示初始时所有金额都不可达
+dp = [float('inf')] \* (amount + 1) # 创建长度为 amount+1 的数组，索引 0~amount
+
+    # 边界条件：凑成金额 0 需要 0 个硬币
     dp[0] = 0
-    
-    # 对于每个金额
+
+    # 外层循环：遍历每个金额 1 到 amount
     for i in range(1, amount + 1):
-        # 尝试每种硬币
+        # 内层循环：尝试每种硬币面额
         for coin in coins:
+            # 只有当硬币面额不超过当前金额时才能使用
             if coin <= i:
+                # 状态转移方程：
+                # dp[i] = min(当前值, 使用当前硬币后的硬币数)
+                # dp[i - coin] + 1 表示：凑成金额 i-coin 的最少硬币数 + 当前这枚硬币
                 dp[i] = min(dp[i], dp[i - coin] + 1)
-    
+
+    # 如果 dp[amount] 仍是无穷大，说明无法凑成该金额，返回 -1
+    # 否则返回最少硬币数
     return dp[amount] if dp[amount] != float('inf') else -1
 
-
 # 测试用例
-print(coin_change([1, 2, 5], 11))   # 3 (5+5+1)
-print(coin_change([2], 3))          # -1
-print(coin_change([1], 0))          # 0
-print(coin_change([1], 1))          # 1
-print(coin_change([1], 2))          # 2
-```
 
-## TypeScript 实现
+print(coin_change([1, 2, 5], 11)) # 3 (5+5+1)
+print(coin_change([2], 3)) # -1 (无法用面额2凑成3)
+print(coin_change([1], 0)) # 0 (金额0需要0个硬币)
+print(coin_change([1], 1)) # 1
+print(coin_change([1], 2)) # 2`}
+  typescript={`// 零钱兑换 - 完全背包问题 (动态规划)
+// 算法: Coin Change
+// 时间复杂度: O(amount \* n), n = 硬币种类数
+// 空间复杂度: O(amount), dp数组
 
-```typescript
-/**
- * 零钱兑换 - TypeScript 实现
- * @param coins 硬币面额数组
- * @param amount 总金额
- * @returns 最少硬币数，如果无解返回-1
- */
 function coinChange(coins: number[], amount: number): number {
-    // dp[i] 表示凑成金额 i 所需的最少硬币数
-    const dp: number[] = new Array(amount + 1).fill(Infinity);
+// dp[i] 表示凑成金额 i 所需的最少硬币数
+// 初始化为 Infinity，表示初始时所有金额都不可达
+const dp: number[] = new Array(amount + 1).fill(Infinity); // 创建长度为 amount+1 的数组，索引 0~amount
+
+    // 边界条件：凑成金额 0 需要 0 个硬币
     dp[0] = 0;
-    
-    // 对于每个金额
+
+    // 外层循环：遍历每个金额 1 到 amount
     for (let i = 1; i <= amount; i++) {
-        // 尝试每种硬币
+        // 内层循环：尝试每种硬币面额
         for (const coin of coins) {
+            // 只有当硬币面额不超过当前金额时才能使用
             if (coin <= i) {
+                // 状态转移方程：
+                // dp[i] = min(当前值, 使用当前硬币后的硬币数)
+                // dp[i - coin] + 1 表示：凑成金额 i-coin 的最少硬币数 + 当前这枚硬币
                 dp[i] = Math.min(dp[i], dp[i - coin] + 1);
             }
         }
     }
-    
+
+    // 如果 dp[amount] 仍是 Infinity，说明无法凑成该金额，返回 -1
+    // 否则返回最少硬币数
     return dp[amount] === Infinity ? -1 : dp[amount];
+
 }
 
 // 测试用例
-console.log(coinChange([1, 2, 5], 11));   // 3
-console.log(coinChange([2], 3));          // -1
-console.log(coinChange([1], 0));          // 0
-console.log(coinChange([1], 1));          // 1
-console.log(coinChange([1], 2));          // 2
-```
+console.log(coinChange([1, 2, 5], 11)); // 3
+console.log(coinChange([2], 3)); // -1
+console.log(coinChange([1], 0)); // 0
+console.log(coinChange([1], 1)); // 1
+console.log(coinChange([1], 2)); // 2`}
+/>
 
 ## 面试变体
 

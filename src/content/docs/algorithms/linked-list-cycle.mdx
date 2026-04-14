@@ -7,6 +7,9 @@ time_complexity: "O(n)"
 space_complexity: "O(1)"
 description: 判断链表是否有环
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给定一个链表，判断链表中是否有环。如果链表中存在环，则返回 `true`，否则返回 `false`。
@@ -14,6 +17,7 @@ description: 判断链表是否有环
 ## 思路分析
 
 使用快慢指针（龟兔赛跑算法）：
+
 - 慢指针每次移动一步
 - 快指针每次移动两步
 - 如果有环，快指针最终会追上慢指针
@@ -23,93 +27,101 @@ description: 判断链表是否有环
 - **时间复杂度**：O(n)，最坏情况遍历整个链表
 - **空间复杂度**：O(1)，只使用两个指针
 
-## Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="核心实现"
+  python={`# 环形链表 - Python 实现 (快慢指针/龟兔赛跑算法)
+# 时间复杂度: O(n), 空间复杂度: O(1)
+# 核心思路: 快指针每次走2步，慢指针每次走1步
+# 如果有环，快指针一定会追上慢指针（就像操场跑步，快的人套慢的人一圈）
+# 如果无环，快指针会先到达链表末尾(None)
 class ListNode:
     """链表节点定义"""
     def __init__(self, val: int = 0, next: 'ListNode' = None):
         self.val = val
         self.next = next
 
+def has_cycle(head: ListNode) -> bool: # 边界条件: 空链表或只有一个节点且无后继，不可能有环 # head 为 None: 空链表 # head.next 为 None: 只有一个节点，没有环
+if not head or not head.next:
+return False
 
-def has_cycle(head: ListNode) -> bool:
-    """
-    环形链表 - Python 实现
-    
-    Args:
-        head: 链表头节点
-    
-    Returns:
-        是否有环
-    """
-    if not head or not head.next:
-        return False
-    
-    slow = head      # 慢指针：每次移动一步
-    fast = head      # 快指针：每次移动两步
-    
+    # 快慢指针都从头节点出发
+    # 注意: 都从 head 开始，而不是 slow=head, fast=head.next
+    slow = head      # 慢指针: 每次移动一步
+    fast = head      # 快指针: 每次移动两步
+
+    # 循环条件: fast 和 fast.next 都不为空
+    # 必须同时检查两个条件，因为 fast.next.next 需要 fast.next 非空
     while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        
-        if slow == fast:
-            return True  # 快慢指针相遇，有环
-    
-    return False  # 快指针到达末尾，无环
+        slow = slow.next          # 慢指针走一步
+        fast = fast.next.next     # 快指针走两步
 
+        # 快慢指针相遇，说明有环
+        # 比较的是节点引用(内存地址)，不是节点值
+        if slow == fast:
+            return True
+
+    # fast 到达链表末尾(None)，说明无环
+    return False
 
 # 测试用例
+
 # 创建有环链表: 1 -> 2 -> 3 -> 2 (环)
+
 node1 = ListNode(1)
 node2 = ListNode(2)
 node3 = ListNode(3)
 node1.next = node2
 node2.next = node3
-node3.next = node2  # 环
+node3.next = node2 # 环: 节点3指向节点2
 
-print(has_cycle(node1))  # True
-```
-
-## TypeScript 实现
-
-```typescript
-/**
- * 链表节点定义
- */
+print(has_cycle(node1)) # True`}
+  typescript={`// 环形链表 - TypeScript 实现 (快慢指针/龟兔赛跑算法)
+// 时间复杂度: O(n), 空间复杂度: O(1)
+// 核心思路: 快指针每次走2步，慢指针每次走1步
+// 如果有环，快指针一定会追上慢指针（就像操场跑步，快的人套慢的人一圈）
+// 如果无环，快指针会先到达链表末尾(null)
 class ListNode {
-    val: number;
-    next: ListNode | null;
-    
+val: number;
+next: ListNode | null;
+
     constructor(val: number = 0, next: ListNode | null = null) {
         this.val = val;
         this.next = next;
     }
+
 }
 
-/**
- * 环形链表 - TypeScript 实现
- * @param head 链表头节点
- * @returns 是否有环
- */
 function hasCycle(head: ListNode | null): boolean {
-    if (!head || !head.next) {
-        return false;
-    }
-    
-    let slow: ListNode | null = head;  // 慢指针：每次移动一步
-    let fast: ListNode | null = head;  // 快指针：每次移动两步
-    
+// 边界条件: 空链表或只有一个节点且无后继，不可能有环
+// head 为 null: 空链表
+// head.next 为 null: 只有一个节点，没有环
+if (!head || !head.next) {
+return false;
+}
+
+    // 快慢指针都从头节点出发
+    // 注意: 都从 head 开始，而不是 slow=head, fast=head.next
+    let slow: ListNode | null = head;  // 慢指针: 每次移动一步
+    let fast: ListNode | null = head;  // 快指针: 每次移动两步
+
+    // 循环条件: fast 和 fast.next 都不为空
+    // 必须同时检查两个条件，因为 fast.next.next 需要 fast.next 非空
     while (fast && fast.next) {
-        slow = slow!.next;
-        fast = fast.next.next;
-        
+        slow = slow!.next;         // ! 断言 slow 非空（因为 fast 非空意味着 slow 也非空）
+        fast = fast.next.next;     // 快指针走两步
+
+        // 快慢指针相遇，说明有环
+        // 比较的是节点引用(内存地址)，不是节点值
         if (slow === fast) {
-            return true;  // 快慢指针相遇，有环
+            return true;
         }
     }
-    
-    return false;  // 快指针到达末尾，无环
+
+    // fast 到达链表末尾(null)，说明无环
+    return false;
+
 }
 
 // 测试用例
@@ -119,10 +131,10 @@ const node2 = new ListNode(2);
 const node3 = new ListNode(3);
 node1.next = node2;
 node2.next = node3;
-node3.next = node2;  // 环
+node3.next = node2; // 环: 节点3指向节点2
 
-console.log(hasCycle(node1));  // true
-```
+console.log(hasCycle(node1)); // true`}
+/>
 
 ## 面试变体
 

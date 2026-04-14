@@ -7,6 +7,9 @@ time_complexity: "O(n * sum)"
 space_complexity: "O(sum)"
 description: 判断数组是否能分成两个和相等的子集
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给你一个 **只包含正整数** 的 **非空** 数组 `nums`。请你判断是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
@@ -14,6 +17,7 @@ description: 判断数组是否能分成两个和相等的子集
 ## 思路分析
 
 0-1 背包问题：
+
 1. 首先计算总和，如果是奇数，直接返回 False
 2. 目标：找到一个子集，其和为总和的一半
 3. 转化为背包问题：能否从数组中选出一些数，使它们的和等于 target = sum // 2
@@ -23,96 +27,116 @@ description: 判断数组是否能分成两个和相等的子集
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n * sum)，n 是数组长度，sum 是数组总和
+- **时间复杂度**：O(n \* sum)，n 是数组长度，sum 是数组总和
 - **空间复杂度**：O(sum)，dp数组
 
-## Python 实现
+## 双语实现
 
-```python
-def can_partition(nums: list[int]) -> bool:
-    """
-    分割等和子集 - Python 实现
-    
-    Args:
-        nums: 正整数数组
-    
-    Returns:
-        是否能分成两个和相等的子集
-    """
-    total = sum(nums)
-    
-    # 总和为奇数，无法平分
+<DualCodeBlock
+  title="核心实现"
+  python={`# 分割等和子集 - 0-1背包问题 (动态规划)
+# 算法: Partition Equal Subset Sum
+# 时间复杂度: O(n * sum), n是数组长度，sum是数组总和
+# 空间复杂度: O(sum), dp数组
+
+def can_partition(nums: list[int]) -> bool: # 计算数组所有元素的总和
+total = sum(nums)
+
+    # 边界条件：总和为奇数，无法平分成两个相等的子集
+    # 因为两个相等的整数相加一定是偶数
     if total % 2 != 0:
         return False
-    
+
+    # 目标值：需要找到一个子集，其和等于总和的一半
     target = total // 2
-    
-    # dp[i] 表示能否凑成和 i
-    dp = [False] * (target + 1)
+
+    # dp[i] 表示能否用数组中的某些数凑成和 i
+    # 初始化为 False，表示初始时所有和都不可达
+    dp = [False] * (target + 1)  # 索引 0~target
+
+    # 边界条件：凑成和 0 总是可能的（不选任何数）
     dp[0] = True
-    
+
+    # 外层循环：遍历数组中的每个数字
     for num in nums:
-        # 倒序遍历，避免重复计算
+        # 内层循环：倒序遍历从 target 到 num
+        # 倒序原因：0-1背包问题，每个数字只能用一次
+        # 如果正序遍历，会导致同一个数字被重复使用（变成完全背包）
         for i in range(target, num - 1, -1):
+            # 状态转移方程：
+            # dp[i] = dp[i] or dp[i - num]
+            # 含义：能否凑成和 i = 原来就能凑成 i 或者 能用当前数字凑成 i-num
             dp[i] = dp[i] or dp[i - num]
-        
-        # 提前退出
+
+        # 提前退出优化：如果已经能凑成 target，直接返回 True
+        # 不需要继续处理剩余数字
         if dp[target]:
             return True
-    
+
+    # 遍历完所有数字后，返回是否能凑成 target
     return dp[target]
 
-
 # 测试用例
-print(can_partition([1, 5, 11, 5]))   # True ([1,5,5] 和 [11])
-print(can_partition([1, 2, 3, 5]))    # False
-print(can_partition([1, 2, 5]))       # False
-print(can_partition([100, 100]))      # True
-```
 
-## TypeScript 实现
+print(can_partition([1, 5, 11, 5])) # True ([1,5,5] 和 [11])
+print(can_partition([1, 2, 3, 5])) # False
+print(can_partition([1, 2, 5])) # False
+print(can_partition([100, 100])) # True`}
+  typescript={`// 分割等和子集 - 0-1背包问题 (动态规划)
+// 算法: Partition Equal Subset Sum
+// 时间复杂度: O(n \* sum), n是数组长度，sum是数组总和
+// 空间复杂度: O(sum), dp数组
 
-```typescript
-/**
- * 分割等和子集 - TypeScript 实现
- * @param nums 正整数数组
- * @returns 是否能分成两个和相等的子集
- */
 function canPartition(nums: number[]): boolean {
-    const total = nums.reduce((a, b) => a + b, 0);
-    
-    // 总和为奇数，无法平分
+// 计算数组所有元素的总和
+const total = nums.reduce((a, b) => a + b, 0);
+
+    // 边界条件：总和为奇数，无法平分成两个相等的子集
+    // 因为两个相等的整数相加一定是偶数
     if (total % 2 !== 0) {
         return false;
     }
-    
+
+    // 目标值：需要找到一个子集，其和等于总和的一半
     const target = total / 2;
-    
-    // dp[i] 表示能否凑成和 i
-    const dp: boolean[] = new Array(target + 1).fill(false);
+
+    // dp[i] 表示能否用数组中的某些数凑成和 i
+    // 初始化为 false，表示初始时所有和都不可达
+    const dp: boolean[] = new Array(target + 1).fill(false);  // 索引 0~target
+
+    // 边界条件：凑成和 0 总是可能的（不选任何数）
     dp[0] = true;
-    
+
+    // 外层循环：遍历数组中的每个数字
     for (const num of nums) {
-        // 倒序遍历，避免重复计算
+        // 内层循环：倒序遍历从 target 到 num
+        // 倒序原因：0-1背包问题，每个数字只能用一次
+        // 如果正序遍历，会导致同一个数字被重复使用（变成完全背包）
         for (let i = target; i >= num; i--) {
+            // 状态转移方程：
+            // dp[i] = dp[i] || dp[i - num]
+            // 含义：能否凑成和 i = 原来就能凑成 i 或者 能用当前数字凑成 i-num
             dp[i] = dp[i] || dp[i - num];
         }
-        
-        // 提前退出
+
+        // 提前退出优化：如果已经能凑成 target，直接返回 true
+        // 不需要继续处理剩余数字
         if (dp[target]) {
             return true;
         }
     }
-    
+
+    // 遍历完所有数字后，返回是否能凑成 target
     return dp[target];
+
 }
 
 // 测试用例
-console.log(canPartition([1, 5, 11, 5]));   // true
-console.log(canPartition([1, 2, 3, 5]));    // false
-console.log(canPartition([1, 2, 5]));       // false
-console.log(canPartition([100, 100]));      // true
-```
+console.log(canPartition([1, 5, 11, 5])); // true
+console.log(canPartition([1, 2, 3, 5])); // false
+console.log(canPartition([1, 2, 5])); // false
+console.log(canPartition([100, 100])); // true`}
+/>
 
 ## 面试变体
 

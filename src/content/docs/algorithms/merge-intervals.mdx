@@ -7,6 +7,9 @@ time_complexity: "O(n log n)"
 space_complexity: "O(n)"
 description: 合并所有重叠的区间
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给定一个区间集合 `intervals`，其中 `intervals[i] = [start_i, end_i]`，合并所有重叠的区间，并返回一个不重叠的区间数组。
@@ -22,91 +25,122 @@ description: 合并所有重叠的区间
 - **时间复杂度**：O(n log n)，排序时间
 - **空间复杂度**：O(n)，存储结果
 
-## Python 实现
+## 双语实现
 
-```python
-def merge_intervals(intervals: list[list[int]]) -> list[list[int]]:
-    """
-    合并区间 - Python 实现
-    
-    Args:
-        intervals: 区间列表
-    
-    Returns:
-        合并后的区间列表
-    """
-    if not intervals:
-        return []
-    
-    # 按起始位置排序
+<DualCodeBlock
+  title="核心实现"
+  python={`# 合并区间 - 排序 + 贪心算法
+# 时间复杂度: O(n log n), 空间复杂度: O(n)
+# n 为区间数组的长度
+
+def merge_intervals(intervals: list[list[int]]) -> list[list[int]]: # 边界情况: 空数组直接返回空列表
+if not intervals:
+return []
+
+    # 按区间的起始位置升序排序
+    # 排序后, 重叠的区间一定会相邻, 便于后续合并
     intervals.sort(key=lambda x: x[0])
-    
+
+    # merged: 存储合并后的区间, 初始放入第一个区间
     merged = [intervals[0]]
-    
+
+    # 从第二个区间开始遍历 (第一个已在 merged 中)
     for current in intervals[1:]:
+        # last: merged 中最后一个区间 (最近合并的区间)
         last = merged[-1]
-        
-        # 如果当前区间与最后一个区间重叠
+
+        # 判断是否重叠: 当前区间的起始位置 <= 上一个区间的结束位置
+        # 注意: 等于也算重叠 (如 [1,4] 和 [4,5] 合并为 [1,5])
         if current[0] <= last[1]:
-            # 合并：更新结束位置为较大的值
+            # 重叠时进行合并: 更新上一个区间的结束位置
+            # 取两者结束位置的较大值, 确保完全覆盖
             last[1] = max(last[1], current[1])
         else:
-            # 不重叠，添加新区间
+            # 不重叠, 将当前区间加入 merged
             merged.append(current)
-    
+
+    # 返回合并后的区间列表
     return merged
 
+# 测试用例 1: [[1,3],[2,6],[8,10],[15,18]]
 
-# 测试用例
+# [1,3] 和 [2,6] 重叠 -> 合并为 [1,6]
+
+# [1,6] 和 [8,10] 不重叠 -> 保留
+
+# [8,10] 和 [15,18] 不重叠 -> 保留
+
+# 结果: [[1,6], [8,10], [15,18]]
+
 print(merge_intervals([[1, 3], [2, 6], [8, 10], [15, 18]]))
-# [[1, 6], [8, 10], [15, 18]]
+
+# 输出: [[1, 6], [8, 10], [15, 18]]
+
+# 测试用例 2: [[1,4],[4,5]]
+
+# [1,4] 和 [4,5] 在端点处重叠 -> 合并为 [1,5]
+
+# 结果: [[1,5]]
 
 print(merge_intervals([[1, 4], [4, 5]]))
-# [[1, 5]]
-```
 
-## TypeScript 实现
+# 输出: [[1, 5]]`}
 
-```typescript
-/**
- * 合并区间 - TypeScript 实现
- * @param intervals 区间列表
- * @returns 合并后的区间列表
- */
+typescript={`// 合并区间 - 排序 + 贪心算法
+// 时间复杂度: O(n log n), 空间复杂度: O(n)
+// n 为区间数组的长度
+
 function mergeIntervals(intervals: number[][]): number[][] {
-    if (intervals.length === 0) {
-        return [];
-    }
-    
-    // 按起始位置排序
+// 边界情况: 空数组直接返回空列表
+if (intervals.length === 0) {
+return [];
+}
+
+    // 按区间的起始位置升序排序
+    // 排序后, 重叠的区间一定会相邻, 便于后续合并
     intervals.sort((a, b) => a[0] - b[0]);
-    
+
+    // merged: 存储合并后的区间, 初始放入第一个区间
     const merged: number[][] = [intervals[0]];
-    
+
+    // 从第二个区间开始遍历 (第一个已在 merged 中)
     for (let i = 1; i < intervals.length; i++) {
+        // current: 当前遍历到的区间
         const current = intervals[i];
+        // last: merged 中最后一个区间 (最近合并的区间)
         const last = merged[merged.length - 1];
-        
-        // 如果当前区间与最后一个区间重叠
+
+        // 判断是否重叠: 当前区间的起始位置 <= 上一个区间的结束位置
+        // 注意: 等于也算重叠 (如 [1,4] 和 [4,5] 合并为 [1,5])
         if (current[0] <= last[1]) {
-            // 合并：更新结束位置为较大的值
+            // 重叠时进行合并: 更新上一个区间的结束位置
+            // 取两者结束位置的较大值, 确保完全覆盖
             last[1] = Math.max(last[1], current[1]);
         } else {
-            // 不重叠，添加新区间
+            // 不重叠, 将当前区间加入 merged
             merged.push(current);
         }
     }
-    
+
+    // 返回合并后的区间列表
     return merged;
+
 }
 
-// 测试用例
+// 测试用例 1: [[1,3],[2,6],[8,10],[15,18]]
+// [1,3] 和 [2,6] 重叠 -> 合并为 [1,6]
+// [1,6] 和 [8,10] 不重叠 -> 保留
+// [8,10] 和 [15,18] 不重叠 -> 保留
+// 结果: [[1,6], [8,10], [15,18]]
 console.log(mergeIntervals([[1, 3], [2, 6], [8, 10], [15, 18]]));
-// [[1, 6], [8, 10], [15, 18]]
+// 输出: [[1, 6], [8, 10], [15, 18]]
 
+// 测试用例 2: [[1,4],[4,5]]
+// [1,4] 和 [4,5] 在端点处重叠 -> 合并为 [1,5]
+// 结果: [[1,5]]
 console.log(mergeIntervals([[1, 4], [4, 5]]));
-// [[1, 5]]
-```
+// 输出: [[1, 5]]`}
+/>
 
 ## 面试变体
 

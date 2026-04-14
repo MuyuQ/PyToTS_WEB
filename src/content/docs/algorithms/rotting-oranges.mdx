@@ -7,9 +7,13 @@ time_complexity: "O(m * n)"
 space_complexity: "O(m * n)"
 description: 计算使所有橘子腐烂所需的最短时间
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 在给定的 `m x n` 网格 `grid` 中，每个单元格可以有以下三个值之一：
+
 - `0` 代表空单元格
 - `1` 代表新鲜橘子
 - `2` 代表腐烂橘子
@@ -21,155 +25,176 @@ description: 计算使所有橘子腐烂所需的最短时间
 ## 思路分析
 
 多源 BFS：
+
 1. 初始化：将所有腐烂橘子加入队列，统计新鲜橘子数量
 2. BFS：每分钟处理当前所有腐烂橘子，使相邻新鲜橘子腐烂
 3. 终止：队列为空时，检查是否还有新鲜橘子
 
 ## 复杂度分析
 
-- **时间复杂度**：O(m * n)，每个单元格最多访问一次
-- **空间复杂度**：O(m * n)，队列的最坏情况
+- **时间复杂度**：O(m \* n)，每个单元格最多访问一次
+- **空间复杂度**：O(m \* n)，队列的最坏情况
 
-## Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="核心实现"
+  python={`# 腐烂的橘子 - Python 实现 (多源BFS)
+# 时间复杂度: O(m*n), 空间复杂度: O(m*n)
+# 核心思路: 将所有初始腐烂橘子加入队列，逐层BFS传播腐烂
 from collections import deque
 
-def oranges_rotting(grid: list[list[int]]) -> int:
-    """
-    腐烂的橘子 - Python 实现 (多源BFS)
-    
-    Args:
-        grid: 橘子网格
-    
-    Returns:
-        最短时间，如果不可能则返回-1
-    """
-    if not grid or not grid[0]:
-        return -1
-    
+def oranges_rotting(grid: list[list[int]]) -> int: # 处理空网格边界情况
+if not grid or not grid[0]:
+return -1
+
+    # 获取网格的行数和列数
     m, n = len(grid), len(grid[0])
+    # BFS队列，存储(行, 列, 当前时间)
     queue = deque()
+    # 统计新鲜橘子数量
     fresh = 0
-    
-    # 初始化：找到所有腐烂橘子，统计新鲜橘子
+
+    # 遍历整个网格，初始化队列和新鲜橘子计数
     for i in range(m):
         for j in range(n):
             if grid[i][j] == 2:
-                queue.append((i, j, 0))  # (行, 列, 时间)
+                # 腐烂橘子加入队列，初始时间为0
+                queue.append((i, j, 0))
             elif grid[i][j] == 1:
+                # 统计新鲜橘子数量
                 fresh += 1
-    
-    # 如果没有新鲜橘子，返回0
+
+    # 如果没有新鲜橘子，直接返回0
     if fresh == 0:
         return 0
-    
-    # 如果没有腐烂橘子，无法传播
+
+    # 如果没有腐烂橘子但有新鲜橘子，无法传播，返回-1
     if not queue:
         return -1
-    
+
+    # 记录经过的分钟数
     minutes = 0
+    # 四个方向: 右、左、下、上
     directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-    
+
+    # BFS遍历
     while queue:
+        # 出队当前腐烂橘子的位置和传播时间
         i, j, time = queue.popleft()
+        # 更新最大传播时间
         minutes = max(minutes, time)
-        
+
+        # 检查四个方向的相邻单元格
         for di, dj in directions:
             ni, nj = i + di, j + dj
-            
-            # 边界检查和新鲜橘子检查
+
+            # 边界检查: 确保不越界且是新鲜橘子
             if 0 <= ni < m and 0 <= nj < n and grid[ni][nj] == 1:
-                grid[ni][nj] = 2  # 腐烂
+                # 将新鲜橘子标记为腐烂
+                grid[ni][nj] = 2
+                # 新鲜橘子数量减1
                 fresh -= 1
+                # 将新腐烂的橘子加入队列，时间+1
                 queue.append((ni, nj, time + 1))
-    
+
+    # 如果还有新鲜橘子未腐烂，返回-1；否则返回经过的分钟数
     return -1 if fresh > 0 else minutes
 
-
 # 测试用例
+
 grid1 = [[2, 1, 1], [1, 1, 0], [0, 1, 1]]
-print(oranges_rotting(grid1))  # 4
+print(oranges_rotting(grid1)) # 4
 
 grid2 = [[2, 1, 1], [0, 1, 1], [1, 0, 2]]
-print(oranges_rotting(grid2))  # -1
+print(oranges_rotting(grid2)) # -1
 
 grid3 = [[0, 2]]
-print(oranges_rotting(grid3))  # 0
-```
-
-## TypeScript 实现
-
-```typescript
-/**
- * 腐烂的橘子 - TypeScript 实现 (多源BFS)
- * @param grid 橘子网格
- * @returns 最短时间，如果不可能则返回-1
- */
+print(oranges_rotting(grid3)) # 0`}
+  typescript={`// 腐烂的橘子 - TypeScript 实现 (多源BFS)
+// 时间复杂度: O(m*n), 空间复杂度: O(m*n)
+// 核心思路: 将所有初始腐烂橘子加入队列，逐层BFS传播腐烂
 function orangesRotting(grid: number[][]): number {
-    if (grid.length === 0 || grid[0].length === 0) {
-        return -1;
-    }
-    
+// 处理空网格边界情况
+if (grid.length === 0 || grid[0].length === 0) {
+return -1;
+}
+
+    // 获取网格的行数和列数
     const m = grid.length;
     const n = grid[0].length;
-    const queue: [number, number, number][] = [];  // [行, 列, 时间]
+    // BFS队列，存储[行, 列, 当前时间]
+    const queue: [number, number, number][] = [];
+    // 统计新鲜橘子数量
     let fresh = 0;
-    
-    // 初始化：找到所有腐烂橘子，统计新鲜橘子
+
+    // 遍历整个网格，初始化队列和新鲜橘子计数
     for (let i = 0; i < m; i++) {
         for (let j = 0; j < n; j++) {
             if (grid[i][j] === 2) {
+                // 腐烂橘子加入队列，初始时间为0
                 queue.push([i, j, 0]);
             } else if (grid[i][j] === 1) {
+                // 统计新鲜橘子数量
                 fresh++;
             }
         }
     }
-    
-    // 如果没有新鲜橘子，返回0
+
+    // 如果没有新鲜橘子，直接返回0
     if (fresh === 0) {
         return 0;
     }
-    
-    // 如果没有腐烂橘子，无法传播
+
+    // 如果没有腐烂橘子但有新鲜橘子，无法传播，返回-1
     if (queue.length === 0) {
         return -1;
     }
-    
+
+    // 记录经过的分钟数
     let minutes = 0;
+    // 四个方向: 右、左、下、上
     const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
-    
+
+    // BFS遍历
     while (queue.length > 0) {
+        // 出队当前腐烂橘子的位置和传播时间
         const [i, j, time] = queue.shift()!;
+        // 更新最大传播时间
         minutes = Math.max(minutes, time);
-        
+
+        // 检查四个方向的相邻单元格
         for (const [di, dj] of directions) {
             const ni = i + di;
             const nj = j + dj;
-            
-            // 边界检查和新鲜橘子检查
+
+            // 边界检查: 确保不越界且是新鲜橘子
             if (ni >= 0 && ni < m && nj >= 0 && nj < n && grid[ni][nj] === 1) {
-                grid[ni][nj] = 2;  // 腐烂
+                // 将新鲜橘子标记为腐烂
+                grid[ni][nj] = 2;
+                // 新鲜橘子数量减1
                 fresh--;
+                // 将新腐烂的橘子加入队列，时间+1
                 queue.push([ni, nj, time + 1]);
             }
         }
     }
-    
+
+    // 如果还有新鲜橘子未腐烂，返回-1；否则返回经过的分钟数
     return fresh > 0 ? -1 : minutes;
+
 }
 
 // 测试用例
 const grid1 = [[2, 1, 1], [1, 1, 0], [0, 1, 1]];
-console.log(orangesRotting(grid1));  // 4
+console.log(orangesRotting(grid1)); // 4
 
 const grid2 = [[2, 1, 1], [0, 1, 1], [1, 0, 2]];
-console.log(orangesRotting(grid2));  // -1
+console.log(orangesRotting(grid2)); // -1
 
 const grid3 = [[0, 2]];
-console.log(orangesRotting(grid3));  // 0
-```
+console.log(orangesRotting(grid3)); // 0`}
+/>
 
 ## 面试变体
 

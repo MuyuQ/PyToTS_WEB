@@ -7,6 +7,9 @@ time_complexity: "O(m * n)"
 space_complexity: "O(m * n)"
 description: 计算二维网格中的岛屿数量
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给你一个由 `'1'`（陆地）和 `'0'`（水）组成的的二维网格，请你计算网格中岛屿的数量。
@@ -16,6 +19,7 @@ description: 计算二维网格中的岛屿数量
 ## 思路分析
 
 DFS/BFS：
+
 - 遍历每个单元格
 - 遇到陆地 `'1'`，岛屿数量 +1
 - 使用 DFS/BFS 将所有相连的陆地标记为已访问（改为 `'0'` 或 `'2'`）
@@ -23,131 +27,134 @@ DFS/BFS：
 
 ## 复杂度分析
 
-- **时间复杂度**：O(m * n)，每个单元格最多访问一次
-- **空间复杂度**：O(m * n)，递归栈或队列的最坏情况
+- **时间复杂度**：O(m \* n)，每个单元格最多访问一次
+- **空间复杂度**：O(m \* n)，递归栈或队列的最坏情况
 
-## Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="核心实现"
+  python={`# 岛屿数量 - Python 实现 (DFS)
+# 时间复杂度: O(m*n), 空间复杂度: O(m*n)
+# 核心思路: 遍历网格，遇到陆地就DFS沉没整个岛屿，计数+1
 def num_islands(grid: list[list[str]]) -> int:
-    """
-    岛屿数量 - Python 实现 (DFS)
-    
-    Args:
-        grid: 二维网格
-    
-    Returns:
-        岛屿数量
-    """
+    # 处理空网格边界情况
     if not grid or not grid[0]:
         return 0
     
+    # 获取网格的行数和列数
     m, n = len(grid), len(grid[0])
+    # 岛屿计数器
     count = 0
     
     def dfs(i: int, j: int) -> None:
-        """沉没岛屿"""
+        # 边界检查: 越界或不是陆地则返回
         if i < 0 or i >= m or j < 0 or j >= n or grid[i][j] != '1':
             return
         
-        # 标记为已访问
+        # 标记当前陆地为已访问（沉没为水）
         grid[i][j] = '0'
         
-        # 四个方向
-        dfs(i + 1, j)
-        dfs(i - 1, j)
-        dfs(i, j + 1)
-        dfs(i, j - 1)
+        # 递归探索四个方向的相邻陆地
+        dfs(i + 1, j)  # 下
+        dfs(i - 1, j)  # 上
+        dfs(i, j + 1)  # 右
+        dfs(i, j - 1)  # 左
     
+    # 遍历整个网格
     for i in range(m):
         for j in range(n):
+            # 发现新陆地，岛屿数量+1
             if grid[i][j] == '1':
                 count += 1
-                dfs(i, j)  # 沉没整个岛屿
+                # DFS沉没整个相连的岛屿
+                dfs(i, j)
     
+    # 返回岛屿总数
     return count
 
-
 # 测试用例
+
 grid1 = [
-    ['1', '1', '1', '1', '0'],
-    ['1', '1', '0', '1', '0'],
-    ['1', '1', '0', '0', '0'],
-    ['0', '0', '0', '0', '0']
+['1', '1', '1', '1', '0'],
+['1', '1', '0', '1', '0'],
+['1', '1', '0', '0', '0'],
+['0', '0', '0', '0', '0']
 ]
-print(num_islands(grid1))  # 1
+print(num_islands(grid1)) # 1
 
 grid2 = [
-    ['1', '1', '0', '0', '0'],
-    ['1', '1', '0', '0', '0'],
-    ['0', '0', '1', '0', '0'],
-    ['0', '0', '0', '1', '1']
+['1', '1', '0', '0', '0'],
+['1', '1', '0', '0', '0'],
+['0', '0', '1', '0', '0'],
+['0', '0', '0', '1', '1']
 ]
-print(num_islands(grid2))  # 3
-```
-
-## TypeScript 实现
-
-```typescript
-/**
- * 岛屿数量 - TypeScript 实现 (DFS)
- * @param grid 二维网格
- * @returns 岛屿数量
- */
+print(num_islands(grid2)) # 3`}
+  typescript={`// 岛屿数量 - TypeScript 实现 (DFS)
+// 时间复杂度: O(m*n), 空间复杂度: O(m*n)
+// 核心思路: 遍历网格，遇到陆地就DFS沉没整个岛屿，计数+1
 function numIslands(grid: string[][]): number {
-    if (grid.length === 0 || grid[0].length === 0) {
-        return 0;
-    }
-    
+// 处理空网格边界情况
+if (grid.length === 0 || grid[0].length === 0) {
+return 0;
+}
+
+    // 获取网格的行数和列数
     const m = grid.length;
     const n = grid[0].length;
+    // 岛屿计数器
     let count = 0;
-    
+
     function dfs(i: number, j: number): void {
-        // 边界检查
+        // 边界检查: 越界或不是陆地则返回
         if (i < 0 || i >= m || j < 0 || j >= n || grid[i][j] !== '1') {
             return;
         }
-        
-        // 标记为已访问
+
+        // 标记当前陆地为已访问（沉没为水）
         grid[i][j] = '0';
-        
-        // 四个方向
-        dfs(i + 1, j);
-        dfs(i - 1, j);
-        dfs(i, j + 1);
-        dfs(i, j - 1);
+
+        // 递归探索四个方向的相邻陆地
+        dfs(i + 1, j);  // 下
+        dfs(i - 1, j);  // 上
+        dfs(i, j + 1);  // 右
+        dfs(i, j - 1);  // 左
     }
-    
+
+    // 遍历整个网格
     for (let i = 0; i < m; i++) {
         for (let j = 0; j < n; j++) {
+            // 发现新陆地，岛屿数量+1
             if (grid[i][j] === '1') {
                 count++;
-                dfs(i, j);  // 沉没整个岛屿
+                // DFS沉没整个相连的岛屿
+                dfs(i, j);
             }
         }
     }
-    
+
+    // 返回岛屿总数
     return count;
+
 }
 
 // 测试用例
 const grid1 = [
-    ['1', '1', '1', '1', '0'],
-    ['1', '1', '0', '1', '0'],
-    ['1', '1', '0', '0', '0'],
-    ['0', '0', '0', '0', '0']
+['1', '1', '1', '1', '0'],
+['1', '1', '0', '1', '0'],
+['1', '1', '0', '0', '0'],
+['0', '0', '0', '0', '0']
 ];
-console.log(numIslands(grid1));  // 1
+console.log(numIslands(grid1)); // 1
 
 const grid2 = [
-    ['1', '1', '0', '0', '0'],
-    ['1', '1', '0', '0', '0'],
-    ['0', '0', '1', '0', '0'],
-    ['0', '0', '0', '1', '1']
+['1', '1', '0', '0', '0'],
+['1', '1', '0', '0', '0'],
+['0', '0', '1', '0', '0'],
+['0', '0', '0', '1', '1']
 ];
-console.log(numIslands(grid2));  // 3
-```
+console.log(numIslands(grid2)); // 3`}
+/>
 
 ## 面试变体
 

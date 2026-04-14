@@ -7,6 +7,9 @@ time_complexity: "O(n log n)"
 space_complexity: "O(n)"
 description: 找出数组中最长严格递增子序列的长度
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给你一个整数数组 `nums`，找到其中最长严格递增子序列的长度。
@@ -16,10 +19,12 @@ description: 找出数组中最长严格递增子序列的长度
 ## 思路分析
 
 方法一：动态规划 O(n²)
+
 - `dp[i]`：以第 i 个元素结尾的最长递增子序列长度
 - 状态转移：`dp[i] = max(dp[j] + 1)` 对于所有 `j < i` 且 `nums[j] < nums[i]`
 
 方法二：二分查找优化 O(n log n)
+
 - 维护一个数组 `tails`，`tails[i]` 表示长度为 i+1 的递增子序列的最小末尾元素
 - 用二分查找确定每个元素应该放的位置
 
@@ -28,85 +33,96 @@ description: 找出数组中最长严格递增子序列的长度
 - **时间复杂度**：O(n log n)，二分查找优化
 - **空间复杂度**：O(n)，dp数组或tails数组
 
-## Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="核心实现"
+  python={`# 最长递增子序列 - 二分查找优化 (Patience Sorting)
+# 算法: Longest Increasing Subsequence (LIS)
+# 时间复杂度: O(n log n), 每个元素二分查找 O(log n)
+# 空间复杂度: O(n), tails数组最多存储n个元素
 import bisect
 
-def length_of_lis(nums: list[int]) -> int:
-    """
-    最长递增子序列 - Python 实现 (二分查找优化)
-    
-    Args:
-        nums: 整数数组
-    
-    Returns:
-        最长递增子序列的长度
-    """
-    tails = []  # tails[i] 表示长度为 i+1 的递增子序列的最小末尾元素
-    
+def length_of_lis(nums: list[int]) -> int: # tails数组：tails[i] 表示长度为 i+1 的递增子序列的最小末尾元素 # 该数组天然有序（递增），可以使用二分查找
+tails = [] # 初始为空数组
+
+    # 遍历原数组中的每个数字
     for num in nums:
-        # 二分查找：找到第一个 >= num 的位置
+        # bisect_left: 在tails中找到第一个 >= num 的位置索引
+        # 这个位置就是 num 应该插入的地方
         idx = bisect.bisect_left(tails, num)
-        
+
+        # 如果 idx 等于 tails 长度，说明 num 比所有末尾元素都大
+        # 可以接在最长递增子序列后面，增加子序列长度
         if idx == len(tails):
-            # 可以接在后面，增加子序列长度
-            tails.append(num)
+            tails.append(num)  # 新增一个更长的递增子序列
         else:
-            # 替换，保持末尾元素尽可能小
+            # 否则，用 num 替换 tails[idx]
+            # 目的：保持长度为 idx+1 的递增子序列的末尾元素尽可能小
+            # 这样后续有更大机会接上更长的子序列
             tails[idx] = num
-    
+
+    # tails 的长度就是最长递增子序列的长度
+    # 注意：tails 本身不一定是最长递增子序列，但长度一定正确
     return len(tails)
 
-
 # 测试用例
-print(length_of_lis([10, 9, 2, 5, 3, 7, 101, 18]))  # 4 ([2,3,7,101])
-print(length_of_lis([0, 1, 0, 3, 2, 3]))            # 4
-print(length_of_lis([7, 7, 7, 7, 7, 7, 7]))         # 1
-```
 
-## TypeScript 实现
+print(length_of_lis([10, 9, 2, 5, 3, 7, 101, 18])) # 4 ([2,3,7,101] 或 [2,5,7,101] 等)
+print(length_of_lis([0, 1, 0, 3, 2, 3])) # 4 ([0,1,2,3])
+print(length_of_lis([7, 7, 7, 7, 7, 7, 7])) # 1 (严格递增，相同元素不能接)`}
+  typescript={`// 最长递增子序列 - 二分查找优化 (Patience Sorting)
+// 算法: Longest Increasing Subsequence (LIS)
+// 时间复杂度: O(n log n), 每个元素二分查找 O(log n)
+// 空间复杂度: O(n), tails数组最多存储n个元素
 
-```typescript
-/**
- * 最长递增子序列 - TypeScript 实现 (二分查找优化)
- * @param nums 整数数组
- * @returns 最长递增子序列的长度
- */
 function lengthOfLIS(nums: number[]): number {
-    const tails: number[] = [];  // tails[i] 表示长度为 i+1 的递增子序列的最小末尾元素
-    
+// tails数组：tails[i] 表示长度为 i+1 的递增子序列的最小末尾元素
+// 该数组天然有序（递增），可以使用二分查找
+const tails: number[] = []; // 初始为空数组
+
+    // 遍历原数组中的每个数字
     for (const num of nums) {
-        // 二分查找：找到第一个 >= num 的位置
-        let left = 0;
-        let right = tails.length;
-        
+        // 手动实现二分查找：找到第一个 >= num 的位置
+        let left = 0;  // 左边界
+        let right = tails.length;  // 右边界（开区间）
+
+        // 二分查找循环
         while (left < right) {
-            const mid = Math.floor((left + right) / 2);
+            const mid = Math.floor((left + right) / 2);  // 计算中间位置
+
+            // 如果 tails[mid] < num，说明 num 应该在右半部分
             if (tails[mid] < num) {
-                left = mid + 1;
+                left = mid + 1;  // 收缩左边界
             } else {
-                right = mid;
+                // 否则 num 应该在左半部分（包括 mid）
+                right = mid;  // 收缩右边界
             }
         }
-        
+
+        // 如果 left 等于 tails 长度，说明 num 比所有末尾元素都大
+        // 可以接在最长递增子序列后面，增加子序列长度
         if (left === tails.length) {
-            // 可以接在后面，增加子序列长度
-            tails.push(num);
+            tails.push(num);  // 新增一个更长的递增子序列
         } else {
-            // 替换，保持末尾元素尽可能小
+            // 否则，用 num 替换 tails[left]
+            // 目的：保持长度为 left+1 的递增子序列的末尾元素尽可能小
+            // 这样后续有更大机会接上更长的子序列
             tails[left] = num;
         }
     }
-    
+
+    // tails 的长度就是最长递增子序列的长度
+    // 注意：tails 本身不一定是最长递增子序列，但长度一定正确
     return tails.length;
+
 }
 
 // 测试用例
-console.log(lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18]));  // 4
-console.log(lengthOfLIS([0, 1, 0, 3, 2, 3]));            // 4
-console.log(lengthOfLIS([7, 7, 7, 7, 7, 7, 7]));         // 1
-```
+console.log(lengthOfLIS([10, 9, 2, 5, 3, 7, 101, 18])); // 4
+console.log(lengthOfLIS([0, 1, 0, 3, 2, 3])); // 4
+console.log(lengthOfLIS([7, 7, 7, 7, 7, 7, 7])); // 1`}
+/>
 
 ## 面试变体
 

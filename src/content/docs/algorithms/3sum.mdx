@@ -7,6 +7,9 @@ time_complexity: "O(n²)"
 space_complexity: "O(1)"
 description: 找出数组中所有和为0的三元组
 ---
+
+import DualCodeBlock from "../../../components/DualCodeBlock.astro";
+
 ## 问题描述
 
 给你一个整数数组 `nums`，判断是否存在三元组 `[nums[i], nums[j], nums[k]]` 满足 `i != j`、`i != k` 且 `j != k`，同时还满足 `nums[i] + nums[j] + nums[k] == 0`。
@@ -90,25 +93,25 @@ for i in range(n):
 
 ```
 数组:  [-4, -1, -1,  0,  1,  2]
-         i   L               R
+          i   L               R
 
 sum = -4 + (-1) + 2 = -3 < 0
 左指针右移，需要更大的数
 
 数组:  [-4, -1, -1,  0,  1,  2]
-         i        L          R
+          i        L          R
 
 sum = -4 + (-1) + 2 = -3 < 0
 左指针继续右移...
 
 数组:  [-4, -1, -1,  0,  1,  2]
-         i            L      R
+          i            L      R
 
 sum = -4 + 0 + 2 = -2 < 0
 继续右移...
 
 数组:  [-4, -1, -1,  0,  1,  2]
-         i                L  R
+          i                L  R
 
 sum = -4 + 1 + 2 = -1 < 0
 继续右移...
@@ -120,13 +123,13 @@ L >= R，这一轮结束，没有找到答案
 
 ```
 数组:  [-4, -1, -1,  0,  1,  2]
-             i    L          R
+              i    L          R
 
 sum = -1 + (-1) + 2 = 0 ✓
 找到答案 [-1, -1, 2]！
 
 数组:  [-4, -1, -1,  0,  1,  2]
-             i        L      R
+              i        L      R
 
 sum = -1 + 0 + 1 = 0 ✓
 找到答案 [-1, 0, 1]！
@@ -172,139 +175,154 @@ L >= R，这一轮结束
   - 不考虑输出数组：O(1)
   - 排序可能需要 O(log n) 或 O(n) 的额外空间（取决于排序算法）
 
-## 🐍 Python 实现
+## 双语实现
 
-```python
+<DualCodeBlock
+  title="核心实现"
+  python={`# 三数之和 - Python 实现 (排序 + 双指针)
+# 时间复杂度: O(n²), 空间复杂度: O(1) (不计排序和输出)
+# 核心思路: 排序后固定第一个数，用双指针找另外两个数
+# 关键难点: 去重！避免返回重复的三元组
 def three_sum(nums: list[int]) -> list[list[int]]:
-    """
-    三数之和 - Python 实现
-
-    核心思路：
-    1. 排序数组
-    2. 固定第一个数，双指针找另外两个
-    3. 关键是去重！
-    """
-    nums.sort()  # 排序是基础
+    # 第1步: 排序数组
+    # 排序是双指针的前提，同时也方便去重（相同元素相邻）
+    nums.sort()
     result = []
     n = len(nums)
-
-    for i in range(n - 2):  # 至少需要 3 个数
-        # ===== 去重 1：跳过相同的第一个数 =====
+    
+    # 第2步: 遍历数组，固定第一个数
+    # range(n-2): 至少需要留2个位置给 left 和 right
+    for i in range(n - 2):
+        # 去重1: 跳过相同的第一个数
+        # 如果当前数和前一个数相同，跳过（避免重复三元组）
+        # 注意: i > 0 保证 i-1 不越界
         if i > 0 and nums[i] == nums[i - 1]:
             continue
-
-        # ===== 剪枝优化 =====
-        # 如果最小的数都 > 0，后面不可能凑出 0
+        
+        # 剪枝优化: 如果第一个数已经大于0，三数之和不可能为0
+        # 因为数组已排序，后面的数都 >= nums[i] > 0
         if nums[i] > 0:
             break
-
+        
+        # 第3步: 双指针找另外两个数
+        # left 从 i+1 开始（不能和 i 重复）
+        # right 从数组末尾开始
         left, right = i + 1, n - 1
-        target = -nums[i]  # 找两个数，和为 -nums[i]
-
+        target = -nums[i]  # 找两个数，使它们的和等于 -nums[i]
+        
         while left < right:
             current_sum = nums[left] + nums[right]
-
+            
             if current_sum == target:
+                # 找到答案！添加到结果列表
                 result.append([nums[i], nums[left], nums[right]])
-
-                # ===== 去重 2：跳过相同的第二个数 =====
+                
+                # 去重2: 跳过相同的第二个数
+                # 找到答案后，移动 left 跳过所有相同的值
                 while left < right and nums[left] == nums[left + 1]:
                     left += 1
-                # ===== 去重 3：跳过相同的第三个数 =====
+                # 去重3: 跳过相同的第三个数
+                # 找到答案后，移动 right 跳过所有相同的值
                 while left < right and nums[right] == nums[right - 1]:
                     right -= 1
-
+                
                 # 找到一个答案后，两个指针都要移动！
+                # 否则会继续用相同的 left 和 right 组合
                 left += 1
                 right -= 1
-
+            
             elif current_sum < target:
-                # 和太小，需要更大的数
+                # 和太小，需要更大的数 → left 右移
                 left += 1
             else:
-                # 和太大，需要更小的数
+                # 和太大，需要更小的数 → right 左移
                 right -= 1
-
+    
     return result
 
-
 # 测试用例
-print(three_sum([-1, 0, 1, 2, -1, -4]))  # [[-1,-1,2], [-1,0,1]]
-print(three_sum([0, 1, 1]))              # []
-print(three_sum([0, 0, 0]))              # [[0,0,0]]
-print(three_sum([-2, 0, 1, 1, 2]))       # [[-2,0,2], [-2,1,1]]
-```
 
-## 📦 TypeScript 实现
-
-```typescript
-/**
- * 三数之和 - TypeScript 实现
- *
- * 核心思路：
- * 1. 排序数组
- * 2. 固定第一个数，双指针找另外两个
- * 3. 关键是去重！
- */
+print(three_sum([-1, 0, 1, 2, -1, -4])) # [[-1,-1,2], [-1,0,1]]
+print(three_sum([0, 1, 1])) # [] 没有和为0的三元组
+print(three_sum([0, 0, 0])) # [[0,0,0]]
+print(three_sum([-2, 0, 1, 1, 2])) # [[-2,0,2], [-2,1,1]}`}
+  typescript={`// 三数之和 - TypeScript 实现 (排序 + 双指针)
+// 时间复杂度: O(n²), 空间复杂度: O(1) (不计排序和输出)
+// 核心思路: 排序后固定第一个数，用双指针找另外两个数
+// 关键难点: 去重！避免返回重复的三元组
 function threeSum(nums: number[]): number[][] {
-  nums.sort((a, b) => a - b); // 排序是基础
-  const result: number[][] = [];
-  const n = nums.length;
+// 第1步: 排序数组
+// 注意: JS 的 sort 默认按字符串排序，必须传入比较函数 (a,b) => a-b
+// 排序是双指针的前提，同时也方便去重（相同元素相邻）
+nums.sort((a, b) => a - b);
+const result: number[][] = [];
+const n = nums.length;
 
-  for (let i = 0; i < n - 2; i++) {
-    // 至少需要 3 个数
-    // ===== 去重 1：跳过相同的第一个数 =====
-    if (i > 0 && nums[i] === nums[i - 1]) {
-      continue;
-    }
-
-    // ===== 剪枝优化 =====
-    // 如果最小的数都 > 0，后面不可能凑出 0
-    if (nums[i] > 0) {
-      break;
-    }
-
-    let left = i + 1;
-    let right = n - 1;
-    const target = -nums[i]; // 找两个数，和为 -nums[i]
-
-    while (left < right) {
-      const currentSum = nums[left] + nums[right];
-
-      if (currentSum === target) {
-        result.push([nums[i], nums[left], nums[right]]);
-
-        // ===== 去重 2：跳过相同的第二个数 =====
-        while (left < right && nums[left] === nums[left + 1]) {
-          left++;
-        }
-        // ===== 去重 3：跳过相同的第三个数 =====
-        while (left < right && nums[right] === nums[right - 1]) {
-          right--;
+    // 第2步: 遍历数组，固定第一个数
+    // i < n-2: 至少需要留2个位置给 left 和 right
+    for (let i = 0; i < n - 2; i++) {
+        // 去重1: 跳过相同的第一个数
+        // 如果当前数和前一个数相同，跳过（避免重复三元组）
+        // 注意: i > 0 保证 i-1 不越界
+        if (i > 0 && nums[i] === nums[i - 1]) {
+            continue;
         }
 
-        // 找到一个答案后，两个指针都要移动！
-        left++;
-        right--;
-      } else if (currentSum < target) {
-        // 和太小，需要更大的数
-        left++;
-      } else {
-        // 和太大，需要更小的数
-        right--;
-      }
-    }
-  }
+        // 剪枝优化: 如果第一个数已经大于0，三数之和不可能为0
+        // 因为数组已排序，后面的数都 >= nums[i] > 0
+        if (nums[i] > 0) {
+            break;
+        }
 
-  return result;
+        // 第3步: 双指针找另外两个数
+        // left 从 i+1 开始（不能和 i 重复）
+        // right 从数组末尾开始
+        let left = i + 1;
+        let right = n - 1;
+        const target = -nums[i]; // 找两个数，使它们的和等于 -nums[i]
+
+        while (left < right) {
+            const currentSum = nums[left] + nums[right];
+
+            if (currentSum === target) {
+                // 找到答案！添加到结果数组
+                result.push([nums[i], nums[left], nums[right]]);
+
+                // 去重2: 跳过相同的第二个数
+                // 找到答案后，移动 left 跳过所有相同的值
+                while (left < right && nums[left] === nums[left + 1]) {
+                    left++;
+                }
+                // 去重3: 跳过相同的第三个数
+                // 找到答案后，移动 right 跳过所有相同的值
+                while (left < right && nums[right] === nums[right - 1]) {
+                    right--;
+                }
+
+                // 找到一个答案后，两个指针都要移动！
+                // 否则会继续用相同的 left 和 right 组合
+                left++;
+                right--;
+            } else if (currentSum < target) {
+                // 和太小，需要更大的数 → left 右移
+                left++;
+            } else {
+                // 和太大，需要更小的数 → right 左移
+                right--;
+            }
+        }
+    }
+
+    return result;
+
 }
 
 // 测试用例
 console.log(threeSum([-1, 0, 1, 2, -1, -4])); // [[-1,-1,2], [-1,0,1]]
-console.log(threeSum([0, 1, 1])); // []
+console.log(threeSum([0, 1, 1])); // [] 没有和为0的三元组
 console.log(threeSum([0, 0, 0])); // [[0,0,0]]
-console.log(threeSum([-2, 0, 1, 1, 2])); // [[-2,0,2], [-2,1,1]]
-```
+console.log(threeSum([-2, 0, 1, 1, 2])); // [[-2,0,2], [-2,1,1]}`}
+/>
 
 ## 🧠 代码要点
 
