@@ -57,6 +57,12 @@
   --transition-slow: 300ms ease;
 }
 
+html,
+body {
+  background-color: var(--color-bg);
+  color-scheme: light;
+}
+
 [data-theme="dark"] {
   /* Dark theme - developer friendly */
   --color-bg: #0f172a;
@@ -101,6 +107,12 @@
   --sl-color-syntax-comment: #64748b;
 }
 
+[data-theme="dark"] html,
+[data-theme="dark"] body {
+  background-color: #0f172a;
+  color-scheme: dark;
+}
+
 /* High contrast theme */
 [data-theme="high-contrast"] {
   --color-bg: #000000;
@@ -127,6 +139,12 @@
   --sl-color-hairline: #ffffff;
 }
 
+[data-theme="high-contrast"] html,
+[data-theme="high-contrast"] body {
+  background-color: #000000;
+  color-scheme: dark;
+}
+
 /* Sepia theme for eye comfort */
 [data-theme="sepia"] {
   --color-bg: #f4ecd8;
@@ -151,6 +169,12 @@
   --sl-color-gray-6: #e8dcc8;
   --sl-color-accent: #8b4513;
   --sl-color-hairline: #d4c5b0;
+}
+
+[data-theme="sepia"] html,
+[data-theme="sepia"] body {
+  background-color: #f4ecd8;
+  color-scheme: light;
 }
 
 /* Smooth theme transitions */

@@ -7,6 +7,26 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "Python to TypeScript",
+      head: [
+        {
+          tag: "script",
+          attrs: {
+            "is:inline": true,
+          },
+          content: `
+            (function() {
+              try {
+                var theme = localStorage.getItem('site-theme');
+                if (theme) {
+                  document.documentElement.setAttribute('data-theme', theme);
+                } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                  document.documentElement.setAttribute('data-theme', 'dark');
+                }
+              } catch(e) {}
+            })();
+          `,
+        },
+      ],
       customCss: [
         "./src/styles/tokens.css",
         "./src/styles/accessibility.css",
