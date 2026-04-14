@@ -1,34 +1,156 @@
 :root,
 [data-theme="light"] {
-  /* Base colors */
-  --color-bg: #ffffff;
+  /* Light theme - warm education style */
+  --color-bg: #fafafa;
   --color-text: #1a1a2e;
-  --color-primary: #3b82f6;
-  --color-secondary: #6366f1;
-  --color-accent: #f59e0b;
+  --color-primary: #5b7fff;
+  --color-secondary: #8b5cf6;
+  --color-accent: #ff9f43;
   --color-border: #e5e7eb;
   --color-code-bg: #f8fafc;
+  --color-card: #ffffff;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Starlight overrides */
+  --sl-color-bg: #fafafa;
+  --sl-color-bg-nav: #ffffff;
+  --sl-color-bg-aside: #ffffff;
+  --sl-color-bg-card: #ffffff;
+  --sl-color-bg-inline-code: #f1f5f9;
+  --sl-color-white: #1a1a2e;
+  --sl-color-gray-1: #374151;
+  --sl-color-gray-2: #6b7280;
+  --sl-color-gray-3: #9ca3af;
+  --sl-color-gray-4: #d1d5db;
+  --sl-color-gray-5: #e5e7eb;
+  --sl-color-gray-6: #f3f4f6;
+  --sl-color-accent: #5b7fff;
+  --sl-color-accent-low: rgba(91, 127, 255, 0.1);
+  --sl-color-accent-high: rgba(91, 127, 255, 0.2);
+  --sl-color-hairline: #e5e7eb;
+  --sl-color-hairline-shade: #d1d5db;
+  --sl-color-hairline-light: #f3f4f6;
 
   /* Fonts */
-  --font-sans: system-ui, -apple-system, sans-serif;
-  --font-mono: "Fira Code", "Consolas", monospace;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Fira Code", "Cascadia Code", "Consolas", monospace;
 
   /* Spacing */
   --space-xs: 0.25rem;
   --space-sm: 0.5rem;
   --space-md: 1rem;
-  --space-lg: 2rem;
-  --space-xl: 4rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
 
   /* Border radius */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 1rem;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
 
-  /* Transitions for smooth theme switching */
+  /* Transitions */
   --transition-fast: 150ms ease;
   --transition-base: 200ms ease;
   --transition-slow: 300ms ease;
+}
+
+[data-theme="dark"] {
+  /* Dark theme - developer friendly */
+  --color-bg: #0f172a;
+  --color-text: #f1f5f9;
+  --color-primary: #5b7fff;
+  --color-secondary: #a78bfa;
+  --color-accent: #ff9f43;
+  --color-border: #334155;
+  --color-code-bg: #0f172a;
+  --color-card: #1e293b;
+  --color-success: #22c55e;
+  --color-error: #ef4444;
+  --color-warning: #f59e0b;
+
+  /* Starlight overrides */
+  --sl-color-bg: #0f172a;
+  --sl-color-bg-nav: #1e293b;
+  --sl-color-bg-aside: #1e293b;
+  --sl-color-bg-card: #1e293b;
+  --sl-color-bg-inline-code: #0f172a;
+  --sl-color-white: #f1f5f9;
+  --sl-color-gray-1: #e2e8f0;
+  --sl-color-gray-2: #94a3b8;
+  --sl-color-gray-3: #64748b;
+  --sl-color-gray-4: #475569;
+  --sl-color-gray-5: #334155;
+  --sl-color-gray-6: #1e293b;
+  --sl-color-accent: #5b7fff;
+  --sl-color-accent-low: rgba(91, 127, 255, 0.15);
+  --sl-color-accent-high: rgba(91, 127, 255, 0.25);
+  --sl-color-hairline: #334155;
+  --sl-color-hairline-shade: #475569;
+  --sl-color-hairline-light: #1e293b;
+
+  /* Code syntax colors - Night Owl inspired */
+  --sl-color-syntax-number: #ff9f43;
+  --sl-color-syntax-string: #22c55e;
+  --sl-color-syntax-keyword: #5b7fff;
+  --sl-color-syntax-function: #a78bfa;
+  --sl-color-syntax-constant: #f472b6;
+  --sl-color-syntax-special: #ef4444;
+  --sl-color-syntax-comment: #64748b;
+}
+
+/* High contrast theme */
+[data-theme="high-contrast"] {
+  --color-bg: #000000;
+  --color-text: #ffffff;
+  --color-primary: #00ffff;
+  --color-secondary: #ff00ff;
+  --color-accent: #ffff00;
+  --color-border: #ffffff;
+  --color-code-bg: #000000;
+  --color-card: #000000;
+
+  --sl-color-bg: #000000;
+  --sl-color-bg-nav: #000000;
+  --sl-color-bg-aside: #000000;
+  --sl-color-bg-card: #000000;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #ffffff;
+  --sl-color-gray-2: #ffffff;
+  --sl-color-gray-3: #ffffff;
+  --sl-color-gray-4: #ffffff;
+  --sl-color-gray-5: #ffffff;
+  --sl-color-gray-6: #000000;
+  --sl-color-accent: #00ffff;
+  --sl-color-hairline: #ffffff;
+}
+
+/* Sepia theme for eye comfort */
+[data-theme="sepia"] {
+  --color-bg: #f4ecd8;
+  --color-text: #433422;
+  --color-primary: #8b4513;
+  --color-secondary: #a0522d;
+  --color-accent: #cd853f;
+  --color-border: #d4c5b0;
+  --color-code-bg: #e8dcc8;
+  --color-card: #e8dcc8;
+
+  --sl-color-bg: #f4ecd8;
+  --sl-color-bg-nav: #e8dcc8;
+  --sl-color-bg-aside: #e8dcc8;
+  --sl-color-bg-card: #e8dcc8;
+  --sl-color-white: #433422;
+  --sl-color-gray-1: #433422;
+  --sl-color-gray-2: #5a4835;
+  --sl-color-gray-3: #715c45;
+  --sl-color-gray-4: #887055;
+  --sl-color-gray-5: #9f8465;
+  --sl-color-gray-6: #e8dcc8;
+  --sl-color-accent: #8b4513;
+  --sl-color-hairline: #d4c5b0;
 }
 
 /* Smooth theme transitions */
@@ -42,132 +164,10 @@
     box-shadow var(--transition-base);
 }
 
-/* Disable transitions for users who prefer reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     transition-duration: 0.01ms !important;
   }
-}
-
-/* ===== DARK THEME (MkDocs Material Slate inspired) ===== */
-[data-theme="dark"] {
-  /* Custom color variables - HSL-based with hue 232 */
-  --color-bg: hsl(232, 15%, 5%);
-  --color-text: hsl(232, 15%, 90%);
-  --color-primary: #5488e8;
-  --color-secondary: #a371f7;
-  --color-accent: #ff9100;
-  --color-border: hsl(232, 15%, 18%);
-  --color-code-bg: hsl(232, 20%, 10%);
-
-  /* Background layers - HSL(hue=232, sat=15%) for harmony */
-  --sl-color-bg: hsl(232, 15%, 5%); /* Main background - deepest */
-  --sl-color-bg-nav: hsl(232, 15%, 8%); /* Nav/sidebar - slightly elevated */
-  --sl-color-bg-aside: hsl(232, 15%, 8%); /* Aside/sidebar */
-  --sl-color-bg-nav-mobile: hsl(232, 15%, 8%); /* Mobile nav */
-  --sl-color-bg-card: hsl(232, 15%, 10%); /* Cards - elevated surface */
-  --sl-color-bg-inline-code: hsl(232, 20%, 12%); /* Inline code */
-
-  /* Text colors - HSL(hue=232, sat=15%) with varying lightness */
-  --sl-color-white: hsl(232, 15%, 95%); /* Primary text - brightest */
-  --sl-color-gray-1: hsl(232, 15%, 90%); /* Headings */
-  --sl-color-gray-2: hsl(232, 15%, 70%); /* Body text */
-  --sl-color-gray-3: hsl(232, 15%, 55%); /* Muted text */
-  --sl-color-gray-4: hsl(232, 15%, 40%); /* Subtle text */
-  --sl-color-gray-5: hsl(232, 15%, 25%); /* Borders light */
-  --sl-color-gray-6: hsl(232, 15%, 12%); /* Borders dark */
-
-  /* Hairline/borders */
-  --sl-color-hairline: hsl(232, 15%, 18%);
-  --sl-color-hairline-shade: hsl(232, 15%, 25%);
-  --sl-color-hairline-light: hsl(232, 15%, 15%);
-
-  /* Accent colors - MkDocs Material Slate */
-  --sl-color-accent: #5488e8; /* Indigo blue - primary links */
-  --sl-color-accent-low: rgba(84, 136, 232, 0.15);
-  --sl-color-accent-high: rgba(84, 136, 232, 0.25);
-
-  /* Semantic colors - MkDocs Material Slate */
-  --sl-color-success: #3fb950;
-  --sl-color-warning: #d29922;
-  --sl-color-error: #f85149;
-  --sl-color-info: #58a6ff;
-
-  /* Black/white overrides for dark mode */
-  --sl-color-black: hsl(232, 15%, 95%); /* In dark mode, "black" = light text */
-
-  /* Code syntax colors - MkDocs Material palette */
-  --sl-color-syntax-number: #e6695b;
-  --sl-color-syntax-string: #2fb170;
-  --sl-color-syntax-keyword: #6791e0;
-  --sl-color-syntax-function: #c973d9;
-  --sl-color-syntax-constant: #9383e2;
-  --sl-color-syntax-special: #f06090;
-  --sl-color-syntax-comment: hsl(232, 15%, 55%);
-}
-
-/* High contrast theme */
-[data-theme="high-contrast"] {
-  --color-bg: #000000;
-  --color-text: #ffffff;
-  --color-primary: #00ffff;
-  --color-secondary: #ff00ff;
-  --color-accent: #ffff00;
-  --color-border: #ffffff;
-  --color-code-bg: #000000;
-
-  --sl-color-bg: #000000;
-  --sl-color-bg-nav: #000000;
-  --sl-color-bg-nav-mobile: #000000;
-  --sl-color-bg-aside: #000000;
-  --sl-color-bg-inline-code: #000000;
-  --sl-color-bg-card: #000000;
-  --sl-color-hairline: #ffffff;
-  --sl-color-hairline-shade: #ffffff;
-  --sl-color-hairline-light: #ffffff;
-  --sl-color-gray-1: #ffffff;
-  --sl-color-gray-2: #ffffff;
-  --sl-color-gray-3: #ffffff;
-  --sl-color-gray-4: #ffffff;
-  --sl-color-gray-5: #ffffff;
-  --sl-color-gray-6: #000000;
-  --sl-color-white: #ffffff;
-  --sl-color-black: #000000;
-  --sl-color-accent: #00ffff;
-  --sl-color-accent-low: rgba(0, 255, 255, 0.2);
-  --sl-color-accent-high: rgba(0, 255, 255, 0.4);
-}
-
-/* Sepia theme for eye comfort */
-[data-theme="sepia"] {
-  --color-bg: #f4ecd8;
-  --color-text: #433422;
-  --color-primary: #8b4513;
-  --color-secondary: #a0522d;
-  --color-accent: #cd853f;
-  --color-border: #d4c5b0;
-  --color-code-bg: #e8dcc8;
-
-  --sl-color-bg: #f4ecd8;
-  --sl-color-bg-nav: #e8dcc8;
-  --sl-color-bg-nav-mobile: #e8dcc8;
-  --sl-color-bg-aside: #e8dcc8;
-  --sl-color-bg-inline-code: #dcd0bc;
-  --sl-color-bg-card: #e8dcc8;
-  --sl-color-hairline: #d4c5b0;
-  --sl-color-hairline-shade: #c4b5a0;
-  --sl-color-hairline-light: #d4c5b0;
-  --sl-color-gray-1: #433422;
-  --sl-color-gray-2: #5a4835;
-  --sl-color-gray-3: #715c45;
-  --sl-color-gray-4: #887055;
-  --sl-color-gray-5: #9f8465;
-  --sl-color-gray-6: #e8dcc8;
-  --sl-color-white: #433422;
-  --sl-color-black: #f4ecd8;
-  --sl-color-accent: #8b4513;
-  --sl-color-accent-low: rgba(139, 69, 19, 0.1);
-  --sl-color-accent-high: rgba(139, 69, 19, 0.2);
 }
