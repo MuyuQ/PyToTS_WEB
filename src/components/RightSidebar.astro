@@ -72,17 +72,17 @@ const progressPercent = Math.round((stats.completed / stats.total) * 100);
     const headings = document.querySelectorAll('.sl-markdown-content h2');
     const tocLinks = document.querySelectorAll('.toc-link');
     
-    let currentHeading = null;
+    let currentId: string | null = null;
     headings.forEach(heading => {
       const rect = heading.getBoundingClientRect();
       if (rect.top < 100) {
-        currentHeading = heading;
+        currentId = heading.id;
       }
     });
 
     tocLinks.forEach(link => {
       link.classList.remove('active');
-      if (currentHeading && link.getAttribute('href') === `#${currentHeading.id}`) {
+      if (currentId && link.getAttribute('href') === `#${currentId}`) {
         link.classList.add('active');
       }
     });
@@ -152,7 +152,7 @@ const progressPercent = Math.round((stats.completed / stats.total) * 100);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--color-gray-3);
+    color: var(--sl-color-gray-3);
     margin-bottom: var(--space-sm);
   }
 
@@ -165,7 +165,7 @@ const progressPercent = Math.round((stats.completed / stats.total) * 100);
   .toc-link {
     display: block;
     padding: var(--space-xs) var(--space-sm);
-    color: var(--color-gray-2);
+    color: var(--sl-color-gray-2);
     text-decoration: none;
     font-size: 0.875rem;
     border-left: 2px solid transparent;
@@ -237,7 +237,7 @@ const progressPercent = Math.round((stats.completed / stats.total) * 100);
   }
 
   .stat-label {
-    color: var(--color-gray-2);
+    color: var(--sl-color-gray-2);
   }
 
   .stat-value {
