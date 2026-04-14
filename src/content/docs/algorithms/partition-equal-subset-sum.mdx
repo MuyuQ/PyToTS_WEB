@@ -8,6 +8,7 @@ space_complexity: "O(sum)"
 description: 判断数组是否能分成两个和相等的子集
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -29,118 +30,123 @@ description: 判断数组是否能分成两个和相等的子集
 - **时间复杂度**：O(n \* sum)，n 是数组长度，sum 是数组总和
 - **空间复杂度**：O(sum)，dp数组
 
-## Python 实现
+## 双语实现
 
-```python
-# 分割等和子集 - 0-1背包问题 (动态规划)
-# 算法: Partition Equal Subset Sum
-# 时间复杂度: O(n * sum), n是数组长度，sum是数组总和
-# 空间复杂度: O(sum), dp数组
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 分割等和子集 - 0-1背包问题 (动态规划)
+    # 算法: Partition Equal Subset Sum
+    # 时间复杂度: O(n * sum), n是数组长度，sum是数组总和
+    # 空间复杂度: O(sum), dp数组
 
-def can_partition(nums: list[int]) -> bool: # 计算数组所有元素的总和
-total = sum(nums)
+    def can_partition(nums: list[int]) -> bool:
+        # 计算数组所有元素的总和
+        total = sum(nums)
 
-    # 边界条件：总和为奇数，无法平分成两个相等的子集
-    # 因为两个相等的整数相加一定是偶数
-    if total % 2 != 0:
-        return False
+        # 边界条件：总和为奇数，无法平分成两个相等的子集
+        # 因为两个相等的整数相加一定是偶数
+        if total % 2 != 0:
+            return False
 
-    # 目标值：需要找到一个子集，其和等于总和的一半
-    target = total // 2
+        # 目标值：需要找到一个子集，其和等于总和的一半
+        target = total // 2
 
-    # dp[i] 表示能否用数组中的某些数凑成和 i
-    # 初始化为 False，表示初始时所有和都不可达
-    dp = [False] * (target + 1)  # 索引 0~target
+        # dp[i] 表示能否用数组中的某些数凑成和 i
+        # 初始化为 False，表示初始时所有和都不可达
+        dp = [False] * (target + 1)  # 索引 0~target
 
-    # 边界条件：凑成和 0 总是可能的（不选任何数）
-    dp[0] = True
+        # 边界条件：凑成和 0 总是可能的（不选任何数）
+        dp[0] = True
 
-    # 外层循环：遍历数组中的每个数字
-    for num in nums:
-        # 内层循环：倒序遍历从 target 到 num
-        # 倒序原因：0-1背包问题，每个数字只能用一次
-        # 如果正序遍历，会导致同一个数字被重复使用（变成完全背包）
-        for i in range(target, num - 1, -1):
-            # 状态转移方程：
-            # dp[i] = dp[i] or dp[i - num]
-            # 含义：能否凑成和 i = 原来就能凑成 i 或者 能用当前数字凑成 i-num
-            dp[i] = dp[i] or dp[i - num]
+        # 外层循环：遍历数组中的每个数字
+        for num in nums:
+            # 内层循环：倒序遍历从 target 到 num
+            # 倒序原因：0-1背包问题，每个数字只能用一次
+            # 如果正序遍历，会导致同一个数字被重复使用（变成完全背包）
+            for i in range(target, num - 1, -1):
+                # 状态转移方程：
+                # dp[i] = dp[i] or dp[i - num]
+                # 含义：能否凑成和 i = 原来就能凑成 i 或者 能用当前数字凑成 i-num
+                dp[i] = dp[i] or dp[i - num]
 
-        # 提前退出优化：如果已经能凑成 target，直接返回 True
-        # 不需要继续处理剩余数字
-        if dp[target]:
-            return True
+            # 提前退出优化：如果已经能凑成 target，直接返回 True
+            # 不需要继续处理剩余数字
+            if dp[target]:
+                return True
 
-    # 遍历完所有数字后，返回是否能凑成 target
-    return dp[target]
+        # 遍历完所有数字后，返回是否能凑成 target
+        return dp[target]
 
-# 测试用例
+    # 测试用例
 
-print(can_partition([1, 5, 11, 5])) # True ([1,5,5] 和 [11])
-print(can_partition([1, 2, 3, 5])) # False
-print(can_partition([1, 2, 5])) # False
-print(can_partition([100, 100])) # True
-```
+    print(can_partition([1, 5, 11, 5])) # True ([1,5,5] 和 [11])
+    print(can_partition([1, 2, 3, 5])) # False
+    print(can_partition([1, 2, 5])) # False
+    print(can_partition([100, 100])) # True
+    ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 分割等和子集 - 0-1背包问题 (动态规划)
+    // 算法: Partition Equal Subset Sum
+    // 时间复杂度: O(n * sum), n是数组长度，sum是数组总和
+    // 空间复杂度: O(sum), dp数组
 
-```typescript
-// 分割等和子集 - 0-1背包问题 (动态规划)
-// 算法: Partition Equal Subset Sum
-// 时间复杂度: O(n \* sum), n是数组长度，sum是数组总和
-// 空间复杂度: O(sum), dp数组
+    function canPartition(nums: number[]): boolean {
+        // 计算数组所有元素的总和
+        const total = nums.reduce((a, b) => a + b, 0);
 
-function canPartition(nums: number[]): boolean {
-// 计算数组所有元素的总和
-const total = nums.reduce((a, b) => a + b, 0);
-
-    // 边界条件：总和为奇数，无法平分成两个相等的子集
-    // 因为两个相等的整数相加一定是偶数
-    if (total % 2 !== 0) {
-        return false;
-    }
-
-    // 目标值：需要找到一个子集，其和等于总和的一半
-    const target = total / 2;
-
-    // dp[i] 表示能否用数组中的某些数凑成和 i
-    // 初始化为 false，表示初始时所有和都不可达
-    const dp: boolean[] = new Array(target + 1).fill(false);  // 索引 0~target
-
-    // 边界条件：凑成和 0 总是可能的（不选任何数）
-    dp[0] = true;
-
-    // 外层循环：遍历数组中的每个数字
-    for (const num of nums) {
-        // 内层循环：倒序遍历从 target 到 num
-        // 倒序原因：0-1背包问题，每个数字只能用一次
-        // 如果正序遍历，会导致同一个数字被重复使用（变成完全背包）
-        for (let i = target; i >= num; i--) {
-            // 状态转移方程：
-            // dp[i] = dp[i] || dp[i - num]
-            // 含义：能否凑成和 i = 原来就能凑成 i 或者 能用当前数字凑成 i-num
-            dp[i] = dp[i] || dp[i - num];
+        // 边界条件：总和为奇数，无法平分成两个相等的子集
+        // 因为两个相等的整数相加一定是偶数
+        if (total % 2 !== 0) {
+            return false;
         }
 
-        // 提前退出优化：如果已经能凑成 target，直接返回 true
-        // 不需要继续处理剩余数字
-        if (dp[target]) {
-            return true;
+        // 目标值：需要找到一个子集，其和等于总和的一半
+        const target = total / 2;
+
+        // dp[i] 表示能否用数组中的某些数凑成和 i
+        // 初始化为 false，表示初始时所有和都不可达
+        const dp: boolean[] = new Array(target + 1).fill(false);  // 索引 0~target
+
+        // 边界条件：凑成和 0 总是可能的（不选任何数）
+        dp[0] = true;
+
+        // 外层循环：遍历数组中的每个数字
+        for (const num of nums) {
+            // 内层循环：倒序遍历从 target 到 num
+            // 倒序原因：0-1背包问题，每个数字只能用一次
+            // 如果正序遍历，会导致同一个数字被重复使用（变成完全背包）
+            for (let i = target; i >= num; i--) {
+                // 状态转移方程：
+                // dp[i] = dp[i] || dp[i - num]
+                // 含义：能否凑成和 i = 原来就能凑成 i 或者 能用当前数字凑成 i-num
+                dp[i] = dp[i] || dp[i - num];
+            }
+
+            // 提前退出优化：如果已经能凑成 target，直接返回 true
+            // 不需要继续处理剩余数字
+            if (dp[target]) {
+                return true;
+            }
         }
+
+        // 遍历完所有数字后，返回是否能凑成 target
+        return dp[target];
+
     }
 
-    // 遍历完所有数字后，返回是否能凑成 target
-    return dp[target];
+    // 测试用例
+    console.log(canPartition([1, 5, 11, 5])); // true
+    console.log(canPartition([1, 2, 3, 5])); // false
+    console.log(canPartition([1, 2, 5])); // false
+    console.log(canPartition([100, 100])); // true
+    ```
 
-}
-
-// 测试用例
-console.log(canPartition([1, 5, 11, 5])); // true
-console.log(canPartition([1, 2, 3, 5])); // false
-console.log(canPartition([1, 2, 5])); // false
-console.log(canPartition([100, 100])); // true
-```
-
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

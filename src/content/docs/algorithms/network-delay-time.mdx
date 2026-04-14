@@ -8,6 +8,8 @@ space_complexity: "O(V + E)"
 description: 计算信号从源节点到达所有节点的最短时间（Dijkstra 最短路径）
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 有 `n` 个网络节点，标记为 `1` 到 `n`。
@@ -37,7 +39,10 @@ Dijkstra 最短路径算法：
 - **时间复杂度**：O(E log V)，每条边最多入堆一次，堆操作 O(log V)
 - **空间复杂度**：O(V + E)，邻接表和距离数组
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # 网络延迟时间 - Python 实现 (Dijkstra)
@@ -103,7 +108,8 @@ times3 = [[1, 2, 1], [2, 3, 2], [1, 3, 4]]
 print(network_delay_time(times3, 3, 1)) # 3
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // 网络延迟时间 - TypeScript 实现 (Dijkstra)
@@ -202,6 +208,9 @@ const times3 = [
 ];
 console.log(networkDelayTime(times3, 3, 1)); // 3
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

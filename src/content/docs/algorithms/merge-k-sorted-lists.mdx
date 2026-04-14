@@ -8,6 +8,8 @@ space_complexity: "O(k)"
 description: 将k个升序链表合并成一个升序链表
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 给你一个链表数组，每个链表都已经按升序排列。
@@ -37,7 +39,10 @@ description: 将k个升序链表合并成一个升序链表
 - **时间复杂度**：O(N log k)，N是所有节点总数，k是链表数
 - **空间复杂度**：O(k)，堆的大小
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # 合并K个升序链表 - Python 实现 (最小堆法)
@@ -122,7 +127,8 @@ merged = merge_k_lists([list1, list2, list3])
 print(print_list(merged)) # [1, 1, 2, 3, 4, 4, 5, 6]
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // 合并K个升序链表 - TypeScript 实现 (最小堆法)
@@ -289,6 +295,9 @@ const list3 = createList([2, 6]);
 const merged = mergeKLists([list1, list2, list3]);
 console.log(printList(merged)); // [1, 1, 2, 3, 4, 4, 5, 6]
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

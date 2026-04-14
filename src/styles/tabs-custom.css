@@ -1,0 +1,97 @@
+/* ===== CUSTOM TABS STYLING ===== */
+
+/* Tab list container */
+starlight-tabs .tablist-wrapper {
+  margin-bottom: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  overflow: hidden;
+}
+
+/* Tab list */
+starlight-tabs [role="tablist"] {
+  background: var(--color-bg);
+  border-bottom: 2px solid var(--color-border);
+  padding: 0 var(--space-sm);
+  gap: 0;
+}
+
+/* Individual tab */
+starlight-tabs .tab {
+  margin-bottom: -2px;
+}
+
+starlight-tabs .tab > [role="tab"] {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  color: var(--sl-color-gray-2);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all var(--transition-fast);
+  outline-offset: var(--sl-outline-offset-inside);
+}
+
+starlight-tabs .tab > [role="tab"]:hover {
+  color: var(--color-text);
+  background: var(--sl-color-accent-low);
+}
+
+/* Active tab */
+starlight-tabs .tab [role="tab"][aria-selected="true"] {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+  background: var(--color-card);
+}
+
+/* Tab panel */
+starlight-tabs [role="tabpanel"] {
+  margin-top: 0;
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  overflow: hidden;
+}
+
+/* Code blocks inside tabs */
+starlight-tabs [role="tabpanel"] pre {
+  margin: 0;
+  border-radius: 0;
+}
+
+/* Icon styling */
+starlight-tabs .tab [role="tab"] svg {
+  width: 16px;
+  height: 16px;
+}
+
+/* Dark theme adjustments */
+[data-theme="dark"] starlight-tabs .tab > [role="tab"] {
+  color: var(--sl-color-gray-2);
+}
+
+[data-theme="dark"] starlight-tabs .tab > [role="tab"]:hover {
+  color: var(--sl-color-white);
+  background: var(--sl-color-accent-low);
+}
+
+[data-theme="dark"] starlight-tabs .tab [role="tab"][aria-selected="true"] {
+  color: var(--color-primary);
+  background: var(--sl-color-bg-card);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  starlight-tabs .tab > [role="tab"] {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: 0.75rem;
+  }
+
+  starlight-tabs .tab [role="tab"] svg {
+    width: 14px;
+    height: 14px;
+  }
+}

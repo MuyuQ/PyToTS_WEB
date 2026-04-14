@@ -8,6 +8,8 @@ space_complexity: "O(V + E)"
 description: 判断是否能完成所有课程（拓扑排序）
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 你这个学期必须选修 `numCourses` 门课程，记为 `0` 到 `numCourses - 1`。
@@ -31,7 +33,10 @@ description: 判断是否能完成所有课程（拓扑排序）
 - **时间复杂度**：O(V + E)，V 是课程数，E 是先修课程数
 - **空间复杂度**：O(V + E)，图和入度数组
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # 课程表 - Python 实现 (拓扑排序)
@@ -86,7 +91,8 @@ print(can_finish(2, [[1, 0], [0, 1]])) # False (循环依赖)
 print(can_finish(4, [[1, 0], [2, 0], [3, 1], [3, 2]])) # True
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // 课程表 - TypeScript 实现 (拓扑排序)
@@ -157,6 +163,9 @@ console.log(
   ])
 ); // true
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

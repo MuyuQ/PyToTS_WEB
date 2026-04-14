@@ -8,6 +8,7 @@ space_complexity: "O(min(m, n))"
 description: 找出不含重复字符的最长子串的长度
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -27,47 +28,99 @@ description: 找出不含重复字符的最长子串的长度
 - **时间复杂度**：O(n)，每个字符最多被访问两次
 - **空间复杂度**：O(min(m, n))，m 是字符集大小
 
-## Python 实现
+## 双语实现
 
-```python
-# 无重复字符的最长子串 - 滑动窗口算法
-# 时间复杂度: O(n), 空间复杂度: O(min(m, n))
-# m 为字符集大小, n 为字符串长度
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 无重复字符的最长子串 - 滑动窗口算法
+    # 时间复杂度: O(n), 空间复杂度: O(min(m, n))
+    # m 为字符集大小, n 为字符串长度
 
-def length_of_longest_substring(s: str) -> int: # char_index: 哈希表, 记录每个字符最后一次出现的索引位置
-char_index = {} # max_length: 记录遇到的最长无重复子串长度, 初始为 0
-max_length = 0 # left: 滑动窗口左边界, 初始指向字符串开头
-left = 0
+    def length_of_longest_substring(s: str) -> int:
+        # char_index: 哈希表, 记录每个字符最后一次出现的索引位置
+        char_index = {}
+        # max_length: 记录遇到的最长无重复子串长度, 初始为 0
+        max_length = 0
+        # left: 滑动窗口左边界, 初始指向字符串开头
+        left = 0
 
-    # right: 滑动窗口右边界, 遍历字符串中的每个字符
-    # char: 当前遍历到的字符
-    for right, char in enumerate(s):
-        # 如果字符已在哈希表中, 且其位置在当前窗口内 (>= left)
-        # 说明遇到了重复字符, 需要将左边界移到重复字符的下一位置
-        if char in char_index and char_index[char] >= left:
-            left = char_index[char] + 1  # 跳过重复字符
+        # right: 滑动窗口右边界, 遍历字符串中的每个字符
+        # char: 当前遍历到的字符
+        for right, char in enumerate(s):
+            # 如果字符已在哈希表中, 且其位置在当前窗口内 (>= left)
+            # 说明遇到了重复字符, 需要将左边界移到重复字符的下一位置
+            if char in char_index and char_index[char] >= left:
+                left = char_index[char] + 1  # 跳过重复字符
 
-        # 更新字符的最新索引位置 (无论是否重复都要更新)
-        char_index[char] = right
+            # 更新字符的最新索引位置 (无论是否重复都要更新)
+            char_index[char] = right
 
-        # 计算当前窗口长度 (right - left + 1), 更新最大长度
-        max_length = max(max_length, right - left + 1)
+            # 计算当前窗口长度 (right - left + 1), 更新最大长度
+            max_length = max(max_length, right - left + 1)
 
-    # 返回找到的最长无重复子串长度
-    return max_length
+        # 返回找到的最长无重复子串长度
+        return max_length
 
-# 测试用例 1: "abcabcbb" -> 最长无重复子串为 "abc", 长度为 3
+    # 测试用例 1: "abcabcbb" -> 最长无重复子串为 "abc", 长度为 3
+    print(length_of_longest_substring("abcabcbb")) # 输出: 3
 
-print(length_of_longest_substring("abcabcbb")) # 输出: 3
+    # 测试用例 2: "bbbbb" -> 最长无重复子串为 "b", 长度为 1
+    print(length_of_longest_substring("bbbbb")) # 输出: 1
 
-# 测试用例 2: "bbbbb" -> 最长无重复子串为 "b", 长度为 1
+    # 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
+    print(length_of_longest_substring("pwwkew")) # 输出: 3
+    ```
 
-print(length_of_longest_substring("bbbbb")) # 输出: 1
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 无重复字符的最长子串 - 滑动窗口算法
+    // 时间复杂度: O(n), 空间复杂度: O(min(m, n))
+    // m 为字符集大小, n 为字符串长度
 
-# 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
+    function lengthOfLongestSubstring(s: string): number {
+        // charIndex: Map 记录每个字符最后一次出现的索引位置
+        const charIndex = new Map<string, number>();
+        // maxLength: 记录遇到的最长无重复子串长度, 初始为 0
+        let maxLength = 0;
+        // left: 滑动窗口左边界, 初始指向字符串开头
+        let left = 0;
 
-print(length_of_longest_substring("pwwkew")) # 输出: 3
-```
+        // right: 滑动窗口右边界, 遍历字符串中的每个字符
+        for (let right = 0; right < s.length; right++) {
+            // 获取当前遍历到的字符
+            const char = s[right];
+
+            // 如果字符已在 Map 中, 且其位置在当前窗口内 (>= left)
+            // 说明遇到了重复字符, 需要将左边界移到重复字符的下一位置
+            if (charIndex.has(char) && charIndex.get(char)! >= left) {
+                left = charIndex.get(char)! + 1;  // 跳过重复字符
+            }
+
+            // 更新字符的最新索引位置 (无论是否重复都要更新)
+            charIndex.set(char, right);
+
+            // 计算当前窗口长度 (right - left + 1), 更新最大长度
+            maxLength = Math.max(maxLength, right - left + 1);
+        }
+
+        // 返回找到的最长无重复子串长度
+        return maxLength;
+    }
+
+    // 测试用例 1: "abcabcbb" -> 最长无重复子串为 "abc", 长度为 3
+    console.log(lengthOfLongestSubstring("abcabcbb")); // 输出: 3
+
+    // 测试用例 2: "bbbbb" -> 最长无重复子串为 "b", 长度为 1
+    console.log(lengthOfLongestSubstring("bbbbb")); // 输出: 1
+
+    // 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
+    console.log(lengthOfLongestSubstring("pwwkew")); // 输出: 3
+    ```
+
+  </TabItem>
+</Tabs>
 
 ## TypeScript 实现
 
@@ -77,34 +130,33 @@ print(length_of_longest_substring("pwwkew")) # 输出: 3
 // m 为字符集大小, n 为字符串长度
 
 function lengthOfLongestSubstring(s: string): number {
-// charIndex: Map 记录每个字符最后一次出现的索引位置
-const charIndex = new Map<string, number>();
-// maxLength: 记录遇到的最长无重复子串长度, 初始为 0
-let maxLength = 0;
-// left: 滑动窗口左边界, 初始指向字符串开头
-let left = 0;
+  // charIndex: Map 记录每个字符最后一次出现的索引位置
+  const charIndex = new Map<string, number>();
+  // maxLength: 记录遇到的最长无重复子串长度, 初始为 0
+  let maxLength = 0;
+  // left: 滑动窗口左边界, 初始指向字符串开头
+  let left = 0;
 
-    // right: 滑动窗口右边界, 遍历字符串中的每个字符
-    for (let right = 0; right < s.length; right++) {
-        // 获取当前遍历到的字符
-        const char = s[right];
+  // right: 滑动窗口右边界, 遍历字符串中的每个字符
+  for (let right = 0; right < s.length; right++) {
+    // 获取当前遍历到的字符
+    const char = s[right];
 
-        // 如果字符已在 Map 中, 且其位置在当前窗口内 (>= left)
-        // 说明遇到了重复字符, 需要将左边界移到重复字符的下一位置
-        if (charIndex.has(char) && charIndex.get(char)! >= left) {
-            left = charIndex.get(char)! + 1;  // 跳过重复字符
-        }
-
-        // 更新字符的最新索引位置 (无论是否重复都要更新)
-        charIndex.set(char, right);
-
-        // 计算当前窗口长度 (right - left + 1), 更新最大长度
-        maxLength = Math.max(maxLength, right - left + 1);
+    // 如果字符已在 Map 中, 且其位置在当前窗口内 (>= left)
+    // 说明遇到了重复字符, 需要将左边界移到重复字符的下一位置
+    if (charIndex.has(char) && charIndex.get(char)! >= left) {
+      left = charIndex.get(char)! + 1; // 跳过重复字符
     }
 
-    // 返回找到的最长无重复子串长度
-    return maxLength;
+    // 更新字符的最新索引位置 (无论是否重复都要更新)
+    charIndex.set(char, right);
 
+    // 计算当前窗口长度 (right - left + 1), 更新最大长度
+    maxLength = Math.max(maxLength, right - left + 1);
+  }
+
+  // 返回找到的最长无重复子串长度
+  return maxLength;
 }
 
 // 测试用例 1: "abcabcbb" -> 最长无重复子串为 "abc", 长度为 3
@@ -116,7 +168,6 @@ console.log(lengthOfLongestSubstring("bbbbb")); // 输出: 1
 // 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
 console.log(lengthOfLongestSubstring("pwwkew")); // 输出: 3
 ```
-
 
 ## 面试变体
 

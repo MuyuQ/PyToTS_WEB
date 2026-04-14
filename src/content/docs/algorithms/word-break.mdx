@@ -8,6 +8,7 @@ space_complexity: "O(n)"
 description: 判断字符串是否可以被拆分成字典中的单词
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -30,51 +31,108 @@ description: 判断字符串是否可以被拆分成字典中的单词
 - **时间复杂度**：O(n²)，最坏情况需要检查所有子串
 - **空间复杂度**：O(n)，dp数组 + 哈希集合
 
-## Python 实现
+## 双语实现
 
-```python
-# 单词拆分 - 动态规划 + 哈希集合
-# 算法: Word Break
-# 时间复杂度: O(n²), 最坏情况需要检查所有子串
-# 空间复杂度: O(n), dp数组 + 哈希集合
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 单词拆分 - 动态规划 + 哈希集合
+    # 算法: Word Break
+    # 时间复杂度: O(n²), 最坏情况需要检查所有子串
+    # 空间复杂度: O(n), dp数组 + 哈希集合
 
-def word_break(s: str, wordDict: list[str]) -> bool: # 将字典列表转换为哈希集合，O(1) 时间复杂度查询单词是否存在 # 比列表的 O(n) 查询效率高很多
-word_set = set(wordDict)
+    def word_break(s: str, wordDict: list[str]) -> bool:
+        # 将字典列表转换为哈希集合，O(1) 时间复杂度查询单词是否存在
+        # 比列表的 O(n) 查询效率高很多
+        word_set = set(wordDict)
 
-    # 获取目标字符串的长度
-    n = len(s)
+        # 获取目标字符串的长度
+        n = len(s)
 
-    # dp[i] 表示前 i 个字符（s[0..i-1]）能否被拆分成字典中的单词
-    # 初始化为 False，表示初始时所有位置都不可达
-    dp = [False] * (n + 1)  # 索引 0~n
+        # dp[i] 表示前 i 个字符（s[0..i-1]）能否被拆分成字典中的单词
+        # 初始化为 False，表示初始时所有位置都不可达
+        dp = [False] * (n + 1)  # 索引 0~n
 
-    # 边界条件：空字符串可以被拆分（不需要任何单词）
-    dp[0] = True
+        # 边界条件：空字符串可以被拆分（不需要任何单词）
+        dp[0] = True
 
-    # 外层循环：遍历每个位置 i（1到n）
-    # 计算 dp[i]：前 i 个字符能否被拆分
-    for i in range(1, n + 1):
-        # 内层循环：遍历所有可能的分割点 j（0到i-1）
-        # 尝试将 s[0..i-1] 分割成 s[0..j-1] 和 s[j..i-1]
-        for j in range(i):
-            # 状态转移条件：
-            # 1. dp[j] 为 True：前 j 个字符可以被拆分
-            # 2. s[j:i] 在字典中：剩余子串是一个有效单词
-            # 两个条件都满足时，前 i 个字符可以被拆分
-            if dp[j] and s[j:i] in word_set:
-                dp[i] = True  # 标记为可拆分
-                break  # 提前退出：找到一个有效分割即可，不需要继续检查
+        # 外层循环：遍历每个位置 i（1到n）
+        # 计算 dp[i]：前 i 个字符能否被拆分
+        for i in range(1, n + 1):
+            # 内层循环：遍历所有可能的分割点 j（0到i-1）
+            # 尝试将 s[0..i-1] 分割成 s[0..j-1] 和 s[j..i-1]
+            for j in range(i):
+                # 状态转移条件：
+                # 1. dp[j] 为 True：前 j 个字符可以被拆分
+                # 2. s[j:i] 在字典中：剩余子串是一个有效单词
+                # 两个条件都满足时，前 i 个字符可以被拆分
+                if dp[j] and s[j:i] in word_set:
+                    dp[i] = True  # 标记为可拆分
+                    break  # 提前退出：找到一个有效分割即可，不需要继续检查
 
-    # 返回 dp[n]：整个字符串能否被拆分
-    return dp[n]
+        # 返回 dp[n]：整个字符串能否被拆分
+        return dp[n]
 
-# 测试用例
+    # 测试用例
+    print(word_break("leetcode", ["leet", "code"])) # True ("leet"+"code")
+    print(word_break("applepenapple", ["apple", "pen"])) # True ("apple"+"pen"+"apple")
+    print(word_break("catsandog", ["cats", "dog", "sand", "and", "cat"])) # False
+    print(word_break("aaaaaaa", ["aaaa", "aaa"])) # True ("aaaa"+"aaa" 或 "aaa"+"aaaa")
+    ```
 
-print(word_break("leetcode", ["leet", "code"])) # True ("leet"+"code")
-print(word_break("applepenapple", ["apple", "pen"])) # True ("apple"+"pen"+"apple")
-print(word_break("catsandog", ["cats", "dog", "sand", "and", "cat"])) # False
-print(word_break("aaaaaaa", ["aaaa", "aaa"])) # True ("aaaa"+"aaa" 或 "aaa"+"aaaa")
-```
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 单词拆分 - 动态规划 + 哈希集合
+    // 算法: Word Break
+    // 时间复杂度: O(n²), 最坏情况需要检查所有子串
+    // 空间复杂度: O(n), dp数组 + 哈希集合
+
+    function wordBreak(s: string, wordDict: string[]): boolean {
+        // 将字典列表转换为 Set 集合，O(1) 时间复杂度查询单词是否存在
+        // 比数组的 O(n) 查询效率高很多
+        const wordSet = new Set(wordDict);
+
+        // 获取目标字符串的长度
+        const n = s.length;
+
+        // dp[i] 表示前 i 个字符（s[0..i-1]）能否被拆分成字典中的单词
+        // 初始化为 false，表示初始时所有位置都不可达
+        const dp: boolean[] = new Array(n + 1).fill(false);  // 索引 0~n
+
+        // 边界条件：空字符串可以被拆分（不需要任何单词）
+        dp[0] = true;
+
+        // 外层循环：遍历每个位置 i（1到n）
+        // 计算 dp[i]：前 i 个字符能否被拆分
+        for (let i = 1; i <= n; i++) {
+            // 内层循环：遍历所有可能的分割点 j（0到i-1）
+            // 尝试将 s[0..i-1] 分割成 s[0..j-1] 和 s[j..i-1]
+            for (let j = 0; j < i; j++) {
+                // 状态转移条件：
+                // 1. dp[j] 为 true：前 j 个字符可以被拆分
+                // 2. s[j..i-1] 在字典中：剩余子串是一个有效单词
+                // 两个条件都满足时，前 i 个字符可以被拆分
+                if (dp[j] && wordSet.has(s.substring(j, i))) {
+                    dp[i] = true;  // 标记为可拆分
+                    break;  // 提前退出：找到一个有效分割即可，不需要继续检查
+                }
+            }
+        }
+
+        // 返回 dp[n]：整个字符串能否被拆分
+        return dp[n];
+    }
+
+    // 测试用例
+    console.log(wordBreak("leetcode", ["leet", "code"])); // true
+    console.log(wordBreak("applepenapple", ["apple", "pen"])); // true
+    console.log(wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"])); // false
+    console.log(wordBreak("aaaaaaa", ["aaaa", "aaa"])); // true
+    ```
+
+  </TabItem>
+</Tabs>
 
 ## TypeScript 实现
 
@@ -85,40 +143,39 @@ print(word_break("aaaaaaa", ["aaaa", "aaa"])) # True ("aaaa"+"aaa" 或 "aaa"+"aa
 // 空间复杂度: O(n), dp数组 + 哈希集合
 
 function wordBreak(s: string, wordDict: string[]): boolean {
-// 将字典列表转换为 Set 集合，O(1) 时间复杂度查询单词是否存在
-// 比数组的 O(n) 查询效率高很多
-const wordSet = new Set(wordDict);
+  // 将字典列表转换为 Set 集合，O(1) 时间复杂度查询单词是否存在
+  // 比数组的 O(n) 查询效率高很多
+  const wordSet = new Set(wordDict);
 
-    // 获取目标字符串的长度
-    const n = s.length;
+  // 获取目标字符串的长度
+  const n = s.length;
 
-    // dp[i] 表示前 i 个字符（s[0..i-1]）能否被拆分成字典中的单词
-    // 初始化为 false，表示初始时所有位置都不可达
-    const dp: boolean[] = new Array(n + 1).fill(false);  // 索引 0~n
+  // dp[i] 表示前 i 个字符（s[0..i-1]）能否被拆分成字典中的单词
+  // 初始化为 false，表示初始时所有位置都不可达
+  const dp: boolean[] = new Array(n + 1).fill(false); // 索引 0~n
 
-    // 边界条件：空字符串可以被拆分（不需要任何单词）
-    dp[0] = true;
+  // 边界条件：空字符串可以被拆分（不需要任何单词）
+  dp[0] = true;
 
-    // 外层循环：遍历每个位置 i（1到n）
-    // 计算 dp[i]：前 i 个字符能否被拆分
-    for (let i = 1; i <= n; i++) {
-        // 内层循环：遍历所有可能的分割点 j（0到i-1）
-        // 尝试将 s[0..i-1] 分割成 s[0..j-1] 和 s[j..i-1]
-        for (let j = 0; j < i; j++) {
-            // 状态转移条件：
-            // 1. dp[j] 为 true：前 j 个字符可以被拆分
-            // 2. s[j..i-1] 在字典中：剩余子串是一个有效单词
-            // 两个条件都满足时，前 i 个字符可以被拆分
-            if (dp[j] && wordSet.has(s.substring(j, i))) {
-                dp[i] = true;  // 标记为可拆分
-                break;  // 提前退出：找到一个有效分割即可，不需要继续检查
-            }
-        }
+  // 外层循环：遍历每个位置 i（1到n）
+  // 计算 dp[i]：前 i 个字符能否被拆分
+  for (let i = 1; i <= n; i++) {
+    // 内层循环：遍历所有可能的分割点 j（0到i-1）
+    // 尝试将 s[0..i-1] 分割成 s[0..j-1] 和 s[j..i-1]
+    for (let j = 0; j < i; j++) {
+      // 状态转移条件：
+      // 1. dp[j] 为 true：前 j 个字符可以被拆分
+      // 2. s[j..i-1] 在字典中：剩余子串是一个有效单词
+      // 两个条件都满足时，前 i 个字符可以被拆分
+      if (dp[j] && wordSet.has(s.substring(j, i))) {
+        dp[i] = true; // 标记为可拆分
+        break; // 提前退出：找到一个有效分割即可，不需要继续检查
+      }
     }
+  }
 
-    // 返回 dp[n]：整个字符串能否被拆分
-    return dp[n];
-
+  // 返回 dp[n]：整个字符串能否被拆分
+  return dp[n];
 }
 
 // 测试用例
@@ -127,7 +184,6 @@ console.log(wordBreak("applepenapple", ["apple", "pen"])); // true
 console.log(wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"])); // false
 console.log(wordBreak("aaaaaaa", ["aaaa", "aaa"])); // true
 ```
-
 
 ## 面试变体
 

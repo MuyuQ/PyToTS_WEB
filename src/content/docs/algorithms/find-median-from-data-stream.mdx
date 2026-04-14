@@ -8,6 +8,8 @@ space_complexity: "O(n)"
 description: 实时计算数据流的中位数
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 中位数是有序整数列表中的中间值。如果列表的大小是偶数，则没有中间值，中位数是两个中间值的平均值。
@@ -31,7 +33,10 @@ description: 实时计算数据流的中位数
 - **时间复杂度**：`addNum` O(log n)，`findMedian` O(1)
 - **空间复杂度**：O(n)，存储所有元素
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # 数据流的中位数 - Python 实现 (双堆法)
@@ -92,7 +97,8 @@ mf.addNum(3)
 print(mf.findMedian()) # 2.0
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // 数据流的中位数 - TypeScript 实现 (双堆法)
@@ -237,6 +243,9 @@ console.log(mf.findMedian()); // 1.5
 mf.addNum(3);
 console.log(mf.findMedian()); // 2.0
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

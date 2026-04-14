@@ -8,6 +8,7 @@ space_complexity: "O(n)"
 description: 判断二叉树是否为有效的二叉搜索树
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -36,232 +37,236 @@ BST的中序遍历结果应该是一个**严格递增**的有序序列。
 - **时间复杂度**：O(n)，每个节点访问一次
 - **空间复杂度**：O(n)，递归栈深度
 
-## Python 实现
+## 双语实现
 
-```python
-# 验证二叉搜索树 - 两种方法
-# 时间复杂度: O(n), 空间复杂度: O(n)
-# n 为二叉树节点数
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 验证二叉搜索树 - 两种方法
+    # 时间复杂度: O(n), 空间复杂度: O(n)
+    # n 为二叉树节点数
 
-from typing import Optional
+    from typing import Optional
 
-class TreeNode: # 二叉树节点定义
-def **init**(self, val=0, left=None, right=None):
-self.val = val # 节点值
-self.left = left # 左子节点
-self.right = right # 右子节点
+    class TreeNode: # 二叉树节点定义
+    def **init**(self, val=0, left=None, right=None):
+    self.val = val # 节点值
+    self.left = left # 左子节点
+    self.right = right # 右子节点
 
-# === 方法一: 中序遍历法 ===
+    # === 方法一: 中序遍历法 ===
 
-def is_valid_bst_inorder(root: Optional[TreeNode]) -> bool: # prev_val: 记录中序遍历中前一个节点的值, 初始为 None
-prev_val = None
+    def is_valid_bst_inorder(root: Optional[TreeNode]) -> bool: # prev_val: 记录中序遍历中前一个节点的值, 初始为 None
+    prev_val = None
 
-    def inorder(node: Optional[TreeNode]) -> bool:
-        # 中序遍历: 左 -> 根 -> 右
-        # BST 的中序遍历结果应该是严格递增的
-        nonlocal prev_val  # 声明使用外层函数的变量
+        def inorder(node: Optional[TreeNode]) -> bool:
+            # 中序遍历: 左 -> 根 -> 右
+            # BST 的中序遍历结果应该是严格递增的
+            nonlocal prev_val  # 声明使用外层函数的变量
 
-        # 空节点视为有效 (递归基)
-        if not node:
-            return True
+            # 空节点视为有效 (递归基)
+            if not node:
+                return True
 
-        # 递归遍历左子树
-        # 如果左子树不是有效 BST, 整棵树也不是
-        if not inorder(node.left):
-            return False
+            # 递归遍历左子树
+            # 如果左子树不是有效 BST, 整棵树也不是
+            if not inorder(node.left):
+                return False
 
-        # 处理当前节点: 必须严格大于前一个节点的值
-        # prev_val is not None: 排除第一个节点 (没有前驱)
-        # node.val <= prev_val: 违反 BST 严格递增性质
-        if prev_val is not None and node.val <= prev_val:
-            return False
-        # 更新前一个节点的值
-        prev_val = node.val
+            # 处理当前节点: 必须严格大于前一个节点的值
+            # prev_val is not None: 排除第一个节点 (没有前驱)
+            # node.val <= prev_val: 违反 BST 严格递增性质
+            if prev_val is not None and node.val <= prev_val:
+                return False
+            # 更新前一个节点的值
+            prev_val = node.val
 
-        # 递归遍历右子树
-        return inorder(node.right)
+            # 递归遍历右子树
+            return inorder(node.right)
 
-    # 从根节点开始中序遍历
-    return inorder(root)
+        # 从根节点开始中序遍历
+        return inorder(root)
 
-# === 方法二: 范围约束法 ===
+    # === 方法二: 范围约束法 ===
 
-def is_valid_bst_range(root: Optional[TreeNode]) -> bool:
-def validate(node: Optional[TreeNode], min_val: Optional[float],
-max_val: Optional[float]) -> bool: # 验证以 node 为根的子树是否在 (min_val, max_val) 范围内 # min_val: 节点值必须大于此值 (开区间) # max_val: 节点值必须小于此值 (开区间)
+    def is_valid_bst_range(root: Optional[TreeNode]) -> bool:
+    def validate(node: Optional[TreeNode], min_val: Optional[float],
+    max_val: Optional[float]) -> bool: # 验证以 node 为根的子树是否在 (min_val, max_val) 范围内 # min_val: 节点值必须大于此值 (开区间) # max_val: 节点值必须小于此值 (开区间)
 
-        # 空节点视为有效 (递归基)
-        if not node:
-            return True
+            # 空节点视为有效 (递归基)
+            if not node:
+                return True
 
-        # 检查当前节点值是否在合法范围内
-        # 左子节点必须 < 父节点值, 右子节点必须 > 父节点值
-        if min_val is not None and node.val <= min_val:
-            return False  # 节点值小于等于下界, 违反 BST 性质
-        if max_val is not None and node.val >= max_val:
-            return False  # 节点值大于等于上界, 违反 BST 性质
+            # 检查当前节点值是否在合法范围内
+            # 左子节点必须 < 父节点值, 右子节点必须 > 父节点值
+            if min_val is not None and node.val <= min_val:
+                return False  # 节点值小于等于下界, 违反 BST 性质
+            if max_val is not None and node.val >= max_val:
+                return False  # 节点值大于等于上界, 违反 BST 性质
 
-        # 递归验证左右子树
-        # 左子树: 上界更新为当前节点值 (左子树所有节点必须 < node.val)
-        # 右子树: 下界更新为当前节点值 (右子树所有节点必须 > node.val)
-        return (validate(node.left, min_val, node.val) and
-                validate(node.right, node.val, max_val))
+            # 递归验证左右子树
+            # 左子树: 上界更新为当前节点值 (左子树所有节点必须 < node.val)
+            # 右子树: 下界更新为当前节点值 (右子树所有节点必须 > node.val)
+            return (validate(node.left, min_val, node.val) and
+                    validate(node.right, node.val, max_val))
 
-    # 根节点无上下界约束 (None 表示无穷)
-    return validate(root, None, None)
+        # 根节点无上下界约束 (None 表示无穷)
+        return validate(root, None, None)
 
-# 测试用例
+    # 测试用例
 
-# 有效BST: 2
+    # 有效BST: 2
 
-# / \
+    # / \
 
-# 1 3
+    # 1 3
 
-root1 = TreeNode(2)
-root1.left = TreeNode(1)
-root1.right = TreeNode(3)
+    root1 = TreeNode(2)
+    root1.left = TreeNode(1)
+    root1.right = TreeNode(3)
 
-# 无效BST: 5
+    # 无效BST: 5
 
-# / \
+    # / \
 
-# 1 4
+    # 1 4
 
-# / \
+    # / \
 
-# 3 6
+    # 3 6
 
-# 问题: 3 在根节点 5 的左子树方向, 但 3 < 5 应该在左边
+    # 问题: 3 在根节点 5 的左子树方向, 但 3 < 5 应该在左边
 
-root2 = TreeNode(5)
-root2.left = TreeNode(1)
-root2.right = TreeNode(4)
-root2.right.left = TreeNode(3)
-root2.right.right = TreeNode(6)
+    root2 = TreeNode(5)
+    root2.left = TreeNode(1)
+    root2.right = TreeNode(4)
+    root2.right.left = TreeNode(3)
+    root2.right.right = TreeNode(6)
 
-# 两种方法都应得出相同结论
+    # 两种方法都应得出相同结论
 
-print(is_valid_bst_inorder(root1)) # 输出: True
-print(is_valid_bst_inorder(root2)) # 输出: False
-print(is_valid_bst_range(root1)) # 输出: True
-print(is_valid_bst_range(root2)) # 输出: False
-```
+    print(is_valid_bst_inorder(root1)) # 输出: True
+    print(is_valid_bst_inorder(root2)) # 输出: False
+    print(is_valid_bst_range(root1)) # 输出: True
+    print(is_valid_bst_range(root2)) # 输出: False
+    ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 验证二叉搜索树 - 两种方法
+    // 时间复杂度: O(n), 空间复杂度: O(n)
+    // n 为二叉树节点数
 
-```typescript
-// 验证二叉搜索树 - 两种方法
-// 时间复杂度: O(n), 空间复杂度: O(n)
-// n 为二叉树节点数
+    // 二叉树节点定义
+    class TreeNode {
+    val: number;
+    left: TreeNode | null;
+    right: TreeNode | null;
 
-// 二叉树节点定义
-class TreeNode {
-val: number;
-left: TreeNode | null;
-right: TreeNode | null;
-
-    constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
-        this.val = val ?? 0;
-        this.left = left ?? null;
-        this.right = right ?? null;
-    }
-
-}
-
-// === 方法一: 中序遍历法 ===
-function isValidBSTInorder(root: TreeNode | null): boolean {
-// prevVal: 记录中序遍历中前一个节点的值, 初始为 null
-let prevVal: number | null = null;
-
-    function inorder(node: TreeNode | null): boolean {
-        // 中序遍历: 左 -> 根 -> 右
-        // BST 的中序遍历结果应该是严格递增的
-
-        // 空节点视为有效 (递归基)
-        if (!node) return true;
-
-        // 递归遍历左子树
-        // 如果左子树不是有效 BST, 整棵树也不是
-        if (!inorder(node.left)) return false;
-
-        // 处理当前节点: 必须严格大于前一个节点的值
-        // prevVal !== null: 排除第一个节点 (没有前驱)
-        // node.val <= prevVal: 违反 BST 严格递增性质
-        if (prevVal !== null && node.val <= prevVal) {
-            return false;
+        constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+            this.val = val ?? 0;
+            this.left = left ?? null;
+            this.right = right ?? null;
         }
-        // 更新前一个节点的值
-        prevVal = node.val;
 
-        // 递归遍历右子树
-        return inorder(node.right);
     }
 
-    // 从根节点开始中序遍历
-    return inorder(root);
+    // === 方法一: 中序遍历法 ===
+    function isValidBSTInorder(root: TreeNode | null): boolean {
+    // prevVal: 记录中序遍历中前一个节点的值, 初始为 null
+    let prevVal: number | null = null;
 
-}
+        function inorder(node: TreeNode | null): boolean {
+            // 中序遍历: 左 -> 根 -> 右
+            // BST 的中序遍历结果应该是严格递增的
 
-// === 方法二: 范围约束法 ===
-function isValidBSTRange(root: TreeNode | null): boolean {
-function validate(
-node: TreeNode | null,
-minVal: number | null,
-maxVal: number | null
-): boolean {
-// 验证以 node 为根的子树是否在 (minVal, maxVal) 范围内
-// minVal: 节点值必须大于此值 (开区间)
-// maxVal: 节点值必须小于此值 (开区间)
+            // 空节点视为有效 (递归基)
+            if (!node) return true;
 
-        // 空节点视为有效 (递归基)
-        if (!node) return true;
+            // 递归遍历左子树
+            // 如果左子树不是有效 BST, 整棵树也不是
+            if (!inorder(node.left)) return false;
 
-        // 检查当前节点值是否在合法范围内
-        // 左子节点必须 < 父节点值, 右子节点必须 > 父节点值
-        if (minVal !== null && node.val <= minVal) return false;  // 节点值小于等于下界
-        if (maxVal !== null && node.val >= maxVal) return false;  // 节点值大于等于上界
+            // 处理当前节点: 必须严格大于前一个节点的值
+            // prevVal !== null: 排除第一个节点 (没有前驱)
+            // node.val <= prevVal: 违反 BST 严格递增性质
+            if (prevVal !== null && node.val <= prevVal) {
+                return false;
+            }
+            // 更新前一个节点的值
+            prevVal = node.val;
 
-        // 递归验证左右子树
-        // 左子树: 上界更新为当前节点值 (左子树所有节点必须 < node.val)
-        // 右子树: 下界更新为当前节点值 (右子树所有节点必须 > node.val)
-        return validate(node.left, minVal, node.val) &&
-               validate(node.right, node.val, maxVal);
+            // 递归遍历右子树
+            return inorder(node.right);
+        }
+
+        // 从根节点开始中序遍历
+        return inorder(root);
+
     }
 
-    // 根节点无上下界约束 (null 表示无穷)
-    return validate(root, null, null);
+    // === 方法二: 范围约束法 ===
+    function isValidBSTRange(root: TreeNode | null): boolean {
+    function validate(
+    node: TreeNode | null,
+    minVal: number | null,
+    maxVal: number | null
+    ): boolean {
+    // 验证以 node 为根的子树是否在 (minVal, maxVal) 范围内
+    // minVal: 节点值必须大于此值 (开区间)
+    // maxVal: 节点值必须小于此值 (开区间)
 
-}
+            // 空节点视为有效 (递归基)
+            if (!node) return true;
 
-// 测试用例
+            // 检查当前节点值是否在合法范围内
+            // 左子节点必须 < 父节点值, 右子节点必须 > 父节点值
+            if (minVal !== null && node.val <= minVal) return false;  // 节点值小于等于下界
+            if (maxVal !== null && node.val >= maxVal) return false;  // 节点值大于等于上界
 
-// 有效BST: 2
-// / \
-// 1 3
-const root1 = new TreeNode(2);
-root1.left = new TreeNode(1);
-root1.right = new TreeNode(3);
+            // 递归验证左右子树
+            // 左子树: 上界更新为当前节点值 (左子树所有节点必须 < node.val)
+            // 右子树: 下界更新为当前节点值 (右子树所有节点必须 > node.val)
+            return validate(node.left, minVal, node.val) &&
+                   validate(node.right, node.val, maxVal);
+        }
 
-// 无效BST: 5
-// / \
-// 1 4
-// / \
-// 3 6
-// 问题: 3 在根节点 5 的左子树方向, 但 3 < 5 应该在左边
-const root2 = new TreeNode(5);
-root2.left = new TreeNode(1);
-root2.right = new TreeNode(4);
-root2.right.left = new TreeNode(3);
-root2.right.right = new TreeNode(6);
+        // 根节点无上下界约束 (null 表示无穷)
+        return validate(root, null, null);
 
-// 两种方法都应得出相同结论
-console.log(isValidBSTInorder(root1)); // 输出: true
-console.log(isValidBSTInorder(root2)); // 输出: false
-console.log(isValidBSTRange(root1)); // 输出: true
-console.log(isValidBSTRange(root2)); // 输出: false
-```
+    }
 
+    // 测试用例
+
+    // 有效BST: 2
+    // / \
+    // 1 3
+    const root1 = new TreeNode(2);
+    root1.left = new TreeNode(1);
+    root1.right = new TreeNode(3);
+
+    // 无效BST: 5
+    // / \
+    // 1 4
+    // / \
+    // 3 6
+    // 问题: 3 在根节点 5 的左子树方向, 但 3 < 5 应该在左边
+    const root2 = new TreeNode(5);
+    root2.left = new TreeNode(1);
+    root2.right = new TreeNode(4);
+    root2.right.left = new TreeNode(3);
+    root2.right.right = new TreeNode(6);
+
+    // 两种方法都应得出相同结论
+    console.log(isValidBSTInorder(root1)); // 输出: true
+    console.log(isValidBSTInorder(root2)); // 输出: false
+    console.log(isValidBSTRange(root1)); // 输出: true
+    console.log(isValidBSTRange(root2)); // 输出: false
+    ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

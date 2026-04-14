@@ -8,6 +8,8 @@ space_complexity: "O(total characters)"
 description: 实现一个 Trie (前缀树)，支持插入、搜索单词和前缀匹配
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 请你实现一个 Trie (前缀树)，包含 `insert`、`search` 和 `startsWith` 三个操作：
@@ -100,7 +102,10 @@ Trie 的优势：前缀相关操作极其高效。
   - `startsWith`：O(m)
 - **空间复杂度**：O(N)，N 是所有插入字符串的字符总数
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # Trie (前缀树) - Python 实现
@@ -176,7 +181,8 @@ print(trie.startsWith("ap")) # True
 print(trie.search("ap")) # False
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // Trie (前缀树) - TypeScript 实现
@@ -272,6 +278,9 @@ console.log(trie.search("app")); // true
 console.log(trie.startsWith("ap")); // true
 console.log(trie.search("ap")); // false
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 🤔 互动练习
 

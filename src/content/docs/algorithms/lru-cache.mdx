@@ -8,6 +8,8 @@ space_complexity: "O(capacity)"
 description: 实现一个 LRU (最近最少使用) 缓存机制
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 请你设计并实现一个 `LRUCache` 类：
@@ -30,7 +32,10 @@ description: 实现一个 LRU (最近最少使用) 缓存机制
 - **时间复杂度**：`get` 和 `put` 都是 O(1)
 - **空间复杂度**：O(capacity)，哈希表和链表
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # LRU 缓存 - Python 实现
@@ -154,7 +159,8 @@ print(cache.get(2)) # -1
 print(cache.get(3)) # 3
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // LRU 缓存 - TypeScript 实现
@@ -301,6 +307,9 @@ cache.put(4, 4); // 逐出 key 2
 console.log(cache.get(2)); // -1
 console.log(cache.get(3)); // 3
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

@@ -8,6 +8,7 @@ space_complexity: "O(n)"
 description: 生成数组的所有子集，回溯与位运算两种解法
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -61,191 +62,195 @@ n 个元素的子集数恰为 2^n，可以用 n 位二进制数表示：
 - **时间复杂度**：O(n × 2^n)，共 2^n 个子集，每个子集平均 O(n) 时间构造
 - **空间复杂度**：O(n)，递归栈深度或临时数组长度（不计结果集）
 
-## Python 实现
+## 双语实现
 
-```python
-# 子集 (幂集) - 三种实现方法
-# 时间复杂度: O(n × 2^n), 空间复杂度: O(n)
-# n 为数组长度, 共 2^n 个子集
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 子集 (幂集) - 三种实现方法
+    # 时间复杂度: O(n × 2^n), 空间复杂度: O(n)
+    # n 为数组长度, 共 2^n 个子集
 
-from typing import List
+    from typing import List
 
-# === 方法一: 回溯法 ===
+    # === 方法一: 回溯法 ===
 
-def subsets_backtrack(nums: List[int]) -> List[List[int]]: # result: 存储所有子集
-result = [] # n: 数组长度
-n = len(nums)
+    def subsets_backtrack(nums: List[int]) -> List[List[int]]: # result: 存储所有子集
+    result = [] # n: 数组长度
+    n = len(nums)
 
-    def backtrack(start: int, path: List[int]) -> None:
-        # start: 当前考虑的起始位置 (避免重复选择)
-        # path: 当前已选择的元素
-        # 每个递归状态都是一个有效子集, 立即收集
-        result.append(path[:])  # 注意: 必须拷贝, 否则后续 pop 会影响已保存的结果
+        def backtrack(start: int, path: List[int]) -> None:
+            # start: 当前考虑的起始位置 (避免重复选择)
+            # path: 当前已选择的元素
+            # 每个递归状态都是一个有效子集, 立即收集
+            result.append(path[:])  # 注意: 必须拷贝, 否则后续 pop 会影响已保存的结果
 
-        # 从 start 开始遍历剩余元素
-        for i in range(start, n):
-            # 选择: 将 nums[i] 加入子集
-            path.append(nums[i])
-            # 递归: 从 i+1 开始继续选择 (不能回头, 避免重复)
-            backtrack(i + 1, path)
-            # 撤销: 移除最后加入的元素 (回溯)
-            path.pop()
+            # 从 start 开始遍历剩余元素
+            for i in range(start, n):
+                # 选择: 将 nums[i] 加入子集
+                path.append(nums[i])
+                # 递归: 从 i+1 开始继续选择 (不能回头, 避免重复)
+                backtrack(i + 1, path)
+                # 撤销: 移除最后加入的元素 (回溯)
+                path.pop()
 
-    # 从位置 0、空路径开始回溯
-    backtrack(0, [])
-    return result
+        # 从位置 0、空路径开始回溯
+        backtrack(0, [])
+        return result
 
-# === 方法二: 迭代法 ===
+    # === 方法二: 迭代法 ===
 
-def subsets_iterative(nums: List[int]) -> List[List[int]]: # result: 初始只包含空集
-result = [[]]
+    def subsets_iterative(nums: List[int]) -> List[List[int]]: # result: 初始只包含空集
+    result = [[]]
 
-    # 依次考虑每个元素
-    for num in nums:
-        # 对每个现有子集, 添加当前元素生成新子集
-        new_subsets = []
-        for subset in result:
-            # 拷贝原子集并添加当前元素
-            new_subsets.append(subset + [num])
-        # 将新生成的子集合并到结果中
-        result.extend(new_subsets)
+        # 依次考虑每个元素
+        for num in nums:
+            # 对每个现有子集, 添加当前元素生成新子集
+            new_subsets = []
+            for subset in result:
+                # 拷贝原子集并添加当前元素
+                new_subsets.append(subset + [num])
+            # 将新生成的子集合并到结果中
+            result.extend(new_subsets)
 
-    return result
+        return result
 
-# === 方法三: 位运算法 ===
+    # === 方法三: 位运算法 ===
 
-def subsets_bitmask(nums: List[int]) -> List[List[int]]: # n: 数组长度
-n = len(nums) # result: 存储所有子集
-result = []
+    def subsets_bitmask(nums: List[int]) -> List[List[int]]: # n: 数组长度
+    n = len(nums) # result: 存储所有子集
+    result = []
 
-    # 遍历所有可能的掩码: 0 到 2^n - 1
-    # 每个掩码的二进制位表示对应元素是否被选中
-    for mask in range(1 << n):  # 1 << n 等于 2^n
-        subset = []
-        # 检查掩码的每一位
-        for i in range(n):
-            # 如果第 i 位为 1, 说明选择 nums[i]
-            # mask & (1 << i): 将 1 左移 i 位后与 mask 做按位与
-            if mask & (1 << i):
-                subset.append(nums[i])
-        # 将生成的子集加入结果
-        result.append(subset)
+        # 遍历所有可能的掩码: 0 到 2^n - 1
+        # 每个掩码的二进制位表示对应元素是否被选中
+        for mask in range(1 << n):  # 1 << n 等于 2^n
+            subset = []
+            # 检查掩码的每一位
+            for i in range(n):
+                # 如果第 i 位为 1, 说明选择 nums[i]
+                # mask & (1 << i): 将 1 左移 i 位后与 mask 做按位与
+                if mask & (1 << i):
+                    subset.append(nums[i])
+            # 将生成的子集加入结果
+            result.append(subset)
 
-    return result
+        return result
 
-# 测试用例
+    # 测试用例
 
-nums = [1, 2, 3]
+    nums = [1, 2, 3]
 
-# 三种方法都应输出 8 个子集 (2^3 = 8)
+    # 三种方法都应输出 8 个子集 (2^3 = 8)
 
-print("回溯法:", subsets_backtrack(nums))
-print("迭代法:", subsets_iterative(nums))
-print("位运算:", subsets_bitmask(nums))
+    print("回溯法:", subsets_backtrack(nums))
+    print("迭代法:", subsets_iterative(nums))
+    print("位运算:", subsets_bitmask(nums))
 
-# 验证结果数量
+    # 验证结果数量
 
-print(f"子集总数: {len(subsets_backtrack(nums))}") # 输出: 8 = 2^3
-```
+    print(f"子集总数: {len(subsets_backtrack(nums))}") # 输出: 8 = 2^3
+    ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 子集 (幂集) - 三种实现方法
+    // 时间复杂度: O(n × 2^n), 空间复杂度: O(n)
+    // n 为数组长度, 共 2^n 个子集
 
-```typescript
-// 子集 (幂集) - 三种实现方法
-// 时间复杂度: O(n × 2^n), 空间复杂度: O(n)
-// n 为数组长度, 共 2^n 个子集
+    // === 方法一: 回溯法 ===
+    function subsetsBacktrack(nums: number[]): number[][] {
+    // result: 存储所有子集
+    const result: number[][] = [];
+    // n: 数组长度
+    const n = nums.length;
 
-// === 方法一: 回溯法 ===
-function subsetsBacktrack(nums: number[]): number[][] {
-// result: 存储所有子集
-const result: number[][] = [];
-// n: 数组长度
-const n = nums.length;
+        function backtrack(start: number, path: number[]): void {
+            // start: 当前考虑的起始位置 (避免重复选择)
+            // path: 当前已选择的元素
+            // 每个递归状态都是一个有效子集, 立即收集
+            result.push([...path]); // 注意: 必须拷贝, 否则后续 pop 会影响已保存的结果
 
-    function backtrack(start: number, path: number[]): void {
-        // start: 当前考虑的起始位置 (避免重复选择)
-        // path: 当前已选择的元素
-        // 每个递归状态都是一个有效子集, 立即收集
-        result.push([...path]); // 注意: 必须拷贝, 否则后续 pop 会影响已保存的结果
-
-        // 从 start 开始遍历剩余元素
-        for (let i = start; i < n; i++) {
-            // 选择: 将 nums[i] 加入子集
-            path.push(nums[i]);
-            // 递归: 从 i+1 开始继续选择 (不能回头, 避免重复)
-            backtrack(i + 1, path);
-            // 撤销: 移除最后加入的元素 (回溯)
-            path.pop();
-        }
-    }
-
-    // 从位置 0、空路径开始回溯
-    backtrack(0, []);
-    return result;
-
-}
-
-// === 方法二: 迭代法 ===
-function subsetsIterative(nums: number[]): number[][] {
-// result: 初始只包含空集
-const result: number[][] = [[]];
-
-    // 依次考虑每个元素
-    for (const num of nums) {
-        // 对每个现有子集, 添加当前元素生成新子集
-        const newSubsets: number[][] = [];
-        for (const subset of result) {
-            // 拷贝原子集并添加当前元素
-            newSubsets.push([...subset, num]);
-        }
-        // 将新生成的子集合并到结果中
-        result.push(...newSubsets);
-    }
-
-    return result;
-
-}
-
-// === 方法三: 位运算法 ===
-function subsetsBitmask(nums: number[]): number[][] {
-// n: 数组长度
-const n = nums.length;
-// result: 存储所有子集
-const result: number[][] = [];
-
-    // 遍历所有可能的掩码: 0 到 2^n - 1
-    // 每个掩码的二进制位表示对应元素是否被选中
-    for (let mask = 0; mask < 1 << n; mask++) {
-        // 1 << n 等于 2^n
-        const subset: number[] = [];
-        // 检查掩码的每一位
-        for (let i = 0; i < n; i++) {
-            // 如果第 i 位为 1, 说明选择 nums[i]
-            // mask & (1 << i): 将 1 左移 i 位后与 mask 做按位与
-            if (mask & (1 << i)) {
-                subset.push(nums[i]);
+            // 从 start 开始遍历剩余元素
+            for (let i = start; i < n; i++) {
+                // 选择: 将 nums[i] 加入子集
+                path.push(nums[i]);
+                // 递归: 从 i+1 开始继续选择 (不能回头, 避免重复)
+                backtrack(i + 1, path);
+                // 撤销: 移除最后加入的元素 (回溯)
+                path.pop();
             }
         }
-        // 将生成的子集加入结果
-        result.push(subset);
+
+        // 从位置 0、空路径开始回溯
+        backtrack(0, []);
+        return result;
+
     }
 
-    return result;
+    // === 方法二: 迭代法 ===
+    function subsetsIterative(nums: number[]): number[][] {
+    // result: 初始只包含空集
+    const result: number[][] = [[]];
 
-}
+        // 依次考虑每个元素
+        for (const num of nums) {
+            // 对每个现有子集, 添加当前元素生成新子集
+            const newSubsets: number[][] = [];
+            for (const subset of result) {
+                // 拷贝原子集并添加当前元素
+                newSubsets.push([...subset, num]);
+            }
+            // 将新生成的子集合并到结果中
+            result.push(...newSubsets);
+        }
 
-// 测试用例
-const nums = [1, 2, 3];
+        return result;
 
-// 三种方法都应输出 8 个子集 (2^3 = 8)
-console.log("回溯法:", subsetsBacktrack(nums));
-console.log("迭代法:", subsetsIterative(nums));
-console.log("位运算:", subsetsBitmask(nums));
+    }
 
-// 验证结果数量
-console.log(\`子集总数: \${subsetsBacktrack(nums).length}\`); // 输出: 8 = 2^3
-```
+    // === 方法三: 位运算法 ===
+    function subsetsBitmask(nums: number[]): number[][] {
+    // n: 数组长度
+    const n = nums.length;
+    // result: 存储所有子集
+    const result: number[][] = [];
 
+        // 遍历所有可能的掩码: 0 到 2^n - 1
+        // 每个掩码的二进制位表示对应元素是否被选中
+        for (let mask = 0; mask < 1 << n; mask++) {
+            // 1 << n 等于 2^n
+            const subset: number[] = [];
+            // 检查掩码的每一位
+            for (let i = 0; i < n; i++) {
+                // 如果第 i 位为 1, 说明选择 nums[i]
+                // mask & (1 << i): 将 1 左移 i 位后与 mask 做按位与
+                if (mask & (1 << i)) {
+                    subset.push(nums[i]);
+                }
+            }
+            // 将生成的子集加入结果
+            result.push(subset);
+        }
+
+        return result;
+
+    }
+
+    // 测试用例
+    const nums = [1, 2, 3];
+
+    // 三种方法都应输出 8 个子集 (2^3 = 8)
+    console.log("回溯法:", subsetsBacktrack(nums));
+    console.log("迭代法:", subsetsIterative(nums));
+    console.log("位运算:", subsetsBitmask(nums));
+
+    // 验证结果数量
+    console.log(\`子集总数: \${subsetsBacktrack(nums).length}\`); // 输出: 8 = 2^3
+    ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

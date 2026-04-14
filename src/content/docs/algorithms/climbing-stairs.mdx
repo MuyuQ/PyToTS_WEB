@@ -8,6 +8,7 @@ space_complexity: "O(1)"
 description: 计算爬楼梯的不同方法数
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -30,92 +31,96 @@ description: 计算爬楼梯的不同方法数
 - **时间复杂度**：O(n)，需要计算到第 n 阶
 - **空间复杂度**：O(1)，只使用两个变量
 
-## Python 实现
+## 双语实现
 
-```python
-# 爬楼梯 - Python 实现
-# 时间复杂度: O(n), 空间复杂度: O(1)
-# 核心思路: 动态规划，本质是斐波那契数列
-# 状态转移: dp[i] = dp[i-1] + dp[i-2]
-# 到达第 i 阶的方法 = 从 i-1 阶爬1步 + 从 i-2 阶爬2步
-def climb_stairs(n: int) -> int:
-    # 边界条件: 0阶和1阶都只有1种方法
-    # 0阶: 不动，算1种方法
-    # 1阶: 只能爬1步
-    if n <= 1:
-        return 1
-    
-    # 空间优化: 只保留前两个状态，不需要完整 dp 数组
-    # prev2 代表 dp[i-2]，prev1 代表 dp[i-1]
-    # 初始值: dp[0]=1, dp[1]=1
-    prev2, prev1 = 1, 1
-    
-    # 从第2阶开始计算到第n阶
-    # range(2, n+1) 生成 2, 3, ..., n
-    for i in range(2, n + 1):
-        # 当前阶的方法数 = 前一阶 + 前两阶
-        current = prev1 + prev2
-        # 状态滚动: prev2 更新为原来的 prev1
-        prev2 = prev1
-        # prev1 更新为当前计算出的值
-        prev1 = current
-    
-    # 循环结束时，prev1 存储的是 dp[n]
-    return prev1
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 爬楼梯 - Python 实现
+    # 时间复杂度: O(n), 空间复杂度: O(1)
+    # 核心思路: 动态规划，本质是斐波那契数列
+    # 状态转移: dp[i] = dp[i-1] + dp[i-2]
+    # 到达第 i 阶的方法 = 从 i-1 阶爬1步 + 从 i-2 阶爬2步
+    def climb_stairs(n: int) -> int:
+        # 边界条件: 0阶和1阶都只有1种方法
+        # 0阶: 不动，算1种方法
+        # 1阶: 只能爬1步
+        if n <= 1:
+            return 1
+        
+        # 空间优化: 只保留前两个状态，不需要完整 dp 数组
+        # prev2 代表 dp[i-2]，prev1 代表 dp[i-1]
+        # 初始值: dp[0]=1, dp[1]=1
+        prev2, prev1 = 1, 1
+        
+        # 从第2阶开始计算到第n阶
+        # range(2, n+1) 生成 2, 3, ..., n
+        for i in range(2, n + 1):
+            # 当前阶的方法数 = 前一阶 + 前两阶
+            current = prev1 + prev2
+            # 状态滚动: prev2 更新为原来的 prev1
+            prev2 = prev1
+            # prev1 更新为当前计算出的值
+            prev1 = current
+        
+        # 循环结束时，prev1 存储的是 dp[n]
+        return prev1
 
-# 测试用例
+    # 测试用例
 
-print(climb_stairs(2)) # 2: (1+1), (2)
-print(climb_stairs(3)) # 3: (1+1+1), (1+2), (2+1)
-print(climb_stairs(4)) # 5: (1+1+1+1), (1+1+2), (1+2+1), (2+1+1), (2+2)
-print(climb_stairs(5)) # 8: 斐波那契数列第6项
-```
+    print(climb_stairs(2)) # 2: (1+1), (2)
+    print(climb_stairs(3)) # 3: (1+1+1), (1+2), (2+1)
+    print(climb_stairs(4)) # 5: (1+1+1+1), (1+1+2), (1+2+1), (2+1+1), (2+2)
+    print(climb_stairs(5)) # 8: 斐波那契数列第6项
+    ```
 
-## TypeScript 实现
-
-```typescript
-// 爬楼梯 - TypeScript 实现
-// 时间复杂度: O(n), 空间复杂度: O(1)
-// 核心思路: 动态规划，本质是斐波那契数列
-// 状态转移: dp[i] = dp[i-1] + dp[i-2]
-// 到达第 i 阶的方法 = 从 i-1 阶爬1步 + 从 i-2 阶爬2步
-function climbStairs(n: number): number {
-// 边界条件: 0阶和1阶都只有1种方法
-// 0阶: 不动，算1种方法
-// 1阶: 只能爬1步
-if (n <= 1) {
-return 1;
-}
-
-    // 空间优化: 只保留前两个状态，不需要完整 dp 数组
-    // prev2 代表 dp[i-2]，prev1 代表 dp[i-1]
-    // 初始值: dp[0]=1, dp[1]=1
-    let prev2 = 1;  // dp[i-2]
-    let prev1 = 1;  // dp[i-1]
-
-    // 从第2阶开始计算到第n阶
-    // 注意: i <= n 包含第n阶
-    for (let i = 2; i <= n; i++) {
-        // 当前阶的方法数 = 前一阶 + 前两阶
-        const current = prev1 + prev2;
-        // 状态滚动: prev2 更新为原来的 prev1
-        prev2 = prev1;
-        // prev1 更新为当前计算出的值
-        prev1 = current;
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 爬楼梯 - TypeScript 实现
+    // 时间复杂度: O(n), 空间复杂度: O(1)
+    // 核心思路: 动态规划，本质是斐波那契数列
+    // 状态转移: dp[i] = dp[i-1] + dp[i-2]
+    // 到达第 i 阶的方法 = 从 i-1 阶爬1步 + 从 i-2 阶爬2步
+    function climbStairs(n: number): number {
+    // 边界条件: 0阶和1阶都只有1种方法
+    // 0阶: 不动，算1种方法
+    // 1阶: 只能爬1步
+    if (n <= 1) {
+    return 1;
     }
 
-    // 循环结束时，prev1 存储的是 dp[n]
-    return prev1;
+        // 空间优化: 只保留前两个状态，不需要完整 dp 数组
+        // prev2 代表 dp[i-2]，prev1 代表 dp[i-1]
+        // 初始值: dp[0]=1, dp[1]=1
+        let prev2 = 1;  // dp[i-2]
+        let prev1 = 1;  // dp[i-1]
 
-}
+        // 从第2阶开始计算到第n阶
+        // 注意: i <= n 包含第n阶
+        for (let i = 2; i <= n; i++) {
+            // 当前阶的方法数 = 前一阶 + 前两阶
+            const current = prev1 + prev2;
+            // 状态滚动: prev2 更新为原来的 prev1
+            prev2 = prev1;
+            // prev1 更新为当前计算出的值
+            prev1 = current;
+        }
 
-// 测试用例
-console.log(climbStairs(2)); // 2: (1+1), (2)
-console.log(climbStairs(3)); // 3: (1+1+1), (1+2), (2+1)
-console.log(climbStairs(4)); // 5
-console.log(climbStairs(5)); // 8
-```
+        // 循环结束时，prev1 存储的是 dp[n]
+        return prev1;
 
+    }
+
+    // 测试用例
+    console.log(climbStairs(2)); // 2: (1+1), (2)
+    console.log(climbStairs(3)); // 3: (1+1+1), (1+2), (2+1)
+    console.log(climbStairs(4)); // 5
+    console.log(climbStairs(5)); // 8
+    ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

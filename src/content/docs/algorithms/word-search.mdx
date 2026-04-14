@@ -8,6 +8,7 @@ space_complexity: "O(l)"
 description: 在二维网格中搜索单词
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -29,174 +30,178 @@ description: 在二维网格中搜索单词
 - **时间复杂度**：O(m _ n _ 4^l)，l 是单词长度，每个单元格出发，最多4个方向
 - **空间复杂度**：O(l)，递归栈深度
 
-## Python 实现
+## 双语实现
 
-```python
-# 单词搜索 - 回溯 + DFS
-# 时间复杂度: O(m * n * 4^l), 空间复杂度: O(l)
-# m, n 为网格行列数, l 为单词长度
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 单词搜索 - 回溯 + DFS
+    # 时间复杂度: O(m * n * 4^l), 空间复杂度: O(l)
+    # m, n 为网格行列数, l 为单词长度
 
-def exist(board: list[list[str]], word: str) -> bool: # 边界情况: 空网格直接返回 False
-if not board or not board[0]:
-return False
-
-    # m: 网格行数, n: 网格列数
-    m, n = len(board), len(board[0])
-
-    def dfs(i: int, j: int, k: int) -> bool:
-        # 从网格位置 (i, j) 开始搜索单词 word[k:] 部分
-        # i, j: 当前网格坐标
-        # k: 当前要匹配的单词字符索引
-
-        # 边界检查: 坐标越界返回 False
-        if i < 0 or i >= m or j < 0 or j >= n:
-            return False
-
-        # 字符匹配检查: 当前网格字符与目标字符不匹配
-        if board[i][j] != word[k]:
-            return False
-
-        # 终止条件: 已匹配到单词最后一个字符 (k 从 0 开始)
-        if k == len(word) - 1:
-            return True
-
-        # 标记当前单元格为已访问 (用特殊字符 '#')
-        # 直接修改原网格, 避免使用额外的 visited 数组
-        temp = board[i][j]
-        board[i][j] = '#'
-
-        # 向四个方向递归搜索下一个字符 (k+1)
-        # 只要有一个方向成功, 整个搜索就成功 (短路求值)
-        found = (dfs(i + 1, j, k + 1) or  # 向下
-                 dfs(i - 1, j, k + 1) or  # 向上
-                 dfs(i, j + 1, k + 1) or  # 向右
-                 dfs(i, j - 1, k + 1))    # 向左
-
-        # 回溯: 恢复单元格原始字符
-        # 这一步至关重要, 否则会影响其他路径的搜索
-        board[i][j] = temp
-
-        return found
-
-    # 从网格的每个单元格出发尝试搜索
-    for i in range(m):
-        for j in range(n):
-            # 如果从 (i, j) 出发能找到完整单词, 返回 True
-            if dfs(i, j, 0):  # k=0 表示从单词第一个字符开始
-                return True
-
-    # 所有起点都尝试过仍未找到, 返回 False
+    def exist(board: list[list[str]], word: str) -> bool: # 边界情况: 空网格直接返回 False
+    if not board or not board[0]:
     return False
 
-# 测试用例: 3x4 网格
+        # m: 网格行数, n: 网格列数
+        m, n = len(board), len(board[0])
 
-board = [
-['A', 'B', 'C', 'E'],
-['S', 'F', 'C', 'S'],
-['A', 'D', 'E', 'E']
-]
+        def dfs(i: int, j: int, k: int) -> bool:
+            # 从网格位置 (i, j) 开始搜索单词 word[k:] 部分
+            # i, j: 当前网格坐标
+            # k: 当前要匹配的单词字符索引
 
-# "ABCCED": A(0,0) -> B(0,1) -> C(0,2) -> C(1,2) -> E(2,2) -> D(2,1)
+            # 边界检查: 坐标越界返回 False
+            if i < 0 or i >= m or j < 0 or j >= n:
+                return False
 
-print(exist(board, "ABCCED")) # 输出: True
+            # 字符匹配检查: 当前网格字符与目标字符不匹配
+            if board[i][j] != word[k]:
+                return False
 
-# "SEE": S(1,3) -> E(2,3) -> E(2,2)
+            # 终止条件: 已匹配到单词最后一个字符 (k 从 0 开始)
+            if k == len(word) - 1:
+                return True
 
-print(exist(board, "SEE")) # 输出: True
+            # 标记当前单元格为已访问 (用特殊字符 '#')
+            # 直接修改原网格, 避免使用额外的 visited 数组
+            temp = board[i][j]
+            board[i][j] = '#'
 
-# "ABCB": A(0,0) -> B(0,1) -> C(0,2) -> B 无法到达 (B(0,1) 已访问过)
+            # 向四个方向递归搜索下一个字符 (k+1)
+            # 只要有一个方向成功, 整个搜索就成功 (短路求值)
+            found = (dfs(i + 1, j, k + 1) or  # 向下
+                     dfs(i - 1, j, k + 1) or  # 向上
+                     dfs(i, j + 1, k + 1) or  # 向右
+                     dfs(i, j - 1, k + 1))    # 向左
 
-print(exist(board, "ABCB")) # 输出: False
-```
+            # 回溯: 恢复单元格原始字符
+            # 这一步至关重要, 否则会影响其他路径的搜索
+            board[i][j] = temp
 
-## TypeScript 实现
+            return found
 
-```typescript
-// 单词搜索 - 回溯 + DFS
-// 时间复杂度: O(m _ n _ 4^l), 空间复杂度: O(l)
-// m, n 为网格行列数, l 为单词长度
+        # 从网格的每个单元格出发尝试搜索
+        for i in range(m):
+            for j in range(n):
+                # 如果从 (i, j) 出发能找到完整单词, 返回 True
+                if dfs(i, j, 0):  # k=0 表示从单词第一个字符开始
+                    return True
 
-function exist(board: string[][], word: string): boolean {
-// 边界情况: 空网格直接返回 false
-if (board.length === 0 || board[0].length === 0) {
-return false;
-}
+        # 所有起点都尝试过仍未找到, 返回 False
+        return False
 
-    // m: 网格行数, n: 网格列数
-    const m = board.length;
-    const n = board[0].length;
+    # 测试用例: 3x4 网格
 
-    function dfs(i: number, j: number, k: number): boolean {
-        // 从网格位置 (i, j) 开始搜索单词 word[k:] 部分
-        // i, j: 当前网格坐标
-        // k: 当前要匹配的单词字符索引
+    board = [
+    ['A', 'B', 'C', 'E'],
+    ['S', 'F', 'C', 'S'],
+    ['A', 'D', 'E', 'E']
+    ]
 
-        // 边界检查: 坐标越界返回 false
-        if (i < 0 || i >= m || j < 0 || j >= n) {
-            return false;
-        }
+    # "ABCCED": A(0,0) -> B(0,1) -> C(0,2) -> C(1,2) -> E(2,2) -> D(2,1)
 
-        // 字符匹配检查: 当前网格字符与目标字符不匹配
-        if (board[i][j] !== word[k]) {
-            return false;
-        }
+    print(exist(board, "ABCCED")) # 输出: True
 
-        // 终止条件: 已匹配到单词最后一个字符 (k 从 0 开始)
-        if (k === word.length - 1) {
-            return true;
-        }
+    # "SEE": S(1,3) -> E(2,3) -> E(2,2)
 
-        // 标记当前单元格为已访问 (用特殊字符 '#')
-        // 直接修改原网格, 避免使用额外的 visited 数组
-        const temp = board[i][j];
-        board[i][j] = '#';
+    print(exist(board, "SEE")) # 输出: True
 
-        // 向四个方向递归搜索下一个字符 (k+1)
-        // 只要有一个方向成功, 整个搜索就成功 (短路求值)
-        const found = dfs(i + 1, j, k + 1) ||  // 向下
-                      dfs(i - 1, j, k + 1) ||  // 向上
-                      dfs(i, j + 1, k + 1) ||  // 向右
-                      dfs(i, j - 1, k + 1);    // 向左
+    # "ABCB": A(0,0) -> B(0,1) -> C(0,2) -> B 无法到达 (B(0,1) 已访问过)
 
-        // 回溯: 恢复单元格原始字符
-        // 这一步至关重要, 否则会影响其他路径的搜索
-        board[i][j] = temp;
+    print(exist(board, "ABCB")) # 输出: False
+    ```
 
-        return found;
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 单词搜索 - 回溯 + DFS
+    // 时间复杂度: O(m _ n _ 4^l), 空间复杂度: O(l)
+    // m, n 为网格行列数, l 为单词长度
+
+    function exist(board: string[][], word: string): boolean {
+    // 边界情况: 空网格直接返回 false
+    if (board.length === 0 || board[0].length === 0) {
+    return false;
     }
 
-    // 从网格的每个单元格出发尝试搜索
-    for (let i = 0; i < m; i++) {
-        for (let j = 0; j < n; j++) {
-            // 如果从 (i, j) 出发能找到完整单词, 返回 true
-            if (dfs(i, j, 0)) {  // k=0 表示从单词第一个字符开始
+        // m: 网格行数, n: 网格列数
+        const m = board.length;
+        const n = board[0].length;
+
+        function dfs(i: number, j: number, k: number): boolean {
+            // 从网格位置 (i, j) 开始搜索单词 word[k:] 部分
+            // i, j: 当前网格坐标
+            // k: 当前要匹配的单词字符索引
+
+            // 边界检查: 坐标越界返回 false
+            if (i < 0 || i >= m || j < 0 || j >= n) {
+                return false;
+            }
+
+            // 字符匹配检查: 当前网格字符与目标字符不匹配
+            if (board[i][j] !== word[k]) {
+                return false;
+            }
+
+            // 终止条件: 已匹配到单词最后一个字符 (k 从 0 开始)
+            if (k === word.length - 1) {
                 return true;
             }
+
+            // 标记当前单元格为已访问 (用特殊字符 '#')
+            // 直接修改原网格, 避免使用额外的 visited 数组
+            const temp = board[i][j];
+            board[i][j] = '#';
+
+            // 向四个方向递归搜索下一个字符 (k+1)
+            // 只要有一个方向成功, 整个搜索就成功 (短路求值)
+            const found = dfs(i + 1, j, k + 1) ||  // 向下
+                          dfs(i - 1, j, k + 1) ||  // 向上
+                          dfs(i, j + 1, k + 1) ||  // 向右
+                          dfs(i, j - 1, k + 1);    // 向左
+
+            // 回溯: 恢复单元格原始字符
+            // 这一步至关重要, 否则会影响其他路径的搜索
+            board[i][j] = temp;
+
+            return found;
         }
+
+        // 从网格的每个单元格出发尝试搜索
+        for (let i = 0; i < m; i++) {
+            for (let j = 0; j < n; j++) {
+                // 如果从 (i, j) 出发能找到完整单词, 返回 true
+                if (dfs(i, j, 0)) {  // k=0 表示从单词第一个字符开始
+                    return true;
+                }
+            }
+        }
+
+        // 所有起点都尝试过仍未找到, 返回 false
+        return false;
+
     }
 
-    // 所有起点都尝试过仍未找到, 返回 false
-    return false;
+    // 测试用例: 3x4 网格
+    const board = [
+    ['A', 'B', 'C', 'E'],
+    ['S', 'F', 'C', 'S'],
+    ['A', 'D', 'E', 'E']
+    ];
 
-}
+    // "ABCCED": A(0,0) -> B(0,1) -> C(0,2) -> C(1,2) -> E(2,2) -> D(2,1)
+    console.log(exist(board, "ABCCED")); // 输出: true
 
-// 测试用例: 3x4 网格
-const board = [
-['A', 'B', 'C', 'E'],
-['S', 'F', 'C', 'S'],
-['A', 'D', 'E', 'E']
-];
+    // "SEE": S(1,3) -> E(2,3) -> E(2,2)
+    console.log(exist(board, "SEE")); // 输出: true
 
-// "ABCCED": A(0,0) -> B(0,1) -> C(0,2) -> C(1,2) -> E(2,2) -> D(2,1)
-console.log(exist(board, "ABCCED")); // 输出: true
+    // "ABCB": A(0,0) -> B(0,1) -> C(0,2) -> B 无法到达 (B(0,1) 已访问过)
+    console.log(exist(board, "ABCB")); // 输出: false
+    ```
 
-// "SEE": S(1,3) -> E(2,3) -> E(2,2)
-console.log(exist(board, "SEE")); // 输出: true
-
-// "ABCB": A(0,0) -> B(0,1) -> C(0,2) -> B 无法到达 (B(0,1) 已访问过)
-console.log(exist(board, "ABCB")); // 输出: false
-```
-
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

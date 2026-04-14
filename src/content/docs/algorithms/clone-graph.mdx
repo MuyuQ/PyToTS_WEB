@@ -8,6 +8,8 @@ space_complexity: "O(V)"
 description: 深度拷贝一个无向连通图
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 给你无向**连通**图中一个节点的引用，请你返回该图的**深拷贝**（克隆）。
@@ -36,7 +38,10 @@ description: 深度拷贝一个无向连通图
 - **时间复杂度**：O(V + E)，V是节点数，E是边数
 - **空间复杂度**：O(V)，哈希表存储克隆节点
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # 克隆图 - Python 实现 (DFS)
@@ -106,7 +111,8 @@ print(cloned.neighbors[0].val)  # 2
 print(cloned is node1)  # False (深拷贝)
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // 克隆图 - TypeScript 实现 (DFS)
@@ -186,6 +192,9 @@ console.log(cloned?.val); // 1
 console.log(cloned?.neighbors[0].val); // 2
 console.log(cloned === node1); // false (深拷贝)
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

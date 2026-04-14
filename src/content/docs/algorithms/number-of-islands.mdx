@@ -8,6 +8,8 @@ space_complexity: "O(m * n)"
 description: 计算二维网格中的岛屿数量
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 给你一个由 `'1'`（陆地）和 `'0'`（水）组成的的二维网格，请你计算网格中岛屿的数量。
@@ -28,7 +30,10 @@ DFS/BFS：
 - **时间复杂度**：O(m \* n)，每个单元格最多访问一次
 - **空间复杂度**：O(m \* n)，递归栈或队列的最坏情况
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # 岛屿数量 - Python 实现 (DFS)
@@ -88,7 +93,8 @@ grid2 = [
 print(num_islands(grid2)) # 3
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // 岛屿数量 - TypeScript 实现 (DFS)
@@ -155,6 +161,9 @@ const grid2 = [
 ];
 console.log(numIslands(grid2)); // 3
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

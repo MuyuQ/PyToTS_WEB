@@ -8,6 +8,7 @@ space_complexity: "O(1)"
 description: 反转一个单链表
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 📝 问题描述
 
@@ -146,64 +147,139 @@ prev=None    curr=1
 - **时间复杂度**：O(n)，遍历链表一次，每个节点处理一次
 - **空间复杂度**：O(1)，只使用三个指针变量
 
-## Python 实现
+## 双语实现
 
-```python
-# 反转链表 - Python 实现 (迭代法)
-# 时间复杂度: O(n), 空间复杂度: O(1)
-# 核心思路: 遍历链表，逐个反转每个节点的 next 指针
-# 关键: 在反转指针前，必须先保存下一个节点，否则链表会断
-class ListNode:
-    def __init__(self, val: int = 0, next=None):
-        self.val = val
-        self.next = next
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 反转链表 - Python 实现 (迭代法)
+    # 时间复杂度: O(n), 空间复杂度: O(1)
+    # 核心思路: 遍历链表，逐个反转每个节点的 next 指针
+    # 关键: 在反转指针前，必须先保存下一个节点，否则链表会断
+    class ListNode:
+        def __init__(self, val: int = 0, next=None):
+            self.val = val
+            self.next = next
 
-def reverse_list(head: ListNode | None) -> ListNode | None: # prev 初始为 None，因为反转后原头节点的 next 应该指向 None
-prev = None # curr 从头节点开始遍历
-curr = head
+    def reverse_list(head: ListNode | None) -> ListNode | None: # prev 初始为 None，因为反转后原头节点的 next 应该指向 None
+    prev = None # curr 从头节点开始遍历
+    curr = head
 
-    # 当 curr 为 None 时，说明已处理完所有节点
-    while curr:
-        # 第1步: 保存下一个节点（防止断链）
-        # 必须先保存！因为下一步要修改 curr.next
-        next_temp = curr.next
+        # 当 curr 为 None 时，说明已处理完所有节点
+        while curr:
+            # 第1步: 保存下一个节点（防止断链）
+            # 必须先保存！因为下一步要修改 curr.next
+            next_temp = curr.next
 
-        # 第2步: 反转当前节点的指针，让它指向前一个节点
-        curr.next = prev
+            # 第2步: 反转当前节点的指针，让它指向前一个节点
+            curr.next = prev
 
-        # 第3步: prev 向前移动，指向当前节点
-        prev = curr
+            # 第3步: prev 向前移动，指向当前节点
+            prev = curr
 
-        # 第4步: curr 向前移动，指向下一个节点（用之前保存的值）
-        curr = next_temp
+            # 第4步: curr 向前移动，指向下一个节点（用之前保存的值）
+            curr = next_temp
 
-    # 循环结束时，curr 为 None，prev 指向原链表的最后一个节点
-    # 也就是反转后的新头节点
-    return prev
+        # 循环结束时，curr 为 None，prev 指向原链表的最后一个节点
+        # 也就是反转后的新头节点
+        return prev
 
-# 测试用例
+    # 测试用例
 
-def create_list(values):
-"""辅助函数: 从列表创建链表"""
-dummy = ListNode(0)
-curr = dummy
-for v in values:
-curr.next = ListNode(v)
-curr = curr.next
-return dummy.next
+    def create_list(values):
+    """辅助函数: 从列表创建链表"""
+    dummy = ListNode(0)
+    curr = dummy
+    for v in values:
+        curr.next = ListNode(v)
+        curr = curr.next
+    return dummy.next
 
-def print_list(head):
-"""辅助函数: 将链表转为列表打印"""
-result = []
-while head:
-result.append(head.val)
-head = head.next
-return result
+    def print_list(head):
+    """辅助函数: 将链表转为列表打印"""
+    result = []
+    while head:
+        result.append(head.val)
+        head = head.next
+    return result
 
-head = create_list([1, 2, 3, 4, 5])
-reversed_head = reverse_list(head)
-print(print_list(reversed_head)) # [5, 4, 3, 2, 1]
-```
+    head = create_list([1, 2, 3, 4, 5])
+    reversed_head = reverse_list(head)
+    print(print_list(reversed_head)) # [5, 4, 3, 2, 1]
+    ```
+
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 反转链表 - TypeScript 实现 (迭代法)
+    // 时间复杂度: O(n), 空间复杂度: O(1)
+    // 核心思路: 遍历链表，逐个反转每个节点的 next 指针
+    // 关键: 在反转指针前，必须先保存下一个节点，否则链表会断
+    class ListNode {
+    val: number;
+    next: ListNode | null;
+
+    constructor(val?: number, next?: ListNode | null) {
+        this.val = val === undefined ? 0 : val;
+        this.next = next === undefined ? null : next;
+    }
+    }
+
+    function reverseList(head: ListNode | null): ListNode | null {
+    // prev 初始为 null，因为反转后原头节点的 next 应该指向 null
+    let prev: ListNode | null = null;
+    // curr 从头节点开始遍历
+    let curr: ListNode | null = head;
+
+    // 当 curr 为 null 时，说明已处理完所有节点
+    while (curr !== null) {
+        // 第1步: 保存下一个节点（防止断链）
+        // 必须先保存！因为下一步要修改 curr.next
+        const nextTemp = curr.next;
+
+        // 第2步: 反转当前节点的指针，让它指向前一个节点
+        curr.next = prev;
+
+        // 第3步: prev 向前移动，指向当前节点
+        prev = curr;
+
+        // 第4步: curr 向前移动，指向下一个节点（用之前保存的值）
+        curr = nextTemp;
+
+    }
+
+    // 循环结束时，curr 为 null，prev 指向原链表的最后一个节点
+    // 也就是反转后的新头节点
+    return prev;
+    }
+
+    // 测试用例
+    function createList(values: number[]): ListNode | null {
+    const dummy = new ListNode(0);
+    let curr: ListNode = dummy;
+    for (const v of values) {
+        curr.next = new ListNode(v);
+        curr = curr.next;
+    }
+    return dummy.next;
+    }
+
+    function printList(head: ListNode | null): number[] {
+    const result: number[] = [];
+    while (head !== null) {
+        result.push(head.val);
+        head = head.next;
+    }
+    return result;
+    }
+
+    const head = createList([1, 2, 3, 4, 5]);
+    const reversedHead = reverseList(head);
+    console.log(printList(reversedHead)); // [5, 4, 3, 2, 1]
+    ```
+
+  </TabItem>
+</Tabs>
 
 ## TypeScript 实现
 
@@ -213,26 +289,26 @@ print(print_list(reversed_head)) # [5, 4, 3, 2, 1]
 // 核心思路: 遍历链表，逐个反转每个节点的 next 指针
 // 关键: 在反转指针前，必须先保存下一个节点，否则链表会断
 class ListNode {
-val: number;
-next: ListNode | null;
+  val: number;
+  next: ListNode | null;
 
-constructor(val?: number, next?: ListNode | null) {
-this.val = val === undefined ? 0 : val;
-this.next = next === undefined ? null : next;
-}
+  constructor(val?: number, next?: ListNode | null) {
+    this.val = val === undefined ? 0 : val;
+    this.next = next === undefined ? null : next;
+  }
 }
 
 function reverseList(head: ListNode | null): ListNode | null {
-// prev 初始为 null，因为反转后原头节点的 next 应该指向 null
-let prev: ListNode | null = null;
-// curr 从头节点开始遍历
-let curr: ListNode | null = head;
+  // prev 初始为 null，因为反转后原头节点的 next 应该指向 null
+  let prev: ListNode | null = null;
+  // curr 从头节点开始遍历
+  let curr: ListNode | null = head;
 
-// 当 curr 为 null 时，说明已处理完所有节点
-while (curr !== null) {
-// 第1步: 保存下一个节点（防止断链）
-// 必须先保存！因为下一步要修改 curr.next
-const nextTemp = curr.next;
+  // 当 curr 为 null 时，说明已处理完所有节点
+  while (curr !== null) {
+    // 第1步: 保存下一个节点（防止断链）
+    // 必须先保存！因为下一步要修改 curr.next
+    const nextTemp = curr.next;
 
     // 第2步: 反转当前节点的指针，让它指向前一个节点
     curr.next = prev;
@@ -242,39 +318,37 @@ const nextTemp = curr.next;
 
     // 第4步: curr 向前移动，指向下一个节点（用之前保存的值）
     curr = nextTemp;
+  }
 
-}
-
-// 循环结束时，curr 为 null，prev 指向原链表的最后一个节点
-// 也就是反转后的新头节点
-return prev;
+  // 循环结束时，curr 为 null，prev 指向原链表的最后一个节点
+  // 也就是反转后的新头节点
+  return prev;
 }
 
 // 测试用例
 function createList(values: number[]): ListNode | null {
-const dummy = new ListNode(0);
-let curr: ListNode = dummy;
-for (const v of values) {
-curr.next = new ListNode(v);
-curr = curr.next;
-}
-return dummy.next;
+  const dummy = new ListNode(0);
+  let curr: ListNode = dummy;
+  for (const v of values) {
+    curr.next = new ListNode(v);
+    curr = curr.next;
+  }
+  return dummy.next;
 }
 
 function printList(head: ListNode | null): number[] {
-const result: number[] = [];
-while (head !== null) {
-result.push(head.val);
-head = head.next;
-}
-return result;
+  const result: number[] = [];
+  while (head !== null) {
+    result.push(head.val);
+    head = head.next;
+  }
+  return result;
 }
 
 const head = createList([1, 2, 3, 4, 5]);
 const reversedHead = reverseList(head);
 console.log(printList(reversedHead)); // [5, 4, 3, 2, 1]
 ```
-
 
 ## 🤔 互动练习
 

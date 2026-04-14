@@ -8,6 +8,7 @@ space_complexity: "O(n)"
 description: 计算两个字符串的最长公共子序列长度
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -33,244 +34,251 @@ description: 计算两个字符串的最长公共子序列长度
 - **时间复杂度**：O(m \* n)，m和n是两个字符串长度
 - **空间复杂度**：O(n)，优化后的一维DP
 
-## Python 实现
+## 双语实现
 
-```python
-# 最长公共子序列 - 动态规划 (二维DP + 空间优化 + 回溯构造)
-# 算法: Longest Common Subsequence (LCS)
-# 时间复杂度: O(m * n), m和n是两个字符串长度
-# 空间复杂度: O(m * n) 或 O(n) 优化后
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 最长公共子序列 - 动态规划 (二维DP + 空间优化 + 回溯构造)
+    # 算法: Longest Common Subsequence (LCS)
+    # 时间复杂度: O(m * n), m和n是两个字符串长度
+    # 空间复杂度: O(m * n) 或 O(n) 优化后
 
-def longest_common_subsequence(text1: str, text2: str) -> int: # 获取两个字符串的长度
-m, n = len(text1), len(text2)
+    def longest_common_subsequence(text1: str, text2: str) -> int:
+        # 获取两个字符串的长度
+        m, n = len(text1), len(text2)
 
-    # 创建二维DP表，大小为 (m+1) x (n+1)
-    # dp[i][j] 表示 text1[0..i-1] 和 text2[0..j-1] 的LCS长度
-    # 初始化为0，表示空字符串的LCS长度为0
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
+        # 创建二维DP表，大小为 (m+1) x (n+1)
+        # dp[i][j] 表示 text1[0..i-1] 和 text2[0..j-1] 的LCS长度
+        # 初始化为0，表示空字符串的LCS长度为0
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
 
-    # 外层循环：遍历 text1 的每个字符（索引1到m）
-    for i in range(1, m + 1):
-        # 内层循环：遍历 text2 的每个字符（索引1到n）
-        for j in range(1, n + 1):
-            # 比较当前字符是否相同（注意索引要减1，因为dp表多了一行一列）
+        # 外层循环：遍历 text1 的每个字符（索引1到m）
+        for i in range(1, m + 1):
+            # 内层循环：遍历 text2 的每个字符（索引1到n）
+            for j in range(1, n + 1):
+                # 比较当前字符是否相同（注意索引要减1，因为dp表多了一行一列）
+                if text1[i - 1] == text2[j - 1]:
+                    # 字符相同：LCS长度 = 左上角的值 + 1
+                    # 表示在之前的LCS基础上加上这个相同字符
+                    dp[i][j] = dp[i - 1][j - 1] + 1
+                else:
+                    # 字符不同：取上方或左方的较大值
+                    # dp[i-1][j]：不选 text1[i-1] 的LCS长度
+                    # dp[i][j-1]：不选 text2[j-1] 的LCS长度
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+
+        # 返回右下角的值，即完整两个字符串的LCS长度
+        return dp[m][n]
+
+    def longest_common_subsequence_optimized(text1: str, text2: str) -> int:
+        # 获取两个字符串的长度
+        m, n = len(text1), len(text2)
+
+        # 空间优化：确保 text2 是较短的字符串
+        # 这样空间复杂度为 O(min(m, n))
+        if m < n:
+            return longest_common_subsequence_optimized(text2, text1)
+
+        # 只需要两行：prev 保存上一行状态，curr 计算当前行状态
+        prev = [0] * (n + 1)  # 上一行的DP值
+        curr = [0] * (n + 1)  # 当前行的DP值
+
+        # 遍历 text1 的每个字符
+        for i in range(1, m + 1):
+            # 遍历 text2 的每个字符
+            for j in range(1, n + 1):
+                if text1[i - 1] == text2[j - 1]:
+                    # 字符相同：LCS长度 = 左上角(prev[j-1]) + 1
+                    curr[j] = prev[j - 1] + 1
+                else:
+                    # 字符不同：取上方(prev[j])或左方(curr[j-1])的较大值
+                    curr[j] = max(prev[j], curr[j - 1])
+
+            # 交换两行：当前行变成下一行的"上一行"
+            prev, curr = curr, prev
+
+        # 返回最后一行的最后一个值
+        return prev[n]
+
+    def get_lcs(text1: str, text2: str) -> str:
+        # 获取两个字符串的长度
+        m, n = len(text1), len(text2)
+
+        # 创建二维DP表
+        dp = [[0] * (n + 1) for _ in range(m + 1)]
+
+        # 填充DP表（同上）
+        for i in range(1, m + 1):
+            for j in range(1, n + 1):
+                if text1[i - 1] == text2[j - 1]:
+                    dp[i][j] = dp[i - 1][j - 1] + 1
+                else:
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+
+        # 回溯构造具体的LCS字符串
+        lcs = []  # 存储LCS字符
+        i, j = m, n  # 从DP表右下角开始回溯
+
+        # 从后向前回溯，直到到达边界
+        while i > 0 and j > 0:
             if text1[i - 1] == text2[j - 1]:
-                # 字符相同：LCS长度 = 左上角的值 + 1
-                # 表示在之前的LCS基础上加上这个相同字符
-                dp[i][j] = dp[i - 1][j - 1] + 1
+                # 字符相同：该字符属于LCS，加入结果
+                lcs.append(text1[i - 1])
+                # 向左上角移动
+                i -= 1
+                j -= 1
+            elif dp[i - 1][j] > dp[i][j - 1]:
+                # 上方值更大：说明LCS来自上方，向上移动
+                i -= 1
             else:
-                # 字符不同：取上方或左方的较大值
-                # dp[i-1][j]：不选 text1[i-1] 的LCS长度
-                # dp[i][j-1]：不选 text2[j-1] 的LCS长度
-                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+                # 左方值更大或相等：说明LCS来自左方，向左移动
+                j -= 1
 
-    # 返回右下角的值，即完整两个字符串的LCS长度
-    return dp[m][n]
+        # 回溯得到的是逆序的LCS，需要反转后连接成字符串
+        return ''.join(reversed(lcs))
 
-def longest_common_subsequence_optimized(text1: str, text2: str) -> int: # 获取两个字符串的长度
-m, n = len(text1), len(text2)
+    # 测试用例
 
-    # 空间优化：确保 text2 是较短的字符串
-    # 这样空间复杂度为 O(min(m, n))
-    if m < n:
-        return longest_common_subsequence_optimized(text2, text1)
+    print(longest_common_subsequence("abcde", "ace")) # 3 ("ace")
+    print(longest_common_subsequence("abc", "abc")) # 3 ("abc")
+    print(longest_common_subsequence("abc", "def")) # 0
 
-    # 只需要两行：prev 保存上一行状态，curr 计算当前行状态
-    prev = [0] * (n + 1)  # 上一行的DP值
-    curr = [0] * (n + 1)  # 当前行的DP值
+    print(get_lcs("abcde", "ace")) # "ace"
+    print(get_lcs("ABAZDC", "BACBAD")) # "ABAD"
+    ```
 
-    # 遍历 text1 的每个字符
-    for i in range(1, m + 1):
-        # 遍历 text2 的每个字符
-        for j in range(1, n + 1):
-            if text1[i - 1] == text2[j - 1]:
-                # 字符相同：LCS长度 = 左上角(prev[j-1]) + 1
-                curr[j] = prev[j - 1] + 1
-            else:
-                # 字符不同：取上方(prev[j])或左方(curr[j-1])的较大值
-                curr[j] = max(prev[j], curr[j - 1])
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 最长公共子序列 - 动态规划 (二维DP + 空间优化 + 回溯构造)
+    // 算法: Longest Common Subsequence (LCS)
+    // 时间复杂度: O(m * n), m和n是两个字符串长度
+    // 空间复杂度: O(m * n) 或 O(n) 优化后
 
-        # 交换两行：当前行变成下一行的"上一行"
-        prev, curr = curr, prev
+    function longestCommonSubsequence(text1: string, text2: string): number {
+        // 获取两个字符串的长度
+        const m = text1.length;
+        const n = text2.length;
 
-    # 返回最后一行的最后一个值
-    return prev[n]
+        // 创建二维DP表，大小为 (m+1) x (n+1)
+        // dp[i][j] 表示 text1[0..i-1] 和 text2[0..j-1] 的LCS长度
+        // 初始化为0，表示空字符串的LCS长度为0
+        const dp: number[][] = Array.from({ length: m + 1 }, () =>
+            new Array(n + 1).fill(0)
+        );
 
-def get_lcs(text1: str, text2: str) -> str: # 获取两个字符串的长度
-m, n = len(text1), len(text2)
-
-    # 创建二维DP表
-    dp = [[0] * (n + 1) for _ in range(m + 1)]
-
-    # 填充DP表（同上）
-    for i in range(1, m + 1):
-        for j in range(1, n + 1):
-            if text1[i - 1] == text2[j - 1]:
-                dp[i][j] = dp[i - 1][j - 1] + 1
-            else:
-                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
-
-    # 回溯构造具体的LCS字符串
-    lcs = []  # 存储LCS字符
-    i, j = m, n  # 从DP表右下角开始回溯
-
-    # 从后向前回溯，直到到达边界
-    while i > 0 and j > 0:
-        if text1[i - 1] == text2[j - 1]:
-            # 字符相同：该字符属于LCS，加入结果
-            lcs.append(text1[i - 1])
-            # 向左上角移动
-            i -= 1
-            j -= 1
-        elif dp[i - 1][j] > dp[i][j - 1]:
-            # 上方值更大：说明LCS来自上方，向上移动
-            i -= 1
-        else:
-            # 左方值更大或相等：说明LCS来自左方，向左移动
-            j -= 1
-
-    # 回溯得到的是逆序的LCS，需要反转后连接成字符串
-    return ''.join(reversed(lcs))
-
-# 测试用例
-
-print(longest_common_subsequence("abcde", "ace")) # 3 ("ace")
-print(longest_common_subsequence("abc", "abc")) # 3 ("abc")
-print(longest_common_subsequence("abc", "def")) # 0
-
-print(get_lcs("abcde", "ace")) # "ace"
-print(get_lcs("ABAZDC", "BACBAD")) # "ABAD"
-```
-
-## TypeScript 实现
-
-```typescript
-// 最长公共子序列 - 动态规划 (二维DP + 空间优化 + 回溯构造)
-// 算法: Longest Common Subsequence (LCS)
-// 时间复杂度: O(m _ n), m和n是两个字符串长度
-// 空间复杂度: O(m _ n) 或 O(n) 优化后
-
-function longestCommonSubsequence(text1: string, text2: string): number {
-// 获取两个字符串的长度
-const m = text1.length;
-const n = text2.length;
-
-    // 创建二维DP表，大小为 (m+1) x (n+1)
-    // dp[i][j] 表示 text1[0..i-1] 和 text2[0..j-1] 的LCS长度
-    // 初始化为0，表示空字符串的LCS长度为0
-    const dp: number[][] = Array.from({ length: m + 1 }, () =>
-        new Array(n + 1).fill(0)
-    );
-
-    // 外层循环：遍历 text1 的每个字符（索引1到m）
-    for (let i = 1; i <= m; i++) {
-        // 内层循环：遍历 text2 的每个字符（索引1到n）
-        for (let j = 1; j <= n; j++) {
-            // 比较当前字符是否相同（注意索引要减1，因为dp表多了一行一列）
-            if (text1[i - 1] === text2[j - 1]) {
-                // 字符相同：LCS长度 = 左上角的值 + 1
-                // 表示在之前的LCS基础上加上这个相同字符
-                dp[i][j] = dp[i - 1][j - 1] + 1;
-            } else {
-                // 字符不同：取上方或左方的较大值
-                // dp[i-1][j]：不选 text1[i-1] 的LCS长度
-                // dp[i][j-1]：不选 text2[j-1] 的LCS长度
-                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        // 外层循环：遍历 text1 的每个字符（索引1到m）
+        for (let i = 1; i <= m; i++) {
+            // 内层循环：遍历 text2 的每个字符（索引1到n）
+            for (let j = 1; j <= n; j++) {
+                // 比较当前字符是否相同（注意索引要减1，因为dp表多了一行一列）
+                if (text1[i - 1] === text2[j - 1]) {
+                    // 字符相同：LCS长度 = 左上角的值 + 1
+                    // 表示在之前的LCS基础上加上这个相同字符
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    // 字符不同：取上方或左方的较大值
+                    // dp[i-1][j]：不选 text1[i-1] 的LCS长度
+                    // dp[i][j-1]：不选 text2[j-1] 的LCS长度
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
             }
         }
+
+        // 返回右下角的值，即完整两个字符串的LCS长度
+        return dp[m][n];
+
     }
 
-    // 返回右下角的值，即完整两个字符串的LCS长度
-    return dp[m][n];
+    function longestCommonSubsequenceOptimized(text1: string, text2: string): number {
+        // 获取两个字符串的长度
+        const m = text1.length;
+        const n = text2.length;
 
-}
+        // 只需要两行：prev 保存上一行状态，curr 计算当前行状态
+        let prev: number[] = new Array(n + 1).fill(0);  // 上一行的DP值
+        let curr: number[] = new Array(n + 1).fill(0);  // 当前行的DP值
 
-function longestCommonSubsequenceOptimized(text1: string, text2: string): number {
-// 获取两个字符串的长度
-const m = text1.length;
-const n = text2.length;
+        // 遍历 text1 的每个字符
+        for (let i = 1; i <= m; i++) {
+            // 遍历 text2 的每个字符
+            for (let j = 1; j <= n; j++) {
+                if (text1[i - 1] === text2[j - 1]) {
+                    // 字符相同：LCS长度 = 左上角(prev[j-1]) + 1
+                    curr[j] = prev[j - 1] + 1;
+                } else {
+                    // 字符不同：取上方(prev[j])或左方(curr[j-1])的较大值
+                    curr[j] = Math.max(prev[j], curr[j - 1]);
+                }
+            }
+            // 交换两行：当前行变成下一行的"上一行"
+            [prev, curr] = [curr, prev];
+        }
 
-    // 只需要两行：prev 保存上一行状态，curr 计算当前行状态
-    let prev: number[] = new Array(n + 1).fill(0);  // 上一行的DP值
-    let curr: number[] = new Array(n + 1).fill(0);  // 当前行的DP值
+        // 返回最后一行的最后一个值
+        return prev[n];
 
-    // 遍历 text1 的每个字符
-    for (let i = 1; i <= m; i++) {
-        // 遍历 text2 的每个字符
-        for (let j = 1; j <= n; j++) {
-            if (text1[i - 1] === text2[j - 1]) {
-                // 字符相同：LCS长度 = 左上角(prev[j-1]) + 1
-                curr[j] = prev[j - 1] + 1;
-            } else {
-                // 字符不同：取上方(prev[j])或左方(curr[j-1])的较大值
-                curr[j] = Math.max(prev[j], curr[j - 1]);
+    }
+
+    function getLCS(text1: string, text2: string): string {
+        // 获取两个字符串的长度
+        const m = text1.length;
+        const n = text2.length;
+
+        // 创建二维DP表
+        const dp: number[][] = Array.from({ length: m + 1 }, () =>
+            new Array(n + 1).fill(0)
+        );
+
+        // 填充DP表（同上）
+        for (let i = 1; i <= m; i++) {
+            for (let j = 1; j <= n; j++) {
+                if (text1[i - 1] === text2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                } else {
+                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                }
             }
         }
-        // 交换两行：当前行变成下一行的"上一行"
-        [prev, curr] = [curr, prev];
-    }
 
-    // 返回最后一行的最后一个值
-    return prev[n];
+        // 回溯构造具体的LCS字符串
+        const lcs: string[] = [];  // 存储LCS字符
+        let i = m, j = n;  // 从DP表右下角开始回溯
 
-}
-
-function getLCS(text1: string, text2: string): string {
-// 获取两个字符串的长度
-const m = text1.length;
-const n = text2.length;
-
-    // 创建二维DP表
-    const dp: number[][] = Array.from({ length: m + 1 }, () =>
-        new Array(n + 1).fill(0)
-    );
-
-    // 填充DP表（同上）
-    for (let i = 1; i <= m; i++) {
-        for (let j = 1; j <= n; j++) {
+        // 从后向前回溯，直到到达边界
+        while (i > 0 && j > 0) {
             if (text1[i - 1] === text2[j - 1]) {
-                dp[i][j] = dp[i - 1][j - 1] + 1;
+                // 字符相同：该字符属于LCS，加入结果
+                lcs.push(text1[i - 1]);
+                // 向左上角移动
+                i--;
+                j--;
+            } else if (dp[i - 1][j] > dp[i][j - 1]) {
+                // 上方值更大：说明LCS来自上方，向上移动
+                i--;
             } else {
-                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+                // 左方值更大或相等：说明LCS来自左方，向左移动
+                j--;
             }
         }
+
+        // 回溯得到的是逆序的LCS，需要反转后连接成字符串
+        return lcs.reverse().join('');
+
     }
 
-    // 回溯构造具体的LCS字符串
-    const lcs: string[] = [];  // 存储LCS字符
-    let i = m, j = n;  // 从DP表右下角开始回溯
+    // 测试用例
+    console.log(longestCommonSubsequence("abcde", "ace")); // 3
+    console.log(longestCommonSubsequence("abc", "abc")); // 3
+    console.log(longestCommonSubsequence("abc", "def")); // 0
 
-    // 从后向前回溯，直到到达边界
-    while (i > 0 && j > 0) {
-        if (text1[i - 1] === text2[j - 1]) {
-            // 字符相同：该字符属于LCS，加入结果
-            lcs.push(text1[i - 1]);
-            // 向左上角移动
-            i--;
-            j--;
-        } else if (dp[i - 1][j] > dp[i][j - 1]) {
-            // 上方值更大：说明LCS来自上方，向上移动
-            i--;
-        } else {
-            // 左方值更大或相等：说明LCS来自左方，向左移动
-            j--;
-        }
-    }
+    console.log(getLCS("abcde", "ace")); // "ace"
+    console.log(getLCS("ABAZDC", "BACBAD")); // "ABAD"
+    ```
 
-    // 回溯得到的是逆序的LCS，需要反转后连接成字符串
-    return lcs.reverse().join('');
-
-}
-
-// 测试用例
-console.log(longestCommonSubsequence("abcde", "ace")); // 3
-console.log(longestCommonSubsequence("abc", "abc")); // 3
-console.log(longestCommonSubsequence("abc", "def")); // 0
-
-console.log(getLCS("abcde", "ace")); // "ace"
-console.log(getLCS("ABAZDC", "BACBAD")); // "ABAD"
-```
-
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

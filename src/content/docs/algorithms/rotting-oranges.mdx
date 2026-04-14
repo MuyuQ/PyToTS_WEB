@@ -8,6 +8,8 @@ space_complexity: "O(m * n)"
 description: 计算使所有橘子腐烂所需的最短时间
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 在给定的 `m x n` 网格 `grid` 中，每个单元格可以有以下三个值之一：
@@ -33,7 +35,10 @@ description: 计算使所有橘子腐烂所需的最短时间
 - **时间复杂度**：O(m \* n)，每个单元格最多访问一次
 - **空间复杂度**：O(m \* n)，队列的最坏情况
 
-## Python 实现
+## 双语实现
+
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
 
 ```python
 # 腐烂的橘子 - Python 实现 (多源BFS)
@@ -110,7 +115,8 @@ grid3 = [[0, 2]]
 print(oranges_rotting(grid3)) # 0
 ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
 
 ```typescript
 // 腐烂的橘子 - TypeScript 实现 (多源BFS)
@@ -209,6 +215,9 @@ console.log(orangesRotting(grid2)); // -1
 const grid3 = [[0, 2]];
 console.log(orangesRotting(grid3)); // 0
 ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 

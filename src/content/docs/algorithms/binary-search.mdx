@@ -8,6 +8,7 @@ space_complexity: "O(1)"
 description: 在有序数组中查找目标值的位置
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 ## 问题描述
 
@@ -81,84 +82,88 @@ return -1
 
 对比暴力 O(n)：100 万个元素，暴力要 100 万次，二分只要 20 次！
 
-## Python 实现
+## 双语实现
 
-```python
-# 二分查找 - Python 实现
-# 时间复杂度: O(log n), 空间复杂度: O(1)
-# 前提条件: 数组必须是有序的
-def binary_search(nums: list[int], target: int) -> int:
-    # 初始化左右边界，闭区间 [left, right]
-    left, right = 0, len(nums) - 1
-    
-    # 当 left <= right 时，搜索区间非空
-    # 注意: 必须用 <= 而不是 <，否则当 left==right 时会漏掉最后一个元素
-    while left <= right:
-        # 计算中间位置: left + (right-left)//2 防止 left+right 溢出
-        # Python 整数不会溢出，但这是通用最佳实践
-        mid = left + (right - left) // 2
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    # 二分查找 - Python 实现
+    # 时间复杂度: O(log n), 空间复杂度: O(1)
+    # 前提条件: 数组必须是有序的
+    def binary_search(nums: list[int], target: int) -> int:
+        # 初始化左右边界，闭区间 [left, right]
+        left, right = 0, len(nums) - 1
         
-        # 找到目标值，返回索引
-        if nums[mid] == target:
-            return mid
-        # 中间值小于目标值，说明目标在右半区间
-        elif nums[mid] < target:
-            left = mid + 1   # left 移到 mid+1，排除 mid（已检查过）
-        # 中间值大于目标值，说明目标在左半区间
-        else:
-            right = mid - 1  # right 移到 mid-1，排除 mid（已检查过）
-    
-    # 搜索区间为空，未找到目标值
-    return -1
+        # 当 left <= right 时，搜索区间非空
+        # 注意: 必须用 <= 而不是 <，否则当 left==right 时会漏掉最后一个元素
+        while left <= right:
+            # 计算中间位置: left + (right-left)//2 防止 left+right 溢出
+            # Python 整数不会溢出，但这是通用最佳实践
+            mid = left + (right - left) // 2
+            
+            # 找到目标值，返回索引
+            if nums[mid] == target:
+                return mid
+            # 中间值小于目标值，说明目标在右半区间
+            elif nums[mid] < target:
+                left = mid + 1   # left 移到 mid+1，排除 mid（已检查过）
+            # 中间值大于目标值，说明目标在左半区间
+            else:
+                right = mid - 1  # right 移到 mid-1，排除 mid（已检查过）
+        
+        # 搜索区间为空，未找到目标值
+        return -1
 
-# 测试用例
+    # 测试用例
 
-print(binary_search([-1, 0, 3, 5, 9, 12], 9)) # 4, nums[4]=9
-print(binary_search([-1, 0, 3, 5, 9, 12], 2)) # -1, 2 不在数组中
-```
+    print(binary_search([-1, 0, 3, 5, 9, 12], 9)) # 4, nums[4]=9
+    print(binary_search([-1, 0, 3, 5, 9, 12], 2)) # -1, 2 不在数组中
+    ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 二分查找 - TypeScript 实现
+    // 时间复杂度: O(log n), 空间复杂度: O(1)
+    // 前提条件: 数组必须是有序的
+    function binarySearch(nums: number[], target: number): number {
+    // 初始化左右边界，闭区间 [left, right]
+    let left = 0;
+    let right = nums.length - 1;
 
-```typescript
-// 二分查找 - TypeScript 实现
-// 时间复杂度: O(log n), 空间复杂度: O(1)
-// 前提条件: 数组必须是有序的
-function binarySearch(nums: number[], target: number): number {
-// 初始化左右边界，闭区间 [left, right]
-let left = 0;
-let right = nums.length - 1;
+        // 当 left <= right 时，搜索区间非空
+        // 注意: 必须用 <= 而不是 <，否则当 left==right 时会漏掉最后一个元素
+        while (left <= right) {
+            // 计算中间位置: left + (right-left)/2 防止 left+right 溢出
+            // Math.floor 向下取整，确保 mid 是整数索引
+            const mid = left + Math.floor((right - left) / 2);
 
-    // 当 left <= right 时，搜索区间非空
-    // 注意: 必须用 <= 而不是 <，否则当 left==right 时会漏掉最后一个元素
-    while (left <= right) {
-        // 计算中间位置: left + (right-left)/2 防止 left+right 溢出
-        // Math.floor 向下取整，确保 mid 是整数索引
-        const mid = left + Math.floor((right - left) / 2);
-
-        // 找到目标值，返回索引
-        if (nums[mid] === target) {
-            return mid;
+            // 找到目标值，返回索引
+            if (nums[mid] === target) {
+                return mid;
+            }
+            // 中间值小于目标值，说明目标在右半区间
+            else if (nums[mid] < target) {
+                left = mid + 1;   // left 移到 mid+1，排除 mid（已检查过）
+            }
+            // 中间值大于目标值，说明目标在左半区间
+            else {
+                right = mid - 1;  // right 移到 mid-1，排除 mid（已检查过）
+            }
         }
-        // 中间值小于目标值，说明目标在右半区间
-        else if (nums[mid] < target) {
-            left = mid + 1;   // left 移到 mid+1，排除 mid（已检查过）
-        }
-        // 中间值大于目标值，说明目标在左半区间
-        else {
-            right = mid - 1;  // right 移到 mid-1，排除 mid（已检查过）
-        }
+
+        // 搜索区间为空，未找到目标值
+        return -1;
+
     }
 
-    // 搜索区间为空，未找到目标值
-    return -1;
+    // 测试用例
+    console.log(binarySearch([-1, 0, 3, 5, 9, 12], 9)); // 4, nums[4]=9
+    console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2)); // -1, 2 不在数组中
+    ```
 
-}
-
-// 测试用例
-console.log(binarySearch([-1, 0, 3, 5, 9, 12], 9)); // 4, nums[4]=9
-console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2)); // -1, 2 不在数组中
-```
-
+  </TabItem>
+</Tabs>
 
 ## 🤔 互动练习
 
