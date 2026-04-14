@@ -9,6 +9,15 @@ export default defineConfig({
       title: "Python to TypeScript",
       head: [
         {
+          tag: "style",
+          content: `
+            html { background-color: #fafafa; }
+            [data-theme="dark"] html, [data-theme="dark"] body { background-color: #0f172a !important; }
+            [data-theme="high-contrast"] html, [data-theme="high-contrast"] body { background-color: #000000 !important; }
+            [data-theme="sepia"] html, [data-theme="sepia"] body { background-color: #f4ecd8 !important; }
+          `,
+        },
+        {
           tag: "script",
           attrs: {
             "is:inline": true,
@@ -17,10 +26,11 @@ export default defineConfig({
             (function() {
               try {
                 var theme = localStorage.getItem('site-theme');
+                if (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                  theme = 'dark';
+                }
                 if (theme) {
                   document.documentElement.setAttribute('data-theme', theme);
-                } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                  document.documentElement.setAttribute('data-theme', 'dark');
                 }
               } catch(e) {}
             })();

@@ -177,7 +177,7 @@ body {
   color-scheme: light;
 }
 
-/* Smooth theme transitions */
+/* Smooth theme transitions - exclude html/body to prevent FOUC */
 *,
 *::before,
 *::after {
@@ -186,6 +186,11 @@ body {
     border-color var(--transition-base),
     color var(--transition-fast),
     box-shadow var(--transition-base);
+}
+
+html,
+body {
+  transition: none !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
