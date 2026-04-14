@@ -1,37 +1,40 @@
 :root,
 [data-theme="light"] {
-  /* Light theme - warm beige/cream style */
-  --color-bg: #faf6f0;
+  /* Light theme - warm paper style */
+  --color-bg: #f5f1e8;
   --color-text: #2c2416;
   --color-primary: #5b7fff;
   --color-secondary: #8b5cf6;
   --color-accent: #ff9f43;
-  --color-border: #e8e0d5;
-  --color-code-bg: #f5f0e8;
+  --color-border: #e0d8c8;
+  --color-code-bg: #ede8df;
   --color-card: #ffffff;
   --color-success: #22c55e;
   --color-error: #ef4444;
   --color-warning: #f59e0b;
 
+  /* Paper texture - SVG noise pattern */
+  --paper-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0.83 0 0 0 0 0.77 0 0 0 0 0.69 0 0 0 0.03 0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23noise)'/%3E%3C/svg%3E");
+
   /* Starlight overrides */
-  --sl-color-bg: #faf6f0;
-  --sl-color-bg-nav: #f5f0e8;
+  --sl-color-bg: #f5f1e8;
+  --sl-color-bg-nav: #ede8df;
   --sl-color-bg-aside: #ffffff;
   --sl-color-bg-card: #ffffff;
-  --sl-color-bg-inline-code: #f0ebe3;
+  --sl-color-bg-inline-code: #e8e3da;
   --sl-color-white: #2c2416;
   --sl-color-gray-1: #374151;
   --sl-color-gray-2: #6b7280;
   --sl-color-gray-3: #9ca3af;
-  --sl-color-gray-4: #d1c8bb;
-  --sl-color-gray-5: #e8e0d5;
-  --sl-color-gray-6: #f5f0e8;
+  --sl-color-gray-4: #c8bfb0;
+  --sl-color-gray-5: #e0d8c8;
+  --sl-color-gray-6: #ede8df;
   --sl-color-accent: #5b7fff;
   --sl-color-accent-low: rgba(91, 127, 255, 0.1);
   --sl-color-accent-high: rgba(91, 127, 255, 0.2);
-  --sl-color-hairline: #e8e0d5;
-  --sl-color-hairline-shade: #d1c8bb;
-  --sl-color-hairline-light: #f5f0e8;
+  --sl-color-hairline: #e0d8c8;
+  --sl-color-hairline-shade: #c8bfb0;
+  --sl-color-hairline-light: #ede8df;
 
   /* Fonts */
   --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
@@ -60,7 +63,18 @@
 html,
 body {
   background-color: var(--color-bg);
+  background-image: var(--paper-texture);
+  background-size: 100px 100px;
+  background-repeat: repeat;
   color-scheme: light;
+}
+
+/* Performance degradation for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  html,
+  body {
+    background-image: none;
+  }
 }
 
 [data-theme="dark"] {
