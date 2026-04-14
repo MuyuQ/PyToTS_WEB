@@ -3,3 +3,4 @@ dist/
 .astro/
 nul
 node_modules/.astro/
+.worktrees/
