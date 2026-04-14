@@ -8,7 +8,6 @@ space_complexity: "O(n)"
 description: 判断字符串是否可以被拆分成字典中的单词
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -31,11 +30,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n²)，最坏情况需要检查所有子串
 - **空间复杂度**：O(n)，dp数组 + 哈希集合
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 单词拆分 - 动态规划 + 哈希集合
+```python
+# 单词拆分 - 动态规划 + 哈希集合
 # 算法: Word Break
 # 时间复杂度: O(n²), 最坏情况需要检查所有子串
 # 空间复杂度: O(n), dp数组 + 哈希集合
@@ -75,8 +73,13 @@ word_set = set(wordDict)
 print(word_break("leetcode", ["leet", "code"])) # True ("leet"+"code")
 print(word_break("applepenapple", ["apple", "pen"])) # True ("apple"+"pen"+"apple")
 print(word_break("catsandog", ["cats", "dog", "sand", "and", "cat"])) # False
-print(word_break("aaaaaaa", ["aaaa", "aaa"])) # True ("aaaa"+"aaa" 或 "aaa"+"aaaa")`}
-  typescript={`// 单词拆分 - 动态规划 + 哈希集合
+print(word_break("aaaaaaa", ["aaaa", "aaa"])) # True ("aaaa"+"aaa" 或 "aaa"+"aaaa")
+```
+
+## TypeScript 实现
+
+```typescript
+// 单词拆分 - 动态规划 + 哈希集合
 // 算法: Word Break
 // 时间复杂度: O(n²), 最坏情况需要检查所有子串
 // 空间复杂度: O(n), dp数组 + 哈希集合
@@ -122,8 +125,9 @@ const wordSet = new Set(wordDict);
 console.log(wordBreak("leetcode", ["leet", "code"])); // true
 console.log(wordBreak("applepenapple", ["apple", "pen"])); // true
 console.log(wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"])); // false
-console.log(wordBreak("aaaaaaa", ["aaaa", "aaa"])); // true`}
-/>
+console.log(wordBreak("aaaaaaa", ["aaaa", "aaa"])); // true
+```
+
 
 ## 面试变体
 

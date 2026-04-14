@@ -8,7 +8,6 @@ space_complexity: "O(1)"
 description: 给定非空数组，除一个元素外其余均出现两次，找出那个只出现一次的元素
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述 (LeetCode 136)
 
@@ -61,11 +60,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n)，只需遍历一次数组
 - **空间复杂度**：O(1)，只使用一个变量存储结果
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 只出现一次的数字 - Python 实现
+```python
+# 只出现一次的数字 - Python 实现
 # 时间复杂度: O(n), 空间复杂度: O(1)
 # 核心思路: 利用异或运算(XOR)的性质
 # 性质1: a ^ 0 = a (任何数与0异或等于自身)
@@ -95,8 +93,13 @@ print(single_number([1])) # 1: 只有一个元素
 
 print(5 ^ 5) # 0: 相同数异或为0
 print(5 ^ 0) # 5: 与0异或保持不变
-print(3 ^ 4 ^ 3) # 4: 交换律 3^3^4 = 0^4 = 4`}
-  typescript={`// 只出现一次的数字 - TypeScript 实现
+print(3 ^ 4 ^ 3) # 4: 交换律 3^3^4 = 0^4 = 4
+```
+
+## TypeScript 实现
+
+```typescript
+// 只出现一次的数字 - TypeScript 实现
 // 时间复杂度: O(n), 空间复杂度: O(1)
 // 核心思路: 利用异或运算(XOR)的性质
 // 性质1: a ^ 0 = a (任何数与0异或等于自身)
@@ -128,8 +131,9 @@ console.log(singleNumber([1])); // 1: 只有一个元素
 // 验证异或性质
 console.log(5 ^ 5); // 0: 相同数异或为0
 console.log(5 ^ 0); // 5: 与0异或保持不变
-console.log(3 ^ 4 ^ 3); // 4: 交换律 3^3^4 = 0^4 = 4`}
-/>
+console.log(3 ^ 4 ^ 3); // 4: 交换律 3^3^4 = 0^4 = 4
+```
+
 
 ## 面试变体
 

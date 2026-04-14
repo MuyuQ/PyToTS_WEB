@@ -8,7 +8,6 @@ space_complexity: "O(amount)"
 description: 计算凑成总金额所需的最少硬币数
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -31,11 +30,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(amount \* n)，n 是硬币种类数
 - **空间复杂度**：O(amount)，dp数组
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 零钱兑换 - 完全背包问题 (动态规划)
+```python
+# 零钱兑换 - 完全背包问题 (动态规划)
 # 算法: Coin Change
 # 时间复杂度: O(amount * n), n = 硬币种类数
 # 空间复杂度: O(amount), dp数组
@@ -67,8 +65,13 @@ print(coin_change([1, 2, 5], 11)) # 3 (5+5+1)
 print(coin_change([2], 3)) # -1 (无法用面额2凑成3)
 print(coin_change([1], 0)) # 0 (金额0需要0个硬币)
 print(coin_change([1], 1)) # 1
-print(coin_change([1], 2)) # 2`}
-  typescript={`// 零钱兑换 - 完全背包问题 (动态规划)
+print(coin_change([1], 2)) # 2
+```
+
+## TypeScript 实现
+
+```typescript
+// 零钱兑换 - 完全背包问题 (动态规划)
 // 算法: Coin Change
 // 时间复杂度: O(amount \* n), n = 硬币种类数
 // 空间复杂度: O(amount), dp数组
@@ -106,8 +109,9 @@ console.log(coinChange([1, 2, 5], 11)); // 3
 console.log(coinChange([2], 3)); // -1
 console.log(coinChange([1], 0)); // 0
 console.log(coinChange([1], 1)); // 1
-console.log(coinChange([1], 2)); // 2`}
-/>
+console.log(coinChange([1], 2)); // 2
+```
+
 
 ## 面试变体
 

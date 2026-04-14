@@ -8,7 +8,6 @@ space_complexity: "O(1)"
 description: 判断链表是否有环
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -27,11 +26,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n)，最坏情况遍历整个链表
 - **空间复杂度**：O(1)，只使用两个指针
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 环形链表 - Python 实现 (快慢指针/龟兔赛跑算法)
+```python
+# 环形链表 - Python 实现 (快慢指针/龟兔赛跑算法)
 # 时间复杂度: O(n), 空间复杂度: O(1)
 # 核心思路: 快指针每次走2步，慢指针每次走1步
 # 如果有环，快指针一定会追上慢指针（就像操场跑步，快的人套慢的人一圈）
@@ -76,8 +74,13 @@ node1.next = node2
 node2.next = node3
 node3.next = node2 # 环: 节点3指向节点2
 
-print(has_cycle(node1)) # True`}
-  typescript={`// 环形链表 - TypeScript 实现 (快慢指针/龟兔赛跑算法)
+print(has_cycle(node1)) # True
+```
+
+## TypeScript 实现
+
+```typescript
+// 环形链表 - TypeScript 实现 (快慢指针/龟兔赛跑算法)
 // 时间复杂度: O(n), 空间复杂度: O(1)
 // 核心思路: 快指针每次走2步，慢指针每次走1步
 // 如果有环，快指针一定会追上慢指针（就像操场跑步，快的人套慢的人一圈）
@@ -133,8 +136,9 @@ node1.next = node2;
 node2.next = node3;
 node3.next = node2; // 环: 节点3指向节点2
 
-console.log(hasCycle(node1)); // true`}
-/>
+console.log(hasCycle(node1)); // true
+```
+
 
 ## 面试变体
 

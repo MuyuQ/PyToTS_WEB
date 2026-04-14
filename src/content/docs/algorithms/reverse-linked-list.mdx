@@ -8,7 +8,6 @@ space_complexity: "O(1)"
 description: 反转一个单链表
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 📝 问题描述
 
@@ -147,11 +146,10 @@ prev=None    curr=1
 - **时间复杂度**：O(n)，遍历链表一次，每个节点处理一次
 - **空间复杂度**：O(1)，只使用三个指针变量
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 反转链表 - Python 实现 (迭代法)
+```python
+# 反转链表 - Python 实现 (迭代法)
 # 时间复杂度: O(n), 空间复杂度: O(1)
 # 核心思路: 遍历链表，逐个反转每个节点的 next 指针
 # 关键: 在反转指针前，必须先保存下一个节点，否则链表会断
@@ -204,8 +202,13 @@ return result
 
 head = create_list([1, 2, 3, 4, 5])
 reversed_head = reverse_list(head)
-print(print_list(reversed_head)) # [5, 4, 3, 2, 1]`}
-  typescript={`// 反转链表 - TypeScript 实现 (迭代法)
+print(print_list(reversed_head)) # [5, 4, 3, 2, 1]
+```
+
+## TypeScript 实现
+
+```typescript
+// 反转链表 - TypeScript 实现 (迭代法)
 // 时间复杂度: O(n), 空间复杂度: O(1)
 // 核心思路: 遍历链表，逐个反转每个节点的 next 指针
 // 关键: 在反转指针前，必须先保存下一个节点，否则链表会断
@@ -269,8 +272,9 @@ return result;
 
 const head = createList([1, 2, 3, 4, 5]);
 const reversedHead = reverseList(head);
-console.log(printList(reversedHead)); // [5, 4, 3, 2, 1]`}
-/>
+console.log(printList(reversedHead)); // [5, 4, 3, 2, 1]
+```
+
 
 ## 🤔 互动练习
 

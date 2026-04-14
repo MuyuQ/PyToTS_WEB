@@ -8,8 +8,6 @@ space_complexity: "O(V + E)"
 description: 计算信号从源节点到达所有节点的最短时间（Dijkstra 最短路径）
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
-
 ## 问题描述
 
 有 `n` 个网络节点，标记为 `1` 到 `n`。
@@ -39,20 +37,21 @@ Dijkstra 最短路径算法：
 - **时间复杂度**：O(E log V)，每条边最多入堆一次，堆操作 O(log V)
 - **空间复杂度**：O(V + E)，邻接表和距离数组
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 网络延迟时间 - Python 实现 (Dijkstra)
+```python
+# 网络延迟时间 - Python 实现 (Dijkstra)
 # 时间复杂度: O(E log V), 空间复杂度: O(V+E)
 # 核心思路: Dijkstra最短路径算法，用最小堆优化
 import heapq
 from typing import List, Tuple
 
-def network*delay_time(times: List[List[int]], n: int, k: int) -> int: # 构建邻接表，节点编号从1到n，所以大小为n+1 # graph[u] 存储 [(v, w), ...] 表示从u到v的传输时间为w
-graph = [[] for * in range(n + 1)]
-for u, v, w in times:
-graph[u].append((v, w))
+def network_delay_time(times: List[List[int]], n: int, k: int) -> int:
+    # 构建邻接表，节点编号从1到n，所以大小为n+1
+    # graph[u] 存储 [(v, w), ...] 表示从u到v的传输时间为w
+    graph = [[] for _ in range(n + 1)]
+    for u, v, w in times:
+        graph[u].append((v, w))
 
     # 距离数组，初始化为无穷大
     # dist[i] 表示从源节点k到节点i的最短距离
@@ -94,7 +93,6 @@ graph[u].append((v, w))
     return -1 if max_dist == float('inf') else int(max_dist)
 
 # 测试用例
-
 times1 = [[2, 1, 1], [2, 3, 1], [3, 4, 1]]
 print(network_delay_time(times1, 4, 2)) # 2
 
@@ -102,91 +100,95 @@ times2 = [[1, 2, 1]]
 print(network_delay_time(times2, 2, 2)) # -1（节点2无法到达节点1）
 
 times3 = [[1, 2, 1], [2, 3, 2], [1, 3, 4]]
-print(network_delay_time(times3, 3, 1)) # 3`}
-  typescript={`// 网络延迟时间 - TypeScript 实现 (Dijkstra)
+print(network_delay_time(times3, 3, 1)) # 3
+```
+
+## TypeScript 实现
+
+```typescript
+// 网络延迟时间 - TypeScript 实现 (Dijkstra)
 // 时间复杂度: O(E log V), 空间复杂度: O(V+E)
 // 核心思路: Dijkstra最短路径算法，用数组排序模拟最小堆
 function networkDelayTime(times: number[][], n: number, k: number): number {
-// 构建邻接表，节点编号从1到n
-// graph.get(u) 返回 [[v, w], ...] 表示从u到v的传输时间为w
-const graph: Map<number, [number, number][]> = new Map();
-for (let i = 1; i <= n; i++) {
-graph.set(i, []);
-}
-for (const [u, v, w] of times) {
-graph.get(u)!.push([v, w]);
-}
+  // 构建邻接表，节点编号从1到n
+  // graph.get(u) 返回 [[v, w], ...] 表示从u到v的传输时间为w
+  const graph: Map<number, [number, number][]> = new Map();
+  for (let i = 1; i <= n; i++) {
+    graph.set(i, []);
+  }
+  for (const [u, v, w] of times) {
+    graph.get(u)!.push([v, w]);
+  }
 
-    // 距离数组，初始化为无穷大
-    // dist[i] 表示从源节点k到节点i的最短距离
-    const dist: number[] = new Array(n + 1).fill(Infinity);
-    // 源节点到自身的距离为0
-    dist[k] = 0;
+  // 距离数组，初始化为无穷大
+  // dist[i] 表示从源节点k到节点i的最短距离
+  const dist: number[] = new Array(n + 1).fill(Infinity);
+  // 源节点到自身的距离为0
+  dist[k] = 0;
 
-    // 优先队列实现：用数组+排序模拟最小堆
-    // 元素：[距离, 节点]
-    const pq: [number, number][] = [[0, k]];
+  // 优先队列实现：用数组+排序模拟最小堆
+  // 元素：[距离, 节点]
+  const pq: [number, number][] = [[0, k]];
 
-    // 模拟堆的push操作：插入后按距离排序
-    const heapPush = (item: [number, number]): void => {
-        pq.push(item);
-        pq.sort((a, b) => a[0] - b[0]);
-    };
+  // 模拟堆的push操作：插入后按距离排序
+  const heapPush = (item: [number, number]): void => {
+    pq.push(item);
+    pq.sort((a, b) => a[0] - b[0]);
+  };
 
-    // 模拟堆的pop操作：取出第一个（最小距离）元素
-    const heapPop = (): [number, number] | undefined => {
-        return pq.shift();
-    };
+  // 模拟堆的pop操作：取出第一个（最小距离）元素
+  const heapPop = (): [number, number] | undefined => {
+    return pq.shift();
+  };
 
-    // 已确定最短路径的节点集合
-    const visited: Set<number> = new Set();
+  // 已确定最短路径的节点集合
+  const visited: Set<number> = new Set();
 
-    // Dijkstra主循环
-    while (pq.length > 0) {
-        // 取出距离最小的节点
-        const item = heapPop();
-        if (!item) break;
+  // Dijkstra主循环
+  while (pq.length > 0) {
+    // 取出距离最小的节点
+    const item = heapPop();
+    if (!item) break;
 
-        const [d, node] = item;
+    const [d, node] = item;
 
-        // 如果节点已访问过，跳过
-        if (visited.has(node)) continue;
-        // 标记为已访问
-        visited.add(node);
+    // 如果节点已访问过，跳过
+    if (visited.has(node)) continue;
+    // 标记为已访问
+    visited.add(node);
 
-        // 松弛操作：遍历当前节点的所有邻居
-        const neighbors = graph.get(node) || [];
-        for (const [neighbor, weight] of neighbors) {
-            // 计算通过当前节点到达邻居的新距离
-            const newDist = d + weight;
-            // 如果新距离比已知距离更短，更新距离并加入堆
-            if (newDist < dist[neighbor]) {
-                dist[neighbor] = newDist;
-                heapPush([newDist, neighbor]);
-            }
-        }
+    // 松弛操作：遍历当前节点的所有邻居
+    const neighbors = graph.get(node) || [];
+    for (const [neighbor, weight] of neighbors) {
+      // 计算通过当前节点到达邻居的新距离
+      const newDist = d + weight;
+      // 如果新距离比已知距离更短，更新距离并加入堆
+      if (newDist < dist[neighbor]) {
+        dist[neighbor] = newDist;
+        heapPush([newDist, neighbor]);
+      }
     }
+  }
 
-    // 找出从源节点到所有节点的最大距离
-    let maxDist = 0;
-    for (let i = 1; i <= n; i++) {
-        // 如果有节点无法到达，直接返回-1
-        if (dist[i] === Infinity) {
-            return -1;
-        }
-        maxDist = Math.max(maxDist, dist[i]);
+  // 找出从源节点到所有节点的最大距离
+  let maxDist = 0;
+  for (let i = 1; i <= n; i++) {
+    // 如果有节点无法到达，直接返回-1
+    if (dist[i] === Infinity) {
+      return -1;
     }
+    maxDist = Math.max(maxDist, dist[i]);
+  }
 
-    // 返回最大距离（所有节点都收到信号的最短时间）
-    return maxDist;
-
+  // 返回最大距离（所有节点都收到信号的最短时间）
+  return maxDist;
 }
 
 // 测试用例
 const times1 = [
-[2, 1, 1],
-[2, 3, 1],
-[3, 4, 1],
+  [2, 1, 1],
+  [2, 3, 1],
+  [3, 4, 1],
 ];
 console.log(networkDelayTime(times1, 4, 2)); // 2
 
@@ -194,12 +196,12 @@ const times2 = [[1, 2, 1]];
 console.log(networkDelayTime(times2, 2, 2)); // -1
 
 const times3 = [
-[1, 2, 1],
-[2, 3, 2],
-[1, 3, 4],
+  [1, 2, 1],
+  [2, 3, 2],
+  [1, 3, 4],
 ];
-console.log(networkDelayTime(times3, 3, 1)); // 3`}
-/>
+console.log(networkDelayTime(times3, 3, 1)); // 3
+```
 
 ## 面试变体
 

@@ -8,7 +8,6 @@ space_complexity: "O(1)"
 description: 找出两条线构成的容器能盛最多的水
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -32,11 +31,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n)，两个指针向中间移动
 - **空间复杂度**：O(1)，只使用常数额外空间
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 盛最多水的容器 - 双指针贪心算法
+```python
+# 盛最多水的容器 - 双指针贪心算法
 # 时间复杂度: O(n), 空间复杂度: O(1)
 # n 为高度数组的长度
 
@@ -78,8 +76,13 @@ print(max_area([1, 1])) # 输出: 1
 
 # 测试用例 3: [4,3,2,1,4] -> 最大面积为 16 (两端索引 0 和 4 的线)
 
-print(max_area([4, 3, 2, 1, 4])) # 输出: 16`}
-  typescript={`// 盛最多水的容器 - 双指针贪心算法
+print(max_area([4, 3, 2, 1, 4])) # 输出: 16
+```
+
+## TypeScript 实现
+
+```typescript
+// 盛最多水的容器 - 双指针贪心算法
 // 时间复杂度: O(n), 空间复杂度: O(1)
 // n 为高度数组的长度
 
@@ -126,8 +129,9 @@ console.log(maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7])); // 输出: 49
 console.log(maxArea([1, 1])); // 输出: 1
 
 // 测试用例 3: [4,3,2,1,4] -> 最大面积为 16 (两端索引 0 和 4 的线)
-console.log(maxArea([4, 3, 2, 1, 4])); // 输出: 16`}
-/>
+console.log(maxArea([4, 3, 2, 1, 4])); // 输出: 16
+```
+
 
 ## 面试变体
 

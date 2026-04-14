@@ -8,7 +8,6 @@ space_complexity: "O(1)"
 description: 计算数字字符串的解码方法数
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -46,11 +45,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n)，遍历字符串
 - **空间复杂度**：O(1)，只使用两个变量
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 解码方法 - 动态规划 (空间优化)
+```python
+# 解码方法 - 动态规划 (空间优化)
 # 算法: Decode Ways
 # 时间复杂度: O(n), 遍历字符串一次
 # 空间复杂度: O(1), 只使用两个变量存储状态
@@ -104,8 +102,13 @@ print(num_decodings("12")) # 2 ("AB"=1,2 或 "L"=12)
 print(num_decodings("226")) # 3 ("BBF"=2,2,6 或 "BZ"=2,26 或 "VF"=22,6)
 print(num_decodings("0")) # 0 (以0开头，无法解码)
 print(num_decodings("10")) # 1 ("J"=10, 注意0不能单独解码)
-print(num_decodings("27")) # 1 ("BG"=2,7, 注意27超出26不能组合)`}
-  typescript={`// 解码方法 - 动态规划 (空间优化)
+print(num_decodings("27")) # 1 ("BG"=2,7, 注意27超出26不能组合)
+```
+
+## TypeScript 实现
+
+```typescript
+// 解码方法 - 动态规划 (空间优化)
 // 算法: Decode Ways
 // 时间复杂度: O(n), 遍历字符串一次
 // 空间复杂度: O(1), 只使用两个变量存储状态
@@ -166,8 +169,9 @@ console.log(numDecodings("12")); // 2
 console.log(numDecodings("226")); // 3
 console.log(numDecodings("0")); // 0
 console.log(numDecodings("10")); // 1
-console.log(numDecodings("27")); // 1`}
-/>
+console.log(numDecodings("27")); // 1
+```
+
 
 ## 面试变体
 

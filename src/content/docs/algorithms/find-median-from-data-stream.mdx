@@ -8,8 +8,6 @@ space_complexity: "O(n)"
 description: 实时计算数据流的中位数
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
-
 ## 问题描述
 
 中位数是有序整数列表中的中间值。如果列表的大小是偶数，则没有中间值，中位数是两个中间值的平均值。
@@ -33,18 +31,17 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：`addNum` O(log n)，`findMedian` O(1)
 - **空间复杂度**：O(n)，存储所有元素
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 数据流的中位数 - Python 实现 (双堆法)
+```python
+# 数据流的中位数 - Python 实现 (双堆法)
 # 时间复杂度: addNum O(log n), findMedian O(1)
 # 空间复杂度: O(n)
 # 核心思路: 大顶堆存储较小一半，小顶堆存储较大一半，保持平衡
 import heapq
 
 class MedianFinder:
-"""数据流中位数计算器"""
+    """数据流中位数计算器"""
 
     def __init__(self):
         # 大顶堆（存储较小的一半）
@@ -87,146 +84,150 @@ class MedianFinder:
         return (-self.small[0] + self.large[0]) / 2.0
 
 # 测试用例
-
 mf = MedianFinder()
 mf.addNum(1)
 mf.addNum(2)
 print(mf.findMedian()) # 1.5
 mf.addNum(3)
-print(mf.findMedian()) # 2.0`}
-  typescript={`// 数据流的中位数 - TypeScript 实现 (双堆法)
+print(mf.findMedian()) # 2.0
+```
+
+## TypeScript 实现
+
+```typescript
+// 数据流的中位数 - TypeScript 实现 (双堆法)
 // 时间复杂度: addNum O(log n), findMedian O(1)
 // 空间复杂度: O(n)
 // 核心思路: 大顶堆存储较小一半，小顶堆存储较大一半，保持平衡
 
-/\*\*
-
-- 最小堆实现
-  \*/
-  class MinHeap {
+/**
+ * 最小堆实现
+ */
+class MinHeap {
   // 堆数据数组
   private data: number[] = [];
-      // 插入元素并维护堆性质
-      push(val: number): void {
-          // 添加到数组末尾
-          this.data.push(val);
-          // 上浮操作，维护最小堆
-          this.heapifyUp(this.data.length - 1);
-      }
 
-      // 弹出堆顶元素
-      pop(): number | undefined {
-          // 空堆返回undefined
-          if (this.data.length === 0) return undefined;
-          // 只有一个元素直接弹出
-          if (this.data.length === 1) return this.data.pop();
-
-          // 保存堆顶元素
-          const root = this.data[0];
-          // 将最后一个元素移到堆顶
-          this.data[0] = this.data.pop()!;
-          // 下沉操作，维护最小堆
-          this.heapifyDown(0);
-          // 返回原堆顶
-          return root;
-      }
-
-      // 查看堆顶元素（不弹出）
-      peek(): number | undefined {
-          return this.data[0];
-      }
-
-      // 获取堆的大小
-      size(): number {
-          return this.data.length;
-      }
-
-      // 上浮操作：将元素从底部移到正确位置
-      private heapifyUp(index: number): void {
-          while (index > 0) {
-              // 计算父节点索引
-              const parent = Math.floor((index - 1) / 2);
-              // 如果父节点小于等于当前节点，堆性质已满足
-              if (this.data[parent] <= this.data[index]) break;
-              // 否则交换父节点和当前节点
-              [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
-              // 继续向上检查
-              index = parent;
-          }
-      }
-
-      // 下沉操作：将元素从顶部移到正确位置
-      private heapifyDown(index: number): void {
-          while (true) {
-              let smallest = index;
-              // 计算左右子节点索引
-              const left = 2 * index + 1;
-              const right = 2 * index + 2;
-
-              // 如果左子节点更小，更新smallest
-              if (left < this.data.length && this.data[left] < this.data[smallest]) {
-                  smallest = left;
-              }
-              // 如果右子节点更小，更新smallest
-              if (right < this.data.length && this.data[right] < this.data[smallest]) {
-                  smallest = right;
-              }
-
-              // 如果smallest没变，说明堆性质已满足
-              if (smallest === index) break;
-              // 否则交换并继续下沉
-              [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
-              index = smallest;
-          }
-      }
+  // 插入元素并维护堆性质
+  push(val: number): void {
+    // 添加到数组末尾
+    this.data.push(val);
+    // 上浮操作，维护最小堆
+    this.heapifyUp(this.data.length - 1);
   }
 
-/\*\*
+  // 弹出堆顶元素
+  pop(): number | undefined {
+    // 空堆返回undefined
+    if (this.data.length === 0) return undefined;
+    // 只有一个元素直接弹出
+    if (this.data.length === 1) return this.data.pop();
 
-- 数据流中位数计算器
-  \*/
-  class MedianFinder {
+    // 保存堆顶元素
+    const root = this.data[0];
+    // 将最后一个元素移到堆顶
+    this.data[0] = this.data.pop()!;
+    // 下沉操作，维护最小堆
+    this.heapifyDown(0);
+    // 返回原堆顶
+    return root;
+  }
+
+  // 查看堆顶元素（不弹出）
+  peek(): number | undefined {
+    return this.data[0];
+  }
+
+  // 获取堆的大小
+  size(): number {
+    return this.data.length;
+  }
+
+  // 上浮操作：将元素从底部移到正确位置
+  private heapifyUp(index: number): void {
+    while (index > 0) {
+      // 计算父节点索引
+      const parent = Math.floor((index - 1) / 2);
+      // 如果父节点小于等于当前节点，堆性质已满足
+      if (this.data[parent] <= this.data[index]) break;
+      // 否则交换父节点和当前节点
+      [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
+      // 继续向上检查
+      index = parent;
+    }
+  }
+
+  // 下沉操作：将元素从顶部移到正确位置
+  private heapifyDown(index: number): void {
+    while (true) {
+      let smallest = index;
+      // 计算左右子节点索引
+      const left = 2 * index + 1;
+      const right = 2 * index + 2;
+
+      // 如果左子节点更小，更新smallest
+      if (left < this.data.length && this.data[left] < this.data[smallest]) {
+        smallest = left;
+      }
+      // 如果右子节点更小，更新smallest
+      if (right < this.data.length && this.data[right] < this.data[smallest]) {
+        smallest = right;
+      }
+
+      // 如果smallest没变，说明堆性质已满足
+      if (smallest === index) break;
+      // 否则交换并继续下沉
+      [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
+      index = smallest;
+    }
+  }
+}
+
+/**
+ * 数据流中位数计算器
+ */
+class MedianFinder {
   // 大顶堆（用负数存入小顶堆模拟）
   private small: MinHeap;
   // 小顶堆
   private large: MinHeap;
-      constructor() {
-          this.small = new MinHeap();
-          this.large = new MinHeap();
-      }
 
-      addNum(num: number): void {
-          // 判断数字应该加入哪个堆
-          // 如果small为空或num小于等于small的最大值（取反后比较），加入small
-          if (this.small.size() === 0 || num <= -(this.small.peek() || 0)) {
-              // 负数存入，模拟大顶堆
-              this.small.push(-num);
-          } else {
-              // 否则加入large
-              this.large.push(num);
-          }
-
-          // 保持两个堆的大小平衡
-          // 规则：small的大小可以比large大1，但不能小
-          if (this.small.size() > this.large.size() + 1) {
-              // small太多，将最大值移到large
-              this.large.push(-(this.small.pop() || 0));
-          } else if (this.large.size() > this.small.size()) {
-              // large太多，将最小值移到small
-              this.small.push(-(this.large.pop() || 0));
-          }
-      }
-
-      findMedian(): number {
-          // 如果small的元素更多，中位数就是small的堆顶
-          if (this.small.size() > this.large.size()) {
-              // 取反还原原始值
-              return -(this.small.peek() || 0);
-          }
-          // 如果两堆元素相等，中位数是两个堆顶的平均值
-          return (-(this.small.peek() || 0) + (this.large.peek() || 0)) / 2;
-      }
+  constructor() {
+    this.small = new MinHeap();
+    this.large = new MinHeap();
   }
+
+  addNum(num: number): void {
+    // 判断数字应该加入哪个堆
+    // 如果small为空或num小于等于small的最大值（取反后比较），加入small
+    if (this.small.size() === 0 || num <= -(this.small.peek() || 0)) {
+      // 负数存入，模拟大顶堆
+      this.small.push(-num);
+    } else {
+      // 否则加入large
+      this.large.push(num);
+    }
+
+    // 保持两个堆的大小平衡
+    // 规则：small的大小可以比large大1，但不能小
+    if (this.small.size() > this.large.size() + 1) {
+      // small太多，将最大值移到large
+      this.large.push(-(this.small.pop() || 0));
+    } else if (this.large.size() > this.small.size()) {
+      // large太多，将最小值移到small
+      this.small.push(-(this.large.pop() || 0));
+    }
+  }
+
+  findMedian(): number {
+    // 如果small的元素更多，中位数就是small的堆顶
+    if (this.small.size() > this.large.size()) {
+      // 取反还原原始值
+      return -(this.small.peek() || 0);
+    }
+    // 如果两堆元素相等，中位数是两个堆顶的平均值
+    return (-(this.small.peek() || 0) + (this.large.peek() || 0)) / 2;
+  }
+}
 
 // 测试用例
 const mf = new MedianFinder();
@@ -234,8 +235,8 @@ mf.addNum(1);
 mf.addNum(2);
 console.log(mf.findMedian()); // 1.5
 mf.addNum(3);
-console.log(mf.findMedian()); // 2.0`}
-/>
+console.log(mf.findMedian()); // 2.0
+```
 
 ## 面试变体
 

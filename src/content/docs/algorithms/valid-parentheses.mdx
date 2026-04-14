@@ -8,7 +8,6 @@ space_complexity: "O(n)"
 description: 判断字符串中的括号是否有效匹配
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -32,11 +31,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n)，只需遍历一次字符串
 - **空间复杂度**：O(n)，栈最多存储 n 个字符
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 有效的括号 - Python 实现
+```python
+# 有效的括号 - Python 实现
 # 时间复杂度: O(n), 空间复杂度: O(n)
 # 核心思路: 使用栈(Stack)匹配括号
 # 遇到左括号入栈，遇到右括号检查栈顶是否匹配
@@ -74,8 +72,13 @@ def is_valid(s: str) -> bool:
 print(is_valid("()")) # True: 简单匹配
 print(is_valid("()[]{}")) # True: 多种括号依次匹配
 print(is_valid("(]")) # False: 类型不匹配
-print(is_valid("([)]")) # False: 顺序错误，应该是 ([]) 才有效`}
-  typescript={`// 有效的括号 - TypeScript 实现
+print(is_valid("([)]")) # False: 顺序错误，应该是 ([]) 才有效
+```
+
+## TypeScript 实现
+
+```typescript
+// 有效的括号 - TypeScript 实现
 // 时间复杂度: O(n), 空间复杂度: O(n)
 // 核心思路: 使用栈(Stack)匹配括号
 // 遇到左括号入栈，遇到右括号检查栈顶是否匹配
@@ -121,8 +124,9 @@ const stack: string[] = [];
 console.log(isValid("()")); // true: 简单匹配
 console.log(isValid("()[]{}")); // true: 多种括号依次匹配
 console.log(isValid("(]")); // false: 类型不匹配
-console.log(isValid("([)]")); // false: 顺序错误，应该是 ([]) 才有效`}
-/>
+console.log(isValid("([)]")); // false: 顺序错误，应该是 ([]) 才有效
+```
+
 
 ## 面试变体
 

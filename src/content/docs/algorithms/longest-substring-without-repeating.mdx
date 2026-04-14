@@ -8,7 +8,6 @@ space_complexity: "O(min(m, n))"
 description: 找出不含重复字符的最长子串的长度
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -28,11 +27,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n)，每个字符最多被访问两次
 - **空间复杂度**：O(min(m, n))，m 是字符集大小
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 无重复字符的最长子串 - 滑动窗口算法
+```python
+# 无重复字符的最长子串 - 滑动窗口算法
 # 时间复杂度: O(n), 空间复杂度: O(min(m, n))
 # m 为字符集大小, n 为字符串长度
 
@@ -68,8 +66,13 @@ print(length_of_longest_substring("bbbbb")) # 输出: 1
 
 # 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
 
-print(length_of_longest_substring("pwwkew")) # 输出: 3`}
-  typescript={`// 无重复字符的最长子串 - 滑动窗口算法
+print(length_of_longest_substring("pwwkew")) # 输出: 3
+```
+
+## TypeScript 实现
+
+```typescript
+// 无重复字符的最长子串 - 滑动窗口算法
 // 时间复杂度: O(n), 空间复杂度: O(min(m, n))
 // m 为字符集大小, n 为字符串长度
 
@@ -111,8 +114,9 @@ console.log(lengthOfLongestSubstring("abcabcbb")); // 输出: 3
 console.log(lengthOfLongestSubstring("bbbbb")); // 输出: 1
 
 // 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
-console.log(lengthOfLongestSubstring("pwwkew")); // 输出: 3`}
-/>
+console.log(lengthOfLongestSubstring("pwwkew")); // 输出: 3
+```
+
 
 ## 面试变体
 

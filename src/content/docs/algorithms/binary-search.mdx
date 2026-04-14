@@ -8,7 +8,6 @@ space_complexity: "O(1)"
 description: 在有序数组中查找目标值的位置
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -82,11 +81,10 @@ return -1
 
 对比暴力 O(n)：100 万个元素，暴力要 100 万次，二分只要 20 次！
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 二分查找 - Python 实现
+```python
+# 二分查找 - Python 实现
 # 时间复杂度: O(log n), 空间复杂度: O(1)
 # 前提条件: 数组必须是有序的
 def binary_search(nums: list[int], target: int) -> int:
@@ -116,8 +114,13 @@ def binary_search(nums: list[int], target: int) -> int:
 # 测试用例
 
 print(binary_search([-1, 0, 3, 5, 9, 12], 9)) # 4, nums[4]=9
-print(binary_search([-1, 0, 3, 5, 9, 12], 2)) # -1, 2 不在数组中`}
-  typescript={`// 二分查找 - TypeScript 实现
+print(binary_search([-1, 0, 3, 5, 9, 12], 2)) # -1, 2 不在数组中
+```
+
+## TypeScript 实现
+
+```typescript
+// 二分查找 - TypeScript 实现
 // 时间复杂度: O(log n), 空间复杂度: O(1)
 // 前提条件: 数组必须是有序的
 function binarySearch(nums: number[], target: number): number {
@@ -153,8 +156,9 @@ let right = nums.length - 1;
 
 // 测试用例
 console.log(binarySearch([-1, 0, 3, 5, 9, 12], 9)); // 4, nums[4]=9
-console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2)); // -1, 2 不在数组中`}
-/>
+console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2)); // -1, 2 不在数组中
+```
+
 
 ## 🤔 互动练习
 

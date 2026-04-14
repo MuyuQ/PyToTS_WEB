@@ -8,7 +8,6 @@ space_complexity: "O(n)"
 description: 计算将一个字符串转换成另一个字符串的最少操作数
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -37,11 +36,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(m \* n)，m 和 n 是两个单词长度
 - **空间复杂度**：O(n)，可以优化为一维数组
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 编辑距离 - 动态规划 (一维空间优化)
+```python
+# 编辑距离 - 动态规划 (一维空间优化)
 # 算法: Edit Distance (Levenshtein Distance)
 # 时间复杂度: O(m * n), m和n是两个单词长度
 # 空间复杂度: O(n), 优化为一维数组
@@ -90,8 +88,13 @@ m, n = len(word1), len(word2)
 print(min_distance("horse", "ros")) # 3 (horse->rorse->rose->ros)
 print(min_distance("intention", "execution")) # 5
 print(min_distance("", "")) # 0 (两个空字符串)
-print(min_distance("a", "")) # 1 (删除'a')`}
-  typescript={`// 编辑距离 - 动态规划 (一维空间优化)
+print(min_distance("a", "")) # 1 (删除'a')
+```
+
+## TypeScript 实现
+
+```typescript
+// 编辑距离 - 动态规划 (一维空间优化)
 // 算法: Edit Distance (Levenshtein Distance)
 // 时间复杂度: O(m \* n), m和n是两个单词长度
 // 空间复杂度: O(n), 优化为一维数组
@@ -146,8 +149,9 @@ const n = word2.length;
 console.log(minDistance("horse", "ros")); // 3
 console.log(minDistance("intention", "execution")); // 5
 console.log(minDistance("", "")); // 0
-console.log(minDistance("a", "")); // 1`}
-/>
+console.log(minDistance("a", "")); // 1
+```
+
 
 ## 面试变体
 

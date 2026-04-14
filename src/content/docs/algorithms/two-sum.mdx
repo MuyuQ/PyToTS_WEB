@@ -8,7 +8,6 @@ space_complexity: "O(n)"
 description: 给定数组和目标值，找出两数之和等于目标值的索引
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -23,11 +22,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n)，只需遍历一次数组
 - **空间复杂度**：O(n)，哈希表最多存储 n 个元素
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 两数之和 - Python 实现
+```python
+# 两数之和 - Python 实现
 # 时间复杂度: O(n), 空间复杂度: O(n)
 # 核心思路: 用哈希表记录已遍历元素的值和索引
 def two_sum(nums: list[int], target: int) -> list[int]:
@@ -54,8 +52,13 @@ def two_sum(nums: list[int], target: int) -> list[int]:
 # 测试用例
 
 print(two_sum([2, 7, 11, 15], 9)) # [0, 1] 因为 nums[0]+nums[1]=2+7=9
-print(two_sum([3, 2, 4], 6)) # [1, 2] 因为 nums[1]+nums[2]=2+4=6`}
-  typescript={`// 两数之和 - TypeScript 实现
+print(two_sum([3, 2, 4], 6)) # [1, 2] 因为 nums[1]+nums[2]=2+4=6
+```
+
+## TypeScript 实现
+
+```typescript
+// 两数之和 - TypeScript 实现
 // 时间复杂度: O(n), 空间复杂度: O(n)
 // 核心思路: 用 Map 记录已遍历元素的值和索引
 function twoSum(nums: number[], target: number): number[] {
@@ -87,8 +90,9 @@ const seen = new Map<number, number>();
 
 // 测试用例
 console.log(twoSum([2, 7, 11, 15], 9)); // [0, 1] 因为 nums[0]+nums[1]=2+7=9
-console.log(twoSum([3, 2, 4], 6)); // [1, 2] 因为 nums[1]+nums[2]=2+4=6`}
-/>
+console.log(twoSum([3, 2, 4], 6)); // [1, 2] 因为 nums[1]+nums[2]=2+4=6
+```
+
 
 ## 面试变体
 

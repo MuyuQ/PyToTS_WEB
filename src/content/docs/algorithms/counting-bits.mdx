@@ -8,7 +8,6 @@ space_complexity: "O(n)"
 description: 计算0到n每个数的二进制中1的个数
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -75,11 +74,10 @@ dp[i] = dp[i & (i - 1)] + 1
 - **时间复杂度**：O(n)，遍历一次即可
 - **空间复杂度**：O(n)，存储结果数组
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 比特位计数 - 动态规划 + 位运算
+```python
+# 比特位计数 - 动态规划 + 位运算
 # 算法: Counting Bits
 # 时间复杂度: O(n), 遍历一次即可
 # 空间复杂度: O(n), 存储结果数组
@@ -121,8 +119,13 @@ print(count_bits(10)) # [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2]
 
 # 两种方法结果一致
 
-assert count_bits(100) == count_bits_kernighan(100)`}
-  typescript={`// 比特位计数 - 动态规划 + 位运算
+assert count_bits(100) == count_bits_kernighan(100)
+```
+
+## TypeScript 实现
+
+```typescript
+// 比特位计数 - 动态规划 + 位运算
 // 算法: Counting Bits
 // 时间复杂度: O(n), 遍历一次即可
 // 空间复杂度: O(n), 存储结果数组
@@ -170,8 +173,9 @@ console.log(countBits(0)); // [0]
 console.log(countBits(10)); // [0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2]
 
 // 两种方法结果一致
-console.log(JSON.stringify(countBits(100)) === JSON.stringify(countBitsKernighan(100))); // true`}
-/>
+console.log(JSON.stringify(countBits(100)) === JSON.stringify(countBitsKernighan(100))); // true
+```
+
 
 ## 面试变体
 

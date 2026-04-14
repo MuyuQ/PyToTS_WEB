@@ -8,7 +8,6 @@ space_complexity: "O(n)"
 description: 计算两个字符串的最长公共子序列长度
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -34,11 +33,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(m \* n)，m和n是两个字符串长度
 - **空间复杂度**：O(n)，优化后的一维DP
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 最长公共子序列 - 动态规划 (二维DP + 空间优化 + 回溯构造)
+```python
+# 最长公共子序列 - 动态规划 (二维DP + 空间优化 + 回溯构造)
 # 算法: Longest Common Subsequence (LCS)
 # 时间复杂度: O(m * n), m和n是两个字符串长度
 # 空间复杂度: O(m * n) 或 O(n) 优化后
@@ -141,8 +139,13 @@ print(longest_common_subsequence("abc", "abc")) # 3 ("abc")
 print(longest_common_subsequence("abc", "def")) # 0
 
 print(get_lcs("abcde", "ace")) # "ace"
-print(get_lcs("ABAZDC", "BACBAD")) # "ABAD"`}
-  typescript={`// 最长公共子序列 - 动态规划 (二维DP + 空间优化 + 回溯构造)
+print(get_lcs("ABAZDC", "BACBAD")) # "ABAD"
+```
+
+## TypeScript 实现
+
+```typescript
+// 最长公共子序列 - 动态规划 (二维DP + 空间优化 + 回溯构造)
 // 算法: Longest Common Subsequence (LCS)
 // 时间复杂度: O(m _ n), m和n是两个字符串长度
 // 空间复杂度: O(m _ n) 或 O(n) 优化后
@@ -265,8 +268,9 @@ console.log(longestCommonSubsequence("abc", "abc")); // 3
 console.log(longestCommonSubsequence("abc", "def")); // 0
 
 console.log(getLCS("abcde", "ace")); // "ace"
-console.log(getLCS("ABAZDC", "BACBAD")); // "ABAD"`}
-/>
+console.log(getLCS("ABAZDC", "BACBAD")); // "ABAD"
+```
+
 
 ## 面试变体
 

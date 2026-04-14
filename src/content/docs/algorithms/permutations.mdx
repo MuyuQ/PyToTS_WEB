@@ -8,7 +8,6 @@ space_complexity: "O(n)"
 description: 生成数组的所有全排列，回溯法经典应用
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -55,11 +54,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n × n!)，共 n! 个排列，每个排列需要 O(n) 时间拷贝
 - **空间复杂度**：O(n)，递归栈深度（不计结果集）
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 全排列 - 三种回溯实现
+```python
+# 全排列 - 三种回溯实现
 # 时间复杂度: O(n × n!), 空间复杂度: O(n)
 # n 为数组长度, 共 n! 个排列
 
@@ -171,8 +169,13 @@ print("迭代法:", permute_iterative(nums))
 
 # 验证结果数量
 
-print(f"排列总数: {len(permute_swap(nums))}") # 输出: 6 = 3!`}
-  typescript={`// 全排列 - 三种回溯实现
+print(f"排列总数: {len(permute_swap(nums))}") # 输出: 6 = 3!
+```
+
+## TypeScript 实现
+
+```typescript
+// 全排列 - 三种回溯实现
 // 时间复杂度: O(n × n!), 空间复杂度: O(n)
 // n 为数组长度, 共 n! 个排列
 
@@ -304,8 +307,9 @@ console.log("标记法:", permuteUsed(nums));
 console.log("迭代法:", permuteIterative(nums));
 
 // 验证结果数量
-console.log(\`排列总数: \${permuteSwap(nums).length}\`); // 输出: 6 = 3!`}
-/>
+console.log(\`排列总数: \${permuteSwap(nums).length}\`); // 输出: 6 = 3!
+```
+
 
 ## 面试变体
 

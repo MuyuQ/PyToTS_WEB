@@ -8,7 +8,6 @@ space_complexity: "O(l)"
 description: 在二维网格中搜索单词
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -30,11 +29,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(m _ n _ 4^l)，l 是单词长度，每个单元格出发，最多4个方向
 - **空间复杂度**：O(l)，递归栈深度
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 单词搜索 - 回溯 + DFS
+```python
+# 单词搜索 - 回溯 + DFS
 # 时间复杂度: O(m * n * 4^l), 空间复杂度: O(l)
 # m, n 为网格行列数, l 为单词长度
 
@@ -108,8 +106,13 @@ print(exist(board, "SEE")) # 输出: True
 
 # "ABCB": A(0,0) -> B(0,1) -> C(0,2) -> B 无法到达 (B(0,1) 已访问过)
 
-print(exist(board, "ABCB")) # 输出: False`}
-  typescript={`// 单词搜索 - 回溯 + DFS
+print(exist(board, "ABCB")) # 输出: False
+```
+
+## TypeScript 实现
+
+```typescript
+// 单词搜索 - 回溯 + DFS
 // 时间复杂度: O(m _ n _ 4^l), 空间复杂度: O(l)
 // m, n 为网格行列数, l 为单词长度
 
@@ -191,8 +194,9 @@ console.log(exist(board, "ABCCED")); // 输出: true
 console.log(exist(board, "SEE")); // 输出: true
 
 // "ABCB": A(0,0) -> B(0,1) -> C(0,2) -> B 无法到达 (B(0,1) 已访问过)
-console.log(exist(board, "ABCB")); // 输出: false`}
-/>
+console.log(exist(board, "ABCB")); // 输出: false
+```
+
 
 ## 面试变体
 

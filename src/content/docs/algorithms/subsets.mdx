@@ -8,7 +8,6 @@ space_complexity: "O(n)"
 description: 生成数组的所有子集，回溯与位运算两种解法
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -62,11 +61,10 @@ n 个元素的子集数恰为 2^n，可以用 n 位二进制数表示：
 - **时间复杂度**：O(n × 2^n)，共 2^n 个子集，每个子集平均 O(n) 时间构造
 - **空间复杂度**：O(n)，递归栈深度或临时数组长度（不计结果集）
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 子集 (幂集) - 三种实现方法
+```python
+# 子集 (幂集) - 三种实现方法
 # 时间复杂度: O(n × 2^n), 空间复杂度: O(n)
 # n 为数组长度, 共 2^n 个子集
 
@@ -147,8 +145,13 @@ print("位运算:", subsets_bitmask(nums))
 
 # 验证结果数量
 
-print(f"子集总数: {len(subsets_backtrack(nums))}") # 输出: 8 = 2^3`}
-  typescript={`// 子集 (幂集) - 三种实现方法
+print(f"子集总数: {len(subsets_backtrack(nums))}") # 输出: 8 = 2^3
+```
+
+## TypeScript 实现
+
+```typescript
+// 子集 (幂集) - 三种实现方法
 // 时间复杂度: O(n × 2^n), 空间复杂度: O(n)
 // n 为数组长度, 共 2^n 个子集
 
@@ -240,8 +243,9 @@ console.log("迭代法:", subsetsIterative(nums));
 console.log("位运算:", subsetsBitmask(nums));
 
 // 验证结果数量
-console.log(\`子集总数: \${subsetsBacktrack(nums).length}\`); // 输出: 8 = 2^3`}
-/>
+console.log(\`子集总数: \${subsetsBacktrack(nums).length}\`); // 输出: 8 = 2^3
+```
+
 
 ## 面试变体
 

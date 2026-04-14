@@ -8,7 +8,6 @@ space_complexity: "O(1)"
 description: 计算爬楼梯的不同方法数
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -31,11 +30,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n)，需要计算到第 n 阶
 - **空间复杂度**：O(1)，只使用两个变量
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 爬楼梯 - Python 实现
+```python
+# 爬楼梯 - Python 实现
 # 时间复杂度: O(n), 空间复杂度: O(1)
 # 核心思路: 动态规划，本质是斐波那契数列
 # 状态转移: dp[i] = dp[i-1] + dp[i-2]
@@ -70,8 +68,13 @@ def climb_stairs(n: int) -> int:
 print(climb_stairs(2)) # 2: (1+1), (2)
 print(climb_stairs(3)) # 3: (1+1+1), (1+2), (2+1)
 print(climb_stairs(4)) # 5: (1+1+1+1), (1+1+2), (1+2+1), (2+1+1), (2+2)
-print(climb_stairs(5)) # 8: 斐波那契数列第6项`}
-  typescript={`// 爬楼梯 - TypeScript 实现
+print(climb_stairs(5)) # 8: 斐波那契数列第6项
+```
+
+## TypeScript 实现
+
+```typescript
+// 爬楼梯 - TypeScript 实现
 // 时间复杂度: O(n), 空间复杂度: O(1)
 // 核心思路: 动态规划，本质是斐波那契数列
 // 状态转移: dp[i] = dp[i-1] + dp[i-2]
@@ -110,8 +113,9 @@ return 1;
 console.log(climbStairs(2)); // 2: (1+1), (2)
 console.log(climbStairs(3)); // 3: (1+1+1), (1+2), (2+1)
 console.log(climbStairs(4)); // 5
-console.log(climbStairs(5)); // 8`}
-/>
+console.log(climbStairs(5)); // 8
+```
+
 
 ## 面试变体
 

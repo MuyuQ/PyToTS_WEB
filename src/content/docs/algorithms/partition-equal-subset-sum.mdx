@@ -8,7 +8,6 @@ space_complexity: "O(sum)"
 description: 判断数组是否能分成两个和相等的子集
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 
 ## 问题描述
 
@@ -30,11 +29,10 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(n \* sum)，n 是数组长度，sum 是数组总和
 - **空间复杂度**：O(sum)，dp数组
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 分割等和子集 - 0-1背包问题 (动态规划)
+```python
+# 分割等和子集 - 0-1背包问题 (动态规划)
 # 算法: Partition Equal Subset Sum
 # 时间复杂度: O(n * sum), n是数组长度，sum是数组总和
 # 空间复杂度: O(sum), dp数组
@@ -81,8 +79,13 @@ total = sum(nums)
 print(can_partition([1, 5, 11, 5])) # True ([1,5,5] 和 [11])
 print(can_partition([1, 2, 3, 5])) # False
 print(can_partition([1, 2, 5])) # False
-print(can_partition([100, 100])) # True`}
-  typescript={`// 分割等和子集 - 0-1背包问题 (动态规划)
+print(can_partition([100, 100])) # True
+```
+
+## TypeScript 实现
+
+```typescript
+// 分割等和子集 - 0-1背包问题 (动态规划)
 // 算法: Partition Equal Subset Sum
 // 时间复杂度: O(n \* sum), n是数组长度，sum是数组总和
 // 空间复杂度: O(sum), dp数组
@@ -135,8 +138,9 @@ const total = nums.reduce((a, b) => a + b, 0);
 console.log(canPartition([1, 5, 11, 5])); // true
 console.log(canPartition([1, 2, 3, 5])); // false
 console.log(canPartition([1, 2, 5])); // false
-console.log(canPartition([100, 100])); // true`}
-/>
+console.log(canPartition([100, 100])); // true
+```
+
 
 ## 面试变体
 

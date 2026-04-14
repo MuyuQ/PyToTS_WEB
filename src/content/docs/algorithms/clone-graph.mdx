@@ -8,8 +8,6 @@ space_complexity: "O(V)"
 description: 深度拷贝一个无向连通图
 ---
 
-import DualCodeBlock from "../../../components/DualCodeBlock.astro";
-
 ## 问题描述
 
 给你无向**连通**图中一个节点的引用，请你返回该图的**深拷贝**（克隆）。
@@ -38,25 +36,27 @@ import DualCodeBlock from "../../../components/DualCodeBlock.astro";
 - **时间复杂度**：O(V + E)，V是节点数，E是边数
 - **空间复杂度**：O(V)，哈希表存储克隆节点
 
-## 双语实现
+## Python 实现
 
-<DualCodeBlock
-  title="核心实现"
-  python={`# 克隆图 - Python 实现 (DFS)
+```python
+# 克隆图 - Python 实现 (DFS)
 # 时间复杂度: O(V+E), 空间复杂度: O(V)
 # 核心思路: DFS递归克隆，用哈希表记录原节点到克隆节点的映射，避免环导致无限递归
 from typing import Optional
 from collections import deque
 
 class Node:
-"""图节点定义"""
-def **init**(self, val=0, neighbors=None): # 节点值
-self.val = val # 邻居节点列表
-self.neighbors = neighbors if neighbors is not None else []
+    """图节点定义"""
+    def __init__(self, val=0, neighbors=None):
+        # 节点值
+        self.val = val
+        # 邻居节点列表
+        self.neighbors = neighbors if neighbors is not None else []
 
-def clone_graph(node: Optional[Node]) -> Optional[Node]: # 处理空图边界情况
-if not node:
-return None
+def clone_graph(node: Optional[Node]) -> Optional[Node]:
+    # 处理空图边界情况
+    if not node:
+        return None
 
     # 哈希表：原节点 -> 克隆节点的映射
     # 用于避免重复克隆和检测环
@@ -87,10 +87,8 @@ return None
 # 测试用例
 
 # 构建图: 1 -- 2
-
-# | |
-
-# 4 -- 3
+#          |    |
+#          4 -- 3
 
 node1 = Node(1)
 node2 = Node(2)
@@ -103,71 +101,76 @@ node3.neighbors = [node2, node4]
 node4.neighbors = [node1, node3]
 
 cloned = clone_graph(node1)
-print(cloned.val) # 1
-print(cloned.neighbors[0].val) # 2
-print(cloned is node1) # False (深拷贝)`}
-  typescript={`// 克隆图 - TypeScript 实现 (DFS)
+print(cloned.val)  # 1
+print(cloned.neighbors[0].val)  # 2
+print(cloned is node1)  # False (深拷贝)
+```
+
+## TypeScript 实现
+
+```typescript
+// 克隆图 - TypeScript 实现 (DFS)
 // 时间复杂度: O(V+E), 空间复杂度: O(V)
 // 核心思路: DFS递归克隆，用Map记录原节点到克隆节点的映射，避免环导致无限递归
 
-/\*\*
-
-- 图节点定义
-  \*/
-  class Node {
+/**
+ * 图节点定义
+ */
+class Node {
   val: number;
   neighbors: Node[];
-      constructor(val?: number, neighbors?: Node[]) {
-          // 节点值
-          this.val = val ?? 0;
-          // 邻居节点列表
-          this.neighbors = neighbors ?? [];
-      }
+
+  constructor(val?: number, neighbors?: Node[]) {
+    // 节点值
+    this.val = val ?? 0;
+    // 邻居节点列表
+    this.neighbors = neighbors ?? [];
   }
+}
 
-/\*\*
-
-- 克隆图 - DFS实现
-- @param node 原图节点
-- @returns 克隆后的节点
-  \*/
-  function cloneGraph(node: Node | null): Node | null {
+/**
+ * 克隆图 - DFS实现
+ * @param node 原图节点
+ * @returns 克隆后的节点
+ */
+function cloneGraph(node: Node | null): Node | null {
   // 处理空图边界情况
   if (!node) return null;
-      // Map：原节点 -> 克隆节点的映射
-      // 用于避免重复克隆和检测环
-      const oldToNew = new Map<Node, Node>();
 
-      function dfs(oldNode: Node): Node {
-          // 如果节点已克隆过，直接返回克隆节点
-          // 这是处理环的关键：避免无限递归
-          if (oldToNew.has(oldNode)) {
-              return oldToNew.get(oldNode)!;
-          }
+  // Map：原节点 -> 克隆节点的映射
+  // 用于避免重复克隆和检测环
+  const oldToNew = new Map<Node, Node>();
 
-          // 创建当前节点的克隆（此时neighbors为空）
-          const newNode = new Node(oldNode.val);
-          // 立即存入Map，防止环导致的重复处理
-          oldToNew.set(oldNode, newNode);
+  function dfs(oldNode: Node): Node {
+    // 如果节点已克隆过，直接返回克隆节点
+    // 这是处理环的关键：避免无限递归
+    if (oldToNew.has(oldNode)) {
+      return oldToNew.get(oldNode)!;
+    }
 
-          // 递归克隆所有邻居节点
-          for (const neighbor of oldNode.neighbors) {
-              // 将克隆后的邻居添加到新节点的邻居列表
-              newNode.neighbors.push(dfs(neighbor));
-          }
+    // 创建当前节点的克隆（此时neighbors为空）
+    const newNode = new Node(oldNode.val);
+    // 立即存入Map，防止环导致的重复处理
+    oldToNew.set(oldNode, newNode);
 
-          // 返回克隆完成的节点
-          return newNode;
-      }
+    // 递归克隆所有邻居节点
+    for (const neighbor of oldNode.neighbors) {
+      // 将克隆后的邻居添加到新节点的邻居列表
+      newNode.neighbors.push(dfs(neighbor));
+    }
 
-      // 从起始节点开始DFS克隆
-      return dfs(node);
+    // 返回克隆完成的节点
+    return newNode;
   }
+
+  // 从起始节点开始DFS克隆
+  return dfs(node);
+}
 
 // 测试用例
 // 构建图: 1 -- 2
-// | |
-// 4 -- 3
+//          |    |
+//          4 -- 3
 const node1 = new Node(1);
 const node2 = new Node(2);
 const node3 = new Node(3);
@@ -181,8 +184,8 @@ node4.neighbors = [node1, node3];
 const cloned = cloneGraph(node1);
 console.log(cloned?.val); // 1
 console.log(cloned?.neighbors[0].val); // 2
-console.log(cloned === node1); // false (深拷贝)`}
-/>
+console.log(cloned === node1); // false (深拷贝)
+```
 
 ## 面试变体
 
