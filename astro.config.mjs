@@ -62,9 +62,7 @@ export default defineConfig({
       ],
       customCss: [
         "./src/styles/tokens.css",
-        "./src/styles/accessibility.css",
         "./src/styles/custom-layout.css",
-        "./src/styles/responsive.css",
         "./src/styles/components.css",
         "./src/styles/tabs-custom.css",
       ],
