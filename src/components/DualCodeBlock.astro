@@ -65,7 +65,6 @@ const typescriptHtml = await codeToHtml(typescript, {
           </svg>
         </button>
       </div>
-      <!-- Shiki 生成的 HTML 包含 <pre> 和 <code> -->
       <div class="code code-highlighted" set:html={pythonHtml}></div>
     </div>
     <div class="code-panel">
@@ -78,13 +77,35 @@ const typescriptHtml = await codeToHtml(typescript, {
           </svg>
         </button>
       </div>
-      <!-- Shiki 生成的 HTML 包含 <pre> 和 <code> -->
       <div class="code code-highlighted" set:html={typescriptHtml}></div>
     </div>
   </div>
 </div>
 
 <script>
+  // Sync height between code panels
+  function syncPanelHeights(codeId: string) {
+    const container = document.querySelector(`.code-container[data-code-id="${codeId}"]`);
+    if (!container) return;
+
+    const panels = container.querySelectorAll('.code-panel');
+    if (panels.length !== 2) return;
+
+    // Reset heights to auto to measure natural height
+    panels.forEach(panel => {
+      (panel as HTMLElement).style.height = 'auto';
+    });
+
+    // Get the taller panel's height
+    const heights = Array.from(panels).map(panel => panel.scrollHeight);
+    const maxHeight = Math.max(...heights);
+
+    // Set both panels to the same height
+    panels.forEach(panel => {
+      (panel as HTMLElement).style.height = `${maxHeight}px`;
+    });
+  }
+
   // Sync scroll between code panels
   function initSyncScroll(codeId: string) {
     const container = document.querySelector(`.code-container[data-code-id="${codeId}"]`);
@@ -116,7 +137,6 @@ const typescriptHtml = await codeToHtml(typescript, {
 
     if (copyAllBtn && container) {
       copyAllBtn.addEventListener('click', async () => {
-        // 从 Shiki 生成的 pre 中提取纯文本
         const pres = container.querySelectorAll('pre');
         const text = Array.from(pres).map(pre => pre.textContent).join('\n\n');
 
@@ -154,14 +174,23 @@ const typescriptHtml = await codeToHtml(typescript, {
   }
 
   // Initialize all code blocks
-  document.querySelectorAll('.dual-code-block').forEach(block => {
-    const codeId = (block as HTMLElement).dataset.codeId;
-    if (codeId) {
-      initSyncScroll(codeId);
-      initCopyButtons(codeId);
-      initToggle(codeId);
-    }
-  });
+  function initDualCodeBlocks() {
+    document.querySelectorAll('.dual-code-block').forEach(block => {
+      const codeId = (block as HTMLElement).dataset.codeId;
+      if (codeId) {
+        syncPanelHeights(codeId);
+        initSyncScroll(codeId);
+        initCopyButtons(codeId);
+        initToggle(codeId);
+      }
+    });
+  }
+
+  // Run on initial load
+  initDualCodeBlocks();
+
+  // Run on Astro page navigation (SPA)
+  document.addEventListener('astro:page-load', initDualCodeBlocks);
 </script>
 
 <style>
@@ -234,11 +263,12 @@ const typescriptHtml = await codeToHtml(typescript, {
   }
 
   .code-panel {
+    flex: 1;
+    min-width: 0;
     border-right: 1px solid var(--color-border);
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    min-height: 0;
   }
 
   .code-panel:last-child {
@@ -316,7 +346,6 @@ const typescriptHtml = await codeToHtml(typescript, {
     flex: 1;
     min-height: 0;
     overflow: auto;
-    height: 100%;
   }
 
   /* 确保 Shiki 的 pre 填满容器 */
