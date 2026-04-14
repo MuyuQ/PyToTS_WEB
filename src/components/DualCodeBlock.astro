@@ -226,6 +226,7 @@ const typescriptHtml = await codeToHtml(typescript, {
     grid-template-columns: 1fr 1fr;
     transition: max-height var(--transition-slow);
     overflow: hidden;
+    align-items: stretch;
   }
 
   .code-container.collapsed {
@@ -237,6 +238,7 @@ const typescriptHtml = await codeToHtml(typescript, {
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    min-height: 0;
   }
 
   .code-panel:last-child {
@@ -298,6 +300,8 @@ const typescriptHtml = await codeToHtml(typescript, {
     flex: 1;
     overflow: auto;
     max-height: 400px;
+    display: flex;
+    flex-direction: column;
   }
 
   /* 覆盖 Shiki 的默认样式 */
@@ -309,6 +313,21 @@ const typescriptHtml = await codeToHtml(typescript, {
     font-size: 0.875rem;
     line-height: 1.6;
     tab-size: 2;
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    height: 100%;
+  }
+
+  /* 确保 Shiki 的 pre 填满容器 */
+  .code-highlighted pre.shiki {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .code-highlighted pre.shiki code {
+    flex: 1;
   }
 
   .code-highlighted code {
