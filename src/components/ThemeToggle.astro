@@ -64,28 +64,29 @@ const currentTheme = readTheme(typeof window !== 'undefined' ? localStorage.getI
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-md);
     background: transparent;
-    color: var(--color-text);
+    color: var(--sl-color-gray-2);
     cursor: pointer;
     transition: all var(--transition-fast);
   }
 
   .theme-btn:hover {
-    background: var(--color-border);
+    background: var(--sl-color-gray-6);
+    color: var(--sl-color-gray-1);
   }
 
   .theme-btn[aria-pressed="true"] {
-    background: var(--color-primary);
+    background: var(--sl-color-accent);
     color: white;
-    border-color: var(--color-primary);
+    border-color: var(--sl-color-accent);
   }
 
   .theme-btn svg {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
   }
 </style>
