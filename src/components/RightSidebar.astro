@@ -1,10 +1,11 @@
 ---
 interface Props {
+  title?: string;
   headings?: Array<{ id: string; text: string }>;
   progress?: { completed: number; total: number };
 }
 
-const { headings, progress } = Astro.props;
+const { title, headings, progress } = Astro.props;
 
 const defaultHeadings = [
   { id: "场景与问题", text: "场景与问题" },
@@ -23,7 +24,7 @@ const progressPercent = Math.round((stats.completed / stats.total) * 100);
   <div class="sidebar-section toc-section">
     <h3 class="section-title">目录</h3>
     <nav aria-label="页面目录">
-      <ul class="toc-list">
+      <ul class="toc-list" id="toc-list">
         {tocItems.map((item) => (
           <li>
             <a href={`#${item.id}`} class="toc-link">{item.text}</a>
@@ -67,9 +68,40 @@ const progressPercent = Math.round((stats.completed / stats.total) * 100);
 </aside>
 
 <script>
-  // Highlight current TOC item on scroll
+  // 动态获取页面标题并更新 TOC
+  function updateTocFromPage() {
+    const tocList = document.getElementById('toc-list');
+    if (!tocList) return;
+
+    // 获取页面中所有 h2 标题
+    const headings = document.querySelectorAll('.sl-markdown-content h2, .lesson-content h2, .algorithm-content h2');
+    
+    if (headings.length > 0) {
+      // 清空现有 TOC
+      tocList.innerHTML = '';
+      
+      headings.forEach(heading => {
+        // 确保标题有 id
+        if (!heading.id) {
+          heading.id = heading.textContent?.toLowerCase()
+            .replace(/\s+/g, '-')
+            .replace(/[^\w-]/g, '') || '';
+        }
+        
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `#${heading.id}`;
+        a.className = 'toc-link';
+        a.textContent = heading.textContent;
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+    }
+  }
+
+  // 高亮当前 TOC 项
   function updateTocHighlight() {
-    const headings = document.querySelectorAll('.sl-markdown-content h2');
+    const headings = document.querySelectorAll('.sl-markdown-content h2, .lesson-content h2, .algorithm-content h2');
     const tocLinks = document.querySelectorAll('.toc-link');
     
     let currentId: string | null = null;
@@ -88,8 +120,14 @@ const progressPercent = Math.round((stats.completed / stats.total) * 100);
     });
   }
 
+  // 页面加载时执行
+  document.addEventListener('astro:page-load', () => {
+    updateTocFromPage();
+    updateTocHighlight();
+  });
+
+  // 滚动时更新高亮
   window.addEventListener('scroll', updateTocHighlight);
-  updateTocHighlight();
 
   // Bookmark functionality
   const bookmarkBtn = document.querySelector('.bookmark-btn');
