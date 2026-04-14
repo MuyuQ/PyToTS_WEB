@@ -1,0 +1,93 @@
+<h2>你希望新UI呈现什么样的视觉风格？</h2>
+<p class="subtitle">选择一个最接近你期望的设计方向</p>
+
+<div class="cards">
+  <div class="card" data-choice="modern-clean" onclick="toggleSelect(this)">
+    <div
+      class="card-image"
+      style="
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+      "
+    >
+      Modern Clean
+    </div>
+    <div class="card-body">
+      <h3>现代简约</h3>
+      <p>大量留白，清晰层次，渐变色点缀，类似Vercel/Linear风格</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="tech-dev" onclick="toggleSelect(this)">
+    <div
+      class="card-image"
+      style="
+        background: #0d1117;
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #58a6ff;
+        font-size: 1.5rem;
+        font-weight: bold;
+        border: 1px solid #30363d;
+      "
+    >
+      &lt;Dev /&gt;
+    </div>
+    <div class="card-body">
+      <h3>技术极客</h3>
+      <p>深色主题，代码元素，GitHub/VS Code风格，适合开发者</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="edu-warm" onclick="toggleSelect(this)">
+    <div
+      class="card-image"
+      style="
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: bold;
+      "
+    >
+      Learn
+    </div>
+    <div class="card-body">
+      <h3>教育温暖</h3>
+      <p>柔和色彩，圆角卡片，友好图标，类似Duolingo/Notion风格</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="keep-current" onclick="toggleSelect(this)">
+    <div
+      class="card-image"
+      style="
+        background: hsl(232, 15%, 8%);
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #5488e8;
+        font-size: 1.5rem;
+        font-weight: bold;
+      "
+    >
+      Material
+    </div>
+    <div class="card-body">
+      <h3>保持当前</h3>
+      <p>MkDocs Material风格，保留现有设计但优化细节</p>
+    </div>
+  </div>
+</div>

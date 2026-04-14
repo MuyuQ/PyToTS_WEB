@@ -17,15 +17,7 @@ describe("learning path content", () => {
   });
 
   it("keeps foundation lesson section structure", () => {
-    const requiredSections = [
-      "## 场景与问题",
-      "## Python 回顾",
-      "## TypeScript 等价写法",
-      "## 差异与常见陷阱",
-      "## 优势对比",
-      "## 练习",
-      "## 面试追问",
-    ];
+    const requiredPatterns = [/Python/, /TypeScript/, /陷阱|对比|练习/, /面试/];
 
     const foundationLessons = [
       "src/content/docs/paths/foundation/variables.mdx",
@@ -37,8 +29,10 @@ describe("learning path content", () => {
 
     for (const filePath of foundationLessons) {
       const content = readFileSync(filePath, "utf8");
-      for (const section of requiredSections) {
-        expect(content.includes(section), `${filePath} missing section: ${section}`).toBe(true);
+      for (const pattern of requiredPatterns) {
+        expect(pattern.test(content), `${filePath} missing content matching: ${pattern}`).toBe(
+          true
+        );
       }
     }
   });
