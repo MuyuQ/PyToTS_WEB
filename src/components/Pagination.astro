@@ -98,31 +98,33 @@ const isRtl = dir === 'rtl';
   .pagination-links {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
-    gap: 1rem;
-    margin-top: 2rem;
+    gap: var(--space-md);
+    margin-top: var(--space-xl);
   }
 
   a {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 0.5rem;
+    gap: var(--space-sm);
     width: 100%;
-    flex-basis: calc(50% - 0.5rem);
+    flex-basis: calc(50% - var(--space-sm));
     flex-grow: 1;
-    border: 1px solid var(--sl-color-gray-5);
-    border-radius: 0.5rem;
-    padding: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
     text-decoration: none;
     color: var(--sl-color-gray-2);
-    box-shadow: var(--sl-shadow-md);
+    background: var(--color-card);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     overflow-wrap: anywhere;
-    transition: border-color 0.2s ease, transform 0.1s ease;
+    transition: all var(--transition-fast);
   }
 
   a:hover {
-    border-color: var(--sl-color-accent);
-    transform: translateY(-1px);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(91, 127, 255, 0.15);
   }
 
   a[rel="next"] {
@@ -135,6 +137,7 @@ const isRtl = dir === 'rtl';
     color: var(--sl-color-white);
     font-size: var(--sl-text-xl);
     line-height: var(--sl-line-height-headings);
+    font-weight: 500;
   }
 
   .pagination-label {
@@ -144,12 +147,12 @@ const isRtl = dir === 'rtl';
 
   .pagination-arrow {
     font-size: 1.5rem;
-    color: var(--sl-color-accent);
+    color: var(--color-primary);
   }
 
   @media (max-width: 768px) {
     a {
-      padding: 0.75rem;
+      padding: var(--space-sm);
     }
 
     .link-title {
