@@ -357,6 +357,15 @@ const typescriptHtml = await codeToHtml(typescript, {
     font-family: var(--font-mono) !important;
   }
 
+  /* 暗色主题下使用 Shiki 的 github-dark 颜色变量 */
+  [data-theme="dark"] .code-highlighted pre.shiki {
+    color: var(--shiki-dark);
+  }
+
+  [data-theme="dark"] .code-highlighted pre.shiki span {
+    color: var(--shiki-dark);
+  }
+
   .code-highlighted:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: -2px;
