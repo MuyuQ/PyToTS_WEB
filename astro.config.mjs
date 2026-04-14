@@ -9,11 +9,33 @@ export default defineConfig({
       title: "Python to TypeScript",
       head: [
         {
+          tag: "link",
+          attrs: {
+            rel: "preconnect",
+            href: "https://fonts.googleapis.com",
+          },
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "preconnect",
+            href: "https://fonts.gstatic.com",
+            crossorigin: "true",
+          },
+        },
+        {
+          tag: "link",
+          attrs: {
+            rel: "stylesheet",
+            href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
+          },
+        },
+        {
           tag: "style",
           content: `
-            html { background-color: #f5f1e8; }
-            [data-theme="light"] header, [data-theme="light"] .header { background-color: #ede8df !important; }
-            [data-theme="dark"] html, [data-theme="dark"] body { background-color: #0f172a !important; }
+            html { background-color: #ffffff; }
+            [data-theme="light"] header, [data-theme="light"] .header { background-color: #ffffff !important; }
+            [data-theme="dark"] html, [data-theme="dark"] body { background-color: #0c0e12 !important; }
             [data-theme="high-contrast"] html, [data-theme="high-contrast"] body { background-color: #000000 !important; }
             [data-theme="sepia"] html, [data-theme="sepia"] body { background-color: #f4ecd8 !important; }
           `,
