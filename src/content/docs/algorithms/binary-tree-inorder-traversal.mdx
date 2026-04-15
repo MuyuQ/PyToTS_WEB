@@ -8,6 +8,8 @@ space_complexity: "O(n)"
 description: 二叉树中序遍历的递归与迭代实现
 ---
 
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
 ## 问题描述
 
 给定一个二叉树的根节点 `root`，返回它的**中序**遍历结果。
@@ -33,166 +35,171 @@ description: 二叉树中序遍历的递归与迭代实现
 - **时间复杂度**：O(n)，每个节点访问一次
 - **空间复杂度**：O(n)，递归栈或显式栈
 
-## Python 实现
+## 双语实现
 
-```python
-from typing import Optional, List
+<Tabs syncKey="language">
+  <TabItem label="Python" icon="seti:python">
+    ```python
+    from typing import Optional, List
 
-class TreeNode:
-    """二叉树节点"""
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
+    class TreeNode:
+        """二叉树节点"""
+        def __init__(self, val=0, left=None, right=None):
+            self.val = val
+            self.left = left
+            self.right = right
 
-def inorder_traversal_recursive(root: Optional[TreeNode]) -> List[int]:
-    """
-    中序遍历 - 递归实现
+    def inorder_traversal_recursive(root: Optional[TreeNode]) -> List[int]:
+        """
+        中序遍历 - 递归实现
 
-    Args:
-        root: 二叉树根节点
+        Args:
+            root: 二叉树根节点
 
-    Returns:
-        中序遍历结果
-    """
-    result = []
+        Returns:
+            中序遍历结果
+        """
+        result = []
 
-    def dfs(node: Optional[TreeNode]) -> None:
-        if not node:
-            return
-        dfs(node.left)           # 左
-        result.append(node.val)  # 根
-        dfs(node.right)          # 右
+        def dfs(node: Optional[TreeNode]) -> None:
+            if not node:
+                return
+            dfs(node.left)           # 左
+            result.append(node.val)  # 根
+            dfs(node.right)          # 右
 
-    dfs(root)
-    return result
+        dfs(root)
+        return result
 
-def inorder_traversal_iterative(root: Optional[TreeNode]) -> List[int]:
-    """
-    中序遍历 - 迭代实现（栈）
+    def inorder_traversal_iterative(root: Optional[TreeNode]) -> List[int]:
+        """
+        中序遍历 - 迭代实现（栈）
 
-    Args:
-        root: 二叉树根节点
+        Args:
+            root: 二叉树根节点
 
-    Returns:
-        中序遍历结果
-    """
-    result = []
-    stack = []
-    current = root
+        Returns:
+            中序遍历结果
+        """
+        result = []
+        stack = []
+        current = root
 
-    while current or stack:
-        # 一直向左走
-        while current:
-            stack.append(current)
-            current = current.left
+        while current or stack:
+            # 一直向左走
+            while current:
+                stack.append(current)
+                current = current.left
 
-        # 出栈访问
-        current = stack.pop()
-        result.append(current.val)
+            # 出栈访问
+            current = stack.pop()
+            result.append(current.val)
 
-        # 转向右子树
-        current = current.right
+            # 转向右子树
+            current = current.right
 
-    return result
+        return result
 
 
-# 测试用例
-#     1
-#    / \
-#   2   3
-#  / \
-# 4   5
-root = TreeNode(1)
-root.left = TreeNode(2)
-root.right = TreeNode(3)
-root.left.left = TreeNode(4)
-root.left.right = TreeNode(5)
+    # 测试用例
+    #     1
+    #    / \
+    #   2   3
+    #  / \
+    # 4   5
+    root = TreeNode(1)
+    root.left = TreeNode(2)
+    root.right = TreeNode(3)
+    root.left.left = TreeNode(4)
+    root.left.right = TreeNode(5)
 
-print(inorder_traversal_recursive(root))   # [4, 2, 5, 1, 3]
-print(inorder_traversal_iterative(root))   # [4, 2, 5, 1, 3]
-```
+    print(inorder_traversal_recursive(root))   # [4, 2, 5, 1, 3]
+    print(inorder_traversal_iterative(root))   # [4, 2, 5, 1, 3]
+    ```
 
-## TypeScript 实现
+  </TabItem>
+  <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    /**
+     * 二叉树节点
+     */
+    class TreeNode {
+        val: number;
+        left: TreeNode | null;
+        right: TreeNode | null;
 
-```typescript
-/**
- * 二叉树节点
- */
-class TreeNode {
-    val: number;
-    left: TreeNode | null;
-    right: TreeNode | null;
-
-    constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
-        this.val = val ?? 0;
-        this.left = left ?? null;
-        this.right = right ?? null;
-    }
-}
-
-/**
- * 中序遍历 - 递归实现
- * @param root 二叉树根节点
- * @returns 中序遍历结果
- */
-function inorderTraversalRecursive(root: TreeNode | null): number[] {
-    const result: number[] = [];
-
-    function dfs(node: TreeNode | null): void {
-        if (!node) return;
-        dfs(node.left);           // 左
-        result.push(node.val);    // 根
-        dfs(node.right);          // 右
+        constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+            this.val = val ?? 0;
+            this.left = left ?? null;
+            this.right = right ?? null;
+        }
     }
 
-    dfs(root);
-    return result;
-}
+    /**
+     * 中序遍历 - 递归实现
+     * @param root 二叉树根节点
+     * @returns 中序遍历结果
+     */
+    function inorderTraversalRecursive(root: TreeNode | null): number[] {
+        const result: number[] = [];
 
-/**
- * 中序遍历 - 迭代实现（栈）
- * @param root 二叉树根节点
- * @returns 中序遍历结果
- */
-function inorderTraversalIterative(root: TreeNode | null): number[] {
-    const result: number[] = [];
-    const stack: TreeNode[] = [];
-    let current: TreeNode | null = root;
-
-    while (current || stack.length > 0) {
-        // 一直向左走
-        while (current) {
-            stack.push(current);
-            current = current.left;
+        function dfs(node: TreeNode | null): void {
+            if (!node) return;
+            dfs(node.left);           // 左
+            result.push(node.val);    // 根
+            dfs(node.right);          // 右
         }
 
-        // 出栈访问
-        current = stack.pop()!;
-        result.push(current.val);
-
-        // 转向右子树
-        current = current.right;
+        dfs(root);
+        return result;
     }
 
-    return result;
-}
+    /**
+     * 中序遍历 - 迭代实现（栈）
+     * @param root 二叉树根节点
+     * @returns 中序遍历结果
+     */
+    function inorderTraversalIterative(root: TreeNode | null): number[] {
+        const result: number[] = [];
+        const stack: TreeNode[] = [];
+        let current: TreeNode | null = root;
 
-// 测试用例
-//     1
-//    / \
-//   2   3
-//  / \
-// 4   5
-const root = new TreeNode(1);
-root.left = new TreeNode(2);
-root.right = new TreeNode(3);
-root.left.left = new TreeNode(4);
-root.left.right = new TreeNode(5);
+        while (current || stack.length > 0) {
+            // 一直向左走
+            while (current) {
+                stack.push(current);
+                current = current.left;
+            }
 
-console.log(inorderTraversalRecursive(root));   // [4, 2, 5, 1, 3]
-console.log(inorderTraversalIterative(root));   // [4, 2, 5, 1, 3]
-```
+            // 出栈访问
+            current = stack.pop()!;
+            result.push(current.val);
+
+            // 转向右子树
+            current = current.right;
+        }
+
+        return result;
+    }
+
+    // 测试用例
+    //     1
+    //    / \
+    //   2   3
+    //  / \
+    // 4   5
+    const root = new TreeNode(1);
+    root.left = new TreeNode(2);
+    root.right = new TreeNode(3);
+    root.left.left = new TreeNode(4);
+    root.left.right = new TreeNode(5);
+
+    console.log(inorderTraversalRecursive(root));   // [4, 2, 5, 1, 3]
+    console.log(inorderTraversalIterative(root));   // [4, 2, 5, 1, 3]
+    ```
+
+  </TabItem>
+</Tabs>
 
 ## 面试变体
 
