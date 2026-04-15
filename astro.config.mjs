@@ -36,8 +36,6 @@ export default defineConfig({
             :root[data-theme="dark"] { background-color: #0c0e12 !important; }
             :root[data-theme="dark"] body { background-color: #0c0e12 !important; }
             :root[data-theme="light"] header, :root[data-theme="light"] .header { background-color: #ffffff !important; }
-            :root[data-theme="high-contrast"] { background-color: #000000 !important; }
-            :root[data-theme="sepia"] { background-color: #f4ecd8 !important; }
           `,
         },
         {
@@ -48,18 +46,26 @@ export default defineConfig({
           content: `
             (function() {
               try {
-                var theme = localStorage.getItem('site-theme');
-                if (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                  theme = 'dark';
+                var theme = localStorage.getItem('starlight-theme');
+                if (!theme || theme === 'auto') {
+                  theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
                 }
-                if (theme) {
-                  document.documentElement.setAttribute('data-theme', theme);
-                  var bgColor = theme === 'dark' ? '#0c0e12' : theme === 'high-contrast' ? '#000000' : theme === 'sepia' ? '#f4ecd8' : '#ffffff';
-                  document.documentElement.style.setProperty('background-color', bgColor, 'important');
-                  document.body.style.setProperty('background-color', bgColor, 'important');
-                }
+                var bgColor = theme === 'dark' ? '#0c0e12' : '#ffffff';
+                document.documentElement.style.setProperty('background-color', bgColor, 'important');
+                document.body.style.setProperty('background-color', bgColor, 'important');
               } catch(e) {}
             })();
+            document.addEventListener('astro:page-load', function() {
+              try {
+                var theme = localStorage.getItem('starlight-theme');
+                if (!theme || theme === 'auto') {
+                  theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                }
+                var bgColor = theme === 'dark' ? '#0c0e12' : '#ffffff';
+                document.documentElement.style.setProperty('background-color', bgColor, 'important');
+                document.body.style.setProperty('background-color', bgColor, 'important');
+              } catch(e) {}
+            });
           `,
         },
       ],
@@ -73,7 +79,6 @@ export default defineConfig({
       components: {
         Banner: "./src/components/Banner.astro",
         Pagination: "./src/components/Pagination.astro",
-        ThemeSelect: "./src/components/ThemeToggle.astro",
         Header: "./src/components/Header.astro",
       },
       sidebar: [

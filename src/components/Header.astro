@@ -6,7 +6,7 @@ import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
 import Search from 'virtual:starlight/components/Search';
 import SiteTitle from 'virtual:starlight/components/SiteTitle';
 import SocialIcons from 'virtual:starlight/components/SocialIcons';
-import ThemeToggle from './ThemeToggle.astro';
+import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
 
 const shouldRenderSearch =
   config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro';
@@ -21,7 +21,7 @@ const shouldRenderSearch =
       <SocialIcons {...Astro.props} />
     </div>
     {shouldRenderSearch && <Search {...Astro.props} />}
-    <ThemeToggle />
+    <ThemeSelect {...Astro.props} />
     <LanguageSelect {...Astro.props} />
   </div>
 </div>
