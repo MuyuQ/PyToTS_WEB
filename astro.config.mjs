@@ -33,8 +33,8 @@ export default defineConfig({
         {
           tag: "style",
           content: `
-            :root { background-color: #ffffff; }
             :root[data-theme="dark"] { background-color: #0c0e12 !important; }
+            :root[data-theme="dark"] body { background-color: #0c0e12 !important; }
             :root[data-theme="light"] header, :root[data-theme="light"] .header { background-color: #ffffff !important; }
             :root[data-theme="high-contrast"] { background-color: #000000 !important; }
             :root[data-theme="sepia"] { background-color: #f4ecd8 !important; }
@@ -54,14 +54,9 @@ export default defineConfig({
                 }
                 if (theme) {
                   document.documentElement.setAttribute('data-theme', theme);
-                  // Direct inline style - highest priority, prevents FOUC during SPA navigation
-                  if (theme === 'dark') {
-                    document.documentElement.style.backgroundColor = '#0c0e12';
-                  } else if (theme === 'high-contrast') {
-                    document.documentElement.style.backgroundColor = '#000000';
-                  } else if (theme === 'sepia') {
-                    document.documentElement.style.backgroundColor = '#f4ecd8';
-                  }
+                  var bgColor = theme === 'dark' ? '#0c0e12' : theme === 'high-contrast' ? '#000000' : theme === 'sepia' ? '#f4ecd8' : '#ffffff';
+                  document.documentElement.style.setProperty('background-color', bgColor, 'important');
+                  document.body.style.setProperty('background-color', bgColor, 'important');
                 }
               } catch(e) {}
             })();
