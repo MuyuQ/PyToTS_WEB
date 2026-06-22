@@ -8,7 +8,7 @@ A learning platform designed for Python developers transitioning to TypeScript. 
 
 - **Side-by-Side Comparison**: Python and TypeScript code displayed together for intuitive syntax comparison
 - **Structured Learning Paths**: Progressive curriculum from basics to advanced topics
-- **Algorithm Practice**: Bilingual implementations of 26 classic LeetCode problems
+- **Algorithm Practice**: Bilingual implementations of 36 classic LeetCode problems
 - **Interactive Quizzes**: 200+ practice questions with instant feedback
 - **Interview Ready**: Each lesson includes interview follow-up questions
 
@@ -16,9 +16,9 @@ A learning platform designed for Python developers transitioning to TypeScript. 
 
 | Path       | Lessons | Topics                                                            |
 | ---------- | ------- | ----------------------------------------------------------------- |
-| Foundation | 5       | Variables, Control Flow, Data Structures, Functions, Classes      |
-| Migration  | 7       | Modules, Error Handling, Enums, Strings, Async, Decorators        |
-| Advanced   | 8       | Generics, Type Guards, Utility Types, Declarations, Configuration |
+| Foundation | 5       | Variables, Control Flow, Data Structures, Functions, Classes                        |
+| Migration  | 7       | Type System, Functions Advanced, Modules, Error Handling, Enums, Strings & Regex, Async |
+| Advanced   | 8       | Generics, Type Guards, Utility Types, Decorators, Declarations & Config, Design Patterns, Date & Time, Node.js Basics |
 
 ## Quick Start
 
@@ -41,24 +41,36 @@ npm run dev
 
 ### Available Commands
 
-| Command            | Description              |
-| ------------------ | ------------------------ |
-| `npm run dev`      | Start development server |
-| `npm run build`    | Build for production     |
-| `npm run preview`  | Preview production build |
-| `npm run test`     | Run unit tests           |
-| `npm run test:e2e` | Run E2E tests            |
-| `npm run lint`     | Run linter               |
-| `npm run check`    | Run full quality check   |
+| Command            | Description                 |
+| ------------------ | --------------------------- |
+| `npm run dev`      | Start development server    |
+| `npm run build`    | Build for production        |
+| `npm run preview`  | Preview production build    |
+| `npm run test`     | Run unit tests              |
+| `npm run test:e2e` | Run E2E tests               |
+| `npm run lint`     | Run linter                  |
+| `npm run format`   | Check code formatting       |
+| `npm run linkcheck`| Verify internal links       |
+| `npm run check`    | Run full quality check      |
 
 ## Project Structure
 
 ```
 src/
-├── components/           # UI Components
-│   ├── QuizContainer.astro    # Quiz container
-│   ├── DualCodeBlock.astro    # Dual code display
-│   └── PathNavigator.astro    # Learning path navigation
+├── components/                # UI Components
+│   ├── Banner.astro                 # Banner alert
+│   ├── BookmarkButton.astro         # Bookmark button
+│   ├── CommonMistakes.astro         # Common mistakes
+│   ├── CompletionBadge.astro        # Completion badge
+│   ├── Header.astro                 # Header navigation
+│   ├── LessonProgressMarkers.astro  # Lesson progress markers
+│   ├── MobileNav.astro              # Mobile navigation
+│   ├── Pagination.astro             # Pagination
+│   ├── PathNavigator.astro          # Learning path navigation
+│   ├── QuizContainer.astro          # Quiz container
+│   ├── RightSidebar.astro           # Right sidebar
+│   ├── ShareButtons.astro           # Share buttons
+│   └── SidebarProgress.astro        # Sidebar progress
 ├── content/docs/         # Documentation (MDX)
 │   ├── paths/            # Learning paths
 │   │   ├── foundation/   # Foundation lessons
@@ -68,7 +80,7 @@ src/
 │   ├── handbook/         # Quick reference
 │   └── practice/         # Practice quizzes
 ├── lib/                  # Utilities
-├── pages/                # Page routes
+├── pages/                # Custom pages
 └── styles/               # Stylesheets
 ```
 
