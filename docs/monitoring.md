@@ -1,8 +1,10 @@
 # Monitoring and Alerting Configuration
 
+> **Status: Planned** — This document describes a proposed monitoring setup that has not yet been implemented. The project currently relies on GitHub Actions for CI/CD and has no Sentry, UptimeRobot, or Checkly integration.
+
 ## Overview
 
-This document describes the monitoring and alerting setup for the Python to TypeScript Learning Site.
+This document describes the planned monitoring and alerting setup for the Python to TypeScript Learning Site.
 
 ## Sentry Error Tracking
 

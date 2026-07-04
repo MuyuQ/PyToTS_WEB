@@ -16,7 +16,8 @@ A learning platform designed for Python developers transitioning to TypeScript. 
 
 | Path       | Lessons | Topics                                                            |
 | ---------- | ------- | ----------------------------------------------------------------- |
-| Foundation | 5       | Variables, Control Flow, Data Structures, Functions, Classes                        |
+| Preparation| 2       | TypeScript Introduction, Environment Setup                        |
+| Foundation | 5       | Variables, Control Flow, Data Structures, Functions, Classes      |
 | Migration  | 7       | Type System, Functions Advanced, Modules, Error Handling, Enums, Strings & Regex, Async |
 | Advanced   | 8       | Generics, Type Guards, Utility Types, Decorators, Declarations & Config, Design Patterns, Date & Time, Node.js Basics |
 

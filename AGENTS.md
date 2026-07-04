@@ -1,8 +1,8 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-03-12
-**Commit:** 86c926c
-**Branch:** feat/m2-m3-learning-site
+**Generated:** 2026-07-04
+**Commit:** 5fd5a4a
+**Branch:** main
 
 ## OVERVIEW
 
@@ -13,10 +13,11 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 ```
 ./
 ├── src/
-│   ├── components/          # 自定义组件 (QuizContainer, DualCodeBlock...)
+│   ├── components/          # 自定义组件 (QuizContainer, PathNavigator...)
 │   ├── content/docs/        # 文档内容 (MDX)
-│   │   ├── algorithms/      # 26 道算法题 (双语实现)
+│   │   ├── algorithms/      # 36 道算法题 (双语实现)
 │   │   ├── paths/           # 学习路径
+│   │   │   ├── preparation/ # 准备 2 课
 │   │   │   ├── foundation/  # 基础 5 课
 │   │   │   ├── migration/   # 迁移 7 课
 │   │   │   └── advanced/    # 进阶 8 课
@@ -36,7 +37,7 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 
 | 任务         | 位置                                 | 说明                                                               |
 | ------------ | ------------------------------------ | ------------------------------------------------------------------ |
-| 新增算法题   | `src/content/docs/algorithms/`       | 见 [algorithms/AGENTS.md](./src/content/docs/algorithms/AGENTS.md) |
+| 新增算法题   | `src/content/docs/algorithms/`       | 见 [docs/algorithms-AGENTS.md](./docs/algorithms-AGENTS.md) |
 | 修改课程内容 | `src/content/docs/paths/*/`          | 每课独立 MDX                                                       |
 | 组件开发     | `src/components/`                    | Astro 组件                                                         |
 | 添加测验题目 | `src/components/QuizContainer.astro` | 内置题库                                                           |
@@ -74,7 +75,7 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 
 ```bash
 # 开发
-npm run dev -- --host 127.0.0.1 --port 4408
+npm run dev -- --host 127.0.0.1
 
 # 质量检查 (lint + typecheck + test + build + linkcheck)
 npm run check
@@ -89,7 +90,7 @@ npm run build       # 静态站点
 
 ## NOTES
 
-- **端口冲突**: 开发服务器尝试 4402+，如果被占用会自动递增
+- **端口**: 开发服务器默认端口 4321（Astro 默认值），被占用时自动递增
 - **内容检查**: `npm run linkcheck` 验证内部链接
 - **搜索索引**: 构建时自动生成 Pagefind 索引
 - **CI/CD**: GitHub Actions 自动部署到 GitHub Pages
