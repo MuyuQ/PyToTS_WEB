@@ -4,3 +4,8 @@ dist/
 nul
 node_modules/.astro/
 .worktrees/
+.DS_Store
+__pycache__/
+*.pyc
+*.sync-conflict-*
+.venv/
