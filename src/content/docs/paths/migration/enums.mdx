@@ -8,8 +8,10 @@ prerequisites: ["types"]
 python_tags: ["enum", "Enum", "constant"]
 ts_tags: ["enum", "const enum", "union type", "as const"]
 description: 理解 Python 和 TypeScript 枚举与常量定义的差异
+sidebar:
+  order: 6
 ---
-## 🎯 为什么这个很重要
+## 为什么这个很重要
 
 在 Python 里定义常量，习惯用全大写变量：
 
@@ -50,7 +52,7 @@ type Status = "active" | "inactive" | "pending";
 
 哪种更好？为什么社区不推荐 `enum`？`const enum` 又是什么？这些问题的答案会影响代码质量和打包体积。
 
-## 💡 核心概念
+## 核心概念
 
 ### 枚举 = 有名字的编号
 
@@ -109,7 +111,7 @@ setUserStatus("pending"); // 编译报错
 
 Union Type 没有运行时开销，编译后就是字符串，这也是社区更推荐它的原因。
 
-## 📚 Python 回顾
+## Python 回顾
 
 ### 基本枚举
 
@@ -182,7 +184,7 @@ API_BASE_URL = "https://api.example.com"
 MAX_CONNECTIONS = 200  # 可以修改，只是不推荐
 ```
 
-## 🔧 TypeScript 等价写法
+## TypeScript 等价写法
 
 ### 数字枚举
 
@@ -271,7 +273,7 @@ const CONFIG = {
 CONFIG.maxRetries = 5; // ❌ 编译错误
 ```
 
-## ⚠️ 差异与常见陷阱
+## 差异与常见陷阱
 
 ### 1. 编译产物差异
 
@@ -384,7 +386,7 @@ const enum Bad {
 }
 ```
 
-## 💬 开发者对话
+## 开发者对话
 
 **Python 开发者**：TypeScript 的枚举为什么编译出来那么多代码？
 
@@ -449,7 +451,7 @@ arr1.push("c"); // ✅ 可以修改
 arr2.push("c"); // ❌ 只读，不能修改
 ```
 
-## 🤔 试试看
+## 试试看
 
 ### 预测输出
 
@@ -603,7 +605,7 @@ sendRequest(HttpMethod.GET, "https://api.example.com");
 
 </details>
 
-## 📊 优势对比
+## 优势对比
 
 | 特性         | Python Enum | TypeScript Enum | Union Type |
 | ------------ | ----------- | --------------- | ---------- |
@@ -616,7 +618,7 @@ sendRequest(HttpMethod.GET, "https://api.example.com");
 | 计算成员     | 支持        | 支持            | 不适用     |
 | 跨模块兼容   | 无问题      | const enum 有坑 | 无问题     |
 
-## 🎓 面试实战
+## 面试实战
 
 ### 基础问题
 

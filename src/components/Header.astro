@@ -39,6 +39,7 @@ const shouldRenderSearch =
 
   .title-wrapper {
     overflow: hidden;
+    flex-shrink: 0;
   }
 
   .title-wrapper :global(.site-title) {
@@ -46,6 +47,14 @@ const shouldRenderSearch =
     font-weight: 600;
     color: var(--sl-color-accent);
     letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+
+  /* 窄屏下缩小站点标题，避免被截断（此前 390px 视口显示为 "Python to Ty"） */
+  @media (max-width: 30rem) {
+    .title-wrapper :global(.site-title) {
+      font-size: 0.9375rem;
+    }
   }
 
   .right-group {

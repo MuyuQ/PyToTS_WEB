@@ -1,52 +1,50 @@
 ---
-title: Practice & Quiz
-description: 练习与自测入口
+title: 练习与测验
+description: 练习与自测入口：交互测验、算法题库与自测清单
 kind: page
 ---
+
 import { CardGrid, Card } from "@astrojs/starlight/components";
 
 通过小练习和题单，巩固 Python 到 TypeScript 的迁移能力。
 
 ## 互动测验
 
-<CardGrid stagger>
-  <Card title="类型系统测验" icon="seti:typescript">
-    检验你对 Python 和 TypeScript 类型系统差异的理解 - 基本类型对应关系 - 联合类型与可选类型 -
-    数组与泛型 [开始测验 →](/practice/quiz/)
+全部测验在同一个页面上，按知识模块分节作答，即时反馈：
+
+<CardGrid>
+  <Card title="基础测验">
+    变量声明、控制流、数据结构、函数与类，共 5 组。
+
+    [开始基础测验 →](quiz/#基础测验)
   </Card>
 
-  <Card title="函数与参数测验" icon="seti:javascript">
-    测试函数定义、参数传递和箭头函数的知识 - 默认参数与可选参数 - 剩余参数与展开运算符 -
-    箭头函数与普通函数 [开始测验 →](/practice/quiz/)
+  <Card title="迁移测验">
+    类型系统、函数参数、模块、异步、错误处理、枚举与正则，共 7 组。
+
+    [开始迁移测验 →](quiz/#迁移测验)
   </Card>
 
-  <Card title="异步编程测验" icon="seti:clock">
-    验证 Promise 和 async/await 的掌握程度 - Promise 基础 - async/await 语法 - 并发控制 [开始测验
-    →](/practice/quiz/)
+  <Card title="进阶测验">
+    泛型、类型守卫、工具类型、装饰器、设计模式与 Node.js，共 8 组。
+
+    [开始进阶测验 →](quiz/#进阶测验)
   </Card>
 </CardGrid>
 
 ## 算法练习
 
-<CardGrid stagger>
-  <Card title="算法题库" icon="seti:code">
-    20+ 道经典算法题，每道题都有 Python 和 TypeScript 双语实现 - 数组与双指针 - 动态规划 - 图与搜索
-    - 设计与数据结构 [进入题库 →](/algorithms/)
-  </Card>
-</CardGrid>
+<CardGrid>
+  <Card title="算法题库">
+    经典算法题，每道题都有 Python 和 TypeScript 双语实现，支持按难度与标签筛选。
 
-## 学习路径
-
-<CardGrid stagger>
-  <Card title="迁移路径" icon="seti:git">
-    系统学习 Python 到 TypeScript 的语法映射 - 类型系统对比 - 函数与参数 - 异步编程 - 模块与包管理
-    [开始学习 →](/paths/)
+    [进入题库 →](../algorithms/)
   </Card>
 </CardGrid>
 
 ## 练习建议
 
-1. **先学习再测验**：建议先完成对应的 [学习路径](/paths/) 内容
+1. **先学习再测验**：建议先完成对应的 [学习路径](../paths/) 内容
 2. **边做边对比**：在算法练习中，刻意对比 Python 和 TypeScript 的实现差异
 3. **定期自测**：使用测验功能检验学习成果
 4. **总结规律**：建立自己的「Python ↔ TypeScript 语法对照表」

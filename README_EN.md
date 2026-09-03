@@ -59,19 +59,19 @@ npm run dev
 ```
 src/
 ├── components/                # UI Components
-│   ├── Banner.astro                 # Banner alert
-│   ├── BookmarkButton.astro         # Bookmark button
-│   ├── CommonMistakes.astro         # Common mistakes
-│   ├── CompletionBadge.astro        # Completion badge
+│   ├── AlgorithmIndex.astro        # Filterable algorithm index
+│   ├── Banner.astro                 # Banner alert (with sidebar progress)
+│   ├── BookmarkToggle.astro         # Bookmark toggle (lessons/algorithms)
+│   ├── CodeCompare.astro            # Python/TS side-by-side code
+│   ├── DifficultyBadge.astro        # Difficulty badge
+│   ├── DifficultyIndex.astro        # Difficulty index
 │   ├── Header.astro                 # Header navigation
 │   ├── LessonProgressMarkers.astro  # Lesson progress markers
-│   ├── MobileNav.astro              # Mobile navigation
-│   ├── Pagination.astro             # Pagination
-│   ├── PathNavigator.astro          # Learning path navigation
+│   ├── Pagination.astro             # Pagination (curriculum order)
 │   ├── QuizContainer.astro          # Quiz container
-│   ├── RightSidebar.astro           # Right sidebar
-│   ├── ShareButtons.astro           # Share buttons
-│   └── SidebarProgress.astro        # Sidebar progress
+│   ├── SidebarProgress.astro        # Sidebar progress
+│   ├── TagIndex.astro               # Tag index
+│   └── overrides/PageTitle.astro    # Title metadata badges
 ├── content/docs/         # Documentation (MDX)
 │   ├── paths/            # Learning paths
 │   │   ├── foundation/   # Foundation lessons

@@ -1,0 +1,82 @@
+---
+/**
+ * Starlight PageTitle 覆盖：在标题下方渲染来自 frontmatter 的元数据徽章。
+ * 数据全部来自内容集合 schema，页面无需改动 Markdown 正文。
+ */
+import type { Props } from '@astrojs/starlight/props';
+import PageTitleComponent from '@astrojs/starlight/components/PageTitle.astro';
+import DifficultyBadge from '../DifficultyBadge.astro';
+import BookmarkToggle from '../BookmarkToggle.astro';
+
+const props = Astro.props as Props;
+// 非文档页（首页 splash、404）可能没有 entry，兜底空对象避免构建/渲染抛错
+const { kind, level, difficulty, tags, time_complexity, space_complexity } =
+  props.entry?.data ?? {};
+
+// entry.id 形如 paths/migration/types.mdx：归一为与 progress-store 一致的原始路径
+const rawId = typeof props.entry?.id === 'string' ? props.entry.id : '';
+const slug = rawId.replace(/\.(mdx|md)$/, '').replace(/(^|\/)index$/, '');
+const pagePath = slug ? `/${slug}/` : '';
+
+const LEVEL_LABELS: Record<string, string> = {
+  preparation: '准备',
+  foundation: '基础',
+  migration: '迁移',
+  advanced: '进阶',
+};
+
+const showMeta = kind === 'algorithm' || kind === 'lesson';
+---
+
+<div class="pt-wrap">
+  <PageTitleComponent {...props} />
+  {showMeta && (
+    <div class="page-meta">
+      {kind === 'lesson' && level && level in LEVEL_LABELS && (
+        <span class="meta-chip meta-chip--track">{LEVEL_LABELS[level]}课程</span>
+      )}
+      {kind === 'algorithm' && <span class="meta-chip meta-chip--track">算法题</span>}
+      <DifficultyBadge difficulty={difficulty} />
+      {time_complexity && <span class="meta-chip meta-chip--mono">时间 {time_complexity}</span>}
+      {space_complexity && <span class="meta-chip meta-chip--mono">空间 {space_complexity}</span>}
+      {tags?.map((tag) => <span class="meta-chip">{tag}</span>)}
+      {pagePath && <BookmarkToggle path={pagePath} />}
+    </div>
+  )}
+</div>
+
+<style>
+  .page-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: -0.25rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.0625rem 0.5rem;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--sl-color-hairline);
+    background: var(--sl-color-bg-inline-code);
+    color: var(--sl-color-gray-2);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  .meta-chip--track {
+    color: var(--sl-color-accent);
+    border-color: var(--sl-color-accent-low);
+    background: var(--sl-color-accent-low);
+    font-weight: 600;
+  }
+
+  .meta-chip--mono {
+    font-family: var(--font-mono);
+  }
+</style>

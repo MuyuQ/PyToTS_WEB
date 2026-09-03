@@ -1031,7 +1031,8 @@ const questions = quizData[quizId] || [];
 </div>
 
 <script>
-  import { QuizManager, type QuizQuestion } from '../lib/quiz-manager';
+  import { QuizManager, type QuizOption, type QuizQuestion } from '../lib/quiz-manager';
+  import { saveQuizResult } from '../lib/progress-store';
 
   // Initialize quizzes 
   document.addEventListener('DOMContentLoaded', () => {
@@ -1061,6 +1062,14 @@ const questions = quizData[quizId] || [];
     const actionBtn = container.querySelector('.quiz-action-btn') as HTMLButtonElement;
     const explanationEl = container.querySelector('.quiz-explanation') as HTMLElement;
     const resultEl = container.querySelector('.quiz-result') as HTMLElement;
+
+    function buildIndicator(index: number) {
+      const indicator = document.createElement('span');
+      indicator.className = 'option-indicator';
+      indicator.setAttribute('aria-hidden', 'true');
+      indicator.textContent = String.fromCharCode(65 + index);
+      return indicator;
+    }
 
     function render() {
       const state = quiz.getState();
@@ -1109,21 +1118,25 @@ const questions = quizData[quizId] || [];
       
       if (isPredictionQuestion) {
         // Render prediction question options specially
-        currentQ.options.forEach((option: any, index: number) => {
+        currentQ.options.forEach((option: QuizOption, index: number) => {
           const btn = document.createElement('button');
           btn.className = 'quiz-option';
-          
+          btn.appendChild(buildIndicator(index));
+
+          const textEl = document.createElement('span');
+          textEl.className = 'option-text';
           // Show the expected output in bold and description
           if (option.text.includes('【预期:')) {
             // Extract and format expected output from specially formatted text
             const textParts = option.text.split('】');
             const expectedValue = textParts[0].replace('【预期:', '');
             const desc = textParts.slice(1).join('】');
-            
-            btn.innerHTML = `<strong>预测输出:</strong> ${expectedValue} - <em>${desc}</em>`;
+
+            textEl.innerHTML = `<strong>预测输出:</strong> ${expectedValue} - <em>${desc}</em>`;
           } else {
-            btn.textContent = option.text;
+            textEl.textContent = option.text;
           }
+          btn.appendChild(textEl);
           
           btn.setAttribute('role', 'radio');
           btn.setAttribute('aria-checked', currentSelected === index ? 'true' : 'false');
@@ -1164,10 +1177,15 @@ const questions = quizData[quizId] || [];
         });
       } else {
         // Original rendering logic for multiple choice questions
-        currentQ.options.forEach((option: any, index: number) => {
+        currentQ.options.forEach((option: QuizOption, index: number) => {
           const btn = document.createElement('button');
           btn.className = 'quiz-option';
-          btn.textContent = option.text;
+          btn.appendChild(buildIndicator(index));
+
+          const textEl = document.createElement('span');
+          textEl.className = 'option-text';
+          textEl.textContent = option.text;
+          btn.appendChild(textEl);
           btn.setAttribute('role', 'radio');
           btn.setAttribute('aria-checked', currentSelected === index ? 'true' : 'false');
           btn.setAttribute('aria-label', `选项 ${index + 1}: ${option.text}`);
@@ -1257,9 +1275,8 @@ const questions = quizData[quizId] || [];
       const questions = quiz.getQuestions();
       const percentage = Math.round((state.score / questions.length) * 100);
 
-      // 保存测验结果
+      // 保存测验结果（顶层 ESM import：浏览器脚本无 require）
       try {
-        const { saveQuizResult } = require('../lib/progress-store');
         const quizId = container.getAttribute('data-quiz-id');
         if (quizId) {
           saveQuizResult(quizId, state.score, questions.length);
@@ -1270,8 +1287,14 @@ const questions = quizData[quizId] || [];
 
       // 发送分析事件
       try {
-        if (typeof window !== 'undefined' && (window as any).plausible) {
-          (window as any).plausible('Quiz Completed', {
+        const analytics = window as unknown as {
+          plausible?: (
+            event: string,
+            data?: { props?: Record<string, string | number | null> }
+          ) => void;
+        };
+        if (typeof window !== 'undefined' && analytics.plausible) {
+          analytics.plausible('Quiz Completed', {
             props: {
               quiz_id: container.getAttribute('data-quiz-id'),
               score: state.score,
@@ -1351,7 +1374,7 @@ const questions = quizData[quizId] || [];
 
   .quiz-progress {
     font-size: 0.875rem;
-    color: var(--color-gray-2);
+    color: var(--sl-color-gray-2);
   }
 
   .quiz-question {
@@ -1372,7 +1395,7 @@ const questions = quizData[quizId] || [];
     gap: var(--space-sm);
   }
 
-  .quiz-option {
+  :global(.quiz-option) {
     display: flex;
     align-items: center;
     gap: var(--space-md);
@@ -1380,37 +1403,41 @@ const questions = quizData[quizId] || [];
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
     background: var(--color-bg);
+    color: var(--color-text);
     cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 0.875rem;
     transition: all var(--transition-fast);
     min-height: 44px;
   }
 
-  .quiz-option:hover:not(.disabled) {
+  :global(.quiz-option:hover:not(.disabled)) {
     border-color: var(--color-primary);
     background: var(--sl-color-accent-low);
   }
 
-  .quiz-option.selected {
+  :global(.quiz-option.selected) {
     border-color: var(--color-primary);
     background: var(--sl-color-accent-low);
   }
 
-  .quiz-option.correct {
+  :global(.quiz-option.correct) {
     border-color: var(--color-success);
     background: rgba(34, 197, 94, 0.1);
   }
 
-  .quiz-option.incorrect {
+  :global(.quiz-option.incorrect) {
     border-color: var(--color-error);
     background: rgba(239, 68, 68, 0.1);
   }
 
-  .quiz-option.disabled {
+  :global(.quiz-option.disabled) {
     cursor: not-allowed;
     opacity: 0.7;
   }
 
-  .option-indicator {
+  :global(.quiz-option .option-indicator) {
     width: 24px;
     height: 24px;
     border: 2px solid var(--color-border);
@@ -1424,25 +1451,25 @@ const questions = quizData[quizId] || [];
     transition: all var(--transition-fast);
   }
 
-  .quiz-option.selected .option-indicator {
+  :global(.quiz-option.selected .option-indicator) {
     border-color: var(--color-primary);
     background: var(--color-primary);
     color: white;
   }
 
-  .quiz-option.correct .option-indicator {
+  :global(.quiz-option.correct .option-indicator) {
     border-color: var(--color-success);
     background: var(--color-success);
     color: white;
   }
 
-  .quiz-option.incorrect .option-indicator {
+  :global(.quiz-option.incorrect .option-indicator) {
     border-color: var(--color-error);
     background: var(--color-error);
     color: white;
   }
 
-  .option-text {
+  :global(.quiz-option .option-text) {
     flex: 1;
     font-size: 0.875rem;
     line-height: 1.5;
@@ -1453,19 +1480,21 @@ const questions = quizData[quizId] || [];
     margin-top: var(--space-md);
     padding: var(--space-md);
     background: var(--color-bg);
-    border-left: 4px solid var(--color-primary);
+    border: 1px solid rgba(84, 136, 232, 0.35);
     border-radius: var(--radius-sm);
     font-size: 0.875rem;
     line-height: 1.6;
-    color: var(--color-gray-2);
+    color: var(--sl-color-gray-2);
   }
 
   .quiz-explanation.correct {
-    border-left-color: var(--color-success);
+    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(34, 197, 94, 0.06);
   }
 
   .quiz-explanation.incorrect {
-    border-left-color: var(--color-error);
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.06);
   }
 
   .quiz-actions {
@@ -1529,7 +1558,7 @@ const questions = quizData[quizId] || [];
       padding: var(--space-md);
     }
 
-    .quiz-option {
+    :global(.quiz-option) {
       padding: var(--space-sm);
     }
 
@@ -1541,7 +1570,7 @@ const questions = quizData[quizId] || [];
   @media (prefers-reduced-motion: reduce) {
     .quiz-option,
     .quiz-action-btn,
-    .option-indicator {
+    :global(.quiz-option .option-indicator) {
       transition: none;
     }
   }

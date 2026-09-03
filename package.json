@@ -14,7 +14,8 @@
     "test:a11y": "vitest run tests/a11y/",
     "test:e2e": "playwright test",
     "linkcheck": "node scripts/link-check.mjs",
-    "check": "npm run lint && npm run typecheck && npm run test && npm run build && npm run linkcheck"
+    "check": "npm run lint && npm run lint:content && npm run typecheck && npm run test && npm run build && npm run linkcheck",
+    "lint:content": "node scripts/content-lint.mjs"
   },
   "dependencies": {
     "@astrojs/starlight": "0.28.6",

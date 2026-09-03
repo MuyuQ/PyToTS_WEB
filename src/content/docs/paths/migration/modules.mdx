@@ -8,8 +8,14 @@ prerequisites: ["functions"]
 python_tags: ["import", "from", "pip"]
 ts_tags: ["import", "export", "npm"]
 description: 掌握 Python 和 TypeScript 模块系统的差异
+sidebar:
+  order: 3
+
 ---
-## 🎯 为什么这个很重要
+
+import CodeCompare from '../../../../components/CodeCompare.astro';
+
+## 为什么这个很重要
 
 你在 Python 里写惯了简洁的导入：
 
@@ -35,7 +41,7 @@ Typescript thinks this is a CommonJS module...
 
 理解模块系统差异，能帮你避免一多半的项目结构问题...
 
-## 💡 核心概念
+## 核心概念
 
 ### 模块 = 工具箱
 
@@ -74,7 +80,7 @@ import { User } from "./types"; // 要说明书 + 实物
 
 `import type` 只导入类型定义，编译后会被删除。就像你只看说明书，不把产品买回家。
 
-## 📚 代码对比
+## 代码对比
 
 ### Python 模块系统
 
@@ -124,8 +130,8 @@ import type { User } from "./types";
 
 ### 导出对比
 
-```python
-# Python: 没有显式导出概念
+<CodeCompare
+  py={`# Python: 没有显式导出概念
 # 文件里定义的东西都可以被导入
 
 # mymodule.py
@@ -133,11 +139,8 @@ def public_func():
     pass
 
 def _private_func():  # 约定私有，但技术上仍可导入
-    pass
-```
-
-```typescript
-// TypeScript: 显式导出
+    pass`}
+  ts={`// TypeScript: 显式导出
 
 // mymodule.ts
 
@@ -151,10 +154,10 @@ export default class MyClass {}
 export type User = {
   name: string;
   age: number;
-};
-```
+};`}
+/>
 
-## ⚠️ 常见陷阱
+## 常见陷阱
 
 ### 1. 相对路径必须加 `./`
 
@@ -206,7 +209,7 @@ type User = { name: string }; // 忘了 export
 import { User } from "./types"; // ❌ 报错：没有导出 User
 ```
 
-## 📊 语法速查表
+## 语法速查表
 
 | 操作         | Python                 | TypeScript                            |
 | ------------ | ---------------------- | ------------------------------------- |
@@ -220,7 +223,7 @@ import { User } from "./types"; // ❌ 报错：没有导出 User
 | 依赖文件     | requirements.txt       | package.json                          |
 | 锁文件       | Pipfile.lock           | package-lock.json                     |
 
-## 💬 开发者对话
+## 开发者对话
 
 **Python 开发者**：为什么 TypeScript 导入这么麻烦？还要写 `export`？
 
@@ -251,7 +254,7 @@ import { User } from "./types"; // 会保留引用
 2. 用 `import type`，只在类型层面依赖
 3. 延迟导入：在函数内部 `import`，而不是文件顶部
 
-## 🤔 预测输出
+## 预测输出
 
 看看这段代码，运行时会输出什么？
 
@@ -292,7 +295,7 @@ console.log(inc()); // 输出什么？
 
 </details>
 
-## ❌ 找错误
+## 找错误
 
 下面这段代码有问题，你能找到吗？
 
@@ -349,7 +352,7 @@ import { User } from "./user"; // ✅ 正确
 
 </details>
 
-## 📝 练习
+## 练习
 
 将以下 Python 导入转换为 TypeScript：
 
@@ -378,7 +381,7 @@ import * as np from "numpy"; // 实际项目可能用其他数值计算库
 
 </details>
 
-## 🎓 面试追问
+## 面试追问
 
 - `import *` 和具名导入有什么区别？
 

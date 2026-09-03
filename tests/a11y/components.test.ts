@@ -42,9 +42,7 @@ describe("axe-core accessibility tests", () => {
       const document = dom.window.document;
       const results = await axe.run(document.body);
 
-      const criticalViolations = results.violations.filter(
-        (v) => v.impact === "critical"
-      );
+      const criticalViolations = results.violations.filter((v) => v.impact === "critical");
       expect(criticalViolations).toHaveLength(0);
     });
 
@@ -61,9 +59,7 @@ describe("axe-core accessibility tests", () => {
 
     it("should have proper heading structure", async () => {
       const document = dom.window.document;
-      const questionHeading = document.querySelector(
-        ".quiz-question[role='heading']"
-      );
+      const questionHeading = document.querySelector(".quiz-question[role='heading']");
 
       expect(questionHeading).toBeTruthy();
       expect(questionHeading?.getAttribute("aria-level")).toBe("3");
@@ -75,8 +71,7 @@ describe("axe-core accessibility tests", () => {
 
       buttons.forEach((button) => {
         // Each button should have text content or aria-label
-        const hasLabel =
-          button.textContent?.trim() || button.getAttribute("aria-label");
+        const hasLabel = button.textContent?.trim() || button.getAttribute("aria-label");
         expect(hasLabel).toBeTruthy();
       });
     });
@@ -131,9 +126,7 @@ describe("axe-core accessibility tests", () => {
       const document = dom.window.document;
       const results = await axe.run(document.body);
 
-      const criticalViolations = results.violations.filter(
-        (v) => v.impact === "critical"
-      );
+      const criticalViolations = results.violations.filter((v) => v.impact === "critical");
       expect(criticalViolations).toHaveLength(0);
     });
 
@@ -207,7 +200,7 @@ describe("axe-core accessibility tests", () => {
     });
   });
 
-  describe("PathNavigator Accessibility", () => {
+  describe("Pagination navigation accessibility (prev/next links)", () => {
     let dom: JSDOM;
 
     beforeEach(() => {
@@ -329,9 +322,7 @@ describe("axe-core accessibility tests", () => {
 
     it("should have landmarks", async () => {
       const document = dom.window.document;
-      const landmarks = document.querySelectorAll(
-        "header, main, footer, nav, aside"
-      );
+      const landmarks = document.querySelectorAll("header, main, footer, nav, aside");
       expect(landmarks.length).toBeGreaterThan(0);
     });
   });

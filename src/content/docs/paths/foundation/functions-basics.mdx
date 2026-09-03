@@ -8,8 +8,10 @@ prerequisites: ["variables", "control-flow", "data-structures"]
 python_tags: ["def", "return", "lambda"]
 ts_tags: ["function", "return", "arrow-function", "void"]
 description: 掌握 Python 和 TypeScript 的函数定义和调用差异
+sidebar:
+  order: 2
 ---
-## 🎯 为什么这个很重要
+## 为什么这个很重要
 
 你写了一个处理订单的函数，Python 版本运行得好好的。移植到 TypeScript 后，编译器突然报错：
 
@@ -24,7 +26,7 @@ Argument of type 'string | undefined' is not assignable to parameter of type 'nu
 
 这意味着什么？**你在写代码时就能发现问题，而不是等到用户下单时才崩溃。**
 
-## 💡 核心概念
+## 核心概念
 
 ### 函数 = 一台机器
 
@@ -64,7 +66,7 @@ const double = (n: number): number => n * 2;
 > - 简单计算：`(a, b) => a + b`
 > - 需要保持外部 `this` 时（后面会讲）
 
-## 📚 Python 回顾
+## Python 回顾
 
 ```python
 # 基本函数定义
@@ -95,7 +97,7 @@ numbers = [1, 2, 3, 4]
 squared = list(map(square, numbers))
 ```
 
-## 🦀 TypeScript 等价写法
+## TypeScript 等价写法
 
 ```typescript
 // 基本函数定义
@@ -142,7 +144,7 @@ function logMessage(message: string): void {
 }
 ```
 
-## ⚠️ 差异与常见陷阱
+## 差异与常见陷阱
 
 ### 1. 函数声明方式
 
@@ -243,7 +245,7 @@ process("hello"); // 返回 "HELLO"（string 类型）
 process(42); // 返回 84（number 类型）
 ```
 
-## 📊 优势对比
+## 优势对比
 
 | 特性       | Python     | TypeScript |
 | ---------- | ---------- | ---------- |
@@ -254,7 +256,7 @@ process(42); // 返回 84（number 类型）
 | 箭头函数   | Lambda     | 原生支持   |
 | 返回值推断 | 无         | 有         |
 
-## 💬 开发者对话
+## 开发者对话
 
 > 🐍 **Python 开发者**：为什么 TypeScript 要写这么多类型？Python 一行 `def add(a, b): return a + b` 就完了。
 >
@@ -272,7 +274,7 @@ process(42); // 返回 84（number 类型）
 >
 > 🦀 **TypeScript 开发者**：TypeScript 用**接口**定义参数结构。虽然不能像 Python 那样"随意"，但好处是编辑器会提示你有哪些字段可以用。
 
-## 🤔 试试看
+## 试试看
 
 ### 预测输出
 
@@ -357,7 +359,7 @@ handler(); // 输出什么？
 
 </details>
 
-## ✍️ 练习
+## 练习
 
 将以下 Python 代码转换为 TypeScript：
 
@@ -408,7 +410,7 @@ const area2 = calculateArea("rectangle", { width: 4, height: 6 });
 
 </details>
 
-## 🎓 面试追问
+## 面试追问
 
 1. **箭头函数和普通函数的区别？**
    - 箭头函数没有自己的 `this`，继承外部上下文
@@ -427,4 +429,4 @@ const area2 = calculateArea("rectangle", { width: 4, height: 6 });
    - 限制：重载签名必须与实现签名兼容
 
 ---
-**下一步：** [类与对象](/paths/foundation/classes-objects)
+**下一步：** [类与对象](../classes-objects/)

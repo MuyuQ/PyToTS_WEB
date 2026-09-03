@@ -8,7 +8,12 @@ prerequisites: []
 python_tags: []
 ts_tags: ["typescript", "javascript"]
 description: 了解 TypeScript 是什么，以及为什么 Python 开发者应该学习它
+sidebar:
+  order: 0
+
 ---
+
+import CodeCompare from '../../../../components/CodeCompare.astro';
 
 ## TypeScript 是什么
 
@@ -90,22 +95,19 @@ createUser({ id: 1, name: "Alice" }); // 缺少 email，编译错误
 
 Python 3.5+ 引入了类型注解，但仍是可选的：
 
-```python
-# Python - 类型注解只是提示，不强制
+<CodeCompare
+  py={`# Python - 类型注解只是提示，不强制
 def add(a: int, b: int) -> int:
     return a + b
 
-add("1", "2")  # 运行正常，返回 "12"（mypy 会警告）
-```
-
-```typescript
-// TypeScript - 类型检查是强制的
+add("1", "2")  # 运行正常，返回 "12"（mypy 会警告）`}
+  ts={`// TypeScript - 类型检查是强制的
 function add(a: number, b: number): number {
   return a + b;
 }
 
-add("1", "2"); // 编译错误
-```
+add("1", "2"); // 编译错误`}
+/>
 
 ## 谁在使用 TypeScript
 
@@ -125,4 +127,4 @@ add("1", "2"); // 编译错误
 
 ---
 
-**建议**：如果时间有限，可以先跳到[开发环境准备](/paths/preparation/setup/)直接动手实践。
+**建议**：如果时间有限，可以先跳到[开发环境准备](setup/)直接动手实践。
