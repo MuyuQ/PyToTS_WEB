@@ -28,9 +28,17 @@ import CodeCompare from "../../../components/CodeCompare.astro";
 ```text
 输入：nums = [3, 2, 4], target = 6
 输出：[1, 2]
+解释：nums[1] + nums[2] = 2 + 4 = 6
 ```
 
-**边界情况**：数组长度至少为 2；答案一定存在，所以不需要处理"无解"分支，但代码里通常保留一个兜底返回。
+**约束条件**
+
+- `2 <= nums.length <= 10⁴`
+- `-10⁹ <= nums[i] <= 10⁹`
+- `-10⁹ <= target <= 10⁹`
+- 只存在一个有效答案
+
+**边界情况**：不需要处理"无解"分支，但代码里通常保留一个兜底返回。
 
 ## 暴力解与瓶颈
 
@@ -112,9 +120,8 @@ def two_sum_brute(nums: list[int], target: int) -> list[int]:
       // Map<number, number> 存储值到索引的映射
       const seen = new Map<number, number>();
 
-      // 传统 for 循环获取索引（数组解构也行，见下方点评）
-      for (let i = 0; i < nums.length; i++) {
-        const num = nums[i];
+      // entries() 同时拿索引和值，对应 Python 的 enumerate
+      for (const [i, num] of nums.entries()) {
         // 计算需要的补数: 如果补数已在 Map 中，说明找到答案
         const complement = target - num;
 
@@ -159,7 +166,7 @@ if (seen.has(complement)) {
 | 哈希结构   | `dict`，字面量即可                      | `Map<number, number>`，泛型参数写清键值类型     |
 | 成员检查   | `in`，一步完成                          | `has()` + `get()` 两步，取值后类型是联合类型    |
 | 空值处理   | 取不存在的键直接抛 `KeyError`           | `get()` 返回 `number \| undefined`，用 `!` 断言 |
-| 遍历写法   | `enumerate(nums)` 同时拿索引和值        | 索引循环最稳；`for...of` 拿不到索引别硬用       |
+| 遍历写法   | `enumerate(nums)` 同时拿索引和值        | `nums.entries()` 解构拿索引和值，心智完全对应 |
 | 类型注解   | `list[int]`，运行时不检查               | `number[]` + 返回值 `: number[]`，编译期检查    |
 | 输出测试   | `print(...)`                            | `console.log(...)`                              |
 
@@ -173,6 +180,7 @@ if (seen.has(complement)) {
 
 ```python
 # 错误：还没查就先把自己存进去
+complement = target - num
 seen[num] = i
 if complement in seen:  # num 恰好是 target 一半时会匹配到自己
     return [seen[complement], i]
@@ -195,7 +203,11 @@ return [seen.get(complement), i]; // number | undefined 不能赋给 number
 
 ## 面试变体
 
-1. **返回所有组合**：如果有多个解，返回所有不重复的下标对。哈希表思路不变，只是命中时收集答案而不是直接返回，注意去重。
-2. **有序数组**：如果数组已排序，改用双指针（一头一尾向中间夹），空间可以降到 O(1)。追问点：为什么有序才能用双指针？
-3. **三数之和**：扩展到三个数。标准做法是排序 + 固定一个数 + 剩下部分用双指针，复杂度 O(n²)，注意跳过重复元素去重。
-4. **追问哈希表**：`in` / `has()` 为什么是平均 O(1)？最坏什么时候退化？（哈希冲突严重时退化到 O(n)，Python dict 和 JS Map 内部都会动态扩容来缓解。）
+1. **返回所有组合**：如果有多个解，返回所有不重复的下标对。哈希表思路不变，只是命中时收集答案而不是直接返回，去重方法是排序后跳过重复元素（或用集合收答案再统一输出）。复杂度仍是时间 O(n)、空间 O(n)，只是输出从单个答案变成答案列表。
+2. **有序数组**：如果数组已排序，改用双指针（一头一尾向中间夹：和大了右指针左移，和小了左指针右移）。有序性保证了每次移动都在缩小搜索空间，时间 O(n)、空间 O(1)。追问点：为什么无序数组不能用双指针？
+3. **三数之和**：扩展到三个数之和等于目标值（详见[三数之和](../3sum/)）。标准做法是排序 + 固定一个数 + 剩下部分退化成两数之和的双指针版本，总复杂度 O(n²)，注意排序后跳过重复元素去重。
+
+## 面试追问
+
+- `in` / `has()` 为什么是平均 O(1)？最坏什么时候退化？（哈希冲突严重时退化到 O(n)，Python dict 和 JS Map 内部都会动态扩容来缓解。）
+- 哈希表存的是值到索引，如果数组里有重复值会怎样？（后存的覆盖先存的；本题保证唯一解所以无影响，多解场景要想清楚覆盖语义。）
