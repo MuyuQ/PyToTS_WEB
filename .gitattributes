@@ -1,0 +1,5 @@
+# 统一换行符为 LF：此前全仓库 CRLF/LF 混杂导致 diff 噪音巨大
+# （如 QuizContainer 3119 行 diff 中仅 69 行是实质变更）
+* text=auto eol=lf
+*.png binary
+*.svg text eol=lf

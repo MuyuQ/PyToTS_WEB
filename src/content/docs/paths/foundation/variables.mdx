@@ -8,8 +8,10 @@ prerequisites: []
 python_tags: ["variables", "int", "float", "str", "bool"]
 ts_tags: ["variables", "number", "string", "boolean", "const", "let"]
 description: 从 Python 的基础数据类型过渡到 TypeScript
+sidebar:
+  order: 1
 ---
-## 🎯 为什么这个很重要
+## 为什么这个很重要
 
 上周，小王在生产环境修了一个"简单"的 bug。代码大概是这样：
 
@@ -24,7 +26,7 @@ Python 运行到这行才报错。如果用 TypeScript，编辑器里就会画�
 
 **类型系统就像交通规则**。Python 是"大家自觉遵守"，出事才知道。TypeScript 是"红绿灯 + 摄像头"，违规立刻提醒。虽然等红灯有点烦，但能避免事故。
 
-## 📚 Python 回顾
+## Python 回顾
 
 Python 中变量类型是动态的，想改就改：
 
@@ -40,7 +42,7 @@ age = "25 years old"     # 合法，但埋下隐患
 
 这种自由很爽，但团队协作时容易出问题。你定义 `age` 是数字，同事改成字符串，代码在某个角落悄悄崩溃。
 
-## 🔷 TypeScript 等价写法
+## TypeScript 等价写法
 
 TypeScript 有两种写法：显式声明或类型推断。
 
@@ -62,7 +64,7 @@ const GREETING = "Hello";
 
 > **经验法则**：默认用 `const`，确定需要重新赋值时才用 `let`。这能防止意外修改变量。
 
-## ⚠️ 差异与常见陷阱
+## 差异与常见陷阱
 
 ### 1. 变量声明关键字
 
@@ -104,7 +106,7 @@ flexible = 123; // ✅ 合法
 
 **类比**：Python 变量像便利贴，想贴什么贴什么。TypeScript 变量像带标签的盒子，贴了"书"的标签就不能装衣服。
 
-## 💬 开发者对话
+## 开发者对话
 
 🐍 **Python 开发者**：TypeScript 这么严格，写代码不是很慢吗？
 
@@ -118,7 +120,7 @@ flexible = 123; // ✅ 合法
 
 🦀 **TS 开发者**：默认 `const`。就像 Python 的命名约定：全大写是常量。TypeScript 用关键字强制执行这个约定。只有循环计数器、累加器这些才用 `let`。
 
-## 🤔 试试看
+## 试试看
 
 ### 预测输出
 
@@ -172,7 +174,7 @@ const currentUsername = "guest"; // ✅ 用新变量存储
 
 </details>
 
-## 📊 优势对比
+## 优势对比
 
 | 特性     | Python             | TypeScript |
 | -------- | ------------------ | ---------- |
@@ -183,7 +185,7 @@ const currentUsername = "guest"; // ✅ 用新变量存储
 
 **一句话总结**：Python 在运行时发现问题，TypeScript 在写代码时就提醒你。
 
-## ✏️ 练习
+## 练习
 
 将以下 Python 代码转换为 TypeScript：
 
@@ -208,7 +210,7 @@ let attempts: number = 3;
 
 </details>
 
-## 🎓 面试追问
+## 面试追问
 
 **什么时候用 `let`，什么时候用 `const`？**
 
@@ -231,4 +233,4 @@ if (typeof data === "object" && data !== null) {
 ```
 
 ---
-**下一步：** [控制流](/paths/foundation/control-flow)
+**下一步：** [控制流](../control-flow/)

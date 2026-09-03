@@ -1,19 +1,31 @@
 ---
 title: Python ↔ TypeScript 手册
-description: 常用语法映射与术语对照
+description: 高频语法映射与术语对照的速查入口
 kind: page
+sidebar:
+  order: 0
 ---
-这份手册用于快速对照两种语言的高频语法和工程概念。
 
-## 常用映射
+这份手册用于在两种语言之间快速对照高频语法和工程概念。遇到"这个在 TypeScript 里怎么写"的问题时，先查这里。
 
-- 变量声明：Python 直接赋值；TypeScript 常用 `const` / `let`
-- 类型标注：Python 使用 `x: int`；TypeScript 使用 `x: number`
-- 模块导入：Python `import`；TypeScript `import` + ESM
-- 异步模型：Python `asyncio`；TypeScript `Promise` + `async/await`
+## 速查入口
+
+核心内容是[语法对照表](cheat-sheet/)，按主题分为：
+
+| 主题 | 内容 |
+| --- | --- |
+| [变量与数据类型](cheat-sheet/#数据类型) | `int/float` → `number`、`dict` → `Record`、`Optional` → `\| undefined` |
+| [函数定义](cheat-sheet/#函数定义) | 参数默认值、剩余参数、箭头函数 |
+| [控制流](cheat-sheet/#控制流) | `elif` → `else if`、`match` → `switch` |
+| [类与对象](cheat-sheet/#类与对象) | 构造器、属性简写、访问修饰符 |
+| [异步编程](cheat-sheet/#异步编程) | `asyncio` → `Promise` + `async/await` |
+| [模块导入](cheat-sheet/#模块导入) | `import` / `from ... import` → ESM 写法 |
+| [错误处理](cheat-sheet/#错误处理) | `try/except` → `try/catch`、异常类型对照 |
+| [高级类型](cheat-sheet/#高级类型) | 泛型、类型守卫、工具类型速查 |
+| [常见陷阱](cheat-sheet/#常见陷阱) | Python 开发者最容易踩的差异点 |
 
 ## 推荐使用方式
 
-1. 先看 [学习路径](/paths/) 建立主线
+1. 先看 [学习路径](../paths/) 建立主线
 2. 遇到语法差异时回到手册快速查阅
-3. 配合 [算法](/algorithms/) 进行实战巩固
+3. 配合 [算法题库](../algorithms/) 进行实战巩固

@@ -8,8 +8,14 @@ prerequisites: ["types"]
 python_tags: ["def", "args", "kwargs", "default"]
 ts_tags: ["function", "optional", "rest", "default"]
 description: 掌握 Python 和 TypeScript 函数定义的差异
+sidebar:
+  order: 2
+
 ---
-## 🎯 为什么这个很重要
+
+import CodeCompare from '../../../../components/CodeCompare.astro';
+
+## 为什么这个很重要
 
 你在 Python 里用惯了灵活的函数：
 
@@ -42,7 +48,7 @@ function get_data() {
 
 刚开始觉得束手束脚，但慢慢发现：这些"束缚"让你少踩了很多坑...
 
-## 💡 核心概念：函数是"合同"
+## 核心概念：函数是"合同"
 
 **Python 函数**像"万能插座"——什么都能插，插错了通电才知道。
 
@@ -50,24 +56,21 @@ function get_data() {
 
 **函数签名**就是"合同"——规定了输入输出的规格：
 
-```python
-# Python：合同只是"建议"
+<CodeCompare
+  py={`# Python：合同只是"建议"
 def add(a: int, b: int) -> int:
     return a + b
 
-add("1", "2")  # 运行时不会报错，但逻辑可能不是你想要的
-```
-
-```typescript
-// TypeScript：合同是"法律"
+add("1", "2")  # 运行时不会报错，但逻辑可能不是你想要的`}
+  ts={`// TypeScript：合同是"法律"
 function add(a: number, b: number): number {
   return a + b;
 }
 
-add("1", "2"); // ❌ 编译报错：类型不匹配
-```
+add("1", "2"); // ❌ 编译报错：类型不匹配`}
+/>
 
-## 📚 代码对比
+## 代码对比
 
 ### 基本函数定义
 
@@ -110,24 +113,21 @@ greet("Bob", "Hi"); // "Hi, Bob"
 
 ### 可变参数
 
-```python
-# Python：*args 接收任意数量的位置参数
+<CodeCompare
+  py={`# Python：*args 接收任意数量的位置参数
 def sum_all(*args: int) -> int:
     return sum(args)
 
 sum_all(1, 2, 3)  # 6
-sum_all()         # 0
-```
-
-```typescript
-// TypeScript：...rest 参数（注意三个点）
+sum_all()         # 0`}
+  ts={`// TypeScript：...rest 参数（注意三个点）
 function sumAll(...args: number[]): number {
   return args.reduce((a, b) => a + b, 0);
 }
 
 sumAll(1, 2, 3); // 6
-sumAll(); // 0
-```
+sumAll(); // 0`}
+/>
 
 **类比**：`*args` 和 `...rest` 就像"打包袋"——把散落的东西打包成一个数组。
 
@@ -190,7 +190,7 @@ process("hello"); // "HELLO"（返回 string）
 process(5); // 10（返回 number）
 ```
 
-## ⚡ 语法速查表
+## 语法速查表
 
 | 功能       | Python            | TypeScript                  |
 | ---------- | ----------------- | --------------------------- |
@@ -203,7 +203,7 @@ process(5); // 10（返回 number）
 | 函数重载   | ❌ 不支持         | ✅ 支持                     |
 | 返回值类型 | `-> int`          | `: number`                  |
 
-## 💬 开发者对话
+## 开发者对话
 
 🐍 Python 开发者："TypeScript 函数参数太麻烦了！我想传什么传什么，干嘛要规定类型？"
 
@@ -231,7 +231,7 @@ greet("Bob", "Hi"); // "Hi, Bob"
 
 🦀 "让同一个函数根据参数类型返回不同类型。比如上面的 `process` 函数，传 `string` 返回 `string`，传 `number` 返回 `number`。Python 只能靠类型判断，TypeScript 编译器就能帮你检查。"
 
-## ⚠️ 常见陷阱
+## 常见陷阱
 
 ### 1. 参数数量必须匹配
 
@@ -286,7 +286,7 @@ for (const v of arr) {
 
 **类比**：`for...in` 像翻书页码（索引），`for...of` 像看书内容（值）。
 
-## 🤔 试试看
+## 试试看
 
 ### 预测输出
 
@@ -413,7 +413,7 @@ function formatMessage(title: string, body: string, urgent?: boolean): string {
 
 </details>
 
-## 📝 优势对比
+## 优势对比
 
 | 特性       | Python     | TypeScript | 说明                  |
 | ---------- | ---------- | ---------- | --------------------- |
@@ -425,7 +425,7 @@ function formatMessage(title: string, body: string, urgent?: boolean): string {
 | 可选参数   | 用默认参数 | `?` 语法   | TS 语法更明确         |
 | 类型推断   | 运行时检查 | 编译时检查 | TS 能提前发现错误     |
 
-## 🎓 面试实战
+## 面试实战
 
 1. **TypeScript 箭头函数和普通函数的 `this` 有什么区别？**
 

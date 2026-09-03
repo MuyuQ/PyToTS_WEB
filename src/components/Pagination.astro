@@ -51,7 +51,12 @@ function parsePath(pathname: string): { track: string; current: string } | null 
   return { track: match[1], current: match[2] };
 }
 
-const pathInfo = parsePath(pathname);
+// 生产部署在子路径下（BASE_URL = /PyToTS_WEB/），匹配前必须剥离 base 前缀
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
+const cleanPathname =
+  BASE && pathname.startsWith(BASE) ? pathname.slice(BASE.length) || "/" : pathname;
+
+const pathInfo = parsePath(cleanPathname);
 
 let prev = defaultPrev;
 let next = defaultNext;
@@ -59,16 +64,17 @@ let next = defaultNext;
 if (pathInfo) {
   const prevStep = getPrevPathStep(pathInfo.track, pathInfo.current);
   const nextStep = getNextPathStep(pathInfo.track, pathInfo.current);
+  // path-map 中 preparation 的第一项是 index，路由上对应目录本身
+  const hrefForStep = (step: string) => `${BASE}/paths/${step.replace(/\/index$/, "")}/`;
 
   if (prevStep) {
-    prev = { href: `/paths/${prevStep}/`, label: PATH_TITLES[prevStep] || prevStep };
+    prev = { href: hrefForStep(prevStep), label: PATH_TITLES[prevStep] || prevStep };
   }
   if (nextStep) {
-    next = { href: `/paths/${nextStep}/`, label: PATH_TITLES[nextStep] || nextStep };
+    next = { href: hrefForStep(nextStep), label: PATH_TITLES[nextStep] || nextStep };
   }
 }
 
-const isRtl = dir === 'rtl';
 ---
 
 <div class="pagination-links print:hidden" dir={dir}>
@@ -144,7 +150,7 @@ const isRtl = dir === 'rtl';
 
   .pagination-label {
     font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-3);
+    color: var(--sl-color-gray-2);
   }
 
   .pagination-arrow {

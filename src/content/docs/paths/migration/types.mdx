@@ -8,8 +8,10 @@ prerequisites: []
 python_tags: ["type hints", "typing"]
 ts_tags: ["type annotations", "interfaces"]
 description: 理解 Python 和 TypeScript 类型系统的核心差异
+sidebar:
+  order: 1
 ---
-## 🎯 为什么这个很重要
+## 为什么这个很重要
 
 你在 Python 代码里写了漂亮的类型注解：
 
@@ -37,7 +39,7 @@ processUser({ age: 25 }); // Error: Property 'name' is missing
 这就是"运行时类型"和"编译时类型"的区别，也是 Python 开发者转向 TypeScript 最大的思维转变。
 
 ---
-## 💡 核心概念
+## 核心概念
 
 ### 类型注解 = 盒子上的标签 vs 带锁的盒子
 
@@ -117,7 +119,7 @@ const stringBox = new Box("hello"); // Box<string>
 泛型像可调节的架子，可以放不同尺寸的书。
 
 ---
-## 📚 Python 回顾
+## Python 回顾
 
 ```python
 # Python 类型注解
@@ -146,7 +148,7 @@ UserList = List[UserDict]
 ```
 
 ---
-## 🔧 TypeScript 等价写法
+## TypeScript 等价写法
 
 ```typescript
 // TypeScript 类型注解
@@ -173,7 +175,7 @@ type UserList = UserDict[];
 ```
 
 ---
-## ⚠️ 差异与常见陷阱
+## 差异与常见陷阱
 
 ### 1. Optional vs T | null
 
@@ -229,7 +231,7 @@ add("hello", "world"); // 编译错误！不能把 string 传给 number
 ```
 
 ---
-## 💬 开发者对话
+## 开发者对话
 
 🐍 Python 开发者："TypeScript 的类型检查太严格了，我写个简单函数都要报错！"
 
@@ -280,7 +282,7 @@ const num = identity(42); // 自动推断 T = number
 ```
 
 ---
-## 🤔 试试看
+## 试试看
 
 ### 预测输出
 
@@ -380,7 +382,7 @@ function findFirstUser(users: string[]): string | undefined {
 </details>
 
 ---
-## 📊 优势对比
+## 优势对比
 
 | 特性       | Python        | TypeScript       |
 | ---------- | ------------- | ---------------- |
@@ -392,7 +394,7 @@ function findFirstUser(users: string[]): string | undefined {
 | 运行时类型 | 保留          | 擦除             |
 
 ---
-## 🎓 面试实战
+## 面试实战
 
 ### 基础问题
 

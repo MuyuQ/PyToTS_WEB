@@ -12,6 +12,12 @@ declare module 'virtual:starlight/components/Search' {
   export default Search;
 }
 
+declare module 'virtual:starlight/components/ThemeSelect' {
+  import type { AstroComponentFactory } from 'astro/runtime/server';
+  const ThemeSelect: AstroComponentFactory;
+  export default ThemeSelect;
+}
+
 declare module 'virtual:starlight/components/LanguageSelect' {
   import type { AstroComponentFactory } from 'astro/runtime/server';
   const LanguageSelect: AstroComponentFactory;
