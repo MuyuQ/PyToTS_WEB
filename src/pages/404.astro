@@ -1,39 +1,97 @@
 ---
+// 独立 404 页：GitHub Pages 直接展示该文件，无法依赖站点 JS/主题，
+// 因此样式内联且通过 prefers-color-scheme 适配暗色。
+const home = "/PyToTS_WEB/";
 ---
 
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>404 | Python to TypeScript</title>
+    <title>页面不存在 | Python to TypeScript</title>
     <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ffffff;
+        --ink: #1a1a2e;
+        --muted: #57606a;
+        --accent: #4051b5;
+        --border: #e1e4e8;
+        --card: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c0e12;
+          --ink: rgba(224, 226, 230, 0.9);
+          --muted: rgba(224, 226, 230, 0.56);
+          --accent: #5488e8;
+          --border: rgba(224, 226, 230, 0.12);
+          --card: #191c24;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
       body {
-        font-family: system-ui, -apple-system, sans-serif;
+        font-family:
+          Inter,
+          system-ui,
+          -apple-system,
+          "PingFang SC",
+          "Microsoft YaHei",
+          sans-serif;
         display: grid;
         place-items: center;
         min-height: 100vh;
         margin: 0;
-        background: #f8fafc;
-        color: #0f172a;
+        background: var(--bg);
+        color: var(--ink);
       }
       .card {
         text-align: center;
-        padding: 2rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.75rem;
-        background: white;
+        padding: 3rem 2.5rem;
+        max-width: 26rem;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--card);
+      }
+      .code {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.875rem;
+        color: var(--accent);
+        letter-spacing: 0.1em;
+      }
+      h1 {
+        font-size: 1.5rem;
+        margin: 0.75rem 0 0.5rem;
+        letter-spacing: -0.02em;
+      }
+      p {
+        color: var(--muted);
+        line-height: 1.7;
+        margin: 0 0 1.5rem;
       }
       a {
-        color: #2563eb;
+        display: inline-block;
+        background: var(--accent);
+        color: #fff;
         text-decoration: none;
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+      }
+      a:hover {
+        opacity: 0.92;
       }
     </style>
   </head>
   <body>
     <main class="card">
-      <h1>Page not found</h1>
-      <p>The page you requested does not exist.</p>
-      <p><a href="/">Go back home</a></p>
+      <span class="code">404</span>
+      <h1>页面不存在</h1>
+      <p>你访问的地址可能已被移动或删除。</p>
+      <a href={home}>返回首页</a>
     </main>
   </body>
 </html>

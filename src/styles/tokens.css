@@ -86,6 +86,8 @@ body {
   --sl-color-bg-card: #191c24;
   --sl-color-bg-inline-code: #1a1d24;
   --sl-color-white: #ffffff;
+  --sl-color-black: #0c0e12;
+  --sl-color-text-accent: #5488e8;
   --sl-color-gray-1: rgba(224, 226, 230, 0.82);
   --sl-color-gray-2: rgba(224, 226, 230, 0.56);
   --sl-color-gray-3: rgba(224, 226, 230, 0.32);

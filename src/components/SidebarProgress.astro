@@ -52,7 +52,14 @@
 
   function getCurrentLessonPath() {
     var pathname = window.location.pathname;
-    return ALL_LESSON_PATHS.find(function(p) { return pathname === p || pathname === p.replace(/\/$/, ''); });
+    return ALL_LESSON_PATHS.find(function(p) { return matchesPath(pathname, p); });
+  }
+
+  // 子路径部署下 location.href 会带 base 前缀（如 /PyToTS_WEB/paths/...），
+  // 存储的仍是原始路径：以后缀匹配兼容两种情况
+  function matchesPath(href, path) {
+    var bare = path.replace(/\/$/, '');
+    return href === path || href === bare || href.endsWith(path) || href.endsWith(bare);
   }
 
   function markLessonCompleted(path) {
@@ -151,19 +158,21 @@
     });
 
     // Add progress dots to lesson links
-    ALL_LESSON_PATHS.forEach(function(path) {
-      var links = sidebar.querySelectorAll('a[href="' + path + '"], a[href="' + path.replace(/\/$/, '') + '"]');
-      links.forEach(function(link) {
-        // Double check no duplicate
-        if (link.querySelector('.progress-dot')) return;
-        
-        var completed = isCompleted(path);
-        var dot = document.createElement('span');
-        dot.className = 'progress-dot' + (completed ? ' completed' : '');
-        dot.textContent = completed ? '●' : '○';
-        dot.setAttribute('aria-label', completed ? '已完成' : '未完成');
-        link.appendChild(dot);
-      });
+    var sidebarLinks = sidebar.querySelectorAll('a[href]');
+    sidebarLinks.forEach(function(link) {
+      // Double check no duplicate
+      if (link.querySelector('.progress-dot')) return;
+
+      var href = link.getAttribute('href') || '';
+      var matched = ALL_LESSON_PATHS.find(function(path) { return matchesPath(href, path); });
+      if (!matched) return;
+
+      var completed = isCompleted(matched);
+      var dot = document.createElement('span');
+      dot.className = 'progress-dot' + (completed ? ' completed' : '');
+      dot.textContent = completed ? '●' : '○';
+      dot.setAttribute('aria-label', completed ? '已完成' : '未完成');
+      link.appendChild(dot);
     });
 
     // Add group progress
@@ -173,7 +182,10 @@
       var total = paths.length;
 
       var firstPath = paths[0];
-      var firstLinks = sidebar.querySelectorAll('a[href="' + firstPath + '"], a[href="' + firstPath.replace(/\/$/, '') + '"]');
+      var firstLinks = Array.prototype.filter.call(
+        sidebar.querySelectorAll('a[href]'),
+        function(link) { return matchesPath(link.getAttribute('href') || '', firstPath); }
+      );
       if (!firstLinks.length) return;
 
       firstLinks.forEach(function(firstLink) {

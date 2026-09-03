@@ -10,7 +10,7 @@ description: 反转一个单链表
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
 
-## 📝 问题描述
+## 问题描述
 
 给你单链表的头节点 `head`，请你反转链表，并返回反转后的链表。
 
@@ -19,7 +19,7 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 输出: 5 → 4 → 3 → 2 → 1 → None
 ```
 
-## 💡 思路引导
+## 思路引导
 
 **第一步：理解问题**
 
@@ -57,7 +57,7 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 当 `curr` 变成 `None` 时，说明已经处理完所有节点。此时 `prev` 就是新的头节点。
 
-## 🎯 生活化类比
+## 生活化类比
 
 反转链表就像**翻书**：
 
@@ -80,7 +80,7 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
 
 最后左手拿的就是新的第一张！
 
-## 🎨 可视化图示
+## 可视化图示
 
 **初始状态：**
 
@@ -142,7 +142,7 @@ prev=None    curr=1
               head
 ```
 
-## 📊 复杂度分析
+## 复杂度分析
 
 - **时间复杂度**：O(n)，遍历链表一次，每个节点处理一次
 - **空间复杂度**：O(1)，只使用三个指针变量
@@ -350,7 +350,7 @@ const reversedHead = reverseList(head);
 console.log(printList(reversedHead)); // [5, 4, 3, 2, 1]
 ```
 
-## 🤔 互动练习
+## 互动练习
 
 ### 练习 1：预测指针变化
 
@@ -444,18 +444,18 @@ def reverse_list(head):
 
 </details>
 
-## 🎯 面试变体
+## 面试变体
 
 1. **递归实现**：使用递归方式反转链表
 2. **反转指定区间**：只反转从位置 m 到 n 的链表部分
 3. **k 个一组反转**：每 k 个节点为一组进行反转
 
-## ⚠️ 常见错误分析
+## 常见错误分析
 
 ### 错误 1：忘记保存下一个节点
 
 ```python
-# ❌ 错误写法
+# 错误写法
 while curr:
     curr.next = prev    # 先改了指针
     prev = curr
@@ -467,7 +467,7 @@ while curr:
 **正确写法**：
 
 ```python
-# ✅ 正确写法
+# 正确写法
 while curr:
     next_temp = curr.next   # 先保存下一个节点
     curr.next = prev        # 再反转
@@ -478,7 +478,7 @@ while curr:
 ### 错误 2：返回错误的节点
 
 ```python
-# ❌ 错误写法
+# 错误写法
 return curr    # 循环结束时 curr 是 None！
 ```
 
@@ -487,14 +487,14 @@ return curr    # 循环结束时 curr 是 None！
 **正确写法**：
 
 ```python
-# ✅ 正确写法
+# 正确写法
 return prev    # prev 指向反转后的最后一个节点，也就是新头
 ```
 
 ### 错误 3：递归忘记返回新头
 
 ```python
-# ❌ 错误写法（递归版本）
+# 错误写法（递归版本）
 def reverse_list(head):
     if not head or not head.next:
         return head
@@ -509,7 +509,7 @@ def reverse_list(head):
 **正确写法**：
 
 ```python
-# ✅ 正确写法（递归版本）
+# 正确写法（递归版本）
 def reverse_list(head):
     if not head or not head.next:
         return head
@@ -519,7 +519,7 @@ def reverse_list(head):
     return new_head                      # 返回新头
 ```
 
-### 📝 记忆口诀
+### 记忆口诀
 
 反转链表三步走：
 

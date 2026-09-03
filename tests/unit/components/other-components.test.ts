@@ -41,7 +41,7 @@ describe("DiffInsight Component", () => {
   });
 });
 
-describe("PathNavigator Component", () => {
+describe("Pagination navigation contract (prev/next links)", () => {
   let dom: JSDOM;
   let document: Document;
 

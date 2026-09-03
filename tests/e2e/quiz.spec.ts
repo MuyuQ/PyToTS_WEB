@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 test("quiz interaction works on practice page", async ({ page }) => {
-  await page.goto("/practice/quiz/");
+  await page.goto("practice/quiz/");
 
   const firstQuiz = page.locator(".quiz-container").first();
   await expect(firstQuiz).toBeVisible();

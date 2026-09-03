@@ -1,0 +1,30 @@
+/* ===== 首页（splash + hero）===== */
+
+/* 卡片内的元数据 chip：课时数与难度 */
+.home-meta {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.0625rem 0.5rem;
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: var(--radius-full);
+  background: var(--sl-color-bg-inline-code);
+  color: var(--sl-color-gray-2);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.6;
+}
+
+/* hero 排版微调：标题略收紧、标语行宽受控 */
+.sl-hero__title {
+  letter-spacing: -0.02em;
+}
+
+.sl-hero {
+  padding-block: var(--space-2xl) var(--space-xl);
+}
+
+/* 首页正文（splash 布局内容较宽），限制可读行宽 */
+[data-has-hero] .sl-markdown-content {
+  max-width: 64rem;
+  margin-inline: auto;
+}

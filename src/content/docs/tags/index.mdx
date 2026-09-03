@@ -1,18 +1,11 @@
 ---
-title: Tags
-description: 按主题标签浏览内容
+title: 标签索引
+description: 按主题标签浏览课程与算法题
 kind: page
 ---
-按主题快速定位内容。
 
-## Python Tags
+按主题标签快速定位内容。标签由课程与算法题的 frontmatter 自动聚合，与内容实时一致。
 
-- `asyncio`: [异步编程](/paths/migration/async/)
-- `def`: [函数与参数](/paths/migration/functions/)
-- `module`: [模块与包管理](/paths/migration/modules/)
+import TagIndex from '../../../components/TagIndex.astro';
 
-## TypeScript Tags
-
-- `promise`: [异步编程](/paths/migration/async/)
-- `function`: [函数与参数](/paths/migration/functions/)
-- `module`: [模块与包管理](/paths/migration/modules/)
+<TagIndex />
