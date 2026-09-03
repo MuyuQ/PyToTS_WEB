@@ -1,0 +1,144 @@
+---
+/**
+ * 标签索引：从内容集合聚合 python_tags / ts_tags / 算法 tags，构建时生成，永远与内容一致。
+ */
+import { getCollection } from 'astro:content';
+
+interface TagGroup {
+  label: string;
+  items: { tag: string; pages: { title: string; href: string }[] }[];
+}
+
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+// entry.id 保留扩展名（如 paths/migration/types.mdx），归一为路由 slug；index 页指向其目录
+const slugFor = (id: string) => id.replace(/\.(mdx|md)$/, '').replace(/(^|\/)index$/, '');
+const hrefFor = (id: string) => {
+  const slug = slugFor(id);
+  return slug ? `${base}/${slug}/` : `${base}/`;
+};
+
+const docs = await getCollection('docs');
+
+const groups: TagGroup[] = [
+  { label: 'Python 侧标签', key: 'python_tags' },
+  { label: 'TypeScript 侧标签', key: 'ts_tags' },
+  { label: '算法标签', key: 'tags' },
+].map(({ label, key }) => {
+  const map = new Map<string, { title: string; href: string }[]>();
+  for (const entry of docs) {
+    const tags = (entry.data as Record<string, unknown>)[key];
+    if (!Array.isArray(tags)) continue;
+    for (const tag of tags as string[]) {
+      const list = map.get(tag) ?? [];
+      list.push({ title: entry.data.title, href: hrefFor(entry.id) });
+      map.set(tag, list);
+    }
+  }
+  return {
+    label,
+    items: Array.from(map.entries())
+      .map(([tag, pages]) => ({ tag, pages }))
+      .sort((a, b) => b.pages.length - a.pages.length || a.tag.localeCompare(b.tag)),
+  };
+});
+---
+
+{
+  groups.map((group) => (
+    <section class="tag-group">
+      <h2>{group.label}</h2>
+      {group.items.length === 0 ? (
+        <p class="tag-empty">暂无标签。</p>
+      ) : (
+        <ul class="tag-list">
+          {group.items.map(({ tag, pages }) => (
+            <li class="tag-item">
+              <code class="tag-name">{tag}</code>
+              <span class="tag-count">{pages.length} 篇</span>
+              <span class="tag-pages">
+                {pages.map((page, index) => (
+                  <>
+                    {index > 0 && <span class="tag-sep">、</span>}
+                    <a href={page.href}>{page.title}</a>
+                  </>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  ))
+}
+
+<style>
+  .tag-group {
+    margin: var(--space-xl) 0;
+  }
+
+  .tag-group h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .tag-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .tag-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: var(--radius-md);
+    background: var(--sl-color-bg-card);
+  }
+
+  .tag-name {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--sl-color-accent);
+    background: var(--sl-color-accent-low);
+    padding: 0.125rem 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+
+  .tag-count {
+    font-size: 0.75rem;
+    color: var(--sl-color-gray-2);
+    white-space: nowrap;
+  }
+
+  .tag-pages {
+    font-size: 0.875rem;
+    color: var(--sl-color-gray-2);
+  }
+
+  .tag-pages a {
+    color: var(--sl-color-gray-1);
+    text-decoration: none;
+  }
+
+  .tag-pages a:hover {
+    color: var(--sl-color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .tag-sep {
+    color: var(--sl-color-gray-2);
+  }
+
+  .tag-empty {
+    color: var(--sl-color-gray-2);
+  }
+</style>

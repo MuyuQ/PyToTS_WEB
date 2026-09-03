@@ -8,8 +8,10 @@ prerequisites: ["variables", "control-flow"]
 python_tags: ["list", "dict", "tuple", "set"]
 ts_tags: ["array", "object", "Map", "Set", "tuple"]
 description: 掌握 Python 和 TypeScript 的核心数据结构差异
+sidebar:
+  order: 4
 ---
-## 🎯 为什么这个很重要
+## 为什么这个很重要
 
 你在 Python 里用 `dict` 用得好好的，转到 TypeScript 后：
 
@@ -37,7 +39,7 @@ scores["english"] = 85; // ❌ 也不行！
 数据结构是代码的基石，理解差异能让你少踩很多坑。
 
 ---
-## 💡 用类比理解数据结构
+## 用类比理解数据结构
 
 把数据结构想象成不同的容器：
 
@@ -52,7 +54,7 @@ scores["english"] = 85; // ❌ 也不行！
 > **关键差异**：Python 的 `dict` 像万能储物柜（Map），什么键都能加。TypeScript 的 Object 像档案柜，结构要先设计好。
 
 ---
-## 📚 Python 回顾
+## Python 回顾
 
 ```python
 # List - 有序可变序列（书架）
@@ -80,7 +82,7 @@ unique_numbers = {1, 2, 3, 3, 3}  # {1, 2, 3}
 ```
 
 ---
-## 🔧 TypeScript 等价写法
+## TypeScript 等价写法
 
 ```typescript
 // Array - 有序可变序列（书架）
@@ -124,7 +126,7 @@ console.log(uniqueNumbers); // Set {1, 2, 3}
 ```
 
 ---
-## ⚠️ 差异与常见陷阱
+## 差异与常见陷阱
 
 ### 1. 字典 vs Object vs Map：怎么选？
 
@@ -234,7 +236,7 @@ const wrong: [number, number] = [3, "four"]; // ❌ 类型错误！
 ```
 
 ---
-## 💬 开发者对话
+## 开发者对话
 
 🐍 **Python 开发者**："TypeScript 为什么分 Object 和 Map？Python 一个 `dict` 搞定！"
 
@@ -253,7 +255,7 @@ const wrong: [number, number] = [3, "four"]; // ❌ 类型错误！
 🦀 **TS 开发者**："Set 的用法差不多，都是去重。只是 Python 用 `{1, 2, 3}` 语法，TypeScript 用 `new Set([1, 2, 3])`。"
 
 ---
-## 🤔 试试看
+## 试试看
 
 ### 预测输出
 
@@ -333,7 +335,7 @@ for (const word of words) {
 </details>
 
 ---
-## 📝 练习
+## 练习
 
 ### 代码翻译
 
@@ -380,7 +382,7 @@ console.log(emails); // Set {2} {"alice@example.com", "bob@example.com"}
 </details>
 
 ---
-## 📊 优势对比
+## 优势对比
 
 | 特性     | Python         | TypeScript          |
 | -------- | -------------- | ------------------- |
@@ -391,7 +393,7 @@ console.log(emails); // Set {2} {"alice@example.com", "bob@example.com"}
 | 动态数据 | `dict` 一把梭  | 需要区分 Object/Map |
 
 ---
-## 🎓 面试追问
+## 面试追问
 
 1. **什么时候用 Object，什么时候用 Map？**
    - 答：Object 用于结构已知的数据（如用户信息、配置对象），Map 用于动态键值对或键不是 string 的情况（如缓存、事件订阅）。
@@ -403,4 +405,4 @@ console.log(emails); // Set {2} {"alice@example.com", "bob@example.com"}
    - 答：使用索引签名 `{ [key: string]: any }` 或 `Record<string, any>` 类型。
 
 ---
-**下一步：** [函数基础](/paths/foundation/functions-basics)
+**下一步：** [函数基础](../functions-basics/)

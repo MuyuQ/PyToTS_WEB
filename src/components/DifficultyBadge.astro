@@ -1,0 +1,63 @@
+---
+const LABELS: Record<string, string> = {
+  easy: "入门",
+  medium: "进阶",
+  hard: "高阶",
+};
+
+interface Props {
+  difficulty?: string;
+}
+
+const { difficulty } = Astro.props;
+if (!difficulty || !(difficulty in LABELS)) return null;
+---
+
+<span class={`diff-badge diff-badge--${difficulty}`}>{LABELS[difficulty]}</span>
+
+<style>
+  .diff-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.0625rem 0.5rem;
+    border-radius: var(--radius-full);
+    border: 1px solid transparent;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.6;
+    white-space: nowrap;
+  }
+
+  .diff-badge--easy {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.28);
+    color: #15803d;
+  }
+
+  .diff-badge--medium {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.32);
+    color: #b45309;
+  }
+
+  .diff-badge--hard {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #b91c1c;
+  }
+
+  :global([data-theme="dark"]) .diff-badge--easy {
+    background: rgba(34, 197, 94, 0.14);
+    color: #4ade80;
+  }
+
+  :global([data-theme="dark"]) .diff-badge--medium {
+    background: rgba(245, 158, 11, 0.14);
+    color: #fbbf24;
+  }
+
+  :global([data-theme="dark"]) .diff-badge--hard {
+    background: rgba(239, 68, 68, 0.14);
+    color: #f87171;
+  }
+</style>

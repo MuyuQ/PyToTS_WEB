@@ -30,7 +30,7 @@ trie.insert("app");
 trie.search("app");      // 返回 true
 ```
 
-## 💡 思路引导
+## 思路引导
 
 **第一步：理解前缀树**
 
@@ -71,7 +71,7 @@ Trie 是一种树形数据结构，专门用于处理字符串集合：
 - `search`：遍历字符，必须完整匹配且是单词结尾
 - `startsWith`：遍历字符，只要路径存在就返回 true
 
-## 🎨 直观理解
+## 直观理解
 
 想象一个自动补全系统：
 
@@ -94,7 +94,7 @@ Trie 是一种树形数据结构，专门用于处理字符串集合：
 
 Trie 的优势：前缀相关操作极其高效。
 
-## 📊 复杂度分析
+## 复杂度分析
 
 - **时间复杂度**：
   - `insert`：O(m)，m 是单词长度
@@ -282,7 +282,7 @@ console.log(trie.search("ap")); // false
   </TabItem>
 </Tabs>
 
-## 🤔 互动练习
+## 互动练习
 
 ### 练习 1：跟踪插入过程
 
@@ -328,9 +328,9 @@ console.log(trie.search("ap")); // false
 
 </details>
 
-## ⚠️ 常见错误详解
+## 常见错误详解
 
-### ❌ 错误 1：忘记标记单词结尾
+### 错误 1：忘记标记单词结尾
 
 ```typescript
 // 错误：没有标记结尾
@@ -348,7 +348,7 @@ insert(word: string): void {
 
 **后果**：`search("apple")` 返回 false，因为没有单词结尾标记。
 
-### ❌ 错误 2：search 和 startsWith 混淆
+### 错误 2：search 和 startsWith 混淆
 
 ```typescript
 // 错误：search 返回了 startsWith 的结果
@@ -359,7 +359,7 @@ search(word: string): boolean {
 
 **后果**：插入 "apple" 后，`search("app")` 错误地返回 true。
 
-### ❌ 错误 3：使用对象而非 Map
+### 错误 3：使用对象而非 Map
 
 ```typescript
 // 不推荐：对象作为字典
@@ -371,7 +371,7 @@ children: Map<string, TrieNode>;
 
 **为什么？** TypeScript 中 `Map` 提供更好的类型推断，避免 `undefined` 问题。
 
-### ❌ 错误 4：Python 使用 setdefault 的陷阱
+### 错误 4：Python 使用 setdefault 的陷阱
 
 ```python
 # 不推荐：可读性差
@@ -383,7 +383,7 @@ if char not in node.children:
 node = node.children[char]
 ```
 
-## 🎯 记忆口诀
+## 记忆口诀
 
 - **节点结构**：`children` + `is_end`，子节点映射加结束标记
 - **插入**：不存在就创建，最后标记结尾

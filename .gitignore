@@ -8,4 +8,8 @@ node_modules/.astro/
 __pycache__/
 *.pyc
 *.sync-conflict-*
-.venv/
+.venv/test-results/
+test-results/
+playwright-report/
+.critique-shots/
+.impeccable/

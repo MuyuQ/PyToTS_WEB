@@ -8,6 +8,8 @@ prerequisites: ["async", "modules", "error-handling"]
 python_tags: ["open", "os", "pathlib", "hashlib", "io"]
 ts_tags: ["fs", "Buffer", "Stream", "process", "path", "crypto"]
 description: 从 Python 开发者视角学习 Node.js 核心模块，掌握文件操作、Buffer、Stream 和 process 对象
+sidebar:
+  order: 8
 ---
 ## 场景与问题
 
@@ -1242,4 +1244,4 @@ process.on("SIGINT", () => {
    - 答：Node.js 事件循环是运行时内置的，所有 I/O 操作默认非阻塞。Python 的 asyncio 需要显式使用 async/await 和事件循环，同步 I/O 会阻塞整个循环。Node.js 的非阻塞 I/O 是系统级的，Python 需要 asyncio 兼容的库。
 
 ---
-**下一步：** [设计模式实践](/paths/advanced/design-patterns)
+**下一步：** [设计模式实践](../design-patterns/)

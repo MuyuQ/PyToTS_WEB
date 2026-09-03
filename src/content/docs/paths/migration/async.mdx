@@ -8,8 +8,14 @@ prerequisites: ["functions"]
 python_tags: ["async", "await", "asyncio"]
 ts_tags: ["async", "await", "Promise"]
 description: 理解 Python 和 TypeScript 异步编程的差异
+sidebar:
+  order: 4
+
 ---
-## 🎯 为什么这个很重要
+
+import CodeCompare from '../../../../components/CodeCompare.astro';
+
+## 为什么这个很重要
 
 想象你在餐厅点外卖...
 
@@ -24,7 +30,7 @@ description: 理解 Python 和 TypeScript 异步编程的差异
 Python 有 `asyncio` 库支持异步，但默认是同步执行。JavaScript/TypeScript 天生异步，几乎所有 I/O 操作都是异步的。
 
 ---
-## 💡 核心概念：用类比理解
+## 核心概念：用类比理解
 
 | 概念               | 类比           | 说明                                                |
 | ------------------ | -------------- | --------------------------------------------------- |
@@ -37,7 +43,7 @@ Python 有 `asyncio` 库支持异步，但默认是同步执行。JavaScript/Typ
 | **Promise.race()** | 谁先到吃谁     | 多家外卖比赛，先到的赢                              |
 
 ---
-## 📚 Python 回顾
+## Python 回顾
 
 ```python
 import asyncio
@@ -68,7 +74,7 @@ asyncio.run(main())
 - `asyncio.gather()` 并发执行多个协程
 
 ---
-## 🔧 TypeScript 等价写法
+## TypeScript 等价写法
 
 ```typescript
 // 异步函数定义（外卖订单）
@@ -96,7 +102,7 @@ main();
 - `Promise.all()` 并发执行多个 Promise
 
 ---
-## 📊 语法速查表
+## 语法速查表
 
 | 特性         | Python                            | TypeScript                          |
 | ------------ | --------------------------------- | ----------------------------------- |
@@ -108,7 +114,7 @@ main();
 | 错误处理     | `try/except`                      | `try/catch` 或 `.catch()`           |
 
 ---
-## ⚠️ 差异与常见陷阱
+## 差异与常见陷阱
 
 ### 1. 返回类型必须写
 
@@ -131,15 +137,12 @@ async function fetchUser(id: number): Promise<User> {
 
 Python 需要手动启动事件循环，TypeScript 浏览器/Node 自动运行：
 
-```python
-# Python：必须显式启动
-asyncio.run(main())
-```
-
-```typescript
-// TypeScript：直接调用就行
-main();
-```
+<CodeCompare
+  py={`# Python：必须显式启动
+asyncio.run(main())`}
+  ts={`// TypeScript：直接调用就行
+main();`}
+/>
 
 ### 3. 忘记 await
 
@@ -205,7 +208,7 @@ const results = await Promise.allSettled([fetchUser(1), fetchUser(2), fetchUser(
 ```
 
 ---
-## 💬 开发者对话
+## 开发者对话
 
 **Python 开发者**：我习惯了 `asyncio.run()`，TypeScript 不需要吗？
 
@@ -248,7 +251,7 @@ try {
 **TypeScript 开发者**：没错，思路一样。另外 `Promise.race` 返回最快的结果，`Promise.any` 返回第一个成功的。
 
 ---
-## 🤔 试试看
+## 试试看
 
 ### 预测输出
 
@@ -354,7 +357,7 @@ async function fetchUsers() {
 </details>
 
 ---
-## 📝 练习
+## 练习
 
 将以下 Python 异步代码转换为 TypeScript：
 
@@ -395,7 +398,7 @@ async function getAllUsers(): Promise<{ id: number; name: string }[]> {
 </details>
 
 ---
-## 🎓 面试实战
+## 面试实战
 
 ### 问题 1：Promise.all 和 Promise.allSettled 有什么区别？
 

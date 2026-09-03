@@ -72,34 +72,56 @@
     '/algorithms/word-search/'
   ];
 
+  function normKey(path: string) {
+    return path.replace(/\/$/, '');
+  }
+
   function addCompletionMarkers() {
-    lessonPaths.forEach((path) => {
-      // 只查找页面内容区域的链接，排除侧边栏
-      const links = document.querySelectorAll(`.sl-markdown-content a[href="${path}"], .sl-markdown-content a[href="${path.replace(/\/$/, '')}"]`);
+    // 正文链接可能是相对路径（../paths/...）或带 base 前缀的绝对路径，
+    // 统一解析为 pathname 后按“精确或后缀”匹配原始课程路径
+    const known = new Map(lessonPaths.map((p) => [normKey(p), p]));
+    const links = document.querySelectorAll('.sl-markdown-content a[href]');
 
-      links.forEach((link) => {
-        // 检查是否已经添加过标记
-        if (link.querySelector('.lesson-completion-marker')) return;
+    links.forEach((link) => {
+      const rawHref = link.getAttribute('href') || '';
+      let resolved;
+      try {
+        resolved = normKey(new URL(rawHref, window.location.href).pathname);
+      } catch {
+        return;
+      }
 
-        // 创建完成标记
-        const marker = document.createElement('span');
-        marker.className = 'lesson-completion-marker';
-        marker.style.cssText = 'margin-left: 0.25rem; font-size: 0.875rem;';
-
-        if (isCompleted(path) || isCompleted(path.replace(/\/$/, ''))) {
-          marker.textContent = ' ✓';
-          marker.style.color = '#22c55e';
-          marker.setAttribute('aria-label', '已完成');
-          marker.setAttribute('title', '已完成');
-        } else {
-          marker.textContent = ' ○';
-          marker.style.color = 'var(--sl-color-gray-4)';
-          marker.setAttribute('aria-label', '未完成');
-          marker.setAttribute('title', '未完成');
+      let raw = known.get(resolved);
+      if (!raw) {
+        for (const [key, value] of known) {
+          if (resolved.endsWith(key)) {
+            raw = value;
+            break;
+          }
         }
+      }
+      if (!raw) return;
+      // 检查是否已经添加过标记
+      if (link.querySelector('.lesson-completion-marker')) return;
 
-        link.appendChild(marker);
-      });
+      // 创建完成标记
+      const marker = document.createElement('span');
+      marker.className = 'lesson-completion-marker';
+      marker.style.cssText = 'margin-left: 0.25rem; font-size: 0.875rem;';
+
+      if (isCompleted(raw) || isCompleted(raw.replace(/\/$/, ''))) {
+        marker.textContent = ' ✓';
+        marker.style.color = '#22c55e';
+        marker.setAttribute('aria-label', '已完成');
+        marker.setAttribute('title', '已完成');
+      } else {
+        marker.textContent = ' ○';
+        marker.style.color = 'var(--sl-color-gray-4)';
+        marker.setAttribute('aria-label', '未完成');
+        marker.setAttribute('title', '未完成');
+      }
+
+      link.appendChild(marker);
     });
   }
 

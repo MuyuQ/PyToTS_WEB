@@ -1,0 +1,126 @@
+---
+/**
+ * 难度索引：按难度分组列出全部课程与算法题，构建时从内容集合生成。
+ */
+import { getCollection } from 'astro:content';
+import DifficultyBadge from './DifficultyBadge.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+// entry.id 保留扩展名（如 paths/migration/types.mdx），归一为路由 slug；index 页指向其目录
+const slugFor = (id: string) => id.replace(/\.(mdx|md)$/, '').replace(/(^|\/)index$/, '');
+const hrefFor = (id: string) => {
+  const slug = slugFor(id);
+  return slug ? `${base}/${slug}/` : `${base}/`;
+};
+
+const docs = await getCollection('docs', (entry) => {
+  const { kind, difficulty } = entry.data;
+  return (kind === 'lesson' || kind === 'algorithm') && Boolean(difficulty);
+});
+
+const GROUPS = [
+  { difficulty: 'easy', label: '入门' },
+  { difficulty: 'medium', label: '进阶' },
+  { difficulty: 'hard', label: '高阶' },
+];
+
+const KIND_LABELS: Record<string, string> = { lesson: '课程', algorithm: '算法' };
+
+const byDifficulty = (difficulty: string) =>
+  docs
+    .filter((entry) => entry.data.difficulty === difficulty)
+    .map((entry) => ({
+      title: entry.data.title,
+      kind: entry.data.kind ?? 'page',
+      href: hrefFor(entry.id),
+    }))
+    .sort((a, b) => a.title.localeCompare(b.title, 'zh-Hans-CN'));
+---
+
+{
+  GROUPS.map(({ difficulty, label }) => {
+    const items = byDifficulty(difficulty);
+    return (
+      <section class="diff-group">
+        <h2>
+          {label} <span class="diff-count">{items.length} 篇</span>
+        </h2>
+        {items.length === 0 ? (
+          <p class="diff-empty">暂无内容。</p>
+        ) : (
+          <ul class="diff-list">
+            {items.map(({ title, kind, href }) => (
+              <li>
+                <a href={href}>{title}</a>
+                <span class="diff-kind">{KIND_LABELS[kind] ?? kind}</span>
+                <DifficultyBadge difficulty={difficulty} />
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    );
+  })
+}
+
+<style>
+  .diff-group {
+    margin: var(--space-xl) 0;
+  }
+
+  .diff-group h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .diff-count {
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--sl-color-gray-2);
+  }
+
+  .diff-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .diff-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5625rem 0.875rem;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: var(--radius-md);
+    background: var(--sl-color-bg-card);
+  }
+
+  .diff-list a {
+    color: var(--sl-color-white);
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .diff-list a:hover {
+    color: var(--sl-color-accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .diff-kind {
+    font-size: 0.6875rem;
+    color: var(--sl-color-gray-2);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: var(--radius-full);
+    padding: 0 0.4375rem;
+    line-height: 1.5;
+  }
+</style>

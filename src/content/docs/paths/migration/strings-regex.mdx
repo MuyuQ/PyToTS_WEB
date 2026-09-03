@@ -8,8 +8,14 @@ prerequisites: ["types"]
 python_tags: ["f-string", "str methods", "re module"]
 ts_tags: ["template literal", "string methods", "RegExp"]
 description: 掌握 Python 和 TypeScript 字符串处理与正则表达式的差异
+sidebar:
+  order: 7
+
 ---
-## 🎯 为什么这个很重要
+
+import CodeCompare from '../../../../components/CodeCompare.astro';
+
+## 为什么这个很重要
 
 处理用户输入、解析日志、提取数据...字符串操作是日常开发中最常见的任务之一。
 
@@ -44,7 +50,7 @@ const matches = "a1b2c3".match(/\d+/g); // ['1', '2', '3']
 看起来差不多？但返回值类型、空匹配的处理、命名捕获组...处处是坑。
 
 ---
-## 💡 核心概念
+## 核心概念
 
 ### 字符串格式化 = 填空题
 
@@ -59,17 +65,14 @@ const matches = "a1b2c3".match(/\d+/g); // ['1', '2', '3']
 
 Python 的字符串方法是"函数调用"风格，TypeScript 是"对象方法"风格：
 
-```python
-# Python: 函数调用
+<CodeCompare
+  py={`# Python: 函数调用
 len("hello")
-"hello".upper()
-```
-
-```typescript
-// TypeScript: 对象方法
+"hello".upper()`}
+  ts={`// TypeScript: 对象方法
 "hello".length;
-"hello".toUpperCase();
-```
+"hello".toUpperCase();`}
+/>
 
 ### 正则表达式 = 模式匹配器
 
@@ -82,7 +85,7 @@ len("hello")
 | `re.compile()` | `new RegExp()`   | 预编译正则     |
 
 ---
-## 📚 Python 回顾
+## Python 回顾
 
 ### 字符串格式化
 
@@ -177,7 +180,7 @@ pattern.findall('a1b2c3')  # ['1', '2', '3']
 ```
 
 ---
-## 🔧 TypeScript 等价写法
+## TypeScript 等价写法
 
 ### 字符串格式化
 
@@ -283,7 +286,7 @@ pattern.test("a1b2c3"); // true
 ```
 
 ---
-## 📊 语法速查表
+## 语法速查表
 
 ### 字符串格式化
 
@@ -330,63 +333,54 @@ pattern.test("a1b2c3"); // true
 | 预编译     | `re.compile(pattern)`      | `new RegExp(pattern)`      |
 
 ---
-## ⚠️ 差异与常见陷阱
+## 差异与常见陷阱
 
 ### 1. replace 行为不同
 
 Python 的 `replace` 默认替换所有，TypeScript 的 `replace` 只替换第一个：
 
-```python
-# Python: 替换所有
-"aaa".replace("a", "X")  # "XXX"
-```
-
-```typescript
-// TypeScript: 只替换第一个！
+<CodeCompare
+  py={`# Python: 替换所有
+"aaa".replace("a", "X")  # "XXX"`}
+  ts={`// TypeScript: 只替换第一个！
 "aaa".replace("a", "X"); // "Xaa"
 
 // 替换所有需要用 replaceAll
 "aaa".replaceAll("a", "X"); // "XXX"
 
 // 或者用正则 + g 标志
-"aaa".replace(/a/g, "X"); // "XXX"
-```
+"aaa".replace(/a/g, "X"); // "XXX"`}
+/>
 
 ### 2. match 返回值类型
 
 TypeScript 的 `match` 返回值可能是 `null`：
 
-```python
-# Python: 找不到返回空列表
-re.findall(r'\d+', 'abc')  # []
-```
-
-```typescript
-// TypeScript: 找不到返回 null！
-"abc".match(/\d+/g); // null
+<CodeCompare
+  py={`# Python: 找不到返回空列表
+re.findall(r'\\d+', 'abc')  # []`}
+  ts={`// TypeScript: 找不到返回 null！
+"abc".match(/\\d+/g); // null
 
 // 安全写法
-const matches = "abc".match(/\d+/g) ?? [];
-```
+const matches = "abc".match(/\\d+/g) ?? [];`}
+/>
 
 ### 3. search 返回位置而非结果
 
-```python
-# Python: 返回 Match 对象
-match = re.search(r'\d+', 'abc123')
+<CodeCompare
+  py={`# Python: 返回 Match 对象
+match = re.search(r'\\d+', 'abc123')
 if match:
-    print(match.group())  # "123"
-```
-
-```typescript
-// TypeScript: 返回位置索引！
-const pos = "abc123".search(/\d+/);
+    print(match.group())  # "123"`}
+  ts={`// TypeScript: 返回位置索引！
+const pos = "abc123".search(/\\d+/);
 console.log(pos); // 3（位置，不是结果）
 
 // 要获取匹配结果，用 match
-const matchResult = "abc123".match(/\d+/);
-console.log(matchResult?.[0]); // "123"
-```
+const matchResult = "abc123".match(/\\d+/);
+console.log(matchResult?.[0]); // "123"`}
+/>
 
 ### 4. 命名捕获组语法不同
 
@@ -421,43 +415,37 @@ Python 的切片语法很方便，TypeScript 需要组合方法：
 
 ### 6. 多行字符串处理
 
-```python
-# Python: 三引号
+<CodeCompare
+  py={`# Python: 三引号
 text = """
 第一行
 第二行
 第三行
 """
-# 注意：开头会有换行符
-```
-
-```typescript
-// TypeScript: 反引号
-const text = `
+# 注意：开头会有换行符`}
+  ts={`// TypeScript: 反引号
+const text = \`
 第一行
 第二行
 第三行
-`;
+\`;
 // 同样，开头会有换行符
 
 // 去除首尾空白
-const cleanText = text.trim();
-```
+const cleanText = text.trim();`}
+/>
 
 ### 7. 字符串遍历
 
-```python
-# Python: 直接遍历
+<CodeCompare
+  py={`# Python: 直接遍历
 for char in "hello":
     print(char)
 
 # 带索引
 for i, char in enumerate("hello"):
-    print(i, char)
-```
-
-```typescript
-// TypeScript: for...of
+    print(i, char)`}
+  ts={`// TypeScript: for...of
 for (const char of "hello") {
   console.log(char);
 }
@@ -470,29 +458,26 @@ for (let i = 0; i < "hello".length; i++) {
 // 或者用 entries
 [..."hello"].entries().forEach(([i, char]) => {
   console.log(i, char);
-});
-```
+});`}
+/>
 
 ### 8. Unicode 处理差异
 
-```python
-# Python 3: 字符串默认 Unicode
-len("你好")  # 2（字符数）
-```
-
-```typescript
-// TypeScript: 需要注意代理对
+<CodeCompare
+  py={`# Python 3: 字符串默认 Unicode
+len("你好")  # 2（字符数）`}
+  ts={`// TypeScript: 需要注意代理对
 "你好".length; // 2（正确）
 
 // 但某些 Unicode 字符有问题
 "👍".length; // 2（应该是 1！）
 
 // 正确处理方式
-[..."👍"].length; // 1
-```
+[..."👍"].length; // 1`}
+/>
 
 ---
-## 💬 开发者对话
+## 开发者对话
 
 **Python 开发者**：TypeScript 没有 f-string，那怎么格式化字符串？
 
@@ -556,18 +541,15 @@ if (result) {
 
 **TypeScript 开发者**：对，Python 用 `(?P<name>...)`，TypeScript 用 `(?<name>...)`，少了那个 `P`。访问方式也不同：
 
-```python
-# Python
-match.group('name')
-```
-
-```typescript
-// TypeScript
-match.groups.name;
-```
+<CodeCompare
+  py={`# Python
+match.group('name')`}
+  ts={`// TypeScript
+match.groups.name;`}
+/>
 
 ---
-## 🤔 试试看
+## 试试看
 
 ### 预测输出
 
@@ -648,7 +630,7 @@ console.log(emails.length); // 2
 </details>
 
 ---
-## 📝 练习
+## 练习
 
 将以下 Python 代码转换为 TypeScript：
 
@@ -730,7 +712,7 @@ console.log(maskEmails("Contact alice@example.com for help"));
 </details>
 
 ---
-## 🎓 面试实战
+## 面试实战
 
 ### 问题 1：如何判断一个字符串是否是回文？
 

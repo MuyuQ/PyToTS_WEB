@@ -3,14 +3,21 @@ title: 我的书签
 description: 查看你收藏的学习内容
 kind: page
 ---
+
 这里显示你收藏的所有学习内容和算法题解。
 
-书签功能通过浏览器本地存储实现。你可以在课程和算法页面点击书签图标来添加收藏。
+书签功能通过浏览器本地存储实现。在课程和算法页面点击「收藏」按钮来添加收藏。
+
+<div id="bookmarks-container">
+  <p class="empty-state">加载中……</p>
+</div>
 
 ## 快速导航
 
-- [浏览学习路径](/paths)
-- [浏览算法练习](/algorithms)
+- [浏览学习路径](../paths/)
+- [浏览算法练习](../algorithms/)
+
+<script is:inline src={`${import.meta.env.BASE_URL}bookmarks.js`}></script>
 
 <style>{`
 .bookmarks-info {
@@ -19,5 +26,44 @@ kind: page
   border-radius: 0.5rem;
   padding: 1.5rem;
   margin: 1.5rem 0;
+}
+.empty-state {
+  color: var(--sl-color-gray-2);
+}
+.bookmarks-grid {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 1.5rem;
+}
+.bookmark-card {
+  display: block;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--sl-color-hairline);
+  border-radius: 0.5rem;
+  background: var(--sl-color-bg-card);
+  text-decoration: none;
+}
+.bookmark-card:hover {
+  border-color: var(--sl-color-accent);
+}
+.bookmark-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.bookmark-title {
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+.completed-badge {
+  font-size: 0.75rem;
+  color: var(--sl-color-accent);
+  background: var(--sl-color-accent-low);
+  border-radius: 9999px;
+  padding: 0 0.5rem;
+}
+.bookmark-path {
+  font-size: 0.8125rem;
+  color: var(--sl-color-gray-2);
 }
 `}</style>

@@ -59,19 +59,18 @@ npm run dev
 ```
 src/
 ├── components/                # UI 组件
-│   ├── Banner.astro                 # 横幅提示
-│   ├── BookmarkButton.astro         # 收藏按钮
-│   ├── CommonMistakes.astro         # 常见错误
-│   ├── CompletionBadge.astro        # 完成徽章
+│   ├── AlgorithmIndex.astro         # 算法题库索引（可筛选）
+│   ├── Banner.astro                 # 横幅提示（含侧边栏进度）
+│   ├── CodeCompare.astro            # Python/TS 双语对照组件
+│   ├── DifficultyBadge.astro        # 难度徽章
+│   ├── DifficultyIndex.astro        # 难度索引
 │   ├── Header.astro                 # 顶部导航
 │   ├── LessonProgressMarkers.astro  # 课程进度标记
-│   ├── MobileNav.astro              # 移动端导航
-│   ├── Pagination.astro             # 分页
-│   ├── PathNavigator.astro          # 学习路径导航
+│   ├── Pagination.astro             # 分页（教学顺序）
 │   ├── QuizContainer.astro          # 测验容器
-│   ├── RightSidebar.astro           # 右侧边栏
-│   ├── ShareButtons.astro           # 分享按钮
-│   └── SidebarProgress.astro        # 侧边栏进度
+│   ├── SidebarProgress.astro        # 侧边栏进度
+│   ├── TagIndex.astro               # 标签索引
+│   └── overrides/PageTitle.astro    # 标题元数据徽章
 ├── content/docs/          # 文档内容 (MDX)
 │   ├── paths/             # 学习路径
 │   │   ├── foundation/    # 基础课程
@@ -141,10 +140,5 @@ src/
 如本项目对你有帮助，欢迎 Star 支持！
 
 ---
-*最后更新: 2026-07-30*
 
----
-*最后更新: 2026-08-10*
-
----
-*最后更新: 2026-08-21*
+*最后更新: 2026-09-03*

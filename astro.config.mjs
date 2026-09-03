@@ -7,7 +7,35 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "Python to TypeScript",
+      description:
+        "面向 Python 开发者的 TypeScript 学习平台：双语对照课程、36 道算法题解与交互测验。",
+      defaultLocale: "root",
+      locales: {
+        root: {
+          label: "简体中文",
+          lang: "zh-CN",
+        },
+      },
+      social: {
+        github: "https://github.com/MuyuQ/PyToTS_WEB",
+      },
       head: [
+        {
+          tag: "meta",
+          attrs: { property: "og:image", content: "https://muyuq.github.io/PyToTS_WEB/og.png" },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:width", content: "1200" },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:height", content: "630" },
+        },
+        {
+          tag: "meta",
+          attrs: { name: "twitter:card", content: "summary_large_image" },
+        },
         {
           tag: "link",
           attrs: {
@@ -74,17 +102,24 @@ export default defineConfig({
         "./src/styles/custom-layout.css",
         "./src/styles/components.css",
         "./src/styles/tabs-custom.css",
+        "./src/styles/home.css",
       ],
       disable404Route: true,
       components: {
         Banner: "./src/components/Banner.astro",
         Pagination: "./src/components/Pagination.astro",
         Header: "./src/components/Header.astro",
+        PageTitle: "./src/components/overrides/PageTitle.astro",
       },
       sidebar: [
         {
           label: "学习路径",
           items: [
+            {
+              label: "准备路径",
+              collapsed: true,
+              autogenerate: { directory: "paths/preparation" },
+            },
             {
               label: "基础路径",
               collapsed: true,
@@ -108,17 +143,21 @@ export default defineConfig({
         },
         {
           label: "算法",
+          collapsed: true,
           autogenerate: { directory: "algorithms" },
         },
         {
           label: "练习与测验",
-          autogenerate: { directory: "practice" },
+          items: [
+            { label: "练习与自测", link: "/practice/" },
+            { label: "编程测验", link: "/practice/quiz/" },
+          ],
         },
         {
           label: "分类索引",
           items: [
-            { label: "Tags", link: "/tags/" },
-            { label: "Difficulty", link: "/difficulty/" },
+            { label: "标签索引", link: "/tags/" },
+            { label: "难度索引", link: "/difficulty/" },
           ],
         },
         {
