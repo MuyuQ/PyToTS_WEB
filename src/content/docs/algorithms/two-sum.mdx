@@ -9,19 +9,65 @@ description: 给定数组和目标值，找出两数之和等于目标值的索�
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给定一个整数数组 `nums` 和一个整数目标值 `target`，请你在该数组中找出和为目标值 `target` 的那两个整数，并返回它们的数组下标。
+给定一个整数数组 `nums` 和一个整数目标值 `target`，请在该数组中找出和为目标值 `target` 的那两个整数，并返回它们的数组下标。题目保证每种输入只对应一个答案，且同一个元素不能使用两次。
+
+**示例 1**
+
+```text
+输入：nums = [2, 7, 11, 15], target = 9
+输出：[0, 1]
+解释：nums[0] + nums[1] = 2 + 7 = 9
+```
+
+**示例 2**
+
+```text
+输入：nums = [3, 2, 4], target = 6
+输出：[1, 2]
+```
+
+**边界情况**：数组长度至少为 2；答案一定存在，所以不需要处理"无解"分支，但代码里通常保留一个兜底返回。
+
+## 暴力解与瓶颈
+
+最直观的想法是两层循环枚举所有下标对：
+
+```python
+def two_sum_brute(nums: list[int], target: int) -> list[int]:
+    for i in range(len(nums)):
+        for j in range(i + 1, len(nums)):
+            if nums[i] + nums[j] == target:
+                return [i, j]
+    return []
+```
+
+它是对的，但做了大量重复工作：对每个 `i` 都要把后面的元素扫一遍，时间复杂度 O(n²)。当 `n` 很大时，内层循环就是瓶颈。优化方向是**用空间换时间**：把"之前见过的值"存下来，让每次查找变成 O(1)。
 
 ## 思路分析
 
-使用哈希表存储已遍历的数字及其索引，对于每个数字，检查 `target - num` 是否在哈希表中。
+用哈希表记录已遍历元素的值到索引的映射。遍历到 `num` 时，需要的另一个数是 `complement = target - num`——如果它已经在表中，直接返回两个索引；否则把当前值存入表，继续往后走。每个元素只访问一次。
+
+以 `nums = [2, 7, 11, 15], target = 9` 为例：
+
+| 步骤 | `num` | 需要的补数 | 查表前的内容 | 结果                 |
+| ---- | ----- | ---------- | ------------ | -------------------- |
+| 1    | 2     | 7          | `{}`         | 未命中，存入 `{2:0}` |
+| 2    | 7     | 2          | `{2:0}`      | 命中，返回 `[0, 1]`  |
+
+:::tip
+关键细节是**先查后存**：查完才把当前元素存入表，这样补数一定来自之前的位置，不会把同一个元素用两次。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n)，只需遍历一次数组
-- **空间复杂度**：O(n)，哈希表最多存储 n 个元素
+| 解法     | 时间复杂度 | 空间复杂度 | 说明                       |
+| -------- | ---------- | ---------- | -------------------------- |
+| 暴力枚举 | O(n²)      | O(1)       | 两层循环，不需要额外存储   |
+| 哈希表   | O(n)       | O(n)       | 一次遍历，哈希表最多存 n 项 |
 
 ## 双语实现
 
@@ -30,32 +76,30 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
     ```python
     # 两数之和 - Python 实现
     # 时间复杂度: O(n), 空间复杂度: O(n)
-    # 核心思路: 用哈希表记录已遍历元素的值和索引
+    # 核心思路: 用 dict 记录已遍历元素的值和索引
     def two_sum(nums: list[int], target: int) -> list[int]:
-        # 哈希表存储值到索引的映射
+        # dict 存储值到索引的映射
         # 键: 数组元素值, 值: 该元素在数组中的索引
-        seen = {}
-        
+        seen: dict[int, int] = {}
+
         # enumerate 同时获取索引和值，避免二次查找
         for i, num in enumerate(nums):
             # 计算需要的补数: 如果补数已在表中，说明找到答案
             complement = target - num
-            
-            # 检查补数是否已在哈希表中
-            # 如果在，说明之前遍历过该补数，返回两个索引
+
+            # in 检查键是否存在，平均 O(1)
             if complement in seen:
                 return [seen[complement], i]
-            
-            # 将当前值和索引存入哈希表，供后续元素查找
+
+            # 先查后存：保证补数来自之前的位置
             seen[num] = i
-        
+
         # 题目保证有解，这里理论上不会执行到
         return []
 
     # 测试用例
-
-    print(two_sum([2, 7, 11, 15], 9)) # [0, 1] 因为 nums[0]+nums[1]=2+7=9
-    print(two_sum([3, 2, 4], 6)) # [1, 2] 因为 nums[1]+nums[2]=2+4=6
+    print(two_sum([2, 7, 11, 15], 9))  # [0, 1]
+    print(two_sum([3, 2, 4], 6))  # [1, 2]
     ```
 
   </TabItem>
@@ -65,48 +109,93 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
     // 时间复杂度: O(n), 空间复杂度: O(n)
     // 核心思路: 用 Map 记录已遍历元素的值和索引
     function twoSum(nums: number[], target: number): number[] {
-    // 使用 Map 存储值到索引的映射
-    // 键: 数组元素值, 值: 该元素在数组中的索引
-    const seen = new Map<number, number>();
+      // Map<number, number> 存储值到索引的映射
+      const seen = new Map<number, number>();
 
-        // 遍历数组，用传统 for 循环获取索引
-        for (let i = 0; i < nums.length; i++) {
-            const num = nums[i];
-            // 计算需要的补数: 如果补数已在 Map 中，说明找到答案
-            const complement = target - num;
+      // 传统 for 循环获取索引（数组解构也行，见下方点评）
+      for (let i = 0; i < nums.length; i++) {
+        const num = nums[i];
+        // 计算需要的补数: 如果补数已在 Map 中，说明找到答案
+        const complement = target - num;
 
-            // 检查补数是否已在 Map 中
-            // has() 方法检查键是否存在，O(1) 时间复杂度
-            if (seen.has(complement)) {
-                // get() 返回补数的索引，! 断言非空（因为 has 已确认存在）
-                return [seen.get(complement)!, i];
-            }
-
-            // 将当前值和索引存入 Map，供后续元素查找
-            seen.set(num, i);
+        // has() 检查键是否存在，平均 O(1)
+        if (seen.has(complement)) {
+          // get() 返回 number | undefined，! 断言非空（has 已确认存在）
+          return [seen.get(complement)!, i];
         }
 
-        // 题目保证有解，这里理论上不会执行到
-        return [];
+        // 先查后存：保证补数来自之前的位置
+        seen.set(num, i);
+      }
 
+      // 题目保证有解，这里理论上不会执行到
+      return [];
     }
 
     // 测试用例
-    console.log(twoSum([2, 7, 11, 15], 9)); // [0, 1] 因为 nums[0]+nums[1]=2+7=9
-    console.log(twoSum([3, 2, 4], 6)); // [1, 2] 因为 nums[1]+nums[2]=2+4=6
+    console.log(twoSum([2, 7, 11, 15], 9)); // [0, 1]
+    console.log(twoSum([3, 2, 4], 6)); // [1, 2]
     ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+两份代码逻辑完全一致，差异全在语言表达上——这正是从 Python 迁移时要过的坎：
+
+<CodeCompare
+  py={`# 成员检查：in 直接判断键是否存在
+if complement in seen:
+    return [seen[complement], i]`}
+  ts={`// 成员检查：has() 判存在，get() 取值
+if (seen.has(complement)) {
+  return [seen.get(complement)!, i];
+}`}
+/>
+
+| 关注点     | Python                                  | TypeScript                                      |
+| ---------- | --------------------------------------- | ----------------------------------------------- |
+| 哈希结构   | `dict`，字面量即可                      | `Map<number, number>`，泛型参数写清键值类型     |
+| 成员检查   | `in`，一步完成                          | `has()` + `get()` 两步，取值后类型是联合类型    |
+| 空值处理   | 取不存在的键直接抛 `KeyError`           | `get()` 返回 `number \| undefined`，用 `!` 断言 |
+| 遍历写法   | `enumerate(nums)` 同时拿索引和值        | 索引循环最稳；`for...of` 拿不到索引别硬用       |
+| 类型注解   | `list[int]`，运行时不检查               | `number[]` + 返回值 `: number[]`，编译期检查    |
+| 输出测试   | `print(...)`                            | `console.log(...)`                              |
+
+:::note
+`seen.get(complement)!` 里的 `!` 是非空断言：告诉编译器"这里一定有值"。能这样写的前提是上一行 `has()` 已经确认存在——断言要有依据，不要满屏 `!`。
+:::
+
+## 常见错误分析
+
+### 1. 先存后查，复用了同一个元素
+
+```python
+# 错误：还没查就先把自己存进去
+seen[num] = i
+if complement in seen:  # num 恰好是 target 一半时会匹配到自己
+    return [seen[complement], i]
+```
+
+输入 `nums = [3, 2, 4], target = 6` 时，`i = 0, num = 3`，补数也是 3——刚存进去的自己会被命中，返回 `[0, 0]`。**改法**：查完再存，顺序不能反。
+
+### 2. 双层循环，复杂度停在 O(n²)
+
+能跑出正确结果，但面试官一定会追问"能更快吗"。识别信号：内层循环只是在**查找**之前见过的值——凡是"查找之前的信息"，优先考虑哈希表。
+
+### 3. TypeScript 里忽略 `get()` 的 `undefined`
+
+```typescript
+// 错误：strict 模式下编译不通过
+return [seen.get(complement), i]; // number | undefined 不能赋给 number
+```
+
+`Map.get` 的返回类型永远带 `undefined`。要么像正解一样 `has()` + `!` 断言，要么用局部变量收窄。Python 没有这个问题——`dict` 取值要么命中要么抛异常，类型上不体现"可能缺席"。
+
 ## 面试变体
 
-1. **返回所有组合**：如果有多个解，返回所有不重复的组合
-2. **有序数组**：如果数组已排序，可以使用双指针法
-3. **三数之和**：扩展到三个数之和等于目标值
-
-## 常见错误
-
-1. 忘记检查 `complement` 是否在哈希表中就返回
-2. 使用两层循环导致 O(n²) 时间复杂度
-3. 重复使用同一元素（题目通常不允许）
+1. **返回所有组合**：如果有多个解，返回所有不重复的下标对。哈希表思路不变，只是命中时收集答案而不是直接返回，注意去重。
+2. **有序数组**：如果数组已排序，改用双指针（一头一尾向中间夹），空间可以降到 O(1)。追问点：为什么有序才能用双指针？
+3. **三数之和**：扩展到三个数。标准做法是排序 + 固定一个数 + 剩下部分用双指针，复杂度 O(n²)，注意跳过重复元素去重。
+4. **追问哈希表**：`in` / `has()` 为什么是平均 O(1)？最坏什么时候退化？（哈希冲突严重时退化到 O(n)，Python dict 和 JS Map 内部都会动态扩容来缓解。）
