@@ -1,21 +1,22 @@
-/* ===== ZENSICAL-STYLE TABS ===== */
+/* ==========================================================================
+   标签页（Starlight Tabs）
+   Starlight 自带的 Tabs 视觉偏"卡片套卡片"，这里改成与代码块一体的扁平标签条，
+   让 Python / TypeScript 切换看起来像同一个编辑器的两个页签。
+   ========================================================================== */
 
-/* Tab list container */
 starlight-tabs .tablist-wrapper {
   margin-bottom: 0;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
   overflow: hidden;
 }
 
-/* Tab list */
 starlight-tabs [role="tablist"] {
-  background: var(--color-bg);
-  border-bottom: 1px solid var(--color-border);
-  padding: 0 var(--space-sm);
   gap: 0;
+  padding: 0 var(--space-2);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-sunken);
 }
 
-/* Individual tab */
 starlight-tabs .tab {
   margin-bottom: -1px;
 }
@@ -23,76 +24,71 @@ starlight-tabs .tab {
 starlight-tabs .tab > [role="tab"] {
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-sm) var(--space-md);
-  text-decoration: none;
+  gap: var(--space-2);
+  min-height: 2.75rem;
+  padding: var(--space-2) var(--space-4);
   border-bottom: 2px solid transparent;
-  color: var(--sl-color-gray-2);
-  font-size: 0.875rem;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-  outline-offset: var(--sl-outline-offset-inside);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  text-decoration: none;
+  transition:
+    color var(--duration-fast) var(--ease-out-quart),
+    border-color var(--duration-fast) var(--ease-out-quart),
+    background-color var(--duration-fast) var(--ease-out-quart);
+  outline-offset: -2px;
 }
 
 starlight-tabs .tab > [role="tab"]:hover {
-  color: var(--sl-color-gray-1);
-  background: var(--sl-color-gray-6);
+  color: var(--text-strong);
+  background: var(--surface-hover);
 }
 
-/* Active tab */
 starlight-tabs .tab [role="tab"][aria-selected="true"] {
-  color: var(--sl-color-accent);
-  border-bottom-color: var(--sl-color-accent);
-  font-weight: 600;
-  background: var(--color-card);
+  border-bottom-color: var(--accent);
+  background: var(--surface-raised);
+  color: var(--accent-ink);
+  font-weight: var(--weight-semibold);
 }
 
-/* Tab panel */
 starlight-tabs [role="tabpanel"] {
   margin-top: 0;
-  border: 1px solid var(--color-border);
-  border-top: none;
+  border: 1px solid var(--border-subtle);
+  border-top: 0;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
   overflow: hidden;
+  background: var(--surface-code);
 }
 
-/* Code blocks inside tabs */
 starlight-tabs [role="tabpanel"] pre {
   margin: 0;
+  border: 0;
   border-radius: 0;
+  background: transparent !important;
 }
 
-/* Icon styling */
 starlight-tabs .tab [role="tab"] svg {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
 }
 
-/* Dark theme adjustments */
-[data-theme="dark"] starlight-tabs .tab > [role="tab"] {
-  color: rgba(224, 226, 230, 0.56);
+/* 面板里的语言徽标与页签重复 */
+starlight-tabs [role="tabpanel"] pre[data-language]::after {
+  content: none;
 }
 
-[data-theme="dark"] starlight-tabs .tab > [role="tab"]:hover {
-  color: rgba(224, 226, 230, 0.82);
-  background: #191c24;
+starlight-tabs [role="tabpanel"] pre[data-language] {
+  padding-top: var(--space-3);
 }
 
-[data-theme="dark"] starlight-tabs .tab [role="tab"][aria-selected="true"] {
-  color: #5488e8;
-  border-bottom-color: #5488e8;
-  background: #191c24;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
+@media (max-width: 48rem) {
   starlight-tabs .tab > [role="tab"] {
-    padding: var(--space-xs) var(--space-sm);
-    font-size: 0.75rem;
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--text-xs);
   }
-  
+
   starlight-tabs .tab [role="tab"] svg {
-    width: 14px;
-    height: 14px;
+    width: 0.875rem;
+    height: 0.875rem;
   }
 }

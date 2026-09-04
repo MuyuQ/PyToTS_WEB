@@ -1,83 +1,58 @@
 ---
-title: Python 到 TypeScript 学习站
-description: 面向 Python 开发者的 TypeScript 学习平台：双语对照课程、算法题解与交互测验
+title: Python 到 TypeScript
+description: 面向 Python 开发者的 TypeScript 学习平台：双语对照课程、36 道算法题解与交互测验
 kind: page
 template: splash
 hero:
-  title: Python 到 TypeScript
-  tagline: 为 Python 开发者准备的双语对照学习路径 —— 同一个概念，两种语言，差异一眼可见。
-  actions:
-    # Starlight hero 链接不应用 base，这里用相对链接（首页即站点根，浏览器自动解析）
-    - text: 开始学习
-      link: paths/
-      variant: primary
-      icon: right-arrow
-    - text: 进入题库
-      link: algorithms/
-      variant: secondary
-      icon: external
+  title: 不重新入门，只学不一样的地方
+  tagline: 把你已经会的 Python，逐条映射到 TypeScript。同一个概念，两种写法，差异一眼可见。
 ---
 
-已经掌握 Python，想快速迁移到 TypeScript？这个站点把每种语言差异都写成**并排对照**：不重新入门，只学习"不一样的地方"。
+import CodeCompare from "../../components/CodeCompare.astro";
+import HomePaths from "../../components/HomePaths.astro";
+import HomeRoutes from "../../components/HomeRoutes.astro";
 
-import CodeCompare from '../../components/CodeCompare.astro';
+<div class="home-cta">
+  <a class="btn btn--primary" href={import.meta.env.BASE_URL + "paths/"}>
+    从第一条路径开始
+  </a>
+  <a class="btn" href={import.meta.env.BASE_URL + "algorithms/"}>
+    直接刷题
+  </a>
+  <span class="home-cta__note">22 节课 · 36 道算法题 · 全部双语对照</span>
+</div>
+
+## 双语对照是这一站的核心
+
+不是"用 TypeScript 再写一遍教程"，而是把每个差异点摆在一起让你看。类型注解在 Python 里是建议，在 TypeScript 里是规则：
 
 <CodeCompare
-  caption={`同一个函数签名：Python 的类型注解是「建议」，TypeScript 的类型是「规则」。`}
+  caption={`同一个函数签名：Python 在运行时才发现键不存在，TypeScript 在编译期就拒绝这段代码。`}
   py={`def process_user(user: dict) -> str:
     return user["name"]  # 类型注解只是"建议"
 
-process_user({"age": 25})  # 运行时才报 KeyError`}
+process_user({"age": 25}) # 运行时才报 KeyError`}
   ts={`function processUser(user: { name: string }): string {
-  return user.name;
+return user.name;
 }
 
 processUser({ age: 25 });
-//          ~~~~~ 编译期直接报错，根本跑不起来`}
+// ~~~~~ 编译期直接报错，根本跑不起来`}
 />
 
-## 学习路径
+## 四条路径，按顺序走
 
-按顺序学习：准备 → 基础 → 迁移 → 进阶。每条路径的课程都保持 Python 在前、TypeScript 在后的对照节奏。
+课前后的顺序是按教学法排的，不是字母序。每节课都保持 Python 在前、TypeScript 在后的对照节奏。
 
-import { CardGrid, Card } from '@astrojs/starlight/components';
+<HomePaths />
 
-<CardGrid>
-  <Card title="准备路径">
-    TypeScript 简介与开发环境搭建，五分钟进入状态。
+## 学完之后，还有三条路可以走
 
-    <span class="home-meta">2 课 · 入门级</span>
+<HomeRoutes />
 
-    [开始学习 →](paths/preparation/)
-  </Card>
+## 怎么用这个站
 
-  <Card title="基础路径">
-    建立 TypeScript 核心概念：变量、函数、控制流、数据结构与类。
-
-    <span class="home-meta">5 课 · 入门级</span>
-
-    [开始学习 →](paths/foundation/)
-  </Card>
-
-  <Card title="迁移路径">
-    建立 Python 到 TypeScript 的心智模型映射：类型系统、异步编程与错误处理。
-
-    <span class="home-meta">7 课 · 进阶级</span>
-
-    [开始学习 →](paths/migration/)
-  </Card>
-
-  <Card title="进阶路径">
-    面向工程实践与面试：泛型、装饰器、设计模式与 Node.js。
-
-    <span class="home-meta">8 课 · 高阶级</span>
-
-    [开始学习 →](paths/advanced/)
-  </Card>
-</CardGrid>
-
-## 继续深入
-
-- [算法题库](algorithms/)：经典算法题的双语实现，附复杂度分析与面试变体，支持按难度筛选
-- [互动测验](practice/quiz/)：从变量声明到泛型的即时反馈自测
-- [速查手册](handbook/)：Python ↔ TypeScript 高频语法对照表，写代码时随手翻
+1. **顺着路径学**：准备 → 基础 → 迁移 → 进阶，课时短，适合通勤和工位间隙。
+2. **卡住就查手册**：遇到"这个语法 TypeScript 里怎么写"，直接翻对照表，不用回头读课程。
+3. **学完立刻验证**：每节课末尾有练习与面试追问，全部路径走完后做一遍编程测验。
+4. **面试前刷题库**：36 道题按难度分级，每题都有双语实现、复杂度分析和常见变体。

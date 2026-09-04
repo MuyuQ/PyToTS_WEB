@@ -1,21 +1,23 @@
 ---
-import config from 'virtual:starlight/user-config';
-import type { Props } from '@astrojs/starlight/props';
+import config from "virtual:starlight/user-config";
+import type { Props } from "@astrojs/starlight/props";
 
-import LanguageSelect from 'virtual:starlight/components/LanguageSelect';
-import Search from 'virtual:starlight/components/Search';
-import SiteTitle from 'virtual:starlight/components/SiteTitle';
-import SocialIcons from 'virtual:starlight/components/SocialIcons';
-import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
+import LanguageSelect from "virtual:starlight/components/LanguageSelect";
+import Search from "virtual:starlight/components/Search";
+import SiteTitle from "virtual:starlight/components/SiteTitle";
+import SocialIcons from "virtual:starlight/components/SocialIcons";
+import ThemeSelect from "virtual:starlight/components/ThemeSelect";
+import SiteNav from "./SiteNav.astro";
 
 const shouldRenderSearch =
-  config.pagefind || config.components.Search !== '@astrojs/starlight/components/Search.astro';
+  config.pagefind || config.components.Search !== "@astrojs/starlight/components/Search.astro";
 ---
 
 <div class="header sl-flex">
   <div class="title-wrapper sl-flex">
     <SiteTitle {...Astro.props} />
   </div>
+  <SiteNav />
   <div class="sl-flex right-group">
     <div class="sl-flex social-icons">
       <SocialIcons {...Astro.props} />
@@ -27,44 +29,69 @@ const shouldRenderSearch =
 </div>
 
 <style>
+  /* 窄屏导航换到第二行，顶栏相应增高。
+     行高固定（3.5rem + 2.75rem = 6.25rem），Starlight 的汉堡按钮
+     才能可靠地钉在第二行右侧，而不是按 6.25rem 整体居中、骑在两行之间。 */
+  @media (max-width: 61.99rem) {
+    :global(:root) {
+      --sl-nav-height: 6.25rem;
+    }
+
+    .header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-rows: 3.5rem 2.75rem;
+    }
+
+    .header > :global(.site-nav) {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      align-self: center;
+    }
+  }
+
   .header {
     gap: var(--sl-nav-gap);
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    align-content: center;
     height: 100%;
-    padding: 0 var(--space-md);
-    background: var(--sl-color-bg-nav);
-    border-bottom: 1px solid var(--color-border);
+    padding: 0 var(--space-4);
+    background: var(--surface-nav);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   .title-wrapper {
     overflow: hidden;
     flex-shrink: 0;
+    min-width: 0;
   }
 
   .title-wrapper :global(.site-title) {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: var(--sl-color-accent);
-    letter-spacing: -0.01em;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-strong);
     white-space: nowrap;
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out-quart);
   }
 
-  /* 窄屏下缩小站点标题，避免被截断（此前 390px 视口显示为 "Python to Ty"） */
-  @media (max-width: 30rem) {
-    .title-wrapper :global(.site-title) {
-      font-size: 0.9375rem;
-    }
+  .title-wrapper :global(.site-title):hover {
+    color: var(--accent);
   }
 
   .right-group {
-    gap: var(--space-sm);
+    gap: var(--space-2);
     align-items: center;
     margin-left: auto;
+    flex-shrink: 0;
   }
 
   .social-icons {
-    gap: var(--space-sm);
+    gap: var(--space-2);
     align-items: center;
   }
 
@@ -73,22 +100,27 @@ const shouldRenderSearch =
   }
 
   .social-icons::after {
-    content: '';
+    content: "";
     height: 1.5rem;
-    border-inline-end: 1px solid var(--color-border);
+    border-inline-end: 1px solid var(--border-subtle);
   }
 
   .social-icons:empty::after {
     display: none;
   }
 
-  @media (min-width: 50rem) {
-    :global(:root[data-has-sidebar]) {
-      --__sidebar-pad: calc(2 * var(--sl-nav-pad-x));
+  @media (max-width: 30rem) {
+    .header {
+      padding: 0 var(--space-3);
+      gap: var(--space-2);
     }
-    :global(:root:not([data-has-toc])) {
-      --__toc-width: 0rem;
+
+    .title-wrapper :global(.site-title) {
+      font-size: var(--text-md);
     }
+  }
+
+  @media (min-width: 62rem) {
     .header {
       --__sidebar-width: max(0rem, var(--sl-content-inline-start, 0rem) - var(--sl-nav-pad-x));
       --__main-column-fr: calc(
@@ -101,6 +133,11 @@ const shouldRenderSearch =
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: var(--space-6);
+    }
+
+    .right-group {
+      gap: var(--space-3);
     }
   }
 </style>

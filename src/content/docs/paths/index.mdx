@@ -1,76 +1,63 @@
 ---
 title: 学习路径
-description: 选择适合你的学习路径：准备、基础、迁移、进阶
+description: 四条路径，从环境准备到工程实践，按顺序走完
 kind: page
+sidebar:
+  order: 0
 ---
 
-import { CardGrid, Card } from "@astrojs/starlight/components";
+import HomePaths from "../../../components/HomePaths.astro";
 import LessonProgressMarkers from "../../../components/LessonProgressMarkers.astro";
 
 <LessonProgressMarkers />
 
-根据你的 Python 水平选择合适的学习路径。**推荐按顺序学习：准备 → 基础 → 迁移 → 进阶**。
+已经会 Python，学 TypeScript 不需要从头开始。四条路径按"先建立语言感 → 再逐项迁移心智模型 → 最后补工程实践"排列，课时短，可以一节课一节课地推进。
 
-<CardGrid>
-  <Card title="准备路径">
-    TypeScript 简介与开发环境搭建，五分钟进入状态。
+<HomePaths />
 
-    <span class="home-meta">2 课 · 入门级</span>
+## 该从哪条开始
 
-    [开始学习 →](preparation/)
-  </Card>
+- **完全没写过 TypeScript**：从[准备路径](preparation/)开始，先看清楚它和 JavaScript 的关系，再搭环境。
+- **已经能写一点 TS，但写不踏实**：直接进[基础路径](foundation/)，把变量、函数、类型补齐。
+- **TS 能跑，但总在和类型系统较劲**：[迁移路径](migration/)是为你准备的，逐项对照 Python 的习惯写法。
+- **准备面试或上真实项目**：[进阶路径](advanced/)覆盖泛型、装饰器、设计模式与 Node.js。
 
-  <Card title="基础路径">
-    建立 TypeScript 核心概念，掌握变量、函数、控制流等基础语法。
+## 每条路径讲什么
 
-    <span class="home-meta">5 课 · 入门级</span>
+### 准备路径
 
-    [开始学习 →](foundation/)
-  </Card>
+1. [TypeScript 简介](preparation/typescript-intro/) - 它和 JavaScript 到底是什么关系
+2. [开发环境准备](preparation/setup/) - 五分钟跑起来
 
-  <Card title="迁移路径">
-    建立 Python 到 TypeScript 的心智模型映射，理解类型系统、异步编程等核心差异。
+### 基础路径
 
-    <span class="home-meta">7 课 · 进阶级</span>
-
-    [开始学习 →](migration/)
-  </Card>
-
-  <Card title="进阶路径">
-    掌握泛型、装饰器、设计模式等工程实践，为面试和实际项目做准备。
-
-    <span class="home-meta">8 课 · 高阶级</span>
-
-    [开始学习 →](advanced/)
-  </Card>
-</CardGrid>
-
-## 学习顺序建议
-
-### 第一条：基础路径（必学）
-
-适合所有人，建立 TypeScript 基础：
-
-1. [变量与数据类型](foundation/variables/) - TypeScript 的类型系统基础
-2. [函数基础](foundation/functions-basics/) - 函数定义与类型注解
-3. [控制流](foundation/control-flow/) - 条件语句与循环
+1. [变量与数据类型](foundation/variables/) - 类型系统的第一块砖
+2. [函数基础](foundation/functions-basics/) - 参数、返回值与类型注解
+3. [控制流](foundation/control-flow/) - 条件与循环
 4. [数据结构](foundation/data-structures/) - Array、Object、Map、Set
-5. [类与对象](foundation/classes-objects/) - 面向对象编程
+5. [类与对象](foundation/classes-objects/) - 面向对象写法
 
-### 第二条：迁移路径（有 Python 经验必学）
+### 迁移路径
 
-系统对比 Python 与 TypeScript 的差异：
-
-1. [类型系统对比](migration/types/) - 理解类型检查的核心差异
+1. [类型系统对比](migration/types/) - 编译期检查 vs 运行时提示
 2. [函数与参数](migration/functions/) - 参数传递与返回值差异
-3. [异步编程](migration/async/) - Promise vs asyncio
-4. [模块与包管理](migration/modules/) - ES6 模块 vs Python 导入
+3. [模块与包管理](migration/modules/) - ESM 对比 Python 导入
+4. [异步编程](migration/async/) - Promise 对比 asyncio
+5. [错误处理机制](migration/error-handling/) - try/catch 对比 try/except
+6. [枚举与常量定义](migration/enums/) - enum 与常量写法
+7. [字符串与正则处理](migration/strings-regex/) - 字符串方法与正则差异
 
-### 第三条：进阶路径（深入学习）
+### 进阶路径
 
-工程实践与面试准备：
+1. [泛型深入](advanced/generics/) - 可复用的类型抽象
+2. [类型守卫与收窄](advanced/type-guards/) - 让类型推断为你工作
+3. [工具类型详解](advanced/utility-types/) - 内置类型工具
+4. [类型声明与配置](advanced/declarations-config/) - .d.ts 与 tsconfig
+5. [装饰器与元编程](advanced/decorators/) - 元编程能力
+6. [设计模式实践](advanced/design-patterns/) - 常见模式的 TS 实现
+7. [日期时间处理](advanced/datetime/) - 时间处理方案
+8. [Node.js 基础](advanced/nodejs-basics/) - 运行环境基础
 
-1. [泛型](advanced/generics/) - 可复用的类型抽象
-2. [类型守卫](advanced/type-guards/) - 类型收窄与类型推断
-3. [装饰器](advanced/decorators/) - 元编程与 AOP
-4. [设计模式](advanced/design-patterns/) - 常见设计模式的 TS 实现
+## 学完之后
+
+按顺序走完四条路径，接着用[算法题库](../algorithms/)练手，用[编程测验](../practice/quiz/)检验。

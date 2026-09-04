@@ -1,9 +1,12 @@
 ---
 /**
  * 双语对照组件：Python 与 TypeScript 并排呈现（窄屏退化为上下排列）。
- * 这是站点的核心差异化表达：让"对照"成为可扫视的版式。
+ *
+ * 这是本站的核心差异化表达：让"对照"成为可扫视的版式。
+ * 两栏用色相而非明度区分（Python 暖黄 / TypeScript 冷蓝），
+ * 面板顶部各有一条语言色条，缩略扫视时也能分清左右。
  */
-import { Code } from '@astrojs/starlight/components';
+import { Code } from "@astrojs/starlight/components";
 
 interface Props {
   py: string;
@@ -13,20 +16,24 @@ interface Props {
   tsTitle?: string;
 }
 
-const { py, ts, caption, pyTitle = 'Python', tsTitle = 'TypeScript' } = Astro.props;
+const { py, ts, caption, pyTitle = "Python", tsTitle = "TypeScript" } = Astro.props;
 ---
 
-<div class="code-compare">
-  {caption && <p class="code-compare__caption">{caption}</p>}
+<figure class="code-compare">
+  {
+    caption && (
+      <figcaption class="code-compare__caption" set:html={caption} />
+    )
+  }
   <div class="code-compare__grid">
-    <div class="code-compare__pane">
+    <div class="code-compare__pane code-compare__pane--py">
       <div class="code-compare__header">
         <span class="lang-dot lang-dot--py" aria-hidden="true"></span>
         <span>{pyTitle}</span>
       </div>
       <Code code={py} lang="python" />
     </div>
-    <div class="code-compare__pane">
+    <div class="code-compare__pane code-compare__pane--ts">
       <div class="code-compare__header">
         <span class="lang-dot lang-dot--ts" aria-hidden="true"></span>
         <span>{tsTitle}</span>
@@ -34,82 +41,4 @@ const { py, ts, caption, pyTitle = 'Python', tsTitle = 'TypeScript' } = Astro.pr
       <Code code={ts} lang="typescript" />
     </div>
   </div>
-</div>
-
-<style>
-  .code-compare {
-    margin: var(--space-lg) 0;
-  }
-
-  .code-compare__caption {
-    font-size: 0.875rem;
-    color: var(--sl-color-gray-2);
-    margin-bottom: 0.75rem;
-  }
-
-  .code-compare__grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-md);
-  }
-
-  @media (min-width: 56rem) {
-    .code-compare__grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .code-compare__pane {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: var(--radius-md);
-    overflow: hidden;
-    background: var(--sl-color-bg-inline-code);
-  }
-
-  .code-compare__header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem 0.875rem;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--sl-color-gray-2);
-    border-bottom: 1px solid var(--sl-color-hairline);
-    background: var(--sl-color-gray-6);
-  }
-
-  .lang-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-  }
-
-  .lang-dot--py {
-    background: #4b8bbe;
-  }
-
-  .lang-dot--ts {
-    background: #3178c6;
-  }
-
-  .code-compare__pane :global(pre) {
-    margin: 0;
-    border-radius: 0;
-    border: none;
-    flex: 1;
-    /* 双栏较窄，代码字号略降以减少横向滚动 */
-    font-size: 0.8125rem;
-  }
-
-  /* 面板头部已标注语言，块级徽标在此冗余且会遮挡长行 */
-  .code-compare__pane :global(pre[data-language]::after) {
-    content: none;
-  }
-
-  .code-compare__pane :global(pre[data-language]) {
-    padding-right: 0;
-  }
-</style>
+</figure>
