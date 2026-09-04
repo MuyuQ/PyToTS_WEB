@@ -1,0 +1,417 @@
+---
+/**
+ * 学习进度与收藏面板
+ *
+ * 重构前「我的书签」页没有出现在任何导航里 —— 用户收藏后无处查看，功能闭环是断的。
+ * 这里把它升级为「进度 + 收藏」的统一视图，并挂到顶层导航的「我的」。
+ *
+ * 全部数据来自 localStorage，课程清单来自 lib/curriculum.ts 与内容集合，
+ * 页面本身不写死任何数量。
+ */
+import { getCollection, type CollectionEntry } from "astro:content";
+import { TRACK_ORDER, TRACKS, trackRoutes, trackLessonCount } from "../lib/curriculum";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const algorithms = await getCollection(
+  "docs",
+  (entry: CollectionEntry<"docs">) =>
+    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm",
+);
+
+const algorithmRoutes = algorithms.map((entry) => {
+  const slug = entry.id.replace(/\.(mdx|md|)$/, "").replace(/(^|\/)index$/, "");
+  return `/${slug}/`;
+});
+
+const tracks = TRACK_ORDER.map((id) => ({
+  id,
+  label: TRACKS[id].label,
+  routes: trackRoutes(id),
+  total: trackLessonCount(id),
+  href: `${base}/paths/${id}/`,
+}));
+---
+
+<section
+  class="progress-panel"
+  data-progress-panel
+  data-tracks={JSON.stringify(tracks)}
+  data-algorithms={JSON.stringify(algorithmRoutes)}
+>
+  <div class="stat-row" data-stat-row>
+    <div class="stat">
+      <span class="stat__value" data-stat="lessons">0</span>
+      <span class="stat__label">已完成课程</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value" data-stat="algorithms">0</span>
+      <span class="stat__label">已刷题目</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value" data-stat="quizzes">0</span>
+      <span class="stat__label">测验次数</span>
+    </div>
+    <div class="stat">
+      <span class="stat__value" data-stat="score">—</span>
+      <span class="stat__label">平均正确率</span>
+    </div>
+  </div>
+
+  <h3 class="progress-panel__heading">各路径进度</h3>
+
+  <div class="track-progress" data-track-progress>
+    {
+      tracks.map((track) => (
+        <div class="track-progress__row">
+          <a class="track-progress__name" href={track.href}>
+            {track.label}路径
+          </a>
+          <span class="track-progress__bar">
+            <span class="track-progress__fill" data-track-fill style="width:0%"></span>
+          </span>
+          <span class="track-progress__num" data-track-num>
+            0/{track.total}
+          </span>
+        </div>
+      ))
+    }
+    <div class="track-progress__row">
+      <a class="track-progress__name" href={`${base}/algorithms/`}>算法题库</a>
+      <span class="track-progress__bar">
+        <span class="track-progress__fill" data-track-fill style="width:0%"></span>
+      </span>
+      <span class="track-progress__num" data-track-num>0/{algorithmRoutes.length}</span>
+    </div>
+  </div>
+
+  <h3 class="progress-panel__heading">我的收藏</h3>
+
+  <div id="bookmarks-container" data-bookmarks>
+    <p class="empty-state" data-bookmarks-empty hidden>
+      还没有收藏。在课程或算法页点击「收藏」，之后就能在这里接着看。
+    </p>
+    <div class="bookmarks-grid" data-bookmarks-grid></div>
+  </div>
+
+  <details class="danger-zone">
+    <summary>清除本地数据</summary>
+    <p>
+      学习进度与收藏只保存在这台设备的浏览器里，不会上传。清除后无法恢复。
+    </p>
+    <button type="button" class="btn btn--sm" data-reset-step="idle">清除进度与收藏</button>
+  </details>
+</section>
+
+<script is:inline>
+  // is:inline：脚本内为浏览器原生 JS，不经 TS 检查。
+  // 课程与算法路由在构建时写入 data-*，脚本只从 DOM 读取：
+  // 无需 define:vars，也无需从 script 地址反推子路径 base。
+  var panel = document.querySelector("[data-progress-panel]");
+  var tracks = JSON.parse((panel && panel.dataset.tracks) || "[]");
+  var algorithmRoutes = JSON.parse((panel && panel.dataset.algorithms) || "[]");
+
+  var KEY = "ts-py-learning-progress";
+
+  function read() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (!raw) return empty();
+      var parsed = JSON.parse(raw);
+      return {
+        lessons: Array.isArray(parsed.lessons) ? parsed.lessons : [],
+        quizzes: Array.isArray(parsed.quizzes) ? parsed.quizzes : [],
+        bookmarks: Array.isArray(parsed.bookmarks) ? parsed.bookmarks : [],
+        lastVisited: parsed.lastVisited || "",
+      };
+    } catch (e) {
+      return empty();
+    }
+  }
+
+  function empty() {
+    return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
+  }
+
+  function norm(path) {
+    return String(path || "").replace(/\/$/, "");
+  }
+
+  function completedSet() {
+    return new Set(
+      read().lessons.map(function (item) {
+        return norm(item.path);
+      }),
+    );
+  }
+
+  function paintStats(done) {
+    var root = document.querySelector("[data-progress-panel]");
+    if (!root) return;
+
+    var algorithmKeys = new Set(algorithmRoutes.map(norm));
+    var lessonsDone = 0;
+    var algorithmsDone = 0;
+    done.forEach(function (path) {
+      if (algorithmKeys.has(path)) algorithmsDone += 1;
+      else lessonsDone += 1;
+    });
+
+    var progress = read();
+    var quizzes = progress.quizzes.length;
+    var avg = quizzes
+      ? Math.round(
+          progress.quizzes.reduce(function (sum, q) {
+            return sum + (q.percentage || 0);
+          }, 0) / quizzes,
+        )
+      : null;
+
+    set("lessons", String(lessonsDone));
+    set("algorithms", String(algorithmsDone));
+    set("quizzes", String(quizzes));
+    set("score", avg === null ? "—" : avg + "%");
+
+    function set(name, value) {
+      var el = root.querySelector('[data-stat="' + name + '"]');
+      if (el) el.textContent = value;
+    }
+  }
+
+  function paintTracks(done) {
+    var root = document.querySelector("[data-track-progress]");
+    if (!root) return;
+
+    var groups = tracks.map(function (track) {
+      return { routes: track.routes, fill: null, num: null };
+    });
+    groups.push({ routes: algorithmRoutes, fill: null, num: null });
+
+    var fills = root.querySelectorAll("[data-track-fill]");
+    var nums = root.querySelectorAll("[data-track-num]");
+
+    groups.forEach(function (group, i) {
+      var hit = group.routes.filter(function (route) {
+        return done.has(norm(route));
+      }).length;
+      var pct = group.routes.length ? Math.round((hit / group.routes.length) * 100) : 0;
+      if (fills[i]) fills[i].style.width = pct + "%";
+      if (nums[i]) nums[i].textContent = hit + "/" + group.routes.length;
+    });
+  }
+
+  function paintBookmarks() {
+    var grid = document.querySelector("[data-bookmarks-grid]");
+    var emptyEl = document.querySelector("[data-bookmarks-empty]");
+    if (!grid) return;
+
+    var marks = read().bookmarks;
+    grid.innerHTML = "";
+
+    if (!marks.length) {
+      if (emptyEl) emptyEl.hidden = false;
+      return;
+    }
+    if (emptyEl) emptyEl.hidden = true;
+
+    var completed = completedSet();
+
+    marks.forEach(function (path) {
+      var title = norm(path).split("/").filter(Boolean).pop() || path;
+      var done = completed.has(norm(path));
+
+      var card = document.createElement("a");
+      card.className = "bookmark-card";
+      card.href = path;
+
+      var head = document.createElement("div");
+      head.className = "bookmark-header";
+
+      var heading = document.createElement("span");
+      heading.className = "bookmark-title";
+      heading.textContent = decodeURIComponent(title);
+      head.appendChild(heading);
+
+      if (done) {
+        var badge = document.createElement("span");
+        badge.className = "completed-badge";
+        badge.textContent = "已完成";
+        head.appendChild(badge);
+      }
+
+      var sub = document.createElement("span");
+      sub.className = "bookmark-path";
+      sub.textContent = path;
+
+      card.appendChild(head);
+      card.appendChild(sub);
+      grid.appendChild(card);
+    });
+  }
+
+  function paint() {
+    var done = completedSet();
+    paintStats(done);
+    paintTracks(done);
+    paintBookmarks();
+  }
+
+  // 清除数据：两段式确认，避免误触导致不可逆丢失
+  var resetBtn = document.querySelector("[data-reset-step]");
+  if (resetBtn) {
+    var timer = null;
+    resetBtn.addEventListener("click", function () {
+      if (resetBtn.dataset.resetStep === "idle") {
+        resetBtn.dataset.resetStep = "confirm";
+        resetBtn.textContent = "再点一次，确认清除";
+        timer = setTimeout(function () {
+          resetBtn.dataset.resetStep = "idle";
+          resetBtn.textContent = "清除进度与收藏";
+        }, 4000);
+        return;
+      }
+
+      clearTimeout(timer);
+      localStorage.removeItem(KEY);
+      resetBtn.dataset.resetStep = "idle";
+      resetBtn.textContent = "清除进度与收藏";
+      paint();
+      window.dispatchEvent(new CustomEvent("progress-updated"));
+    });
+  }
+
+  function schedule() {
+    setTimeout(paint, 50);
+  }
+
+  schedule();
+  window.addEventListener("progress-updated", schedule);
+  document.addEventListener("astro:page-load", schedule);
+</script>
+
+<style>
+  .progress-panel {
+    margin: var(--space-6) 0;
+  }
+
+  .progress-panel__heading {
+    margin-top: var(--space-10);
+    margin-bottom: var(--space-3);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    color: var(--text-muted);
+    letter-spacing: var(--tracking-wide);
+  }
+
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-2);
+  }
+
+  @media (min-width: 48rem) {
+    .stat-row {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--surface-raised);
+  }
+
+  .stat__value {
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-strong);
+    line-height: 1;
+  }
+
+  .stat__label {
+    font-size: var(--text-xs);
+    color: var(--text-faint);
+  }
+
+  .track-progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .track-progress__row {
+    display: grid;
+    grid-template-columns: 6rem 1fr 3.5rem;
+    align-items: center;
+    gap: var(--space-4);
+  }
+
+  .track-progress__name {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    color: var(--text-default);
+    text-decoration: none;
+  }
+
+  .track-progress__name:hover {
+    color: var(--accent);
+  }
+
+  .track-progress__bar {
+    display: block;
+    height: 0.375rem;
+    border-radius: var(--radius-pill);
+    background: var(--border-subtle);
+    overflow: hidden;
+  }
+
+  .track-progress__fill {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-pill);
+    background: var(--accent);
+    transition: width var(--duration-slow) var(--ease-out-quart);
+  }
+
+  .track-progress__num {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-faint);
+    text-align: end;
+  }
+
+  .danger-zone {
+    margin-top: var(--space-12);
+    padding: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--surface-sunken);
+  }
+
+  .danger-zone summary {
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--text-muted);
+  }
+
+  .danger-zone p {
+    margin: var(--space-3) 0;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+  }
+
+  .danger-zone button[data-reset-step="confirm"] {
+    border-color: var(--danger);
+    background: var(--danger-quiet);
+    color: var(--danger);
+  }
+</style>

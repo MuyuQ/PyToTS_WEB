@@ -1,5 +1,13 @@
 ---
-import { getNextPathStep, getPrevPathStep } from '../lib/path-map';
+/**
+ * 分页（上一课/下一课 · 上一题/下一题）
+ *
+ * 顺序不再来自侧边栏，也不再依赖手写标题映射表：
+ *   课程 → curriculum.ts 的教学顺序 + 内容集合里的标题
+ *   算法 → 难度递进顺序（见 lib/neighbours.ts）
+ * 其余页面回落到 Starlight 默认（侧边栏顺序）。
+ */
+import { getLessonNeighbours, getAlgorithmNeighbours, stripBase } from "../lib/neighbours";
 
 interface PaginationLink {
   href: string;
@@ -7,7 +15,7 @@ interface PaginationLink {
 }
 
 interface Props {
-  dir: 'ltr' | 'rtl';
+  dir: "ltr" | "rtl";
   pagination: {
     prev: PaginationLink | undefined;
     next: PaginationLink | undefined;
@@ -17,159 +25,61 @@ interface Props {
 const { dir, pagination } = Astro.props as Props;
 const { prev: defaultPrev, next: defaultNext } = pagination;
 
-const pathname = Astro.url.pathname;
-
-const PATH_TITLES: Record<string, string> = {
-  'preparation/index': 'TypeScript 简介',
-  'preparation/typescript-intro': 'TS vs JS 对比',
-  'preparation/setup': '开发环境准备',
-  'foundation/variables': '变量与数据类型',
-  'foundation/functions-basics': '函数基础',
-  'foundation/control-flow': '控制流',
-  'foundation/data-structures': '数据结构',
-  'foundation/classes-objects': '类与对象',
-  'migration/types': '类型系统对比',
-  'migration/functions': '函数与参数',
-  'migration/modules': '模块与包管理',
-  'migration/async': '异步编程',
-  'migration/error-handling': '错误处理机制',
-  'migration/enums': '枚举与常量定义',
-  'migration/strings-regex': '字符串与正则处理',
-  'advanced/generics': '泛型深入',
-  'advanced/type-guards': '类型守卫与收窄',
-  'advanced/utility-types': '工具类型详解',
-  'advanced/declarations-config': '类型声明与配置',
-  'advanced/decorators': '装饰器与元编程',
-  'advanced/design-patterns': '设计模式实践',
-  'advanced/datetime': '日期时间处理',
-  'advanced/nodejs-basics': 'Node.js 基础',
-};
-
-function parsePath(pathname: string): { track: string; current: string } | null {
-  const match = pathname.match(/^\/paths\/(preparation|foundation|migration|advanced)\/([^/]+)\/?$/);
-  if (!match) return null;
-  return { track: match[1], current: match[2] };
-}
-
-// 生产部署在子路径下（BASE_URL = /PyToTS_WEB/），匹配前必须剥离 base 前缀
-const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
-const cleanPathname =
-  BASE && pathname.startsWith(BASE) ? pathname.slice(BASE.length) || "/" : pathname;
-
-const pathInfo = parsePath(cleanPathname);
-
-// 算法页没有线性教学顺序（侧边栏字母序），分页措辞用“题”而不用“课”
-const isAlgorithmPage = cleanPathname.startsWith("/algorithms/");
-const prevLabel = isAlgorithmPage ? "上一题" : "上一课";
-const nextLabel = isAlgorithmPage ? "下一题" : "下一课";
+const route = stripBase(Astro.url.pathname);
+const isAlgorithm = route.startsWith("/algorithms/") && route !== "/algorithms/";
 
 let prev = defaultPrev;
 let next = defaultNext;
+let prevLabel = "上一页";
+let nextLabel = "下一页";
 
-if (pathInfo) {
-  const prevStep = getPrevPathStep(pathInfo.track, pathInfo.current);
-  const nextStep = getNextPathStep(pathInfo.track, pathInfo.current);
-  // path-map 中 preparation 的第一项是 index，路由上对应目录本身
-  const hrefForStep = (step: string) => `${BASE}/paths/${step.replace(/\/index$/, "")}/`;
-
-  if (prevStep) {
-    prev = { href: hrefForStep(prevStep), label: PATH_TITLES[prevStep] || prevStep };
-  }
-  if (nextStep) {
-    next = { href: hrefForStep(nextStep), label: PATH_TITLES[nextStep] || nextStep };
+if (isAlgorithm) {
+  const neighbours = await getAlgorithmNeighbours(route);
+  prev = (neighbours.prev as PaginationLink) ?? undefined;
+  next = (neighbours.next as PaginationLink) ?? undefined;
+  prevLabel = "上一题";
+  nextLabel = "下一题";
+} else {
+  const neighbours = await getLessonNeighbours(route);
+  // 只在路径内确实找到邻居时覆盖，避免把普通页面的默认分页清空
+  if (neighbours.prev || neighbours.next) {
+    prev = (neighbours.prev as PaginationLink) ?? undefined;
+    next = (neighbours.next as PaginationLink) ?? undefined;
+    prevLabel = "上一课";
+    nextLabel = "下一课";
   }
 }
-
 ---
 
-<div class="pagination-links print:hidden" dir={dir}>
-  {prev && (
-    <a href={prev.href} rel="prev">
-      <span class="pagination-arrow">←</span>
-      <span>
-        <span class="pagination-label">{prevLabel}</span>
-        <br />
-        <span class="link-title">{prev.label}</span>
-      </span>
-    </a>
-  )}
-  {next && (
-    <a href={next.href} rel="next">
-      <span>
-        <span class="pagination-label">{nextLabel}</span>
-        <br />
-        <span class="link-title">{next.label}</span>
-      </span>
-      <span class="pagination-arrow">→</span>
-    </a>
-  )}
-</div>
-
-<style>
-  .pagination-links {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(18rem, 100%), 1fr));
-    gap: var(--space-md);
-    margin-top: var(--space-xl);
-  }
-
-  a {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: var(--space-sm);
-    width: 100%;
-    flex-basis: calc(50% - var(--space-sm));
-    flex-grow: 1;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-md);
-    text-decoration: none;
-    color: var(--sl-color-gray-2);
-    background: var(--color-card);
-    overflow-wrap: anywhere;
-    transition: all var(--transition-fast);
-  }
-
-  a:hover {
-    border-color: var(--sl-color-accent);
-    background: var(--sl-color-accent-low);
-  }
-
-  a[rel="next"] {
-    justify-content: end;
-    text-align: end;
-    flex-direction: row-reverse;
-  }
-
-  .link-title {
-    color: var(--sl-color-accent);
-    font-size: var(--sl-text-lg);
-    line-height: var(--sl-line-height-headings);
-    font-weight: 500;
-  }
-
-  a:hover .link-title {
-    color: var(--sl-color-white);
-  }
-
-  .pagination-label {
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-2);
-  }
-
-  .pagination-arrow {
-    font-size: 1.25rem;
-    color: var(--sl-color-accent);
-  }
-
-  @media (max-width: 768px) {
-    a {
-      padding: var(--space-sm);
-    }
-
-    .link-title {
-      font-size: var(--sl-text-base);
-    }
-  }
-</style>
+{
+  (prev || next) && (
+    <div class="pagination-links print:hidden" dir={dir}>
+      {prev ? (
+        <a href={prev.href} rel="prev">
+          <span class="pagination-arrow" aria-hidden="true">
+            ←
+          </span>
+          <span>
+            <span class="pagination-label">{prevLabel}</span>
+            <span class="link-title">{prev.label}</span>
+          </span>
+        </a>
+      ) : (
+        <span />
+      )}
+      {next ? (
+        <a href={next.href} rel="next">
+          <span>
+            <span class="pagination-label">{nextLabel}</span>
+            <span class="link-title">{next.label}</span>
+          </span>
+          <span class="pagination-arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+      ) : (
+        <span />
+      )}
+    </div>
+  )
+}

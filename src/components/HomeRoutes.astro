@@ -1,0 +1,217 @@
+---
+/**
+ * 首页 · 三条支线入口
+ * 题库是主力，占更大版面并直接给出难度分布；手册与测验退居次要。
+ * 刻意做成不对称版式，避免"三张一模一样的卡片"。
+ */
+import { getCollection, type CollectionEntry } from "astro:content";
+import { DIFFICULTY_LABELS, DIFFICULTY_ORDER } from "../lib/curriculum";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const algorithms = await getCollection(
+  "docs",
+  (entry: CollectionEntry<"docs">) =>
+    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm",
+);
+
+const byDifficulty = DIFFICULTY_ORDER.map((level) => ({
+  level,
+  label: DIFFICULTY_LABELS[level],
+  count: algorithms.filter((entry) => entry.data.difficulty === level).length,
+}));
+
+const total = algorithms.length;
+---
+
+<div class="routes">
+  <a class="route route--lead" href={`${base}/algorithms/`}>
+    <span class="route__kicker">实战</span>
+    <span class="route__title">算法题库</span>
+    <span class="route__desc">
+      {total} 道经典题，每道都有 Python 与 TypeScript 双语实现、复杂度分析与面试变体。
+    </span>
+
+    <span class="route__dist" aria-hidden="true">
+      {
+        byDifficulty.map((item) => (
+          <span class={`route__seg route__seg--${item.level}`} style={`flex:${item.count || 1}`}>
+            <span class="route__seg-label">
+              {item.label} {item.count}
+            </span>
+          </span>
+        ))
+      }
+    </span>
+
+    <span class="route__cta">
+      进入题库
+      <span class="route__arrow" aria-hidden="true">→</span>
+    </span>
+  </a>
+
+  <a class="route" href={`${base}/handbook/`}>
+    <span class="route__kicker">速查</span>
+    <span class="route__title">对照手册</span>
+    <span class="route__desc">"这个在 TypeScript 里怎么写"——按主题直查高频语法与常见陷阱。</span>
+    <span class="route__cta">
+      打开手册
+      <span class="route__arrow" aria-hidden="true">→</span>
+    </span>
+  </a>
+
+  <a class="route" href={`${base}/practice/quiz/`}>
+    <span class="route__kicker">检验</span>
+    <span class="route__title">编程测验</span>
+    <span class="route__desc">按知识模块分节作答，即时反馈，覆盖全部课程内容。</span>
+    <span class="route__cta">
+      开始测验
+      <span class="route__arrow" aria-hidden="true">→</span>
+    </span>
+  </a>
+</div>
+
+<style>
+  .routes {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    margin: var(--space-6) 0;
+  }
+
+  @media (min-width: 52rem) {
+    .routes {
+      grid-template-columns: 1.35fr 1fr;
+      grid-template-rows: auto auto;
+      gap: var(--space-4);
+    }
+
+    .route--lead {
+      grid-row: span 2;
+    }
+  }
+
+  .route {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--surface-raised);
+    text-decoration: none;
+    color: inherit;
+    transition:
+      border-color var(--duration-base) var(--ease-out-quart),
+      transform var(--duration-base) var(--ease-out-quart);
+  }
+
+  .route:hover {
+    border-color: var(--accent-border);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+
+  .route__kicker {
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .route__title {
+    font-family: var(--font-display);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-strong);
+    line-height: var(--leading-tight);
+  }
+
+  .route--lead .route__title {
+    font-size: var(--text-2xl);
+  }
+
+  .route__desc {
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    color: var(--text-muted);
+    max-width: 46ch;
+  }
+
+  .route__cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+    min-height: 2.75rem;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--accent);
+  }
+
+  .route__arrow {
+    font-family: var(--font-mono);
+    transition: transform var(--duration-base) var(--ease-out-quart);
+  }
+
+  .route:hover .route__arrow {
+    transform: translateX(0.25em);
+  }
+
+  /* 难度分布条：用比例表达题量，而不是三个孤零零的数字 */
+  .route__dist {
+    display: flex;
+    gap: 2px;
+    margin-top: var(--space-5);
+    height: 0.5rem;
+    border-radius: var(--radius-pill);
+    overflow: visible;
+  }
+
+  .route__seg {
+    position: relative;
+    border-radius: var(--radius-pill);
+    background: var(--border-default);
+  }
+
+  .route__seg--easy {
+    background: color-mix(in oklab, var(--success) 70%, transparent);
+  }
+
+  .route__seg--medium {
+    background: color-mix(in oklab, var(--warning) 70%, transparent);
+  }
+
+  .route__seg--hard {
+    background: color-mix(in oklab, var(--danger) 70%, transparent);
+  }
+
+  .route__seg-label {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    left: 0;
+    white-space: nowrap;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .route--lead {
+    justify-content: flex-start;
+  }
+
+  .route--lead .route__cta {
+    margin-top: var(--space-8);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .route,
+    .route__arrow {
+      transition: none;
+    }
+  }
+</style>

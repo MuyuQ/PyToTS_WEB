@@ -58,30 +58,43 @@ npm run dev
 
 ```
 src/
-├── components/                # UI Components
-│   ├── AlgorithmIndex.astro        # Filterable algorithm index
-│   ├── Banner.astro                 # Banner alert (with sidebar progress)
+├── components/                      # UI Components
+│   ├── SiteNav.astro                # Top-level nav (Courses/Problems/Handbook/Quiz/Mine)
+│   ├── Header.astro                 # Header (title + nav + search + theme)
+│   ├── HomePaths.astro              # Track list (curriculum table with progress bars)
+│   ├── HomeRoutes.astro             # Three side entries (problems/handbook/quiz)
+│   ├── ProgressPanel.astro          # Progress & bookmarks panel
+│   ├── AlgorithmIndex.astro         # Filterable algorithm index
+│   ├── Banner.astro                 # Banner alert (mounts sidebar progress)
 │   ├── BookmarkToggle.astro         # Bookmark toggle (lessons/algorithms)
 │   ├── CodeCompare.astro            # Python/TS side-by-side code
 │   ├── DifficultyBadge.astro        # Difficulty badge
 │   ├── DifficultyIndex.astro        # Difficulty index
-│   ├── Header.astro                 # Header navigation
 │   ├── LessonProgressMarkers.astro  # Lesson progress markers
-│   ├── Pagination.astro             # Pagination (curriculum order)
+│   ├── Pagination.astro             # Prev/next lesson or problem
 │   ├── QuizContainer.astro          # Quiz container
 │   ├── SidebarProgress.astro        # Sidebar progress
 │   ├── TagIndex.astro               # Tag index
 │   └── overrides/PageTitle.astro    # Title metadata badges
-├── content/docs/         # Documentation (MDX)
-│   ├── paths/            # Learning paths
-│   │   ├── foundation/   # Foundation lessons
-│   │   ├── migration/    # Migration lessons
-│   │   └── advanced/     # Advanced lessons
-│   ├── algorithms/       # Algorithm solutions
-│   ├── handbook/         # Quick reference
-│   └── practice/         # Practice quizzes
-├── lib/                  # Utilities
-├── pages/                # Custom pages
+├── content/docs/                    # Documentation (MDX)
+│   ├── paths/                       # Four learning tracks, 22 lessons
+│   │   ├── preparation/             # Preparation, 2 lessons
+│   │   ├── foundation/              # Foundation, 5 lessons
+│   │   ├── migration/               # Migration, 7 lessons
+│   │   └── advanced/                # Advanced, 8 lessons
+│   ├── algorithms/                  # 36 algorithm solutions
+│   ├── handbook/                    # Quick reference & cheat sheet
+│   ├── practice/                    # Practice & quizzes
+│   ├── tags/ difficulty/            # Taxonomy indexes
+│   ├── bookmarks/                   # Progress & bookmarks
+│   └── about/                       # About & contributing
+├── lib/
+│   ├── curriculum.ts                # Single source of truth for lesson order
+│   ├── neighbours.ts                # Prev/next computation
+│   ├── progress-store.ts            # localStorage progress & bookmarks
+│   ├── path-map.ts                  # Compatibility layer over curriculum
+│   └── quiz-manager.ts              # Quiz logic
+├── pages/404.astro                  # Standalone 404 page
 └── styles/               # Stylesheets
 ```
 
