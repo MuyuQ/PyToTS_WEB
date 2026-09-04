@@ -1,0 +1,196 @@
+/* ==========================================================================
+   PyToTS · 代码呈现
+   代码块是本站的核心内容载体，而非装饰。
+   ========================================================================== */
+
+.sl-markdown-content pre,
+.expressive-code pre {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--surface-code) !important;
+  font-size: var(--text-sm);
+  line-height: 1.65;
+  padding-block: var(--space-3);
+}
+
+.sl-markdown-content code:not(pre code),
+.sl-markdown-content :not(pre) > code {
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-strong);
+  font-size: 0.875em;
+  font-weight: var(--weight-medium);
+  overflow-wrap: break-word;
+}
+
+/* ---------- 语言徽标 ----------
+   原实现靠 pre { padding-right: 5rem } 给徽标腾地方，长行会被无意义地挤压。
+   改为在顶部留出一条徽标带，代码块宽度完整可用。
+   徽标放带的左端：右上角留给 Expressive Code 的复制按钮（触屏上常显），
+   两端分开，hover / touch 都不会互相压住。 */
+
+.sl-markdown-content pre[data-language] {
+  position: relative;
+  padding-top: 2.25rem;
+}
+
+.sl-markdown-content pre[data-language]::after {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.5rem;
+  inset-inline-start: 0.625rem;
+  padding: 0.05rem 0.5rem;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-raised);
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  line-height: 1.6;
+  pointer-events: none;
+}
+
+/* 语言着色：Python 暖黄 / TypeScript 冷蓝 —— 色相分离，不只靠明度区分 */
+.sl-markdown-content pre[data-language="python"]::after {
+  color: var(--lang-py);
+  border-color: color-mix(in oklab, var(--lang-py) 40%, transparent);
+}
+
+.sl-markdown-content
+  pre:is([data-language="typescript"], [data-language="ts"], [data-language="tsx"])::after {
+  color: var(--lang-ts);
+  border-color: color-mix(in oklab, var(--lang-ts) 40%, transparent);
+}
+
+/* 非编程语言不显示徽标 */
+.sl-markdown-content
+  pre:is(
+    [data-language="plaintext"],
+    [data-language="txt"],
+    [data-language="text"],
+    [data-language="bash"],
+    [data-language="sh"],
+    [data-language="shell"],
+    [data-language="console"]
+  )::after {
+  content: none;
+}
+
+.sl-markdown-content
+  pre:is(
+    [data-language="plaintext"],
+    [data-language="txt"],
+    [data-language="text"],
+    [data-language="bash"],
+    [data-language="sh"],
+    [data-language="shell"],
+    [data-language="console"]
+  ) {
+  padding-top: var(--space-3);
+}
+
+/* ---------- 双语对照容器 ---------- */
+
+.code-compare {
+  margin: var(--space-6) 0;
+}
+
+.code-compare__caption {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--text-muted);
+  max-width: var(--content-measure);
+}
+
+.code-compare__grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+@media (min-width: 56rem) {
+  .code-compare__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-4);
+  }
+}
+
+.code-compare__pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-code);
+}
+
+.code-compare__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-raised);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* 语言色点：实心小方，配合面板顶部的语言色条 */
+.lang-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.lang-dot--py {
+  background: var(--lang-py);
+}
+
+.lang-dot--ts {
+  background: var(--lang-ts);
+}
+
+.code-compare__pane--py {
+  border-top: 2px solid var(--lang-py);
+}
+
+.code-compare__pane--ts {
+  border-top: 2px solid var(--lang-ts);
+}
+
+.code-compare__pane :global(pre) {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent !important;
+  font-size: var(--text-xs);
+  flex: 1;
+}
+
+/* 面板头部已标注语言，块级徽标在此冗余 */
+.code-compare__pane :global(pre[data-language]::after) {
+  content: none;
+}
+
+.code-compare__pane :global(pre[data-language]) {
+  padding-top: var(--space-3);
+}
+
+/* 窄屏时两栏纵向堆叠，给一个"对照"的视觉连接线 */
+@media (max-width: 55.99rem) {
+  .code-compare__grid {
+    gap: var(--space-3);
+  }
+}

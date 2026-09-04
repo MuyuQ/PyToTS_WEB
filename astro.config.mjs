@@ -6,7 +6,7 @@ export default defineConfig({
   base: "/PyToTS_WEB/",
   integrations: [
     starlight({
-      title: "Python to TypeScript",
+      title: "PyToTS",
       description:
         "面向 Python 开发者的 TypeScript 学习平台：双语对照课程、36 道算法题解与交互测验。",
       defaultLocale: "root",
@@ -38,10 +38,7 @@ export default defineConfig({
         },
         {
           tag: "link",
-          attrs: {
-            rel: "preconnect",
-            href: "https://fonts.googleapis.com",
-          },
+          attrs: { rel: "preconnect", href: "https://fonts.googleapis.com" },
         },
         {
           tag: "link",
@@ -52,55 +49,47 @@ export default defineConfig({
           },
         },
         {
+          // Google Fonts 在大陆网络不可靠，阻塞式加载会拖死首屏。
+          // 先按 print 媒体加载（不阻塞渲染），加载完再切回 all。
+          // 字体只覆盖拉丁字形，中文字形始终由系统字体栈兜底，晚到不白屏。
           tag: "link",
           attrs: {
             rel: "stylesheet",
-            href: "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
+            href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap",
+            media: "print",
+            onload: "this.media='all'",
           },
         },
         {
-          tag: "style",
-          content: `
-            :root[data-theme="dark"] { background-color: #0c0e12 !important; }
-            :root[data-theme="dark"] body { background-color: #0c0e12 !important; }
-            :root[data-theme="light"] header, :root[data-theme="light"] .header { background-color: #ffffff !important; }
-          `,
-        },
-        {
+          // 主题底色提前落地，避免首帧白闪。颜色取自 tokens.css 的语义令牌。
           tag: "script",
-          attrs: {
-            "is:inline": true,
-          },
+          attrs: { "is:inline": true },
           content: `
-            (function() {
-              try {
-                var theme = localStorage.getItem('starlight-theme');
-                if (!theme || theme === 'auto') {
-                  theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                }
-                var bgColor = theme === 'dark' ? '#0c0e12' : '#ffffff';
-                document.documentElement.style.setProperty('background-color', bgColor, 'important');
-                document.body.style.setProperty('background-color', bgColor, 'important');
-              } catch(e) {}
+            (function () {
+              var DARK = '#08090b';
+              var LIGHT = '#fdfdfe';
+              function apply() {
+                try {
+                  var theme = localStorage.getItem('starlight-theme');
+                  if (!theme || theme === 'auto') {
+                    theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                  }
+                  var color = theme === 'dark' ? DARK : LIGHT;
+                  document.documentElement.style.backgroundColor = color;
+                } catch (e) {}
+              }
+              apply();
+              document.addEventListener('astro:page-load', apply);
             })();
-            document.addEventListener('astro:page-load', function() {
-              try {
-                var theme = localStorage.getItem('starlight-theme');
-                if (!theme || theme === 'auto') {
-                  theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                }
-                var bgColor = theme === 'dark' ? '#0c0e12' : '#ffffff';
-                document.documentElement.style.setProperty('background-color', bgColor, 'important');
-                document.body.style.setProperty('background-color', bgColor, 'important');
-              } catch(e) {}
-            });
           `,
         },
       ],
       customCss: [
         "./src/styles/tokens.css",
-        "./src/styles/custom-layout.css",
+        "./src/styles/base.css",
+        "./src/styles/layout.css",
         "./src/styles/components.css",
+        "./src/styles/code.css",
         "./src/styles/tabs-custom.css",
         "./src/styles/home.css",
       ],
@@ -111,58 +100,73 @@ export default defineConfig({
         Header: "./src/components/Header.astro",
         PageTitle: "./src/components/overrides/PageTitle.astro",
       },
+      /* 侧边栏按「用户任务」而不是「内容类型」分组：
+         课程（按顺序学）→ 实战（练）→ 参考（查）→ 我的（进度）→ 关于
+         每个 autogenerate 组的目录均含 index.mdx，点击组名即进入该组入口页。 */
       sidebar: [
         {
-          label: "学习路径",
+          label: "课程",
           items: [
+            { label: "全部路径", link: "/paths/" },
             {
-              label: "准备路径",
+              label: "准备",
               collapsed: true,
               autogenerate: { directory: "paths/preparation" },
             },
             {
-              label: "基础路径",
+              label: "基础",
               collapsed: true,
               autogenerate: { directory: "paths/foundation" },
             },
             {
-              label: "迁移路径",
+              label: "迁移",
               collapsed: true,
               autogenerate: { directory: "paths/migration" },
             },
             {
-              label: "进阶路径",
+              label: "进阶",
               collapsed: true,
               autogenerate: { directory: "paths/advanced" },
             },
           ],
         },
         {
-          label: "手册",
-          autogenerate: { directory: "handbook" },
-        },
-        {
-          label: "算法",
-          collapsed: true,
-          autogenerate: { directory: "algorithms" },
-        },
-        {
-          label: "练习与测验",
+          label: "实战",
           items: [
-            { label: "练习与自测", link: "/practice/" },
+            {
+              label: "算法题库",
+              collapsed: true,
+              autogenerate: { directory: "algorithms" },
+            },
             { label: "编程测验", link: "/practice/quiz/" },
+            { label: "练习与自测", link: "/practice/" },
           ],
         },
         {
-          label: "分类索引",
+          label: "参考",
           items: [
+            {
+              label: "对照手册",
+              autogenerate: { directory: "handbook" },
+            },
             { label: "标签索引", link: "/tags/" },
             { label: "难度索引", link: "/difficulty/" },
           ],
         },
         {
-          label: "关于与贡献",
-          autogenerate: { directory: "about" },
+          label: "我的",
+          items: [{ label: "进度与收藏", link: "/bookmarks/" }],
+        },
+        {
+          label: "关于",
+          items: [
+            { label: "关于与贡献", link: "/about/" },
+            {
+              label: "English（未完成）",
+              collapsed: true,
+              autogenerate: { directory: "en" },
+            },
+          ],
         },
       ],
     }),

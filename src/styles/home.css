@@ -1,30 +1,108 @@
-/* ===== 首页（splash + hero）===== */
+/* ==========================================================================
+   首页（splash）
+   Starlight 的 Hero 是组件级 scoped 样式，特异性较高，
+   这里用 :root[data-has-hero] 前缀保证覆盖生效。
+   ========================================================================== */
 
-/* 卡片内的元数据 chip：课时数与难度 */
-.home-meta {
-  display: inline-block;
-  margin-bottom: 0.75rem;
-  padding: 0.0625rem 0.5rem;
-  border: 1px solid var(--sl-color-hairline);
-  border-radius: var(--radius-full);
-  background: var(--sl-color-bg-inline-code);
-  color: var(--sl-color-gray-2);
-  font-size: 0.75rem;
-  font-weight: 500;
-  line-height: 1.6;
+:root[data-has-hero] .hero {
+  display: block;
+  padding-block: clamp(2.5rem, 1.5rem + 5vw, 5rem) clamp(1.5rem, 1rem + 2vw, 2.5rem);
 }
 
-/* hero 排版微调：标题略收紧、标语行宽受控 */
-.sl-hero__title {
-  letter-spacing: -0.02em;
+:root[data-has-hero] .hero .stack,
+:root[data-has-hero] .hero .copy {
+  align-items: flex-start;
+  text-align: start;
+  gap: var(--space-4);
 }
 
-.sl-hero {
-  padding-block: var(--space-2xl) var(--space-xl);
+:root[data-has-hero] .hero h1[data-page-title] {
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--weight-bold);
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: var(--text-strong);
+  text-wrap: balance;
 }
 
-/* 首页正文（splash 布局内容较宽），限制可读行宽 */
+/* 中文标题不做负字距 */
+:root[data-has-hero] .hero h1[data-page-title]:lang(zh),
+:root[data-has-hero] .hero h1[data-page-title]:lang(zh-CN) {
+  letter-spacing: var(--tracking-cjk);
+  max-width: 18ch;
+}
+
+:root[data-has-hero] .hero .tagline {
+  max-width: 46ch;
+  font-size: var(--text-lg);
+  line-height: var(--leading-snug);
+  color: var(--text-muted);
+  text-wrap: pretty;
+}
+
+/* ---------- 首页内容容器 ---------- */
+
 [data-has-hero] .sl-markdown-content {
-  max-width: 64rem;
+  max-width: var(--container-max);
   margin-inline: auto;
+}
+
+/* 首屏下方的 CTA 行：按钮 + 一句规模说明 */
+.home-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.home-cta .btn {
+  flex-shrink: 0;
+}
+
+.home-cta__note {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 首页章节节奏 ---------- */
+
+[data-has-hero] .sl-markdown-content > h2 {
+  margin-top: var(--section-gap);
+  padding-bottom: var(--space-3);
+  font-size: var(--text-2xl);
+}
+
+[data-has-hero] .sl-markdown-content > h2:first-of-type {
+  margin-top: var(--section-gap);
+}
+
+[data-has-hero] .sl-markdown-content > p:first-of-type,
+[data-has-hero] .sl-markdown-content > .lead {
+  max-width: 56ch;
+}
+
+/* 首屏与"怎么用这个站"的列表，用更松的行距 */
+[data-has-hero] .sl-markdown-content ol {
+  max-width: 60ch;
+}
+
+[data-has-hero] .sl-markdown-content ol li {
+  margin-bottom: var(--space-3);
+  padding-inline-start: var(--space-1);
+}
+
+[data-has-hero] .sl-markdown-content ol li::marker {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  color: var(--accent);
+}
+
+/* 首页不需要页面标题（hero 已经承担） */
+[data-has-hero] .sl-page-title {
+  display: none;
 }

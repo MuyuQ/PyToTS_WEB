@@ -1,0 +1,127 @@
+---
+/**
+ * 站点顶层导航
+ *
+ * 重构前站点没有任何常驻导航：站内跳转只能靠侧边栏抽屉或首页 hero 的两个按钮，
+ * 「我的书签」页更是完全没有入口。这里按用户任务（学 / 练 / 查 / 测 / 我的）
+ * 建立一条始终可见的主路径。
+ *
+ * 窄屏不折叠成汉堡菜单，而是横向滚动条：导航是主路径，不该被藏起来。
+ */
+import { stripBase } from "../lib/neighbours";
+
+interface NavItem {
+  label: string;
+  href: string;
+  match: string[];
+}
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const items: NavItem[] = [
+  { label: "课程", href: `${base}/paths/`, match: ["/paths"] },
+  { label: "题库", href: `${base}/algorithms/`, match: ["/algorithms"] },
+  { label: "手册", href: `${base}/handbook/`, match: ["/handbook"] },
+  { label: "测验", href: `${base}/practice/quiz/`, match: ["/practice"] },
+  { label: "我的", href: `${base}/bookmarks/`, match: ["/bookmarks"] },
+];
+
+const current = stripBase(Astro.url.pathname);
+
+function isActive(item: NavItem): boolean {
+  return item.match.some((prefix) => current === prefix || current.startsWith(prefix + "/"));
+}
+---
+
+<nav class="site-nav" aria-label="站点主导航">
+  <ul class="site-nav__list">
+    {
+      items.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            class="site-nav__link"
+            aria-current={isActive(item) ? "page" : undefined}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .site-nav {
+    min-width: 0;
+  }
+
+  .site-nav__list {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav__link {
+    display: inline-flex;
+    align-items: center;
+    /* 视觉高度紧凑，但保证 44px 触控区 */
+    min-height: 44px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color var(--duration-fast) var(--ease-out-quart),
+      background-color var(--duration-fast) var(--ease-out-quart);
+  }
+
+  .site-nav__link:hover {
+    color: var(--text-strong);
+    background: var(--surface-hover);
+    text-decoration: none;
+  }
+
+  .site-nav__link[aria-current="page"] {
+    color: var(--accent-ink);
+    font-weight: var(--weight-semibold);
+    background: var(--accent-quiet);
+  }
+
+  /* 窄屏：独占一行，横向滚动，边缘用渐变提示还有更多 */
+  @media (max-width: 61.99rem) {
+    .site-nav {
+      order: 3;
+      flex-basis: 100%;
+      margin-top: -0.25rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+      scroll-snap-type: x proximity;
+      mask-image: linear-gradient(to right, transparent 0, #000 0.5rem, #000 calc(100% - 1rem), transparent 100%);
+    }
+
+    .site-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .site-nav__list {
+      gap: var(--space-1);
+      padding-inline: 0.125rem;
+      /* 右侧让出汉堡按钮（2rem + 2×1rem 边距）的宽度，
+         滚动时条目不会滑到按钮底下 */
+      padding-inline-end: 3.75rem;
+    }
+
+    .site-nav__link {
+      scroll-snap-align: start;
+      font-size: var(--text-sm);
+    }
+  }
+</style>

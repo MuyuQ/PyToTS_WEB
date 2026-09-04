@@ -46,16 +46,22 @@ describe("书签功能", () => {
     expect(content).toMatch(/BookmarkToggle/);
   });
 
-  it("书签页渲染收藏容器并加载渲染脚本", () => {
-    const content = readFileSync("src/content/docs/bookmarks/index.mdx", "utf8");
-    expect(content).toMatch(/id="bookmarks-container"/);
-    expect(content).toMatch(/bookmarks\.js/);
+  it("书签页挂载进度面板，收藏容器由组件提供", () => {
+    const page = readFileSync("src/content/docs/bookmarks/index.mdx", "utf8");
+    expect(page).toMatch(/ProgressPanel/);
+
+    const panel = readFileSync("src/components/ProgressPanel.astro", "utf8");
+    expect(panel).toMatch(/id="bookmarks-container"/);
+    // 与 progress-store 共用同一份存储键，收藏数据才能互通
+    expect(panel).toMatch(/ts-py-learning-progress/);
   });
 
-  it("bookmarks.js 从自身 script 地址推导 base（MDX 内联脚本会被 Markdown 改写，不可用）", () => {
-    const content = readFileSync("public/bookmarks.js", "utf8");
-    expect(content).toMatch(/currentScript/);
-    expect(content).not.toMatch(/__BASE_URL__/);
+  it("进度面板用构建期 BASE_URL 生成链接，不依赖运行时从 script 推导", () => {
+    // 此前由 public/bookmarks.js 在运行时读 currentScript 反推 base（子路径部署下脆弱）。
+    // 现在链接在构建时拼好，运行时无需推导。
+    const panel = readFileSync("src/components/ProgressPanel.astro", "utf8");
+    expect(panel).toMatch(/import\.meta\.env\.BASE_URL/);
+    expect(panel).not.toMatch(/currentScript/);
   });
 
   it("SidebarProgress 路径匹配兼容子路径 base 前缀", () => {
