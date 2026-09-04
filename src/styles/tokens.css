@@ -1,142 +1,339 @@
-/* ===== ZENSICAL-INSPIRED THEME ===== */
+/* ==========================================================================
+   PyToTS · 设计令牌
+   --------------------------------------------------------------------------
+   三层结构：
+     1. Primitives  原始色/尺度，不随主题变化
+     2. Semantics   语义令牌，明暗主题各自重定义
+     3. Starlight   把语义令牌桥接到 --sl-* ，使第三方组件也跟随主题
+
+   约定：
+     - 颜色一律用 OKLCH（感知均匀，改亮度不发灰、不发脏）
+     - 中性色带品牌色相的微量染色（chroma 0.004~0.012），避免"死灰"
+     - 不使用纯黑 / 纯白，也不使用大面积 alpha 叠加
+   ========================================================================== */
+
+/* ---------- 1. Primitives ---------- */
+
+:root {
+  /* 品牌色 · 靛蓝（hue 268） */
+  --brand-50: oklch(97.5% 0.012 268);
+  --brand-100: oklch(94% 0.028 268);
+  --brand-200: oklch(88% 0.055 268);
+  --brand-300: oklch(79% 0.09 268);
+  --brand-400: oklch(70% 0.125 268);
+  --brand-500: oklch(62% 0.15 268);
+  --brand-600: oklch(54% 0.158 270);
+  --brand-700: oklch(46% 0.145 271);
+  --brand-800: oklch(38% 0.12 272);
+  --brand-900: oklch(30% 0.09 273);
+
+  /* 中性（冷调，与品牌同色相） */
+  --neutral-0: oklch(100% 0 0);
+  --neutral-25: oklch(99% 0.003 268);
+  --neutral-50: oklch(97.5% 0.004 268);
+  --neutral-100: oklch(95% 0.005 268);
+  --neutral-200: oklch(91% 0.006 268);
+  --neutral-300: oklch(84% 0.007 268);
+  --neutral-400: oklch(68% 0.008 268);
+  --neutral-500: oklch(54% 0.009 268);
+  --neutral-600: oklch(44% 0.01 268);
+  --neutral-700: oklch(33% 0.012 268);
+  --neutral-800: oklch(23% 0.014 268);
+  --neutral-850: oklch(18% 0.014 268);
+  --neutral-900: oklch(14% 0.013 268);
+  --neutral-950: oklch(10% 0.01 268);
+
+  /* 语言识别色 —— 双语对照是本站核心，两色必须一眼可分
+     Python 取品牌黄（暖），TypeScript 取官方蓝（冷），拉开色相而非仅明度 */
+  --py-hue: 82; /* 黄绿 */
+  --py-ink: oklch(58% 0.13 82);
+  --py-ink-soft: oklch(70% 0.12 82);
+  --py-wash: oklch(95% 0.045 82);
+  --ts-hue: 250; /* 蓝 */
+  --ts-ink: oklch(56% 0.16 250);
+  --ts-ink-soft: oklch(70% 0.13 250);
+  --ts-wash: oklch(95% 0.03 250);
+
+  /* 语义色 */
+  --success-ink: oklch(56% 0.14 155);
+  --success-wash: oklch(96% 0.035 155);
+  --warning-ink: oklch(66% 0.14 68);
+  --warning-wash: oklch(96% 0.045 68);
+  --danger-ink: oklch(54% 0.19 25);
+  --danger-wash: oklch(96% 0.03 25);
+
+  /* ---------- 字体 ---------- */
+
+  /* 中文不依赖 webfont：显式声明 CJK 回退栈，保证字形与字重正确 */
+  --stack-cjk:
+    "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC",
+    "Noto Sans CJK SC", sans-serif;
+  --font-display: "Space Grotesk", var(--stack-cjk);
+  --font-sans: "IBM Plex Sans", var(--stack-cjk);
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, "Cascadia Code", Menlo, Consolas, monospace;
+
+  /* 字号：固定 rem 阶梯（内容型站点，正文不参与流体缩放）
+     标题用 clamp 做流体，正文保持可预测 */
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 1rem;
+  --text-md: 1.0625rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.4375rem;
+  --text-2xl: clamp(1.625rem, 1.3rem + 1.2vw, 2rem);
+  --text-3xl: clamp(2rem, 1.5rem + 2.4vw, 2.75rem);
+  --text-4xl: clamp(2.375rem, 1.6rem + 3.6vw, 3.5rem);
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.45;
+  --leading-normal: 1.75; /* 中文需要更松的行距 */
+  --leading-relaxed: 1.9;
+
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0;
+  --tracking-cjk: 0.01em; /* 中文不适用负字距 */
+  --tracking-wide: 0.06em;
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  /* ---------- 间距 · 4pt 基准 ---------- */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+
+  /* 区块级节奏（流体，随视口呼吸） */
+  --section-gap: clamp(3rem, 2rem + 4vw, 5rem);
+
+  /* ---------- 圆角 · 偏锐利，工程感 ---------- */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-pill: 999px;
+
+  /* ---------- 阴影 · 极克制，仅用于真正浮起的层 ---------- */
+  --shadow-sm: 0 1px 2px oklch(20% 0.02 268 / 0.06);
+  --shadow-md: 0 4px 12px -2px oklch(20% 0.02 268 / 0.1), 0 2px 4px -2px oklch(20% 0.02 268 / 0.06);
+  --shadow-lg:
+    0 12px 32px -8px oklch(20% 0.03 268 / 0.16), 0 4px 8px -4px oklch(20% 0.02 268 / 0.08);
+
+  /* ---------- 动效 ---------- */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-instant: 90ms;
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 320ms;
+
+  /* ---------- 层级 ---------- */
+  --z-header: 100;
+  --z-sidebar: 90;
+  --z-dropdown: 200;
+  --z-overlay: 300;
+
+  /* ---------- 布局 ---------- */
+  --container-max: 78rem;
+  --content-measure: 68ch; /* 中文正文可读行宽 */
+}
+
+/* ---------- 2. Semantics · 亮色 ---------- */
 
 :root,
 [data-theme="light"] {
-  /* Light theme - Zensical default */
-  --color-bg: #ffffff;
-  --color-text: #1a1a2e;
-  --color-primary: #4051b5;
-  --color-secondary: #5d6cc0;
-  --color-accent: #526cfe;
-  --color-border: #e1e4e8;
-  --color-code-bg: #f6f8fa;
-  --color-card: #ffffff;
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
+  color-scheme: light;
 
-  /* Starlight overrides */
-  --sl-color-bg: #ffffff;
-  --sl-color-bg-nav: #ffffff;
-  --sl-color-bg-aside: #ffffff;
-  --sl-color-bg-card: #ffffff;
-  --sl-color-bg-inline-code: #f6f8fa;
-  --sl-color-white: #1a1a2e;
-  --sl-color-gray-1: #24292f;
-  --sl-color-gray-2: #57606a;
-  --sl-color-gray-3: #8b949e;
-  --sl-color-gray-4: #c9d1d9;
-  --sl-color-gray-5: #e1e4e8;
-  --sl-color-gray-6: #f6f8fa;
-  --sl-color-accent: #4051b5;
-  --sl-color-accent-low: rgba(64, 81, 181, 0.1);
-  --sl-color-accent-high: rgba(64, 81, 181, 0.2);
-  --sl-color-hairline: #e1e4e8;
-  --sl-color-hairline-shade: #c9d1d9;
-  --sl-color-hairline-light: #f6f8fa;
+  --surface-page: var(--neutral-25);
+  --surface-raised: var(--neutral-0);
+  --surface-sunken: var(--neutral-50);
+  --surface-nav: oklch(100% 0.002 268 / 0.88);
+  --surface-code: var(--neutral-50);
+  --surface-hover: var(--neutral-100);
 
-  /* Fonts - Zensical style */
-  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
-  --font-mono: "JetBrains Mono", "Fira Code", monospace;
+  --border-subtle: var(--neutral-200);
+  --border-default: var(--neutral-300);
+  --border-strong: var(--neutral-400);
 
-  /* Spacing */
-  --space-xs: 0.25rem;
-  --space-sm: 0.5rem;
-  --space-md: 1rem;
-  --space-lg: 1.5rem;
-  --space-xl: 2rem;
-  --space-2xl: 3rem;
+  --text-strong: var(--neutral-850);
+  --text-default: var(--neutral-700);
+  --text-muted: var(--neutral-600);
+  --text-faint: var(--neutral-500); /* 在 page 底色上 ≈ 5.4:1 */
 
-  /* Border radius */
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-full: 9999px;
+  --accent: var(--brand-600);
+  --accent-hover: var(--brand-700);
+  --accent-ink: var(--brand-800);
+  --accent-quiet: var(--brand-50);
+  --accent-border: var(--brand-200);
+  --accent-ring: oklch(54% 0.158 270 / 0.4);
 
-  /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 200ms ease;
-  --transition-slow: 300ms ease;
+  --lang-py: var(--py-ink);
+  --lang-py-wash: var(--py-wash);
+  --lang-ts: var(--ts-ink);
+  --lang-ts-wash: var(--ts-wash);
+
+  --success: var(--success-ink);
+  --success-quiet: var(--success-wash);
+  --warning: var(--warning-ink);
+  --warning-quiet: var(--warning-wash);
+  --danger: var(--danger-ink);
+  --danger-quiet: var(--danger-wash);
+
+  --weight-body: 400;
 }
 
-html,
-body {
-  background-color: var(--color-bg);
-  color-scheme: light;
+/* ---------- 2. Semantics · 暗色 ---------- */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --surface-page: var(--neutral-950);
+  --surface-raised: var(--neutral-900);
+  --surface-sunken: var(--neutral-850);
+  --surface-nav: oklch(13% 0.012 268 / 0.9);
+  --surface-code: oklch(16% 0.013 268);
+  --surface-hover: var(--neutral-850);
+
+  --border-subtle: oklch(28% 0.014 268);
+  --border-default: oklch(34% 0.016 268);
+  --border-strong: oklch(44% 0.018 268);
+
+  /* 暗底上文字偏细，提高不透明度补偿感知字重 */
+  --text-strong: oklch(97% 0.004 268);
+  --text-default: oklch(88% 0.006 268);
+  --text-muted: oklch(76% 0.008 268);
+  --text-faint: oklch(66% 0.01 268); /* ≈ 6.2:1，用作元数据也达标 */
+
+  --accent: var(--brand-400);
+  --accent-hover: var(--brand-300);
+  --accent-ink: var(--brand-200);
+  --accent-quiet: oklch(30% 0.06 268);
+  --accent-border: oklch(40% 0.09 268);
+  --accent-ring: oklch(70% 0.125 268 / 0.5);
+
+  --lang-py: var(--py-ink-soft);
+  --lang-py-wash: oklch(28% 0.05 82);
+  --lang-ts: var(--ts-ink-soft);
+  --lang-ts-wash: oklch(28% 0.05 250);
+
+  --success: oklch(72% 0.14 155);
+  --success-quiet: oklch(28% 0.05 155);
+  --warning: oklch(78% 0.13 68);
+  --warning-quiet: oklch(30% 0.06 68);
+  --danger: oklch(72% 0.15 25);
+  --danger-quiet: oklch(30% 0.07 25);
+
+  /* 暗底上正文适当减重，避免"发光"感 */
+  --weight-body: 350;
+
+  --shadow-sm: 0 1px 2px oklch(5% 0.02 268 / 0.4);
+  --shadow-md: 0 4px 12px -2px oklch(5% 0.02 268 / 0.5);
+  --shadow-lg: 0 12px 32px -8px oklch(5% 0.02 268 / 0.6);
+}
+
+/* ---------- 3. Starlight 桥接 ---------- */
+
+:root {
+  --sl-color-bg: var(--surface-page);
+  --sl-color-bg-nav: var(--surface-nav);
+  --sl-color-bg-aside: var(--surface-page);
+  --sl-color-bg-card: var(--surface-raised);
+  --sl-color-bg-inline-code: var(--surface-sunken);
+  --sl-color-white: var(--text-strong);
+  --sl-color-black: var(--surface-page);
+
+  /* gray-1 → gray-6 是"前景 → 背景"的梯度，保持 Starlight 既有语义 */
+  --sl-color-gray-1: var(--text-default);
+  --sl-color-gray-2: var(--text-muted);
+  --sl-color-gray-3: var(--text-faint);
+  --sl-color-gray-4: var(--border-default);
+  --sl-color-gray-5: var(--border-subtle);
+  --sl-color-gray-6: var(--surface-sunken);
+
+  --sl-color-accent: var(--accent);
+  --sl-color-accent-low: var(--accent-quiet);
+  --sl-color-accent-high: var(--accent-border);
+  --sl-color-text-accent: var(--accent);
+  --sl-color-hairline: var(--border-subtle);
+  --sl-color-hairline-shade: var(--border-default);
+  --sl-color-hairline-light: var(--surface-sunken);
+  --sl-color-banner-text: var(--neutral-25);
+
+  --sl-font: var(--font-sans);
+  --sl-font-mono: var(--font-mono);
+
+  /* 语法高亮：亮色 */
+  --sl-color-syntax-comment: var(--text-faint);
+  --sl-color-syntax-keyword: oklch(52% 0.17 300);
+  --sl-color-syntax-string: oklch(52% 0.13 145);
+  --sl-color-syntax-number: oklch(55% 0.14 30);
+  --sl-color-syntax-function: oklch(50% 0.16 265);
+  --sl-color-syntax-constant: oklch(52% 0.14 315);
+  --sl-color-syntax-special: oklch(55% 0.17 15);
+
+  --sl-text-xs: var(--text-xs);
+  --sl-text-sm: var(--text-sm);
+  --sl-text-base: var(--text-base);
+  --sl-text-lg: var(--text-lg);
+  --sl-text-xl: var(--text-xl);
+  --sl-text-2xl: var(--text-2xl);
+  --sl-text-3xl: var(--text-3xl);
+  --sl-text-4xl: var(--text-3xl);
+  --sl-text-5xl: var(--text-4xl);
+  --sl-line-height-headings: var(--leading-tight);
 }
 
 [data-theme="dark"] {
-  /* Dark theme - Zensical slate */
-  --color-bg: #0c0e12;
-  --color-text: rgba(224, 226, 230, 0.82);
-  --color-primary: #5488e8;
-  --color-secondary: #6b9aef;
-  --color-accent: #5488e8;
-  --color-border: rgba(224, 226, 230, 0.12);
-  --color-code-bg: #1a1d24;
-  --color-card: #191c24;
-  --color-success: #22c55e;
-  --color-error: #ef4444;
-  --color-warning: #f59e0b;
-
-  /* Starlight overrides */
-  --sl-color-bg: #0c0e12;
-  --sl-color-bg-nav: #191c24;
-  --sl-color-bg-aside: #191c24;
-  --sl-color-bg-card: #191c24;
-  --sl-color-bg-inline-code: #1a1d24;
-  --sl-color-white: #ffffff;
-  --sl-color-black: #0c0e12;
-  --sl-color-text-accent: #5488e8;
-  --sl-color-gray-1: rgba(224, 226, 230, 0.82);
-  --sl-color-gray-2: rgba(224, 226, 230, 0.56);
-  --sl-color-gray-3: rgba(224, 226, 230, 0.32);
-  --sl-color-gray-4: rgba(224, 226, 230, 0.12);
-  --sl-color-gray-5: rgba(224, 226, 230, 0.07);
-  --sl-color-gray-6: #191c24;
-  --sl-color-accent: #5488e8;
-  --sl-color-accent-low: rgba(84, 136, 232, 0.15);
-  --sl-color-accent-high: rgba(84, 136, 232, 0.25);
-  --sl-color-hairline: rgba(224, 226, 230, 0.12);
-  --sl-color-hairline-shade: rgba(224, 226, 230, 0.07);
-  --sl-color-hairline-light: #191c24;
-
-  /* Code syntax colors - Zensical slate inspired */
-  --sl-color-syntax-number: #e6695b;
-  --sl-color-syntax-string: #2fb170;
-  --sl-color-syntax-keyword: #6791e0;
-  --sl-color-syntax-function: #c973d9;
-  --sl-color-syntax-constant: #9383e2;
-  --sl-color-syntax-special: #f06090;
-  --sl-color-syntax-comment: rgba(224, 226, 230, 0.56);
+  --sl-color-syntax-comment: oklch(58% 0.01 268);
+  --sl-color-syntax-keyword: oklch(76% 0.12 300);
+  --sl-color-syntax-string: oklch(76% 0.11 145);
+  --sl-color-syntax-number: oklch(76% 0.11 30);
+  --sl-color-syntax-function: oklch(78% 0.11 265);
+  --sl-color-syntax-constant: oklch(76% 0.11 315);
+  --sl-color-syntax-special: oklch(78% 0.12 15);
 }
 
-[data-theme="dark"] html,
-[data-theme="dark"] body {
-  background-color: #0c0e12;
-  color-scheme: dark;
-}
+/* ---------- 4. 兼容层 ----------
+   早期组件（QuizContainer 等）仍在用旧命名。这里统一桥接到语义令牌，
+   使它们自动跟随主题，无需改动组件代码。
+   新代码请用语义令牌；本区块随组件迁移逐步移除。 */
 
-/* Smooth theme transitions - exclude html/body to prevent FOUC */
-*,
-*::before,
-*::after {
-  transition:
-    background-color var(--transition-base),
-    border-color var(--transition-base),
-    color var(--transition-fast),
-    box-shadow var(--transition-base);
-}
+:root {
+  --space-xs: var(--space-1);
+  --space-sm: var(--space-2);
+  --space-md: var(--space-4);
+  --space-lg: var(--space-6);
+  --space-xl: var(--space-8);
+  --space-2xl: var(--space-12);
 
-html,
-body {
-  transition: none !important;
-}
+  --radius-full: var(--radius-pill);
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    transition-duration: 0.01ms !important;
-  }
+  --transition-fast: var(--duration-fast) var(--ease-out-quart);
+  --transition-base: var(--duration-base) var(--ease-out-quart);
+  --transition-slow: var(--duration-slow) var(--ease-out-quart);
+
+  --color-bg: var(--surface-page);
+  --color-text: var(--text-default);
+  --color-border: var(--border-subtle);
+  --color-card: var(--surface-raised);
+  --color-code-bg: var(--surface-code);
+  --color-primary: var(--accent);
+  --color-secondary: var(--accent-hover);
+  --color-accent: var(--accent);
+  --color-success: var(--success);
+  --color-error: var(--danger);
+  --color-warning: var(--warning);
 }

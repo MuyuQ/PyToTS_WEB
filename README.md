@@ -58,31 +58,59 @@ npm run dev
 
 ```
 src/
-├── components/                # UI 组件
-│   ├── AlgorithmIndex.astro         # 算法题库索引（可筛选）
-│   ├── Banner.astro                 # 横幅提示（含侧边栏进度）
-│   ├── CodeCompare.astro            # Python/TS 双语对照组件
+├── components/                      # UI 组件
+│   ├── SiteNav.astro                # 顶层导航（课程/题库/手册/测验/我的）
+│   ├── Header.astro                 # 顶栏（标题 + 导航 + 搜索 + 主题）
+│   ├── HomePaths.astro              # 路径清单（课表式，含每条进度条）
+│   ├── HomeRoutes.astro             # 三条支线入口（题库/手册/测验）
+│   ├── ProgressPanel.astro          # 进度与收藏面板
+│   ├── CodeCompare.astro            # Python/TS 双语对照
+│   ├── AlgorithmIndex.astro         # 算法题库索引（难度筛选 + 搜索）
+│   ├── Pagination.astro             # 上一课/下一课、上一题/下一题
+│   ├── SidebarProgress.astro        # 侧边栏学习进度
+│   ├── LessonProgressMarkers.astro  # 正文链接完成标记
 │   ├── DifficultyBadge.astro        # 难度徽章
 │   ├── DifficultyIndex.astro        # 难度索引
-│   ├── Header.astro                 # 顶部导航
-│   ├── LessonProgressMarkers.astro  # 课程进度标记
-│   ├── Pagination.astro             # 分页（教学顺序）
-│   ├── QuizContainer.astro          # 测验容器
-│   ├── SidebarProgress.astro        # 侧边栏进度
 │   ├── TagIndex.astro               # 标签索引
+│   ├── BookmarkToggle.astro         # 收藏开关
+│   ├── QuizContainer.astro          # 测验容器
+│   ├── Banner.astro                 # 横幅（挂载侧边栏进度）
 │   └── overrides/PageTitle.astro    # 标题元数据徽章
-├── content/docs/          # 文档内容 (MDX)
-│   ├── paths/             # 学习路径
-│   │   ├── foundation/    # 基础课程
-│   │   ├── migration/     # 迁移课程
-│   │   └── advanced/      # 进阶课程
-│   ├── algorithms/        # 算法题解
-│   ├── handbook/          # 速查手册
-│   └── practice/          # 练习测验
-├── lib/                   # 工具库
-├── pages/                 # 自定义页面
-└── styles/                # 全局样式
+├── content/docs/                    # 内容 (MDX)
+│   ├── paths/                       # 四条学习路径，共 22 课
+│   │   ├── preparation/             # 准备路径 2 课
+│   │   ├── foundation/              # 基础路径 5 课
+│   │   ├── migration/               # 迁移路径 7 课
+│   │   └── advanced/                # 进阶路径 8 课
+│   ├── algorithms/                  # 36 道算法题
+│   ├── handbook/                    # 对照手册与速查表
+│   ├── practice/                    # 练习与测验
+│   ├── tags/ difficulty/            # 分类索引
+│   ├── bookmarks/                   # 进度与收藏
+│   └── about/                       # 关于与贡献
+├── lib/
+│   ├── curriculum.ts                # 课程结构单一数据源（顺序、路径、课时）
+│   ├── neighbours.ts                # 上一项/下一项计算
+│   ├── progress-store.ts            # localStorage 进度与收藏
+│   ├── path-map.ts                  # 兼容层，已由 curriculum 派生
+│   └── quiz-manager.ts              # 测验逻辑
+├── pages/404.astro                  # 独立 404 页
+└── styles/
+    ├── tokens.css                   # 设计令牌（原始/语义/Starlight 桥接/兼容别名）
+    ├── base.css                     # 排版骨架、焦点可见、动效降级
+    ├── layout.css                   # 内容排版、侧边栏、目录、响应式
+    ├── components.css               # 卡片、按钮、徽章、表格、分页、进度
+    ├── code.css                     # 代码块与双语对照
+    ├── tabs-custom.css              # 标签页
+    └── home.css                     # 首页
 ```
+
+### 两条维护约定
+
+1. **课程顺序只改一处**：`src/lib/curriculum.ts`。侧边栏、上一课/下一课、首页与路径页的进度
+   全部从它派生，新增或调整课程不需要分别改四个文件。
+2. **内容按用户任务分组**：课程（学）→ 实战（练）→ 参考（查）→ 我的（进度）→ 关于，
+   不是按文件类型分组。新增页面时先判断它属于哪个任务。
 
 ## 技术栈
 
@@ -141,4 +169,4 @@ src/
 
 ---
 
-*最后更新: 2026-09-03*
+*最后更新: 2026-09-04*

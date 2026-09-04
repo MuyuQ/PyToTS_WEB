@@ -1,303 +1,224 @@
 ---
+/**
+ * 侧边栏学习进度
+ *
+ * 重构前这里内联了一份 36 道算法题的路径清单，与课程顺序一起硬编码在脚本里，
+ * 新增题目必须手改本文件才会被标记。
+ * 现在：课程顺序来自 lib/curriculum.ts，算法路由在构建时从内容集合读取，
+ * 两者序列化后注入客户端脚本，内容变动自动跟随。
+ */
+import { getCollection, type CollectionEntry } from "astro:content";
+import { TRACK_ORDER, TRACKS, trackRoutes, CURRICULUM, lessonRoute } from "../lib/curriculum";
+
+const algorithms = await getCollection(
+  "docs",
+  (entry: CollectionEntry<"docs">) =>
+    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm",
+);
+
+const algorithmRoutes = algorithms.map((entry) => {
+  const slug = entry.id.replace(/\.(mdx|md)$/, "").replace(/(^|\/)index$/, "");
+  return `/${slug}/`;
+});
+
+/** { 准备: [...], 基础: [...], ..., 算法: [...] } —— 分组进度用。
+ *  口径与首页一致：只计课时，不含路径入口页。 */
+const groups: Record<string, string[]> = Object.fromEntries(
+  TRACK_ORDER.map((track) => [
+    TRACKS[track].label,
+    CURRICULUM[track]
+      .filter((slug) => slug !== "index")
+      .map((slug) => lessonRoute(track, slug)),
+  ]),
+);
+groups["算法"] = algorithmRoutes;
+
+/** 需要打点的全部路由 */
+const allRoutes = [...TRACK_ORDER.flatMap((track) => trackRoutes(track)), ...algorithmRoutes];
 ---
 
-<script is:inline>
-  var LESSON_PATHS = {
-    preparation: ['/paths/preparation/', '/paths/preparation/typescript-intro/', '/paths/preparation/setup/'],
-    foundation: ['/paths/foundation/variables/', '/paths/foundation/functions-basics/', '/paths/foundation/control-flow/', '/paths/foundation/data-structures/', '/paths/foundation/classes-objects/'],
-    migration: ['/paths/migration/types/', '/paths/migration/functions/', '/paths/migration/modules/', '/paths/migration/async/', '/paths/migration/error-handling/', '/paths/migration/enums/', '/paths/migration/strings-regex/'],
-    advanced: ['/paths/advanced/generics/', '/paths/advanced/type-guards/', '/paths/advanced/utility-types/', '/paths/advanced/declarations-config/', '/paths/advanced/decorators/', '/paths/advanced/design-patterns/', '/paths/advanced/datetime/', '/paths/advanced/nodejs-basics/'],
-    algorithms: [
-      '/algorithms/3sum/',
-      '/algorithms/binary-search/',
-      '/algorithms/binary-tree-inorder-traversal/',
-      '/algorithms/climbing-stairs/',
-      '/algorithms/clone-graph/',
-      '/algorithms/coin-change/',
-      '/algorithms/container-with-most-water/',
-      '/algorithms/counting-bits/',
-      '/algorithms/course-schedule/',
-      '/algorithms/decode-ways/',
-      '/algorithms/edit-distance/',
-      '/algorithms/find-median-from-data-stream/',
-      '/algorithms/house-robber/',
-      '/algorithms/implement-trie/',
-      '/algorithms/linked-list-cycle/',
-      '/algorithms/longest-common-subsequence/',
-      '/algorithms/longest-increasing-subsequence/',
-      '/algorithms/longest-substring-without-repeating/',
-      '/algorithms/lru-cache/',
-      '/algorithms/maximum-subarray/',
-      '/algorithms/merge-intervals/',
-      '/algorithms/merge-k-sorted-lists/',
-      '/algorithms/minimum-window-substring/',
-      '/algorithms/network-delay-time/',
-      '/algorithms/number-of-islands/',
-      '/algorithms/partition-equal-subset-sum/',
-      '/algorithms/permutations/',
-      '/algorithms/reverse-linked-list/',
-      '/algorithms/rotting-oranges/',
-      '/algorithms/single-number/',
-      '/algorithms/subsets/',
-      '/algorithms/two-sum/',
-      '/algorithms/validate-bst/',
-      '/algorithms/valid-parentheses/',
-      '/algorithms/word-break/',
-      '/algorithms/word-search/'
-    ]
-  };
+<script is:inline define:vars={{ groups, allRoutes }}>
+  var PROGRESS_KEY = "ts-py-learning-progress";
+  var ALL_PATHS = allRoutes;
+  var GROUP_PATHS = groups;
 
-  var ALL_LESSON_PATHS = Object.values(LESSON_PATHS).flat();
-  var progressInitialized = false;
-
-  function getCurrentLessonPath() {
-    var pathname = window.location.pathname;
-    return ALL_LESSON_PATHS.find(function(p) { return matchesPath(pathname, p); });
-  }
-
-  // 子路径部署下 location.href 会带 base 前缀（如 /PyToTS_WEB/paths/...），
-  // 存储的仍是原始路径：以后缀匹配兼容两种情况
+  // 子路径部署下 href 会带 base 前缀，存储的仍是站内路径：以后缀匹配兼容两种情况
   function matchesPath(href, path) {
-    var bare = path.replace(/\/$/, '');
+    if (!href) return false;
+    var bare = String(path).replace(/\/$/, "");
     return href === path || href === bare || href.endsWith(path) || href.endsWith(bare);
   }
 
-  function markLessonCompleted(path) {
+  function getCurrentPath() {
+    return ALL_PATHS.find(function (p) {
+      return matchesPath(window.location.pathname, p);
+    });
+  }
+
+  function readProgress() {
     try {
-      var data = localStorage.getItem('ts-py-learning-progress');
-      var progress = data ? JSON.parse(data) : { lessons: [], quizzes: [], bookmarks: [], lastVisited: '' };
-      
-      if (!progress.lessons.some(function(l) { return l.path === path; })) {
-        var title = document.querySelector('h1')?.textContent || '';
-        progress.lessons.push({
-          path: path,
-          title: title,
-          completedAt: new Date().toISOString(),
-          type: 'lesson'
-        });
-        localStorage.setItem('ts-py-learning-progress', JSON.stringify(progress));
-        window.dispatchEvent(new CustomEvent('progress-updated', { detail: progress }));
-      }
+      var raw = localStorage.getItem(PROGRESS_KEY);
+      if (!raw) return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
+      var parsed = JSON.parse(raw);
+      return {
+        lessons: Array.isArray(parsed.lessons) ? parsed.lessons : [],
+        quizzes: Array.isArray(parsed.quizzes) ? parsed.quizzes : [],
+        bookmarks: Array.isArray(parsed.bookmarks) ? parsed.bookmarks : [],
+        lastVisited: parsed.lastVisited || "",
+      };
     } catch (e) {
-      console.error('Failed to save progress:', e);
+      return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
     }
   }
 
-  function getCompletedPaths() {
-    try {
-      var data = localStorage.getItem('ts-py-learning-progress');
-      if (data) {
-        var progress = JSON.parse(data);
-        return progress.lessons ? progress.lessons.map(function(l) { return l.path; }) : [];
-      }
-    } catch (e) {}
-    return [];
+  function completedPaths() {
+    return readProgress().lessons.map(function (l) {
+      return l.path;
+    });
   }
 
   function isCompleted(path) {
-    var completed = getCompletedPaths();
-    return completed.includes(path) || completed.includes(path.replace(/\/$/, ''));
+    var completed = completedPaths();
+    return completed.indexOf(path) !== -1 || completed.indexOf(path.replace(/\/$/, "")) !== -1;
   }
 
-  function initLessonCompletion() {
-    var currentPath = getCurrentLessonPath();
-    if (!currentPath) return;
+  function markCompleted(path) {
+    try {
+      var progress = readProgress();
+      var exists = progress.lessons.some(function (l) {
+        return l.path === path;
+      });
+      if (exists) return;
 
-    var markedCompleted = false;
-    var retryCount = 0;
-    var maxRetries = 10;
+      var heading = document.querySelector("h1");
+      progress.lessons.push({
+        path: path,
+        title: heading ? heading.textContent.trim() : "",
+        completedAt: new Date().toISOString(),
+        type: "lesson",
+      });
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
+      window.dispatchEvent(new CustomEvent("progress-updated", { detail: progress }));
+    } catch (e) {
+      console.error("保存学习进度失败：", e);
+    }
+  }
+
+  // 滚到正文末尾才算学完，避免刚打开就记完成
+  function watchCompletion(path) {
+    var marked = false;
+    var retries = 0;
     var observer = null;
 
-    function trySetupObserver() {
-      var footer = document.querySelector('footer, .sl-footer, [data-footer], .sl-markdown-content > *:last-child, .pagination-links');
-      
-      if (!footer && retryCount < maxRetries) {
-        retryCount++;
-        setTimeout(trySetupObserver, 200);
+    function anchor() {
+      var target = document.querySelector(".pagination-links") ||
+        document.querySelector("footer") ||
+        document.querySelector(".sl-markdown-content > *:last-child");
+
+      if (!target && retries < 10) {
+        retries += 1;
+        setTimeout(anchor, 200);
         return;
       }
-
-      if (!footer) {
-        var content = document.querySelector('.sl-markdown-content');
-        if (content) {
-          footer = content.lastElementChild;
-        }
+      if (!target) {
+        var content = document.querySelector(".sl-markdown-content");
+        target = content ? content.lastElementChild : null;
       }
-
-      if (!footer) return;
+      if (!target) return;
 
       observer = new IntersectionObserver(
-        function(entries) {
-          entries.forEach(function(entry) {
-            if (entry.isIntersecting && !markedCompleted) {
-              markedCompleted = true;
-              markLessonCompleted(currentPath);
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting && !marked) {
+              marked = true;
+              markCompleted(path);
               if (observer) observer.disconnect();
             }
           });
         },
-        { threshold: 0.1 }
+        { threshold: 0.1 },
       );
-
-      observer.observe(footer);
+      observer.observe(target);
     }
 
-    trySetupObserver();
+    anchor();
   }
 
-  function addProgressIndicators() {
-    var sidebar = document.querySelector('nav.sidebar, .sl-sidebar, [data-sidebar]');
+  function renderIndicators() {
+    var sidebar = document.querySelector("nav.sidebar, .sl-sidebar, [data-sidebar]");
     if (!sidebar) return;
 
-    // Remove all existing progress indicators
-    sidebar.querySelectorAll('.progress-dot').forEach(function(dot) {
-      dot.remove();
+    // 幂等：先清掉上一轮渲染的标记
+    sidebar.querySelectorAll(".progress-dot").forEach(function (el) {
+      el.remove();
     });
-    sidebar.querySelectorAll('.group-progress').forEach(function(gp) {
-      gp.remove();
+    sidebar.querySelectorAll(".group-progress").forEach(function (el) {
+      el.remove();
     });
 
-    // Add progress dots to lesson links
-    var sidebarLinks = sidebar.querySelectorAll('a[href]');
-    sidebarLinks.forEach(function(link) {
-      // Double check no duplicate
-      if (link.querySelector('.progress-dot')) return;
+    sidebar.querySelectorAll("a[href]").forEach(function (link) {
+      if (link.querySelector(".progress-dot")) return;
 
-      var href = link.getAttribute('href') || '';
-      var matched = ALL_LESSON_PATHS.find(function(path) { return matchesPath(href, path); });
+      var href = link.getAttribute("href") || "";
+      var matched = ALL_PATHS.find(function (path) {
+        return matchesPath(href, path);
+      });
       if (!matched) return;
 
-      var completed = isCompleted(matched);
-      var dot = document.createElement('span');
-      dot.className = 'progress-dot' + (completed ? ' completed' : '');
-      dot.textContent = completed ? '●' : '○';
-      dot.setAttribute('aria-label', completed ? '已完成' : '未完成');
+      var done = isCompleted(matched);
+      var dot = document.createElement("span");
+      dot.className = "progress-dot" + (done ? " completed" : "");
+      dot.textContent = done ? "已完成" : "未完成";
+      dot.setAttribute("aria-label", done ? "已完成" : "未完成");
+      dot.setAttribute("title", done ? "已完成" : "未完成");
       link.appendChild(dot);
     });
 
-    // Add group progress
-    Object.keys(LESSON_PATHS).forEach(function(groupKey) {
-      var paths = LESSON_PATHS[groupKey];
-      var completedCount = paths.filter(isCompleted).length;
-      var total = paths.length;
+    Object.keys(GROUP_PATHS).forEach(function (groupKey) {
+      var paths = GROUP_PATHS[groupKey] || [];
+      var done = paths.filter(isCompleted).length;
+      if (!paths.length) return;
 
-      var firstPath = paths[0];
-      var firstLinks = Array.prototype.filter.call(
-        sidebar.querySelectorAll('a[href]'),
-        function(link) { return matchesPath(link.getAttribute('href') || '', firstPath); }
+      var firstLink = Array.prototype.find.call(
+        sidebar.querySelectorAll("a[href]"),
+        function (link) {
+          return matchesPath(link.getAttribute("href") || "", paths[0]);
+        },
       );
-      if (!firstLinks.length) return;
+      if (!firstLink) return;
 
-      firstLinks.forEach(function(firstLink) {
-        var groupElement = firstLink.closest('.sl-sidebar-group, [data-sidebar-group], details');
-        if (!groupElement) return;
+      var groupEl = firstLink.closest(".sl-sidebar-group, [data-sidebar-group], details");
+      if (!groupEl) return;
 
-        var groupButton = groupElement.querySelector('button, .sl-sidebar-group-toggle, summary');
-        if (!groupButton || groupButton.querySelector('.group-progress')) return;
+      var toggle = groupEl.querySelector("button, summary, .sl-sidebar-group-toggle");
+      if (!toggle || toggle.querySelector(".group-progress")) return;
 
-        var progress = document.createElement('span');
-        progress.className = 'group-progress ' + (completedCount > 0 ? 'has-progress' : 'no-progress');
-        progress.textContent = completedCount + '/' + total;
-        groupButton.appendChild(progress);
-      });
+      var badge = document.createElement("span");
+      badge.className = "group-progress " + (done > 0 ? "has-progress" : "no-progress");
+      badge.textContent = done + "/" + paths.length;
+      badge.setAttribute("title", groupKey + "：" + done + " / " + paths.length + " 已完成");
+      toggle.appendChild(badge);
     });
-
-    progressInitialized = true;
   }
 
   function init() {
-    if (progressInitialized) return;
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function() {
-          addProgressIndicators();
-          initLessonCompletion();
-        }, 100);
-      });
-    } else {
-      setTimeout(function() {
-        addProgressIndicators();
-        initLessonCompletion();
-      }, 100);
-    }
+    renderIndicators();
+    var current = getCurrentPath();
+    if (current) watchCompletion(current);
   }
 
-  window.addEventListener('progress-updated', function() {
-    setTimeout(addProgressIndicators, 50);
-  });
+  function schedule(fn) {
+    return function () {
+      setTimeout(fn, 100);
+    };
+  }
 
-  document.addEventListener('astro:page-load', function() {
-    setTimeout(function() {
-      addProgressIndicators();
-      initLessonCompletion();
-    }, 100);
-  });
+  window.addEventListener("progress-updated", schedule(renderIndicators));
+  document.addEventListener("astro:page-load", schedule(init));
 
-  init();
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", schedule(init));
+  } else {
+    schedule(init)();
+  }
 </script>
-
-<style is:global>
-  .progress-dot {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 0.375rem;
-    font-size: 0.625rem;
-    transition: color var(--transition-fast);
-    vertical-align: middle;
-    line-height: 1;
-  }
-
-  .progress-dot.completed {
-    color: var(--color-success);
-  }
-
-  .progress-dot:not(.completed) {
-    color: var(--sl-color-gray-4, #6b7280);
-  }
-
-  .group-progress {
-    display: inline-flex;
-    align-items: center;
-    margin-left: auto;
-    padding-left: 0.5rem;
-    font-size: 0.6875rem;
-    font-weight: 500;
-    opacity: 0.8;
-  }
-
-  .group-progress.has-progress {
-    color: var(--color-success);
-  }
-
-  .group-progress.no-progress {
-    color: var(--sl-color-gray-4, #6b7280);
-  }
-
-  .completion-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-xs);
-    padding: var(--space-xs) var(--space-sm);
-    background: var(--color-success);
-    color: white;
-    border-radius: var(--radius-full);
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-
-  .completion-badge svg {
-    width: 12px;
-    height: 12px;
-  }
-
-  [data-theme="dark"] .progress-dot:not(.completed),
-  [data-theme="dark"] .group-progress.no-progress {
-    color: var(--sl-color-gray-4, #6b7280);
-  }
-
-  [data-theme="high-contrast"] .progress-dot.completed,
-  [data-theme="high-contrast"] .group-progress.has-progress {
-    color: #4ade80;
-  }
-</style>

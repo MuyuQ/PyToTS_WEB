@@ -185,6 +185,30 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
     width: 100%;
     border-collapse: collapse;
     font-size: 0.875rem;
+    /* 固定布局：标签列再长也不挤压题目列 */
+    table-layout: fixed;
+  }
+
+  th:nth-of-type(1),
+  td:nth-of-type(1) {
+    width: 34%;
+  }
+
+  th:nth-of-type(2),
+  td:nth-of-type(2) {
+    width: 11%;
+  }
+
+  th:nth-of-type(3),
+  td:nth-of-type(3) {
+    width: 35%;
+  }
+
+  th:nth-of-type(4),
+  td:nth-of-type(4),
+  th:nth-of-type(5),
+  td:nth-of-type(5) {
+    width: 10%;
   }
 
   th {
