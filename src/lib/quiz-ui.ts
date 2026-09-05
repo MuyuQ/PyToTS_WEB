@@ -77,8 +77,8 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
     // Update progress
     progressEl.textContent = `问题 ${state.currentQuestion + 1} / ${questions.length}`;
 
-    // Check if this is a prediction question (based on presence of special keywords)
-    const isPredictionQuestion = currentQ.question.includes("【预测输出】");
+    // 预测题以类型字段判定（quiz-data 契约测试保证与「【预测输出】」标记双向一致）
+    const isPredictionQuestion = currentQ.questionType === "prediction";
 
     // Update question text
     questionEl.innerHTML = "";

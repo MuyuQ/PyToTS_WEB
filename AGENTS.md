@@ -48,7 +48,7 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 
 ### 内容文件 (MDX)
 
-- **Frontmatter 必填**: `title`, `kind`, `level`, `topic`, `difficulty`, `prerequisites`, `python_tags`, `ts_tags`, `description`；课程还需 `sidebar.order`（对齐 `src/lib/path-map.ts` 的教学顺序）
+- **Frontmatter 必填**: `title`, `kind`, `level`, `topic`, `difficulty`, `prerequisites`, `python_tags`, `ts_tags`, `description`；课程还需 `sidebar.order`（对齐 `src/lib/curriculum.ts` 的教学顺序）
 - **标题规范**: 标题中禁止 emoji（由 `npm run lint:content` 强制）；课程章节使用语义化中文标题（为什么重要 / 核心概念 / Python 回顾 / TypeScript 等价写法 / 差异与常见陷阱 / 练习 / 面试追问）
 - **算法结构**: `## 问题描述` → `## 思路分析` → `## 复杂度分析` → `## 双语实现`（Tabs: Python/TypeScript）→ `## 常见错误分析` → `## 面试变体`
 - **链接规范**: 内容内部链接必须使用相对路径（站点部署在 `/PyToTS_WEB/` 子路径，根相对链接会 404，由 `npm run linkcheck` 在构建产物上强制校验）
