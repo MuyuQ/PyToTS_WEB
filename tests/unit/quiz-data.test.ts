@@ -59,6 +59,37 @@ describe("quiz data contract", () => {
     }
   });
 
+  it("questionType=prediction 的题必须带【预测输出】标记（渲染器按类型字段判定，两处脱节会被静默当成普通选择题）", () => {
+    for (const id of quizIds()) {
+      for (const question of QUIZZES[id]) {
+        if (question.questionType === "prediction") {
+          expect(
+            question.question.includes("【预测输出】"),
+            `测验 ${id} 标记为预测题但题干缺「【预测输出」标记：${question.question.slice(0, 30)}…`
+          ).toBe(true);
+          expect(
+            question.codeSnippets,
+            `测验 ${id} 的预测题缺 codeSnippets：${question.question.slice(0, 30)}…`
+          ).toBeDefined();
+        }
+      }
+    }
+  });
+
+  it("预测题选项遵循【预期:…】编码协议（quiz-ui 据此解析加粗预测输出）", () => {
+    for (const id of quizIds()) {
+      for (const question of QUIZZES[id]) {
+        if (question.questionType !== "prediction") continue;
+        for (const option of question.options) {
+          expect(
+            option.text.includes("【预期:"),
+            `测验 ${id} 预测题选项缺「【预期:」标记：${option.text.slice(0, 24)}…`
+          ).toBe(true);
+        }
+      }
+    }
+  });
+
   it("questionsFor 对未知 id 返回空数组而非抛错", () => {
     expect(questionsFor("no-such-quiz")).toEqual([]);
     expect(questionsFor(quizIds()[0] ?? "").length).toBeGreaterThan(0);
