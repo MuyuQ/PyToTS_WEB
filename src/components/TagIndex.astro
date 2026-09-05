@@ -46,23 +46,40 @@ const groups: TagGroup[] = [
 {
   groups.map((group) => (
     <section class="tag-group">
-      <h2>{group.label}</h2>
+      <h2>
+        {group.label} <span class="tag-total">{group.items.length} 个标签</span>
+      </h2>
       {group.items.length === 0 ? (
         <p class="tag-empty">暂无标签。</p>
       ) : (
-        <ul class="tag-list">
+        <ul class="tag-grid">
           {group.items.map(({ tag, pages }) => (
-            <li class="tag-item">
-              <code class="tag-name">{tag}</code>
-              <span class="tag-count">{pages.length} 篇</span>
-              <span class="tag-pages">
-                {pages.map((page, index) => (
-                  <>
-                    {index > 0 && <span class="tag-sep">、</span>}
-                    <a href={page.href}>{page.title}</a>
-                  </>
-                ))}
-              </span>
+            <li class="tag-card">
+              <div class="tag-card__head">
+                <code class="tag-name">{tag}</code>
+                <span class="tag-count">{pages.length} 篇</span>
+              </div>
+              {/* 三篇以内直接铺开；再多就用原生 details 折叠，无 JS 也能用 */}
+              {pages.length <= 3 ? (
+                <ul class="entry-list tag-pages">
+                  {pages.map((page) => (
+                    <li>
+                      <a href={page.href}>{page.title}</a>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <details class="tag-pages-toggle">
+                  <summary>展开 {pages.length} 篇内容</summary>
+                  <ul class="entry-list tag-pages">
+                    {pages.map((page) => (
+                      <li>
+                        <a href={page.href}>{page.title}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </details>
+              )}
             </li>
           ))}
         </ul>
@@ -73,72 +90,107 @@ const groups: TagGroup[] = [
 
 <style>
   .tag-group {
-    margin: var(--space-xl) 0;
+    margin: var(--section-gap) 0 0;
   }
 
   .tag-group h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--sl-color-hairline);
-  }
-
-  .tag-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .tag-item {
     display: flex;
-    flex-wrap: wrap;
     align-items: baseline;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: var(--radius-md);
-    background: var(--sl-color-bg-card);
+    gap: var(--space-2);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-cjk);
+    margin: 0 0 var(--space-4);
+    color: var(--text-strong);
+  }
+
+  .tag-total {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-normal);
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tag-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr));
+    gap: var(--space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .tag-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--surface-raised);
+  }
+
+  .tag-card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
   }
 
   .tag-name {
-    font-size: 0.8125rem;
-    font-weight: 600;
-    color: var(--sl-color-accent);
-    background: var(--sl-color-accent-low);
-    padding: 0.125rem 0.5rem;
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--accent-ink);
+    background: var(--accent-quiet);
+    padding: 0 var(--space-2);
     border-radius: var(--radius-sm);
+    line-height: 1.7;
   }
 
   .tag-count {
-    font-size: 0.75rem;
-    color: var(--sl-color-gray-2);
-    white-space: nowrap;
+    flex-shrink: 0;
+    font-size: var(--text-xs);
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
   }
 
+  /* 卡片内的链接列表：去掉外边距，让它贴着卡片头部 */
   .tag-pages {
-    font-size: 0.875rem;
-    color: var(--sl-color-gray-2);
+    margin: 0;
   }
 
   .tag-pages a {
-    color: var(--sl-color-gray-1);
-    text-decoration: none;
+    font-size: var(--text-sm);
   }
 
-  .tag-pages a:hover {
-    color: var(--sl-color-accent);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+  .tag-pages-toggle summary {
+    cursor: pointer;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    padding: var(--space-1) 0;
+    list-style: none;
   }
 
-  .tag-sep {
-    color: var(--sl-color-gray-2);
+  .tag-pages-toggle summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .tag-pages-toggle summary::before {
+    content: "▸ ";
+    color: var(--text-faint);
+  }
+
+  .tag-pages-toggle[open] summary::before {
+    content: "▾ ";
+  }
+
+  .tag-pages-toggle summary:hover {
+    color: var(--accent);
   }
 
   .tag-empty {
-    color: var(--sl-color-gray-2);
+    margin: 0;
+    color: var(--text-muted);
   }
 </style>

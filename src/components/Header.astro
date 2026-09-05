@@ -8,6 +8,7 @@ import SiteTitle from "virtual:starlight/components/SiteTitle";
 import SocialIcons from "virtual:starlight/components/SocialIcons";
 import ThemeSelect from "virtual:starlight/components/ThemeSelect";
 import SiteNav from "./SiteNav.astro";
+import VisitRecorder from "./VisitRecorder.astro";
 
 const shouldRenderSearch =
   config.pagefind || config.components.Search !== "@astrojs/starlight/components/Search.astro";
@@ -26,6 +27,8 @@ const shouldRenderSearch =
     <ThemeSelect {...Astro.props} />
     <LanguageSelect {...Astro.props} />
   </div>
+  {/* 借顶栏做「每页都渲染」的挂载点，为首页继续学习卡片记录上次学到的位置 */}
+  <VisitRecorder />
 </div>
 
 <style>

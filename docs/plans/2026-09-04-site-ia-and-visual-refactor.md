@@ -371,21 +371,20 @@ Primitives  →  Semantics  →  Starlight 桥接
 
 ## 5. 后续可扩展方向
 
+> 2026-09-05 更新：第 1、2、3、4、5、6、8 项已完成，见下方标注。
+
 ### 5.1 短期（结构已就位，接入成本低）
 
-1. **补齐 `/tags/` 与 `/difficulty/` 的视觉**：目前两个索引页的功能完整，但列表样式仍可复用新的 `entry-list` 组件（样式已定义，尚未接入）
-2. **首页「继续学习」卡片**：`curriculum` 与进度存储已就绪，只差一个读取 `lastVisited` 的组件
-3. **算法页加"同类推荐"**：难度递进序列已在 `neighbours.ts` 中算出，可扩展为"同难度的其他题"
-4. **`404.astro` 配色统一**：独立页面仍用旧配色，可改用同一套 OKLCH 值
+1. ✅ **补齐 `/tags/` 与 `/difficulty/` 的视觉**（2026-09-05）：两页改用 `entry-list` 语义与语义令牌；标签页改为「标签卡片 + 原生 details 折叠」，难度徽标迁到语义令牌（顺带修复了全局样式被组件 scoped 压制、语义色一直没生效的问题）
+2. ✅ **首页「继续学习」卡片**（2026-09-05）：新增 `ContinueCard` 与 `VisitRecorder`——后者补上了 `updateLastVisited` 无人调用的缺口；无记录时显示起点引导，避免布局跳动
+3. ✅ **算法页"同类推荐"**（2026-09-05）：`neighbours.ts` 新增 `getSimilarAlgorithms`，挂在分页上方
+4. ✅ **`404.astro` 配色统一**（2026-09-05）：构建时从 tokens.css 抽取（tests/unit/not-found.test.ts 守护），并增加课程/题库/手册三个具体出口
+5. ✅ **兼容层清理**（2026-09-05）：`tokens.css` 兼容别名区、`public/bookmarks.js`、`src/lib/path-map.ts` 已删除；组件内残留的 `--sl-color-*` 用法同步迁到语义令牌
+6. ✅ **`QuizContainer.astro` 拆分**（2026-09-05）：1577 行 → 48 行编排 + `src/data/quizzes.ts`（题库）+ `src/lib/quiz-ui.ts`（交互，可单测）+ `src/styles/quiz.css`（语义令牌）；顺手接活了无人引用的 `prediction` 题库（补代码片段 + 渲染支持 + 接入测验页热身板块）
+7. **英文版**：要么正式翻译（需要重做代码对照，不只是文案），要么移除 `/en/` 目录——现状是有内容但标注不可用
+8. ✅ **内容覆盖率校验**（2026-09-05）：`quiz-coverage.test.ts` 重写为数据驱动——课程 slug → quizId 约定派生，双向校验（缺测验 / 孤儿 quizId / 拼错 id）；`quiz-data.test.ts` 守护题库数据契约（4 选项恰 1 正确、预测题必带代码）
 
 ### 5.2 中期
-
-5. **兼容层清理**：`tokens.css` 的兼容别名、`public/bookmarks.js`、`src/lib/path-map.ts` 可在 `QuizContainer` 迁移到语义令牌后移除
-6. **`QuizContainer.astro` 拆分**：1577 行的单文件组件，可拆为「题目 / 选项 / 反馈 / 进度」四部分，并迁移到语义令牌
-7. **英文版**：要么正式翻译（需要重做代码对照，不只是文案），要么移除 `/en/` 目录——现状是有内容但标注不可用
-8. **内容覆盖率校验**：把"每条路径的课程都存在对应测验"做成构建期检查（`tests/unit/quiz-coverage.test.ts` 已有雏形）
-
-### 5.3 长期
 
 9. **搜索增强**：Pagefind 已在用，可按内容类型（课程/算法/手册）分组展示结果
 10. **进度云端同步**：当前纯 localStorage，跨设备不可用。接口边界已清晰（`progress-store.ts`），替换存储层即可
