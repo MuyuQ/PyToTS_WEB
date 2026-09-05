@@ -170,7 +170,7 @@
   border-top: 2px solid var(--lang-ts);
 }
 
-.code-compare__pane :global(pre) {
+.code-compare__pane pre {
   margin: 0;
   border: 0;
   border-radius: 0;
@@ -180,11 +180,11 @@
 }
 
 /* 面板头部已标注语言，块级徽标在此冗余 */
-.code-compare__pane :global(pre[data-language]::after) {
+.code-compare__pane pre[data-language]::after {
   content: none;
 }
 
-.code-compare__pane :global(pre[data-language]) {
+.code-compare__pane pre[data-language] {
   padding-top: var(--space-3);
 }
 

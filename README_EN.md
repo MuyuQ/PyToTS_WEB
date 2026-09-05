@@ -92,7 +92,6 @@ src/
 │   ├── curriculum.ts                # Single source of truth for lesson order
 │   ├── neighbours.ts                # Prev/next computation
 │   ├── progress-store.ts            # localStorage progress & bookmarks
-│   ├── path-map.ts                  # Compatibility layer over curriculum
 │   └── quiz-manager.ts              # Quiz logic
 ├── pages/404.astro                  # Standalone 404 page
 └── styles/               # Stylesheets
