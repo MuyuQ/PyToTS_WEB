@@ -125,29 +125,29 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
   }
 
   .filter-btn {
-    border: 1px solid var(--sl-color-hairline);
-    background: var(--sl-color-bg);
-    color: var(--sl-color-gray-2);
-    border-radius: var(--radius-full);
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-page);
+    color: var(--text-muted);
+    border-radius: var(--radius-pill);
     padding: 0.25rem 0.75rem;
     font-size: 0.8125rem;
     font-weight: 500;
     cursor: pointer;
     transition:
-      color var(--transition-fast),
-      border-color var(--transition-fast),
-      background var(--transition-fast);
+      color var(--duration-fast) var(--ease-out-quart),
+      border-color var(--duration-fast) var(--ease-out-quart),
+      background var(--duration-fast) var(--ease-out-quart);
   }
 
   .filter-btn:hover {
-    color: var(--sl-color-accent);
-    border-color: var(--sl-color-accent);
+    color: var(--accent);
+    border-color: var(--accent);
   }
 
   .filter-btn.is-active {
-    background: var(--sl-color-accent-low);
-    border-color: var(--sl-color-accent);
-    color: var(--sl-color-accent);
+    background: var(--accent-quiet);
+    border-color: var(--accent);
+    color: var(--accent);
     font-weight: 600;
   }
 
@@ -158,10 +158,10 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
   }
 
   .algo-index__search input {
-    border: 1px solid var(--sl-color-hairline);
+    border: 1px solid var(--border-subtle);
     border-radius: var(--radius-md);
-    background: var(--sl-color-bg);
-    color: var(--sl-color-white);
+    background: var(--surface-page);
+    color: var(--text-strong);
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
     width: 14rem;
@@ -169,11 +169,11 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
   }
 
   .algo-index__search input::placeholder {
-    color: var(--sl-color-gray-2);
+    color: var(--text-muted);
   }
 
   .algo-index__search input:focus-visible {
-    outline: 2px solid var(--sl-color-accent);
+    outline: 2px solid var(--accent);
     outline-offset: 1px;
   }
 
@@ -214,48 +214,48 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
   th {
     text-align: left;
     padding: 0.5rem 0.75rem;
-    border-bottom: 2px solid var(--sl-color-hairline);
-    color: var(--sl-color-gray-2);
+    border-bottom: 2px solid var(--border-subtle);
+    color: var(--text-muted);
     font-weight: 600;
     white-space: nowrap;
   }
 
   td {
     padding: 0.5625rem 0.75rem;
-    border-bottom: 1px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--border-subtle);
   }
 
   tbody tr:hover td {
-    background: var(--sl-color-accent-low);
+    background: var(--accent-quiet);
   }
 
   .algo-link {
-    color: var(--sl-color-white);
+    color: var(--text-strong);
     text-decoration: none;
     font-weight: 500;
   }
 
   .algo-link:hover {
-    color: var(--sl-color-accent);
+    color: var(--accent);
     text-decoration: underline;
     text-underline-offset: 2px;
   }
 
   .algo-tags {
-    color: var(--sl-color-gray-2);
+    color: var(--text-muted);
     font-size: 0.8125rem;
   }
 
   .algo-complexity {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
-    color: var(--sl-color-gray-2);
+    color: var(--text-muted);
     white-space: nowrap;
   }
 
   .algo-index__empty {
     padding: 1.5rem 0.75rem;
-    color: var(--sl-color-gray-2);
+    color: var(--text-muted);
   }
 
   .sr-only {

@@ -1,8 +1,21 @@
 ---
+/**
+ * 难度徽标：入门 / 进阶 / 高阶
+ *
+ * 配色走语义令牌（success / warning / danger），亮暗两套自动跟随，
+ * 不再为每种难度各写一组 hex。三档只差色相，不差明度。
+ */
 const LABELS: Record<string, string> = {
   easy: "入门",
   medium: "进阶",
   hard: "高阶",
+};
+
+/** 难度 → 语义色角色 */
+const TONE: Record<string, "success" | "warning" | "danger"> = {
+  easy: "success",
+  medium: "warning",
+  hard: "danger",
 };
 
 interface Props {
@@ -13,51 +26,37 @@ const { difficulty } = Astro.props;
 if (!difficulty || !(difficulty in LABELS)) return null;
 ---
 
-<span class={`diff-badge diff-badge--${difficulty}`}>{LABELS[difficulty]}</span>
+<span class={`diff-badge diff-badge--${TONE[difficulty]}`}>{LABELS[difficulty]}</span>
 
 <style>
   .diff-badge {
     display: inline-flex;
     align-items: center;
-    padding: 0.0625rem 0.5rem;
-    border-radius: var(--radius-full);
+    padding: 0 0.5rem;
+    border-radius: var(--radius-pill);
     border: 1px solid transparent;
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
     line-height: 1.6;
     white-space: nowrap;
   }
 
-  .diff-badge--easy {
-    background: rgba(34, 197, 94, 0.12);
-    border-color: rgba(34, 197, 94, 0.28);
-    color: #15803d;
+  /* 底色极淡，边框中间档，文字取满饱和 —— 保证在亮暗底上都读得清 */
+  .diff-badge--success {
+    background: var(--success-quiet);
+    border-color: color-mix(in oklab, var(--success) 32%, transparent);
+    color: var(--success);
   }
 
-  .diff-badge--medium {
-    background: rgba(245, 158, 11, 0.12);
-    border-color: rgba(245, 158, 11, 0.32);
-    color: #b45309;
+  .diff-badge--warning {
+    background: var(--warning-quiet);
+    border-color: color-mix(in oklab, var(--warning) 32%, transparent);
+    color: var(--warning);
   }
 
-  .diff-badge--hard {
-    background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.3);
-    color: #b91c1c;
-  }
-
-  :global([data-theme="dark"]) .diff-badge--easy {
-    background: rgba(34, 197, 94, 0.14);
-    color: #4ade80;
-  }
-
-  :global([data-theme="dark"]) .diff-badge--medium {
-    background: rgba(245, 158, 11, 0.14);
-    color: #fbbf24;
-  }
-
-  :global([data-theme="dark"]) .diff-badge--hard {
-    background: rgba(239, 68, 68, 0.14);
-    color: #f87171;
+  .diff-badge--danger {
+    background: var(--danger-quiet);
+    border-color: color-mix(in oklab, var(--danger) 32%, transparent);
+    color: var(--danger);
   }
 </style>

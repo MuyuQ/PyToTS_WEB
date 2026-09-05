@@ -48,12 +48,17 @@ const byDifficulty = (difficulty: string) =>
         {items.length === 0 ? (
           <p class="diff-empty">暂无内容。</p>
         ) : (
-          <ul class="diff-list">
+          /* 整行即链接：命中区域大，右侧只放元数据，不抢标题的视觉重心 */
+          <ul class="entry-list">
             {items.map(({ title, kind, href }) => (
               <li>
-                <a href={href}>{title}</a>
-                <span class="diff-kind">{KIND_LABELS[kind] ?? kind}</span>
-                <DifficultyBadge difficulty={difficulty} />
+                <a href={href}>
+                  <span class="diff-title">{title}</span>
+                  <span class="diff-meta">
+                    <span class="diff-kind">{KIND_LABELS[kind] ?? kind}</span>
+                    <DifficultyBadge difficulty={difficulty} />
+                  </span>
+                </a>
               </li>
             ))}
           </ul>
@@ -65,62 +70,51 @@ const byDifficulty = (difficulty: string) =>
 
 <style>
   .diff-group {
-    margin: var(--space-xl) 0;
+    margin: var(--section-gap) 0 0;
   }
 
   .diff-group h2 {
     display: flex;
     align-items: baseline;
-    gap: 0.625rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--sl-color-hairline);
+    gap: var(--space-2);
+    font-size: var(--text-xl);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-cjk);
+    margin: 0 0 var(--space-3);
+    color: var(--text-strong);
   }
 
   .diff-count {
-    font-size: 0.8125rem;
-    font-weight: 400;
-    color: var(--sl-color-gray-2);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-normal);
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
   }
 
-  .diff-list {
-    list-style: none;
-    padding: 0;
+  .diff-empty {
     margin: 0;
-    display: grid;
-    gap: 0.5rem;
+    color: var(--text-muted);
   }
 
-  .diff-list li {
+  /* 标题占满剩余空间，元数据靠右对齐成一条竖线 */
+  .diff-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .diff-meta {
     display: flex;
     align-items: center;
-    gap: 0.625rem;
-    padding: 0.5625rem 0.875rem;
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: var(--radius-md);
-    background: var(--sl-color-bg-card);
-  }
-
-  .diff-list a {
-    color: var(--sl-color-white);
-    font-weight: 500;
-    text-decoration: none;
-  }
-
-  .diff-list a:hover {
-    color: var(--sl-color-accent);
-    text-decoration: underline;
-    text-underline-offset: 2px;
+    gap: var(--space-2);
+    flex-shrink: 0;
   }
 
   .diff-kind {
-    font-size: 0.6875rem;
-    color: var(--sl-color-gray-2);
-    border: 1px solid var(--sl-color-hairline);
-    border-radius: var(--radius-full);
-    padding: 0 0.4375rem;
-    line-height: 1.5;
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    padding: 0 var(--space-2);
+    line-height: 1.6;
   }
 </style>

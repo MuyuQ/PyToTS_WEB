@@ -11,6 +11,13 @@ hero:
 import CodeCompare from "../../components/CodeCompare.astro";
 import HomePaths from "../../components/HomePaths.astro";
 import HomeRoutes from "../../components/HomeRoutes.astro";
+import ContinueCard from "../../components/ContinueCard.astro";
+import { learningRoutes } from "../../lib/learning-routes";
+import { totalLessonCount } from "../../lib/curriculum";
+
+export const allRoutes = await learningRoutes();
+export const lessonTotal = totalLessonCount();
+export const algoTotal = allRoutes.filter((r) => r.kind === "algorithm").length;
 
 <div class="home-cta">
   <a class="btn btn--primary" href={import.meta.env.BASE_URL + "paths/"}>
@@ -19,8 +26,12 @@ import HomeRoutes from "../../components/HomeRoutes.astro";
   <a class="btn" href={import.meta.env.BASE_URL + "algorithms/"}>
     直接刷题
   </a>
-  <span class="home-cta__note">22 节课 · 36 道算法题 · 全部双语对照</span>
+  <span class="home-cta__note">
+    {lessonTotal} 节课 · {algoTotal} 道算法题 · 全部双语对照
+  </span>
 </div>
+
+<ContinueCard />
 
 ## 双语对照是这一站的核心
 
