@@ -80,17 +80,22 @@ export async function getLessonNeighbours(route: string): Promise<{
   };
 }
 
-let algorithmSequenceCache: Promise<string[]> | null = null;
+interface AlgorithmEntry {
+  route: string;
+  title: string;
+  difficulty: string;
+}
 
-/** 算法题按「难度递进 → 题名」排序后的路由序列 */
-function algorithmSequence(): Promise<string[]> {
-  algorithmSequenceCache ??= getCollection("docs").then((entries) => {
-    const algorithms = entries.filter(
-      (entry: CollectionEntry<"docs">) =>
-        entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm"
-    );
+let algorithmEntriesCache: Promise<AlgorithmEntry[]> | null = null;
 
-    return algorithms
+/** 算法题，按「难度递进 → 题名」排序 */
+function algorithmEntries(): Promise<AlgorithmEntry[]> {
+  algorithmEntriesCache ??= getCollection("docs").then((entries) => {
+    return entries
+      .filter(
+        (entry: CollectionEntry<"docs">) =>
+          entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm"
+      )
       .sort((a, b) => {
         const rank = (entry: CollectionEntry<"docs">) => {
           const index = DIFFICULTY_ORDER.indexOf(entry.data.difficulty as never);
@@ -98,9 +103,39 @@ function algorithmSequence(): Promise<string[]> {
         };
         return rank(a) - rank(b) || a.data.title.localeCompare(b.data.title, "zh-Hans-CN");
       })
-      .map((entry) => routeFromId(entry.id));
+      .map((entry) => ({
+        route: routeFromId(entry.id),
+        title: entry.data.title,
+        difficulty: entry.data.difficulty ?? "",
+      }));
   });
-  return algorithmSequenceCache;
+  return algorithmEntriesCache;
+}
+
+/** 算法题按「难度递进 → 题名」排序后的路由序列 */
+async function algorithmSequence(): Promise<string[]> {
+  const entries = await algorithmEntries();
+  return entries.map((entry) => entry.route);
+}
+
+/**
+ * 与指定题目同难度的其他题（不含自己）
+ *
+ * 「下一题」是顺着难度序列往前走，但刷题的人常想在同一档里多练几道再升级。
+ * 这里给的是同档内的横向选择，两者互补。
+ *
+ * @param route 站内路由，形如 /algorithms/two-sum/
+ * @param limit 返回条数
+ */
+export async function getSimilarAlgorithms(route: string, limit = 4): Promise<Neighbour[]> {
+  const entries = await algorithmEntries();
+  const current = entries.find((entry) => entry.route === route);
+  if (!current?.difficulty) return [];
+
+  return entries
+    .filter((entry) => entry.route !== route && entry.difficulty === current.difficulty)
+    .slice(0, limit)
+    .map((entry) => ({ href: withBase(entry.route), label: entry.title }));
 }
 
 /**
