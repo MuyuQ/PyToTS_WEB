@@ -18,25 +18,37 @@ const { quizId } = Astro.props;
 const questions = questionsFor(quizId);
 ---
 
-<div
-  class="quiz-container"
-  data-quiz-id={quizId}
-  data-questions={JSON.stringify(questions)}
-  role="region"
-  aria-label="编程测验"
-  tabindex="-1"
->
-  <div class="quiz-header">
-    <span class="quiz-progress" aria-live="polite"></span>
-  </div>
-  <div class="quiz-question" role="heading" aria-level="3"></div>
-  <div class="quiz-options" role="radiogroup" aria-label="选项"></div>
-  <div class="quiz-explanation" style="display: none;" role="alert" aria-live="polite"></div>
-  <div class="quiz-actions">
-    <button class="quiz-action-btn" disabled aria-label="提交答案">提交答案</button>
-  </div>
-  <div class="quiz-result" style="display: none;" role="region" aria-label="测验结果"></div>
-</div>
+{
+  questions.length === 0 ? (
+    // quizId 拼错或题库被清空时给明确占位，而不是渲染一个判分时
+    // 抛 TypeError 的空壳（questionsFor「空数组降级」契约在此兑现）
+    <div class="quiz-container" role="region" aria-label="编程测验">
+      <p class="quiz-empty">
+        测验「{quizId}」暂无题目：quizId 与 src/data/quizzes.ts 中的键不匹配，请修正页面引用或补录题目。
+      </p>
+    </div>
+  ) : (
+    <div
+      class="quiz-container"
+      data-quiz-id={quizId}
+      data-questions={JSON.stringify(questions)}
+      role="region"
+      aria-label="编程测验"
+      tabindex="-1"
+    >
+      <div class="quiz-header">
+        <span class="quiz-progress" aria-live="polite"></span>
+      </div>
+      <div class="quiz-question" role="heading" aria-level="3"></div>
+      <div class="quiz-options" role="radiogroup" aria-label="选项"></div>
+      <div class="quiz-explanation" style="display: none;" role="alert" aria-live="polite" tabindex="-1"></div>
+      <div class="quiz-actions">
+        <button class="quiz-action-btn" disabled aria-label="提交答案">提交答案</button>
+      </div>
+      <div class="quiz-result" style="display: none;" role="region" aria-label="测验结果"></div>
+    </div>
+  )
+}
 
 <script>
   import { initQuizContainers } from "../lib/quiz-ui";

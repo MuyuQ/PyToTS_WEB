@@ -64,6 +64,14 @@ describe("书签功能", () => {
     expect(panel).not.toMatch(/currentScript/);
   });
 
+  it("收藏卡 href 拼接子路径 base（存储路径不带前缀，直接用会 404）", () => {
+    const panel = readFileSync("src/components/ProgressPanel.astro", "utf8");
+    // base 由构建期写入 data-*，运行时读取后经 withBase 拼接
+    expect(panel).toMatch(/data-base=/);
+    expect(panel).toMatch(/card\.href = withBase\(path\)/);
+    expect(panel).not.toMatch(/card\.href = path/);
+  });
+
   it("SidebarProgress 路径匹配兼容子路径 base 前缀", () => {
     const content = readFileSync("src/components/SidebarProgress.astro", "utf8");
     expect(content).toMatch(/endsWith/);

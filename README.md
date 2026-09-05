@@ -92,7 +92,6 @@ src/
 │   ├── curriculum.ts                # 课程结构单一数据源（顺序、路径、课时）
 │   ├── neighbours.ts                # 上一项/下一项计算
 │   ├── progress-store.ts            # localStorage 进度与收藏
-│   ├── path-map.ts                  # 兼容层，已由 curriculum 派生
 │   └── quiz-manager.ts              # 测验逻辑
 ├── pages/404.astro                  # 独立 404 页
 └── styles/

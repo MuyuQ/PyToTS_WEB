@@ -36,6 +36,7 @@ const tracks = TRACK_ORDER.map((id) => ({
 <section
   class="progress-panel"
   data-progress-panel
+  data-base={base}
   data-tracks={JSON.stringify(tracks)}
   data-algorithms={JSON.stringify(algorithmRoutes)}
 >
@@ -108,6 +109,7 @@ const tracks = TRACK_ORDER.map((id) => ({
   // 课程与算法路由在构建时写入 data-*，脚本只从 DOM 读取：
   // 无需 define:vars，也无需从 script 地址反推子路径 base。
   var panel = document.querySelector("[data-progress-panel]");
+  var base = (panel && panel.dataset.base) || "";
   var tracks = JSON.parse((panel && panel.dataset.tracks) || "[]");
   var algorithmRoutes = JSON.parse((panel && panel.dataset.algorithms) || "[]");
 
@@ -135,6 +137,14 @@ const tracks = TRACK_ORDER.map((id) => ({
 
   function norm(path) {
     return String(path || "").replace(/\/$/, "");
+  }
+
+  // 收藏存的是不带 base 的规范路径（与 SidebarProgress 匹配口径一致），
+  // 渲染成链接时必须补回子路径前缀，否则 /PyToTS_WEB/ 部署下点击会 404
+  function withBase(path) {
+    var p = String(path || "");
+    if (!base || p === base || p.indexOf(base + "/") === 0) return p;
+    return base + p;
   }
 
   function completedSet() {
@@ -222,7 +232,7 @@ const tracks = TRACK_ORDER.map((id) => ({
 
       var card = document.createElement("a");
       card.className = "bookmark-card";
-      card.href = path;
+      card.href = withBase(path);
 
       var head = document.createElement("div");
       head.className = "bookmark-header";
