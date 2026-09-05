@@ -7,7 +7,12 @@
  *   算法 → 难度递进顺序（见 lib/neighbours.ts）
  * 其余页面回落到 Starlight 默认（侧边栏顺序）。
  */
-import { getLessonNeighbours, getAlgorithmNeighbours, stripBase } from "../lib/neighbours";
+import {
+  getLessonNeighbours,
+  getAlgorithmNeighbours,
+  getSimilarAlgorithms,
+  stripBase,
+} from "../lib/neighbours";
 
 interface PaginationLink {
   href: string;
@@ -32,13 +37,18 @@ let prev = defaultPrev;
 let next = defaultNext;
 let prevLabel = "上一页";
 let nextLabel = "下一页";
+let peers: { href: string; label: string }[] = [];
 
 if (isAlgorithm) {
-  const neighbours = await getAlgorithmNeighbours(route);
+  const [neighbours, similar] = await Promise.all([
+    getAlgorithmNeighbours(route),
+    getSimilarAlgorithms(route),
+  ]);
   prev = (neighbours.prev as PaginationLink) ?? undefined;
   next = (neighbours.next as PaginationLink) ?? undefined;
   prevLabel = "上一题";
   nextLabel = "下一题";
+  peers = similar;
 } else {
   const neighbours = await getLessonNeighbours(route);
   // 只在路径内确实找到邻居时覆盖，避免把普通页面的默认分页清空
@@ -50,6 +60,29 @@ if (isAlgorithm) {
   }
 }
 ---
+
+{
+  peers.length > 0 && (
+    <section class="algo-peers">
+      <h2 class="algo-peers__title">同难度的其他题</h2>
+      <p class="algo-peers__note">
+        「下一题」是往上升一档；这里是同一档里的其他题，想多练几道再走就用它。
+      </p>
+      <ul class="algo-peers__list">
+        {peers.map((peer) => (
+          <li>
+            <a href={peer.href}>
+              <span class="algo-peers__name">{peer.label}</span>
+              <span class="algo-peers__arrow" aria-hidden="true">
+                →
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
 
 {
   (prev || next) && (

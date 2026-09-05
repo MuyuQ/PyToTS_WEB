@@ -1,0 +1,41 @@
+---
+/**
+ * 访问记录器 —— 为首页「继续学习」卡片供数
+ *
+ * 改造前 `progress-store.updateLastVisited()` 是个死函数：没有任何地方调用它，
+ * `lastVisited` 永远是空串。这里在每次进入学习内容页时写入当前路径。
+ *
+ * 挂在 Header.astro 里只是为了拿到一个「每页都渲染」的挂载点，
+ * 它本身不输出可见内容。
+ */
+import { learningRoutes } from "../lib/learning-routes";
+
+const routes = await learningRoutes();
+---
+
+<div data-visit-recorder data-routes={JSON.stringify(routes)} hidden></div>
+
+<script>
+  import { updateLastVisited } from "../lib/progress-store";
+
+  function record(): void {
+    const el = document.querySelector<HTMLElement>("[data-visit-recorder]");
+    if (!el) return;
+
+    const routes = JSON.parse(el.dataset.routes || "[]") as { route: string }[];
+    if (routes.length === 0) return;
+
+    // 子路径部署：location.pathname 带 base 前缀，表里存的是不带 base 的路由
+    const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+    const current =
+      base && location.pathname.startsWith(base)
+        ? location.pathname.slice(base.length)
+        : location.pathname;
+
+    if (routes.some((r) => r.route === current)) updateLastVisited(current);
+  }
+
+  record();
+  // Starlight 站内走客户端路由，视图切换后要重新记录
+  document.addEventListener("astro:page-load", record);
+</script>
