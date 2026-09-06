@@ -11,9 +11,21 @@ description: 对比 Python datetime 模块与 JavaScript Date 对象，掌握跨
 sidebar:
   order: 7
 ---
+
+import CodeCompare from '../../../../components/CodeCompare.astro';
+
 ## 场景与问题
 
 日期时间处理是开发中最常见也最容易出错的领域之一。无论是记录日志时间、计算截止日期、还是处理时区转换，都需要准确理解语言的日期 API。Python 的 `datetime` 模块设计清晰，类型明确；而 JavaScript 的 `Date` 对象设计较早，存在若干历史遗留问题，需要特别注意。
+
+**学完能做什么**
+
+- 使用 `Date` 构造函数、ISO 字符串、时间戳创建日期对象
+- 进行日期加减、差值计算、字段替换等核心运算
+- 用 `toISOString`、`toLocaleString` 格式化输出
+- 处理月份 0 基索引、毫秒时间戳、可变对象等核心陷阱
+- 用 `Intl.DateTimeFormat` 处理时区显示与转换
+- 选型推荐：date-fns / dayjs / luxon 的适用场景
 
 ## 核心概念
 
@@ -63,6 +75,15 @@ dt_from_ts = datetime.fromtimestamp(ts)
 dt_parsed = datetime.strptime("2024-03-15 14:30", "%Y-%m-%d %H:%M")
 ```
 
+短对照：创建指定日期时间。
+
+<CodeCompare
+  py={`d = date(2024, 3, 15)
+dt = datetime(2024, 3, 15, 14, 30, 0)`}
+  ts={`const d = new Date(2024, 2, 15); // 月份-1
+const dt = new Date(2024, 2, 15, 14, 30, 0);`}
+/>
+
 ### 日期计算
 
 ```python
@@ -84,6 +105,15 @@ print(f"剩余 {remaining.days} 天")
 new_year = now.replace(year=2025)
 ```
 
+短对照：日期加减与差值。
+
+<CodeCompare
+  py={`tomorrow = now + timedelta(days=1)
+remaining = deadline - now  # timedelta`}
+  ts={`const tomorrow = new Date(now.getTime() + 864e5);
+const remaining = deadline.getTime() - now.getTime(); // ms`}
+/>
+
 ### 格式化输出
 
 ```python
@@ -98,6 +128,13 @@ chinese = now.strftime("%Y年%m月%d日")          # 2024年03月15日
 # ISO 格式
 iso_format = now.isoformat()  # 2024-03-15T14:30:00
 ```
+
+短对照：ISO 格式化。
+
+<CodeCompare
+  py={`iso = now.isoformat()  # 2024-03-15T14:30:00`}
+  ts={`const iso = now.toISOString(); // 2024-03-15T06:30:00.000Z`}
+/>
 
 ### 时区处理
 
@@ -146,6 +183,15 @@ now.getSeconds(); // 秒
 now.getDay(); // 星期几（0-6，0 是周日）
 ```
 
+短对照：从时间戳创建（单位差异）。
+
+<CodeCompare
+  py={`ts = 1710497400.0  # 秒
+dt = datetime.fromtimestamp(ts)`}
+  ts={`const ts = 1710497400000; // 毫秒
+const dt = new Date(ts);`}
+/>
+
 ### 日期计算
 
 ```typescript
@@ -165,6 +211,14 @@ const remainingDays = Math.floor(remaining / (24 * 60 * 60 * 1000));
 const newYear = new Date(now);
 newYear.setFullYear(2025);
 ```
+
+短对照：设置字段 vs replace。
+
+<CodeCompare
+  py={`new_year = now.replace(year=2025)  # 返回新对象`}
+  ts={`const copy = new Date(now.getTime());
+copy.setFullYear(2025); // 原地修改`}
+/>
 
 ### 格式化输出
 
@@ -189,6 +243,13 @@ const formatted = `${year}-${month}-${day}`; // 2024-03-15
 now.toDateString(); // Fri Mar 15 2024
 now.toTimeString(); // 14:30:00 GMT+0800
 ```
+
+短对照：本地化格式化。
+
+<CodeCompare
+  py={`local = now.strftime("%Y/%m/%d")  # 手动格式`}
+  ts={`const local = now.toLocaleDateString("zh-CN"); // 自动本地化`}
+/>
 
 ### 时区处理
 
@@ -234,6 +295,23 @@ const correct = new Date(2024, 2, 15); // 3 月 15 日
 const alsoCorrect = new Date("2024-03-15"); // ISO 格式更安全
 ```
 
+:::tip
+记忆口诀：JS 月份零起步，传参要减一。用 ISO 字符串最稳妥，避开索引坑。
+:::
+
+错误版直接用自然月份导致月份偏移，正确版减一或用 ISO 字符串：
+
+```typescript
+// ❌ 错误：3 月传 3，实际创建 4 月
+const bad = new Date(2024, 3, 15); // 2024-04-15
+
+// ✅ 正确：月份 -1
+const good1 = new Date(2024, 2, 15); // 2024-03-15
+
+// ✅ 正确：用 ISO 字符串，无需心算
+const good2 = new Date("2024-03-15"); // 2024-03-15
+```
+
 ### 2. Date 对象是可变的
 
 ```python
@@ -254,6 +332,23 @@ console.log(dt.getFullYear()); // 2025
 // 如果需要保留原对象，必须复制
 const original = new Date(2024, 2, 15);
 const copy = new Date(original.getTime()); // 或 new Date(original)
+copy.setFullYear(2025);
+```
+
+:::note
+`Date` 所有 `set*` 方法都会原地修改并返回时间戳（数字），不是新对象。链式调用 `new Date(d).setFullYear(2025)` 会返回数字而非 Date，务必分两步写。
+:::
+
+错误版链式调用 set 方法返回数字，正确版分步复制再修改：
+
+```typescript
+// ❌ 错误：setFullYear 返回时间戳（number），不是 Date
+const bad = new Date(2024, 2, 15).setFullYear(2025);
+console.log(bad); // 1742054400000（数字！不是 Date）
+
+// ✅ 正确：先复制，再修改
+const good = new Date(2024, 2, 15);
+const copy = new Date(good.getTime());
 copy.setFullYear(2025);
 ```
 
@@ -281,6 +376,20 @@ const jsTs = Date.now();
 // 在 Python 中：datetime.fromtimestamp(jsTs / 1000)
 ```
 
+:::tip
+口诀：Python 秒，JS 毫秒，互转乘除千。跨语言传时间戳务必约定单位，建议统一用 ISO 字符串避免踩坑。
+:::
+
+错误版直接用 Python 秒级时间戳创建 JS Date 导致时间偏移 1000 倍，正确版乘 1000：
+
+```typescript
+// ❌ 错误：秒级时间戳当毫秒用，时间跑到 1970 年
+const bad = new Date(1710497400); // 1970-01-20...
+
+// ✅ 正确：Python 秒级转 JS 毫秒级，乘 1000
+const good = new Date(1710497400 * 1000); // 2024-03-15...
+```
+
 ### 4. 日期解析的不一致性
 
 ```python
@@ -305,6 +414,22 @@ if (isNaN(timestamp)) {
   throw new Error("Invalid date string");
 }
 const dt3 = new Date(timestamp);
+```
+
+:::note
+`new Date("2024-03-15")` 无时间部分时按 UTC 解析，`new Date("2024-03-15T14:30:00")` 有时间部分按本地时区解析。这种不一致是规范定义的，统一用 `Date.parse` 校验后再构造最稳妥。
+:::
+
+错误版信任非标准格式导致跨浏览器行为差异，正确版只用 ISO 并校验：
+
+```typescript
+// ❌ 错误：非标准格式，行为不可预期
+const bad = new Date("03/15/2024"); // Chrome 解析为 3 月 15 日，Safari 可能报错
+
+// ✅ 正确：ISO 格式 + Date.parse 校验
+const ts = Date.parse("2024-03-15");
+if (isNaN(ts)) throw new Error("Invalid date");
+const good = new Date(ts);
 ```
 
 ### 5. 时区处理的复杂性
@@ -339,6 +464,21 @@ const options: Intl.DateTimeFormatOptions = {
   minute: "2-digit",
 };
 console.log(now.toLocaleString("zh-CN", options));
+```
+
+:::tip
+原生 Date 无时区感知，只存 UTC 时间戳。显示时用 `toLocaleString({timeZone})` 指定目标时区。涉及存储/传输统一用 `toISOString()`（UTC），展示再按用户时区格式化。
+:::
+
+错误版假设 Date 带有时区信息导致存储错误，正确版显式指定时区格式化：
+
+```typescript
+// ❌ 错误：直接存 toString() 丢失时区上下文
+const bad = now.toString(); // "Fri Mar 15 2024 14:30:00 GMT+0800"
+
+// ✅ 正确：存储用 ISO（UTC），展示用 Intl 指定时区
+const stored = now.toISOString(); // "2024-03-15T06:30:00.000Z"
+const display = now.toLocaleString("zh-CN", { timeZone: "Asia/Shanghai" });
 ```
 
 ### 核心差异对比
@@ -527,6 +667,16 @@ function getWorkdaysInMonthWithDateFns(year: number, month: number): Date[] {
 ```
 
 </details>
+
+## 自测清单
+
+- [ ] 能用 `new Date()`、ISO 字符串、时间戳创建日期对象并说明月份 0 基索引
+- [ ] 能进行日期加减、差值计算、字段替换并注意可变性陷阱
+- [ ] 能用 `toISOString`、`toLocaleString` 格式化并区分 UTC 与本地时区
+- [ ] 能用 `Date.parse` 校验字符串并解释无时间部分按 UTC 解析的坑
+- [ ] 能用 `Intl.DateTimeFormat` 指定时区显示并说明存储用 ISO、展示用 Intl
+- [ ] 能说明 Python 秒级 vs JS 毫秒级时间戳互转乘除 1000
+- [ ] 能对比 date-fns / dayjs / luxon 的选型场景
 
 ## 面试追问
 

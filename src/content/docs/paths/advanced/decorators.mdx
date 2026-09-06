@@ -12,9 +12,20 @@ sidebar:
   order: 5
 ---
 
+import CodeCompare from '../../../../components/CodeCompare.astro';
+
 ## 场景与问题
 
 装饰器允许在不修改原始代码的情况下增强功能。Python 和 TypeScript 都支持装饰器，但实现和用法有差异。TypeScript 的装饰器是实验性特性，需要启用编译器选项。
+
+**学完能做什么**
+
+- 为方法编写计时、重试、缓存等通用装饰器
+- 使用装饰器工厂传递配置参数（如重试次数、缓存大小）
+- 实现类装饰器实现单例、只读属性等模式
+- 配合 `reflect-metadata` 实现参数验证、依赖注入等元编程
+- 区分装饰器执行顺序（属性/方法从上到下，类从下到上）
+- 避免返回 `boolean` 而非类型谓词导致收窄失效
 
 ## Python 回顾
 
@@ -52,7 +63,7 @@ def retry(max_attempts: int = 3):
                     if attempt == max_attempts - 1:
                         raise
                     print(f"Attempt {attempt + 1} failed, retrying...")
-        return wrapper
+            return wrapper
     return decorator
 
 @retry(max_attempts=5)
@@ -99,6 +110,77 @@ class Person:
     def create_anonymous(cls) -> "Person":
         return cls("Anonymous")
 ```
+
+短对照：函数计时装饰器核心结构。
+
+<CodeCompare
+  py={`def timer(func):
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        print(f"{func.__name__} took {time.time()-start:.2f}s")
+        return result
+    return wrapper`}
+  ts={`function timer(target, key, descriptor) {
+  const original = descriptor.value;
+  descriptor.value = function(...args) {
+    const start = performance.now();
+    const result = original.apply(this, args);
+    console.log(\`\${key} took \${performance.now()-start}ms\`);
+    return result;
+  };
+  return descriptor;
+}`}
+/>
+
+短对照：带参数的重试装饰器工厂。
+
+<CodeCompare
+  py={`def retry(max_attempts=3):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for attempt in range(max_attempts):
+                try:
+                    return func(*args, **kwargs)
+                except Exception:
+                    if attempt == max_attempts - 1: raise
+            return wrapper
+    return decorator`}
+  ts={`function retry(maxAttempts = 3) {
+  return function(target, key, descriptor) {
+    const original = descriptor.value;
+    descriptor.value = async function(...args) {
+      for (let i = 0; i < maxAttempts; i++) {
+        try { return await original.apply(this, args); }
+        catch (e) { if (i === maxAttempts-1) throw e; }
+      }
+    };
+    return descriptor;
+  };
+}`}
+/>
+
+短对照：类装饰器实现单例模式。
+
+<CodeCompare
+  py={`def singleton(cls):
+    instances = {}
+    def get_instance(*args, **kwargs):
+        if cls not in instances:
+            instances[cls] = cls(*args, **kwargs)
+        return instances[cls]
+    return get_instance`}
+  ts={`function singleton<T extends new(...args:any[])=>{}(ctor: T) {
+  let instance: any;
+  return class extends ctor {
+    constructor(...args: any[]) {
+      if (instance) return instance;
+      super(...args); instance = this;
+    }
+  };
+}`}
+/>
 
 ## TypeScript 等价写法
 
@@ -196,6 +278,44 @@ class Config {
 }
 ```
 
+短对照：属性装饰器实现只读字段。
+
+<CodeCompare
+  py={`# Python 靠 @property 实现只读
+class Config:
+    @property
+    def api_url(self): return "https://api.example.com"`}
+  ts={`function readonly(target, key) {
+  Object.defineProperty(target, key, { writable: false });
+}
+class Config { @readonly apiUrl = "https://api.example.com"; }`}
+/>
+
+短对照：类型安全的备忘录装饰器。
+
+<CodeCompare
+  py={`# Python 需手动管理缓存字典
+def memoize(func):
+    cache = {}
+    def wrapper(*args):
+        if args in cache: return cache[args]
+        cache[args] = func(*args)
+        return cache[args]
+    return wrapper`}
+  ts={`function memoize<T extends (...args:any[])=>any>(
+  target, key, descriptor: TypedPropertyDescriptor<T>
+) {
+  const cache = new Map<string, ReturnType<T>>();
+  descriptor.value = function(...args: Parameters<T>) {
+    const k = JSON.stringify(args);
+    if (cache.has(k)) return cache.get(k)!;
+    const r = descriptor.value!.apply(this, args);
+    cache.set(k, r); return r;
+  } as T;
+  return descriptor;
+}`}
+/>
+
 ## 差异与常见陷阱
 
 ### 1. 装饰器执行顺序
@@ -219,6 +339,10 @@ class MyClass {
 // 2. MethodDecorator
 // 3. ClassDecorator
 ```
+
+:::tip
+记忆口诀：成员从上到下，类从下到上。先装饰内部成员，最后包装整个类。
+:::
 
 ### 2. 元数据反射
 
@@ -261,6 +385,31 @@ class UserService {
 }
 ```
 
+:::note
+`reflect-metadata` 必须在所有装饰器之前导入（`import "reflect-metadata"`），且 `tsconfig.json` 需开启 `emitDecoratorMetadata: true`。遗漏任一项会导致 `Reflect.getMetadata` 返回 `undefined`。
+:::
+
+错误版忘记导入 reflect-metadata，正确版在入口文件最早导入：
+
+```typescript
+// ❌ 错误：未导入 reflect-metadata，元数据为 undefined
+function required(target: Object, key: string | symbol, index: number) {
+  Reflect.defineMetadata("required", [index], target, key);
+}
+@validate
+class Service {
+  create(@required name: string) {} // 运行时 requiredParameters 为 []
+}
+
+// ✅ 正确：入口文件第一行导入
+import "reflect-metadata";
+function required(target: Object, key: string | symbol, index: number) {
+  const existing = Reflect.getMetadata("required", target, key) || [];
+  existing.push(index);
+  Reflect.defineMetadata("required", existing, target, key);
+}
+```
+
 ### 3. 类型安全的装饰器
 
 ```typescript
@@ -297,6 +446,36 @@ class Calculator {
 }
 ```
 
+:::tip
+泛型装饰器用 `TypedPropertyDescriptor<T>` 保留方法签名，`as T` 断言让 TypeScript 信任修改后的描述符。若不加 `as T`，返回类型会变为 `any`。
+:::
+
+错误版未使用 TypedPropertyDescriptor 导致类型丢失，正确版泛型约束保留签名：
+
+```typescript
+// ❌ 错误：descriptor.value 类型变为 any，调用方失去类型提示
+function badMemoize(target, key, descriptor) {
+  const original = descriptor.value;
+  descriptor.value = function(...args: any[]) { return original.apply(this, args); };
+  return descriptor;
+}
+
+// ✅ 正确：泛型约束保留参数与返回类型
+function goodMemoize<T extends (...args: any[]) => any>(
+  target: any, key: string, descriptor: TypedPropertyDescriptor<T>
+) {
+  const original = descriptor.value!;
+  const cache = new Map<string, ReturnType<T>>();
+  descriptor.value = function(...args: Parameters<T>): ReturnType<T> {
+    const k = JSON.stringify(args);
+    if (cache.has(k)) return cache.get(k)!;
+    const r = original.apply(this, args);
+    cache.set(k, r); return r;
+  } as T;
+  return descriptor;
+}
+```
+
 ## 优势对比
 
 | 特性       | Python            | TypeScript         |
@@ -307,6 +486,17 @@ class Calculator {
 | 元数据     | 手动管理          | `reflect-metadata` |
 | 状态       | 正式特性          | 实验性特性         |
 | 性能       | 运行时开销        | 编译后无开销       |
+
+## 自测清单
+
+- [ ] 能写出方法装饰器（计时/重试/缓存）并解释 descriptor 角色
+- [ ] 能写出装饰器工厂（带参数）并说明闭包层级
+- [ ] 能实现类装饰器（单例/只读）并说明返回新类的机制
+- [ ] 能用属性装饰器配合 `Object.defineProperty` 实现只读
+- [ ] 能配置 `tsconfig.json` 启用装饰器并说明两个选项作用
+- [ ] 能用 `reflect-metadata` 实现参数装饰器+方法装饰器协作验证
+- [ ] 能写出泛型装饰器并解释 `TypedPropertyDescriptor<T>` 与 `as T` 的作用
+- [ ] 能说出装饰器执行顺序（成员从上到下，类从下到上）
 
 ## 练习
 
