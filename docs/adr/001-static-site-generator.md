@@ -11,6 +11,7 @@
 ## Context
 
 We needed to select a static site generator for the Python to TypeScript Learning Site. The site requires:
+
 - Markdown/MDX content authoring
 - Code syntax highlighting
 - Navigation/sidebar generation
@@ -52,6 +53,7 @@ We will use **Astro** with the **Starlight** theme as our static site generator.
 Next.js with static export and a documentation template.
 
 **Why rejected:**
+
 - Heavier framework with more client-side JavaScript
 - More complex configuration for simple documentation
 - Overkill for a content-focused site
@@ -61,6 +63,7 @@ Next.js with static export and a documentation template.
 Facebook's documentation site generator.
 
 **Why rejected:**
+
 - More React-centric (requires React knowledge for customization)
 - Larger bundle sizes
 - Less flexible routing and content structure
@@ -70,6 +73,7 @@ Facebook's documentation site generator.
 Hosted documentation platform.
 
 **Why rejected:**
+
 - Proprietary platform with lock-in
 - Limited customization options
 - Requires paid plan for custom domain
@@ -80,6 +84,7 @@ Hosted documentation platform.
 GitHub's native static site generator.
 
 **Why rejected:**
+
 - Ruby-based (requires separate toolchain)
 - Slower build times
 - Less modern DX compared to JavaScript-based tools

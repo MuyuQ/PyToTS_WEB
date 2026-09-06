@@ -13,7 +13,13 @@ import { JSDOM } from "jsdom";
  * 前置条件：先 npm run build（npm run check 的执行顺序是 build → test）。
  */
 
-const PAGES = ["", "paths/", "paths/migration/types/", "algorithms/climbing-stairs/", "practice/quiz/"] as const;
+const PAGES = [
+  "",
+  "paths/",
+  "paths/migration/types/",
+  "algorithms/climbing-stairs/",
+  "practice/quiz/",
+] as const;
 
 function distFile(page: string): string {
   return resolve("dist", page, "index.html");

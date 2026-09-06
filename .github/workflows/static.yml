@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
 permissions:
   contents: read
@@ -26,7 +26,7 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
-          cache: 'npm'
+          cache: "npm"
 
       # 质量门禁：lint + 内容检查 + 类型检查 + 单测 + 构建 + 链接检查
       # check 内含 build，产物即 Pages 所需的 dist
@@ -42,7 +42,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: "./dist"
 
       - name: Deploy to GitHub Pages
         id: deployment

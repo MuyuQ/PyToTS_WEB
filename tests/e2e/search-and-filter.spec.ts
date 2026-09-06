@@ -30,9 +30,7 @@ test("algorithm index difficulty filter keeps only matching rows", async ({ page
   }
 });
 
-test("algorithm index search narrows rows and shows empty state for garbage", async ({
-  page,
-}) => {
+test("algorithm index search narrows rows and shows empty state for garbage", async ({ page }) => {
   await page.goto("algorithms/");
 
   const search = page.locator("[data-algo-search]");

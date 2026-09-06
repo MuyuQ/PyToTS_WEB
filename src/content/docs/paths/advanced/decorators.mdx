@@ -126,10 +126,10 @@ def timer(func):
 ```typescript
 function timer(target, key, descriptor) {
   const original = descriptor.value;
-  descriptor.value = function(...args) {
+  descriptor.value = function (...args) {
     const start = performance.now();
     const result = original.apply(this, args);
-    console.log(`${key} took ${performance.now()-start}ms`);
+    console.log(`${key} took ${performance.now() - start}ms`);
     return result;
   };
   return descriptor;
@@ -154,12 +154,15 @@ def retry(max_attempts=3):
 
 ```typescript
 function retry(maxAttempts = 3) {
-  return function(target, key, descriptor) {
+  return function (target, key, descriptor) {
     const original = descriptor.value;
-    descriptor.value = async function(...args) {
+    descriptor.value = async function (...args) {
       for (let i = 0; i < maxAttempts; i++) {
-        try { return await original.apply(this, args); }
-        catch (e) { if (i === maxAttempts-1) throw e; }
+        try {
+          return await original.apply(this, args);
+        } catch (e) {
+          if (i === maxAttempts - 1) throw e;
+        }
       }
     };
     return descriptor;
@@ -328,14 +331,17 @@ def memoize(func):
 
 ```typescript
 function memoize<T extends (...args: any[]) => any>(
-  target: Object, key: string, descriptor: TypedPropertyDescriptor<T>
+  target: Object,
+  key: string,
+  descriptor: TypedPropertyDescriptor<T>
 ) {
   const cache = new Map<string, ReturnType<T>>();
-  descriptor.value = function(...args: Parameters<T>) {
+  descriptor.value = function (...args: Parameters<T>) {
     const k = JSON.stringify(args);
     if (cache.has(k)) return cache.get(k)!;
     const r = descriptor.value!.apply(this, args);
-    cache.set(k, r); return r;
+    cache.set(k, r);
+    return r;
   } as T;
   return descriptor;
 }
@@ -481,21 +487,26 @@ class Calculator {
 // ❌ 错误：descriptor.value 类型变为 any，调用方失去类型提示
 function badMemoize(target: Object, key: string, descriptor: PropertyDescriptor) {
   const original = descriptor.value;
-  descriptor.value = function(...args: any[]) { return original.apply(this, args); };
+  descriptor.value = function (...args: any[]) {
+    return original.apply(this, args);
+  };
   return descriptor;
 }
 
 // ✅ 正确：泛型约束保留参数与返回类型
 function goodMemoize<T extends (...args: any[]) => any>(
-  target: Object, key: string, descriptor: TypedPropertyDescriptor<T>
+  target: Object,
+  key: string,
+  descriptor: TypedPropertyDescriptor<T>
 ) {
   const original = descriptor.value!;
   const cache = new Map<string, ReturnType<T>>();
-  descriptor.value = function(...args: Parameters<T>): ReturnType<T> {
+  descriptor.value = function (...args: Parameters<T>): ReturnType<T> {
     const k = JSON.stringify(args);
     if (cache.has(k)) return cache.get(k)!;
     const r = original.apply(this, args);
-    cache.set(k, r); return r;
+    cache.set(k, r);
+    return r;
   } as T;
   return descriptor;
 }

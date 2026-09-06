@@ -42,41 +42,41 @@
 
 ### 1.2 信息架构问题
 
-| # | 问题 | 证据 | 影响 |
-|---|------|------|------|
-| A1 | **侧边栏按内容类型分组，不按用户任务分组** | 「分类索引」把 `/tags/`、`/difficulty/` 提为一级组，但它们只是 `/algorithms/` 页内筛选器的另一种形态；「关于与贡献」只有 1 页，与「算法」36 项并列 | 用户在侧边栏找不到"我要做什么"的对应关系 |
-| A2 | **没有常驻顶层导航** | `Header.astro` 只有站点标题 + 搜索 + 主题切换；站内跳转只能靠侧边栏抽屉或首页 hero 的两个按钮 | 除首页外，全站没有持续可见的转化路径 |
-| A3 | **首页与 `/paths/` 内容重复且写死** | 两处各有一份 4 张同构 CardGrid，首页把「2 课 / 5 课 / 7 课 / 8 课」和级别标签硬编码在 Markdown 里 | 课程增删后首页会说谎；两处维护同一份信息 |
-| A4 | **「我的书签」是孤儿页** | `/bookmarks/` 未出现在 sidebar 配置、首页、任何页面链接中；但 `PageTitle.astro` 在每个课程页都渲染了收藏按钮 | 功能闭环断裂：用户能收藏，但找不到查看入口 |
-| A5 | **`/en/` 是孤儿内容** | `astro.config.mjs` 的 `locales` 只配了 `root`（zh-CN），`/en/` 目录不进任何导航；`en/types.mdx` 甚至没有链接指向 | 内容不可达，且 `en/index.mdx` 描述的 Beginner/Intermediate/Advanced 与实际四条路径不一致 |
-| A6 | **`/practice/` 是"入口的入口"** | 3 张卡指向 `/practice/quiz/` 的锚点，1 张卡转手指向 `/algorithms/`，再加一段自测清单 | 多一次点击；把"测验"和"题库"两个不同心智模型塞在一页 |
-| A7 | **找一道题有三条平行路径** | 侧边栏算法组（36 项平铺）、`/algorithms/` 索引页（带筛选）、`/difficulty/` 页 | 没有主次，用户不知道该走哪条 |
-| A8 | **术语不统一** | 「练习与测验」（页标题）／「练习与自测」「编程测验」（侧边栏）／「基础测验」「迁移测验」「进阶测验」（正文卡片）——同一概念四种叫法 | 认知负担 |
-| A9 | **算法页"上一题/下一题"没有教学意义** | 侧边栏是字母序，`Pagination.astro` 用 `isAlgorithmPage` 判断后只把"课"改成"题"，顺序仍来自字母序 | 刷题顺序随机，无法从入门走到高阶 |
+| #   | 问题                                       | 证据                                                                                                                                               | 影响                                                                                     |
+| --- | ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| A1  | **侧边栏按内容类型分组，不按用户任务分组** | 「分类索引」把 `/tags/`、`/difficulty/` 提为一级组，但它们只是 `/algorithms/` 页内筛选器的另一种形态；「关于与贡献」只有 1 页，与「算法」36 项并列 | 用户在侧边栏找不到"我要做什么"的对应关系                                                 |
+| A2  | **没有常驻顶层导航**                       | `Header.astro` 只有站点标题 + 搜索 + 主题切换；站内跳转只能靠侧边栏抽屉或首页 hero 的两个按钮                                                      | 除首页外，全站没有持续可见的转化路径                                                     |
+| A3  | **首页与 `/paths/` 内容重复且写死**        | 两处各有一份 4 张同构 CardGrid，首页把「2 课 / 5 课 / 7 课 / 8 课」和级别标签硬编码在 Markdown 里                                                  | 课程增删后首页会说谎；两处维护同一份信息                                                 |
+| A4  | **「我的书签」是孤儿页**                   | `/bookmarks/` 未出现在 sidebar 配置、首页、任何页面链接中；但 `PageTitle.astro` 在每个课程页都渲染了收藏按钮                                       | 功能闭环断裂：用户能收藏，但找不到查看入口                                               |
+| A5  | **`/en/` 是孤儿内容**                      | `astro.config.mjs` 的 `locales` 只配了 `root`（zh-CN），`/en/` 目录不进任何导航；`en/types.mdx` 甚至没有链接指向                                   | 内容不可达，且 `en/index.mdx` 描述的 Beginner/Intermediate/Advanced 与实际四条路径不一致 |
+| A6  | **`/practice/` 是"入口的入口"**            | 3 张卡指向 `/practice/quiz/` 的锚点，1 张卡转手指向 `/algorithms/`，再加一段自测清单                                                               | 多一次点击；把"测验"和"题库"两个不同心智模型塞在一页                                     |
+| A7  | **找一道题有三条平行路径**                 | 侧边栏算法组（36 项平铺）、`/algorithms/` 索引页（带筛选）、`/difficulty/` 页                                                                      | 没有主次，用户不知道该走哪条                                                             |
+| A8  | **术语不统一**                             | 「练习与测验」（页标题）／「练习与自测」「编程测验」（侧边栏）／「基础测验」「迁移测验」「进阶测验」（正文卡片）——同一概念四种叫法                 | 认知负担                                                                                 |
+| A9  | **算法页"上一题/下一题"没有教学意义**      | 侧边栏是字母序，`Pagination.astro` 用 `isAlgorithmPage` 判断后只把"课"改成"题"，顺序仍来自字母序                                                   | 刷题顺序随机，无法从入门走到高阶                                                         |
 
 ### 1.3 交互流程问题
 
-| # | 问题 | 证据 |
-|---|------|------|
-| B1 | **课程顺序被硬编码在 4 处且互相矛盾** | `lib/path-map.ts`（foundation：variables→functions-basics→control-flow→…）、`SidebarProgress.astro`（内联 36 题全量清单）、`LessonProgressMarkers.astro`（foundation 顺序为 variables→control-flow→data-structures→functions-basics→classes-objects，与 path-map 不一致）、`Pagination.astro`（第三份 `PATH_TITLES` 标题表） | 
-| B2 | **首页 hero 链接用相对路径绕开 base** | `index.mdx` 写 `link: paths/`，注释自承"Starlight hero 链接不应用 base" |
-| B3 | **进度标记依赖字符圆点** | `SidebarProgress` 用 `●` / `○` 文本字符，字体回退后基线错位 |
-| B4 | **书签功能依赖外部 `public/bookmarks.js`** | 一处独立脚本，与站点主题、令牌脱节 |
+| #   | 问题                                       | 证据                                                                                                                                                                                                                                                                                                                         |
+| --- | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B1  | **课程顺序被硬编码在 4 处且互相矛盾**      | `lib/path-map.ts`（foundation：variables→functions-basics→control-flow→…）、`SidebarProgress.astro`（内联 36 题全量清单）、`LessonProgressMarkers.astro`（foundation 顺序为 variables→control-flow→data-structures→functions-basics→classes-objects，与 path-map 不一致）、`Pagination.astro`（第三份 `PATH_TITLES` 标题表） |
+| B2  | **首页 hero 链接用相对路径绕开 base**      | `index.mdx` 写 `link: paths/`，注释自承"Starlight hero 链接不应用 base"                                                                                                                                                                                                                                                      |
+| B3  | **进度标记依赖字符圆点**                   | `SidebarProgress` 用 `●` / `○` 文本字符，字体回退后基线错位                                                                                                                                                                                                                                                                  |
+| B4  | **书签功能依赖外部 `public/bookmarks.js`** | 一处独立脚本，与站点主题、令牌脱节                                                                                                                                                                                                                                                                                           |
 
 ### 1.4 视觉系统问题
 
-| # | 问题 | 证据 |
-|---|------|------|
-| C1 | **设计令牌三套并存** | `--color-*`（自定义）、`--sl-color-*`（Starlight 覆盖）、硬编码 hex（`#5488e8`、`#191c24`、`rgba(224,226,230,0.82)`）散落于 4 个 CSS 文件与各组件内 |
-| C2 | **无 CJK 字体栈** | `--font-sans: "Inter", system-ui, -apple-system, sans-serif`，中文完全依赖系统回退，与拉丁字形字重不统一 |
-| C3 | **字体是 Inter + JetBrains Mono** | 泛用组合，无辨识度 |
-| C4 | **暗色模式小字对比度不足** | `--sl-color-gray-3: rgba(224,226,230,0.32)` 用于元数据小字，远低于 WCAG AA 4.5:1（`PRODUCT.md` 已自承） |
-| C5 | **全局通配过渡** | `*, *::before, *::after { transition: background-color, border-color, color, box-shadow }` —— 主题切换时整页元素一起动画 |
-| C6 | **卡片 hover 通用投影** | `.card:hover { box-shadow: 0 4px 12px rgba(64,81,181,0.1) }`，典型模板指纹 |
-| C7 | **代码块语言徽标侵入式** | `pre[data-language] { padding-right: 5rem }` + `::after` 绝对定位，长行被无意义挤压；`CodeCompare` 里又要专门 `content: none` 关掉 |
-| C8 | **Starlight Card 默认彩虹边框** | `Card.astro` 按 `nth-child(4n+1/3/4/5)` 轮换紫/橙/绿/红边框 |
-| C9 | **Python 与 TypeScript 识别色都是蓝色** | `#4b8bbe` vs `#3178c6`，并排时难以区分——而双语对照是本站核心卖点 |
-| C10 | **响应式只有一个 768px 断点** | 390px 视口下靠缩字号（0.9375rem）解决标题截断，是"缩小"而非"适配" |
+| #   | 问题                                    | 证据                                                                                                                                                |
+| --- | --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| C1  | **设计令牌三套并存**                    | `--color-*`（自定义）、`--sl-color-*`（Starlight 覆盖）、硬编码 hex（`#5488e8`、`#191c24`、`rgba(224,226,230,0.82)`）散落于 4 个 CSS 文件与各组件内 |
+| C2  | **无 CJK 字体栈**                       | `--font-sans: "Inter", system-ui, -apple-system, sans-serif`，中文完全依赖系统回退，与拉丁字形字重不统一                                            |
+| C3  | **字体是 Inter + JetBrains Mono**       | 泛用组合，无辨识度                                                                                                                                  |
+| C4  | **暗色模式小字对比度不足**              | `--sl-color-gray-3: rgba(224,226,230,0.32)` 用于元数据小字，远低于 WCAG AA 4.5:1（`PRODUCT.md` 已自承）                                             |
+| C5  | **全局通配过渡**                        | `*, *::before, *::after { transition: background-color, border-color, color, box-shadow }` —— 主题切换时整页元素一起动画                            |
+| C6  | **卡片 hover 通用投影**                 | `.card:hover { box-shadow: 0 4px 12px rgba(64,81,181,0.1) }`，典型模板指纹                                                                          |
+| C7  | **代码块语言徽标侵入式**                | `pre[data-language] { padding-right: 5rem }` + `::after` 绝对定位，长行被无意义挤压；`CodeCompare` 里又要专门 `content: none` 关掉                  |
+| C8  | **Starlight Card 默认彩虹边框**         | `Card.astro` 按 `nth-child(4n+1/3/4/5)` 轮换紫/橙/绿/红边框                                                                                         |
+| C9  | **Python 与 TypeScript 识别色都是蓝色** | `#4b8bbe` vs `#3178c6`，并排时难以区分——而双语对照是本站核心卖点                                                                                    |
+| C10 | **响应式只有一个 768px 断点**           | 390px 视口下靠缩字号（0.9375rem）解决标题截断，是"缩小"而非"适配"                                                                                   |
 
 ---
 
@@ -115,13 +115,13 @@ PyToTS
 
 分组依据从"这是个什么文件"改为"用户来这里做什么"：
 
-| 板块 | 用户意图 | 内容特征 |
-|------|---------|---------|
-| 课程 | 系统地学，需要顺序 | 有教学法顺序，线性推进 |
-| 实战 | 练手、检验 | 可随机访问，按难度/标签检索 |
-| 参考 | 卡住速查 | 无阅读顺序，靠检索 |
-| 我的 | 确认自己走到哪 | 纯客户端状态 |
-| 关于 | 了解项目 | 静态信息 |
+| 板块 | 用户意图           | 内容特征                    |
+| ---- | ------------------ | --------------------------- |
+| 课程 | 系统地学，需要顺序 | 有教学法顺序，线性推进      |
+| 实战 | 练手、检验         | 可随机访问，按难度/标签检索 |
+| 参考 | 卡住速查           | 无阅读顺序，靠检索          |
+| 我的 | 确认自己走到哪     | 纯客户端状态                |
+| 关于 | 了解项目           | 静态信息                    |
 
 ### 2.2 顶层导航
 
@@ -176,21 +176,21 @@ PyToTS
 
 ### 2.4 页面变更清单
 
-| 页面 | 变更 | 说明 |
-|------|------|------|
-| `/` | **重写** | 双语对照示例上移首屏；路径清单改为自动派生的课表式列表；三条支线改为不对称版式 |
-| `/paths/` | **重写** | 复用同一路径列表组件（消除与首页的重复），补充每条路径的详细课程清单 |
-| `/algorithms/` | 保留 | 索引页已是主路径，样式随设计系统更新 |
-| `/practice/` | **重写** | 去掉转手卡片，明确"测验 ≠ 算法"的分工 |
-| `/practice/quiz/` | 保留 | 功能与内容不动 |
-| `/bookmarks/` | **升级** | 从「我的书签」→「进度与收藏」：补上进度统计、各路径进度条、测验成绩、两段式清除；挂到顶层导航 |
-| `/tags/`、`/difficulty/` | 保留 | 从一级组降为「参考」下的入口，页面与筛选能力不变 |
-| `/handbook/`、`/handbook/cheat-sheet/` | 保留 | 归入「参考」 |
-| 22 节课 | 保留 | 内容零改动 |
-| 36 道题 | 保留 | 内容零改动，仅分页顺序改为难度递进 |
-| `/about/` | 补充 | 增加"内容是怎么组织的"说明 |
-| `/en/` | 标注 | 明确标注 WIP，说明与中文版的关系，补上 `en/types` 链接 |
-| `/404` | 保留 | 独立静态页 |
+| 页面                                   | 变更     | 说明                                                                                          |
+| -------------------------------------- | -------- | --------------------------------------------------------------------------------------------- |
+| `/`                                    | **重写** | 双语对照示例上移首屏；路径清单改为自动派生的课表式列表；三条支线改为不对称版式                |
+| `/paths/`                              | **重写** | 复用同一路径列表组件（消除与首页的重复），补充每条路径的详细课程清单                          |
+| `/algorithms/`                         | 保留     | 索引页已是主路径，样式随设计系统更新                                                          |
+| `/practice/`                           | **重写** | 去掉转手卡片，明确"测验 ≠ 算法"的分工                                                         |
+| `/practice/quiz/`                      | 保留     | 功能与内容不动                                                                                |
+| `/bookmarks/`                          | **升级** | 从「我的书签」→「进度与收藏」：补上进度统计、各路径进度条、测验成绩、两段式清除；挂到顶层导航 |
+| `/tags/`、`/difficulty/`               | 保留     | 从一级组降为「参考」下的入口，页面与筛选能力不变                                              |
+| `/handbook/`、`/handbook/cheat-sheet/` | 保留     | 归入「参考」                                                                                  |
+| 22 节课                                | 保留     | 内容零改动                                                                                    |
+| 36 道题                                | 保留     | 内容零改动，仅分页顺序改为难度递进                                                            |
+| `/about/`                              | 补充     | 增加"内容是怎么组织的"说明                                                                    |
+| `/en/`                                 | 标注     | 明确标注 WIP，说明与中文版的关系，补上 `en/types` 链接                                        |
+| `/404`                                 | 保留     | 独立静态页                                                                                    |
 
 **没有任何页面被删除，没有任何内容被移除。**
 
@@ -225,14 +225,14 @@ Primitives  →  Semantics  →  Starlight 桥接
 
 ### 3.3 配色（OKLCH）
 
-| 角色 | 亮色 | 暗色 | 说明 |
-|------|------|------|------|
-| 主色 | `oklch(54% 0.158 270)` | `oklch(70% 0.125 268)` | 靛蓝 hue 268，暗色提高亮度降低彩度 |
-| 页面底 | `oklch(99% 0.003 268)` | `oklch(10% 0.01 268)` | 不用纯白/纯黑 |
-| 正文 | `oklch(33% 0.012 268)` | `oklch(88% 0.006 268)` | 对比度 > 12:1 |
-| 元数据 | `oklch(54% 0.009 268)` | `oklch(66% 0.01 268)` | 暗色 ≈ 6.2:1，满足 AA（原 0.32 alpha 远不达标） |
-| Python | `oklch(58% 0.13 82)` 黄绿 | `oklch(70% 0.12 82)` | 暖色 |
-| TypeScript | `oklch(56% 0.16 250)` 蓝 | `oklch(70% 0.13 250)` | 冷色 |
+| 角色       | 亮色                      | 暗色                   | 说明                                            |
+| ---------- | ------------------------- | ---------------------- | ----------------------------------------------- |
+| 主色       | `oklch(54% 0.158 270)`    | `oklch(70% 0.125 268)` | 靛蓝 hue 268，暗色提高亮度降低彩度              |
+| 页面底     | `oklch(99% 0.003 268)`    | `oklch(10% 0.01 268)`  | 不用纯白/纯黑                                   |
+| 正文       | `oklch(33% 0.012 268)`    | `oklch(88% 0.006 268)` | 对比度 > 12:1                                   |
+| 元数据     | `oklch(54% 0.009 268)`    | `oklch(66% 0.01 268)`  | 暗色 ≈ 6.2:1，满足 AA（原 0.32 alpha 远不达标） |
+| Python     | `oklch(58% 0.13 82)` 黄绿 | `oklch(70% 0.12 82)`   | 暖色                                            |
+| TypeScript | `oklch(56% 0.16 250)` 蓝  | `oklch(70% 0.13 250)`  | 冷色                                            |
 
 关键决策：
 
@@ -243,14 +243,15 @@ Primitives  →  Semantics  →  Starlight 桥接
 
 ### 3.4 字体
 
-| 用途 | 字体 | 理由 |
-|------|------|------|
-| 标题/数字 | **Space Grotesk** | 几何、有工业感，与"逐条映射"的精密感吻合；不用 Inter |
-| 正文/UI | **IBM Plex Sans** | 人文无衬线、中性耐读、有工程血统 |
-| 代码 | **JetBrains Mono** | 代码块是核心内容，这是真实用途而非"技术感装饰" |
-| 中文 | `PingFang SC / HarmonyOS Sans SC / Hiragino Sans GB / Microsoft YaHei / Source Han Sans SC / Noto Sans CJK SC` | **显式声明 CJK 栈**（原来完全依赖系统回退） |
+| 用途      | 字体                                                                                                           | 理由                                                 |
+| --------- | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| 标题/数字 | **Space Grotesk**                                                                                              | 几何、有工业感，与"逐条映射"的精密感吻合；不用 Inter |
+| 正文/UI   | **IBM Plex Sans**                                                                                              | 人文无衬线、中性耐读、有工程血统                     |
+| 代码      | **JetBrains Mono**                                                                                             | 代码块是核心内容，这是真实用途而非"技术感装饰"       |
+| 中文      | `PingFang SC / HarmonyOS Sans SC / Hiragino Sans GB / Microsoft YaHei / Source Han Sans SC / Noto Sans CJK SC` | **显式声明 CJK 栈**（原来完全依赖系统回退）          |
 
 中文排版处理：
+
 - 中文标题不做负字距（`--tracking-cjk: 0.01em`），CJK 方块字负字距会挤压
 - 中文正文行距 1.75（比拉丁文松）
 - 拉丁走 webfont，中文走系统栈——中文站点的正确做法，避免 CJK webfont 的体积代价
@@ -268,31 +269,32 @@ Primitives  →  Semantics  →  Starlight 桥接
 
 ### 3.6 组件要点
 
-| 组件 | 改造 |
-|------|------|
-| 卡片 | 覆盖 Starlight 的彩虹轮换边框，统一为中性卡片；hover 改为边框色 + 2px 位移，**不用通用投影**；卡片内行动链接保证 44px 触控区 |
-| 首页路径清单 | 不用四张同构卡片，改为**课表式列表**：序号 + 路径名 + 课时 + 一句话 + 进度条 + 箭头。学完的路径序号变绿 |
-| 支线入口 | 不对称网格（题库占 1.35fr 且跨两行，手册/测验各占一格），题库直接展示**难度分布条**而非三个数字 |
-| 按钮 | 三级：实心主按钮 / 描边次按钮 / 无框文字按钮；最低 44px 触控高度 |
-| 徽章 | 难度三档形状一致，仅色相区分，色块极淡（wash 底 + tinted 文字） |
-| 代码块 | 语言徽标改为顶部留带（`padding-top: 2.25rem`），**不再用 `padding-right: 5rem` 挤压长行** |
-| 双语对照 | 面板顶部 2px 语言色条 + 色点；Python 黄、TypeScript 蓝 |
-| 表格 | 行 hover 改为极淡底色；窄屏转为「标签—值」卡片（用 `data-label`），不做横向滚动 |
-| 分页 | 上一课/下一课改为左右分离卡片，hover 时箭头向对应方向位移 |
-| 侧边栏 | 当前页改用**左侧 2px 竖线**而非整块填色；进度点从 `●`/`○` 字符改为 CSS 方块 |
-| 进度面板 | 新增：四项统计 + 各路径进度条 + 收藏列表 + 两段式清除确认 |
+| 组件         | 改造                                                                                                                         |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| 卡片         | 覆盖 Starlight 的彩虹轮换边框，统一为中性卡片；hover 改为边框色 + 2px 位移，**不用通用投影**；卡片内行动链接保证 44px 触控区 |
+| 首页路径清单 | 不用四张同构卡片，改为**课表式列表**：序号 + 路径名 + 课时 + 一句话 + 进度条 + 箭头。学完的路径序号变绿                      |
+| 支线入口     | 不对称网格（题库占 1.35fr 且跨两行，手册/测验各占一格），题库直接展示**难度分布条**而非三个数字                              |
+| 按钮         | 三级：实心主按钮 / 描边次按钮 / 无框文字按钮；最低 44px 触控高度                                                             |
+| 徽章         | 难度三档形状一致，仅色相区分，色块极淡（wash 底 + tinted 文字）                                                              |
+| 代码块       | 语言徽标改为顶部留带（`padding-top: 2.25rem`），**不再用 `padding-right: 5rem` 挤压长行**                                    |
+| 双语对照     | 面板顶部 2px 语言色条 + 色点；Python 黄、TypeScript 蓝                                                                       |
+| 表格         | 行 hover 改为极淡底色；窄屏转为「标签—值」卡片（用 `data-label`），不做横向滚动                                              |
+| 分页         | 上一课/下一课改为左右分离卡片，hover 时箭头向对应方向位移                                                                    |
+| 侧边栏       | 当前页改用**左侧 2px 竖线**而非整块填色；进度点从 `●`/`○` 字符改为 CSS 方块                                                  |
+| 进度面板     | 新增：四项统计 + 各路径进度条 + 收藏列表 + 两段式清除确认                                                                    |
 
 ### 3.7 响应式
 
-| 断点 | 处理 |
-|------|------|
-| `< 40rem` | 表格转卡片；分页单列；双栏对齐解除 |
-| `< 48rem` | 路径清单进度条移到标题下方 |
+| 断点      | 处理                                                                                  |
+| --------- | ------------------------------------------------------------------------------------- |
+| `< 40rem` | 表格转卡片；分页单列；双栏对齐解除                                                    |
+| `< 48rem` | 路径清单进度条移到标题下方                                                            |
 | `< 62rem` | 顶层导航换行到第二行并横向滚动（顶栏增高到 6.25rem，两行行高固定为 3.5rem + 2.75rem） |
-| `≥ 52rem` | 首页支线入口启用不对称双栏 |
-| `≥ 68rem` | 卡片网格启用 auto-fit |
+| `≥ 52rem` | 首页支线入口启用不对称双栏                                                            |
+| `≥ 68rem` | 卡片网格启用 auto-fit                                                                 |
 
 补充：
+
 - 用 `env(safe-area-inset-*)` 处理刘海屏
 - 触控目标统一 ≥ 44px（视觉尺寸可小，点击区用 padding 撑开）
 - 窄屏导航**不折叠**，只改布局形式
@@ -337,35 +339,35 @@ Primitives  →  Semantics  →  Starlight 桥接
 
 ### 4.4 文件变更一览
 
-| 文件 | 状态 |
-|------|------|
-| `src/lib/curriculum.ts` | 新增 |
-| `src/lib/neighbours.ts` | 新增 |
-| `src/components/SiteNav.astro` | 新增 |
-| `src/components/HomePaths.astro` | 新增 |
-| `src/components/HomeRoutes.astro` | 新增 |
-| `src/components/ProgressPanel.astro` | 新增 |
-| `src/styles/base.css` | 新增 |
-| `src/styles/layout.css` | 新增（取代 custom-layout.css） |
-| `src/styles/code.css` | 新增 |
-| `src/styles/tokens.css` | 重写 |
-| `src/styles/components.css` | 重写 |
-| `src/styles/tabs-custom.css` | 重写 |
-| `src/styles/home.css` | 重写 |
-| `src/styles/custom-layout.css` | **废弃**（内容清空，保留文件占位，可安全删除） |
-| `src/components/Header.astro` | 改造（接入导航） |
-| `src/components/Pagination.astro` | 改造（顺序与标题改为派生） |
-| `src/components/SidebarProgress.astro` | 改造（路径改为注入） |
-| `src/components/LessonProgressMarkers.astro` | 改造（顺序改为派生） |
-| `src/components/CodeCompare.astro` | 改造（语言色条） |
-| `src/lib/path-map.ts` | 改造（降为兼容层） |
-| `astro.config.mjs` | 改造（侧边栏、字体、样式入口） |
-| `src/content/docs/index.mdx` | 重写 |
-| `src/content/docs/paths/index.mdx` | 重写 |
-| `src/content/docs/practice/index.mdx` | 重写 |
-| `src/content/docs/bookmarks/index.mdx` | 重写 |
-| `src/content/docs/about/index.mdx` | 补充 |
-| `src/content/docs/en/index.mdx` | 补充 |
+| 文件                                         | 状态                                           |
+| -------------------------------------------- | ---------------------------------------------- |
+| `src/lib/curriculum.ts`                      | 新增                                           |
+| `src/lib/neighbours.ts`                      | 新增                                           |
+| `src/components/SiteNav.astro`               | 新增                                           |
+| `src/components/HomePaths.astro`             | 新增                                           |
+| `src/components/HomeRoutes.astro`            | 新增                                           |
+| `src/components/ProgressPanel.astro`         | 新增                                           |
+| `src/styles/base.css`                        | 新增                                           |
+| `src/styles/layout.css`                      | 新增（取代 custom-layout.css）                 |
+| `src/styles/code.css`                        | 新增                                           |
+| `src/styles/tokens.css`                      | 重写                                           |
+| `src/styles/components.css`                  | 重写                                           |
+| `src/styles/tabs-custom.css`                 | 重写                                           |
+| `src/styles/home.css`                        | 重写                                           |
+| `src/styles/custom-layout.css`               | **废弃**（内容清空，保留文件占位，可安全删除） |
+| `src/components/Header.astro`                | 改造（接入导航）                               |
+| `src/components/Pagination.astro`            | 改造（顺序与标题改为派生）                     |
+| `src/components/SidebarProgress.astro`       | 改造（路径改为注入）                           |
+| `src/components/LessonProgressMarkers.astro` | 改造（顺序改为派生）                           |
+| `src/components/CodeCompare.astro`           | 改造（语言色条）                               |
+| `src/lib/path-map.ts`                        | 改造（降为兼容层）                             |
+| `astro.config.mjs`                           | 改造（侧边栏、字体、样式入口）                 |
+| `src/content/docs/index.mdx`                 | 重写                                           |
+| `src/content/docs/paths/index.mdx`           | 重写                                           |
+| `src/content/docs/practice/index.mdx`        | 重写                                           |
+| `src/content/docs/bookmarks/index.mdx`       | 重写                                           |
+| `src/content/docs/about/index.mdx`           | 补充                                           |
+| `src/content/docs/en/index.mdx`              | 补充                                           |
 
 ---
 

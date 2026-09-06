@@ -46,7 +46,7 @@ process_user({"age": 25}) # 运行时才报 KeyError
 
 ```typescript
 function processUser(user: { name: string }): string {
-return user.name;
+  return user.name;
 }
 
 processUser({ age: 25 });

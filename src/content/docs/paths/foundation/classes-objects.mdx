@@ -11,6 +11,7 @@ description: 掌握 Python 和 TypeScript 的面向对象编程差异
 sidebar:
   order: 5
 ---
+
 ## 为什么这个很重要
 
 你在 Python 里写类，`self` 总是明明白白。转到 TypeScript 后：
@@ -344,6 +345,7 @@ class CounterArrow {
 🦀 TS 开发者："可以，但要小心。对象字面量的方法用箭头函数，this 可能还是不对。最安全的做法是在类里用类属性箭头函数，或者用 `.bind(this)`。"
 
 ---
+
 🐍 Python 开发者："TypeScript 的接口和抽象类有什么区别？Python 只有抽象类。"
 
 🦀 TS 开发者："接口定义契约，抽象类可以包含实现。一个类只能继承一个抽象类，但可以实现多个接口。"
@@ -353,6 +355,7 @@ class CounterArrow {
 🦀 TS 开发者："差不多！接口更像 Protocol，抽象类更像 ABC。接口的好处是可以在运行时检查 `instanceof`，而且可以实现多个。"
 
 ---
+
 🐍 Python 开发者："构造函数简写太方便了，但 public/private/protected 放在参数里会不会很难读？"
 
 🦀 TS 开发者："习惯了就好。这叫参数属性，相当于声明属性 + 构造函数赋值一步完成。对于简单的类很清爽，复杂逻辑还是分开写更清晰。"
@@ -549,4 +552,5 @@ class Rectangle extends Shape {
      - 使用类属性箭头函数 `method = () => {}`
 
 ---
+
 **🎉 恭喜你完成了基础路径！** 现在你可以进入 [迁移路径](../../migration/types/) 学习更高级的 TypeScript 特性。

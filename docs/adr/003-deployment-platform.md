@@ -11,6 +11,7 @@
 ## Context
 
 We needed to select a deployment platform for hosting the Python to TypeScript Learning Site. Requirements:
+
 - Free hosting for open source projects
 - Custom domain support
 - HTTPS by default
@@ -54,12 +55,14 @@ We will use **GitHub Pages** as our deployment platform, with **GitHub Actions**
 Netlify with Git integration.
 
 **Why rejected:**
+
 - GitHub Pages is sufficient for our needs
 - Already using GitHub for repository
 - No need for additional service
 - Netlify has build minute limits on free tier
 
 **When to reconsider:**
+
 - Need server-side redirects
 - Need edge functions
 - Need custom headers
@@ -70,11 +73,13 @@ Netlify with Git integration.
 Vercel with Git integration.
 
 **Why rejected:**
+
 - Optimized for Next.js (we use Astro)
 - Additional service to manage
 - GitHub Pages is simpler for our use case
 
 **When to reconsider:**
+
 - Need server-side rendering
 - Need image optimization
 - Need analytics
@@ -84,10 +89,12 @@ Vercel with Git integration.
 Cloudflare's static site hosting.
 
 **Why rejected:**
+
 - Additional service to manage
 - GitHub Pages is sufficient
 
 **When to reconsider:**
+
 - Need custom security headers
 - Need edge functions
 - Need better global CDN performance
@@ -97,12 +104,14 @@ Cloudflare's static site hosting.
 Amazon Web Services static hosting.
 
 **Why rejected:**
+
 - Overkill for a documentation site
 - Requires AWS knowledge
 - Potential costs
 - More complex setup
 
 **When to reconsider:**
+
 - Enterprise requirements
 - Need compliance certifications
 - Need advanced logging/monitoring

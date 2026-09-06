@@ -35,14 +35,14 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 
 ## WHERE TO LOOK
 
-| 任务         | 位置                                 | 说明                                                               |
-| ------------ | ------------------------------------ | ------------------------------------------------------------------ |
+| 任务         | 位置                                 | 说明                                                        |
+| ------------ | ------------------------------------ | ----------------------------------------------------------- |
 | 新增算法题   | `src/content/docs/algorithms/`       | 见 [docs/algorithms-AGENTS.md](./docs/algorithms-AGENTS.md) |
-| 修改课程内容 | `src/content/docs/paths/*/`          | 每课独立 MDX                                                       |
-| 组件开发     | `src/components/`                    | Astro 组件                                                         |
-| 添加测验题目 | `src/components/QuizContainer.astro` | 内置题库                                                           |
+| 修改课程内容 | `src/content/docs/paths/*/`          | 每课独立 MDX                                                |
+| 组件开发     | `src/components/`                    | Astro 组件                                                  |
+| 添加测验题目 | `src/components/QuizContainer.astro` | 内置题库                                                    |
 | 样式调整     | `src/styles/` + Starlight 主题       |
-| 构建问题     | `astro.config.mjs`                   | 站点配置                                                           |
+| 构建问题     | `astro.config.mjs`                   | 站点配置                                                    |
 
 ## CONVENTIONS
 

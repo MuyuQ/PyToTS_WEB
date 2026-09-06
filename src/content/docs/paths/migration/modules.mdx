@@ -10,7 +10,6 @@ ts_tags: ["import", "export", "npm"]
 description: 掌握 Python 和 TypeScript 模块系统的差异
 sidebar:
   order: 3
-
 ---
 
 import CodeCompare from "../../../../components/CodeCompare.astro";
@@ -135,11 +134,13 @@ import type { User } from "./types";
 # 文件里定义的东西都可以被导入
 
 # mymodule.py
-def public_func():
-    pass
 
-def _private_func():  # 约定私有，但技术上仍可导入
-    pass`}
+def public_func():
+pass
+
+def \_private_func(): # 约定私有，但技术上仍可导入
+pass
+`}
   ts={`// TypeScript: 显式导出
 
 // mymodule.ts
@@ -152,9 +153,10 @@ export default class MyClass {}
 
 // 类型导出
 export type User = {
-  name: string;
-  age: number;
-};`}
+name: string;
+age: number;
+};
+`}
 />
 
 ## 常见陷阱
