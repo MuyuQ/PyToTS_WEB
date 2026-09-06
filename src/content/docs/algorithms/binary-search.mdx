@@ -169,17 +169,20 @@ def linear_search(nums: list[int], target: int) -> int:
 
 两份实现区间语义完全一致，差异集中在整数除法与相等比较上：
 
-<CodeCompare
-  py={`# 中点计算：// 整数除法，结果天然是 int
+```python
+# 中点计算：// 整数除法，结果天然是 int
 mid = left + (right - left) // 2
 if nums[mid] == target:
-    return mid`}
-  ts={`// 中点计算：/ 得浮点数，需 Math.floor 取整
+    return mid
+```
+
+```typescript
+// 中点计算：/ 得浮点数，需 Math.floor 取整
 const mid = left + Math.floor((right - left) / 2);
 if (nums[mid] === target) {
   return mid;
-}`}
-/>
+}
+```
 
 | 关注点   | Python                              | TypeScript                                      |
 | -------- | ----------------------------------- | ----------------------------------------------- |

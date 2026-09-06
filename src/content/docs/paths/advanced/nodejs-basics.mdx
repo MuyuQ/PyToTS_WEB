@@ -12,7 +12,7 @@ sidebar:
   order: 8
 ---
 
-import CodeCompare from '../../../../components/CodeCompare.astro';
+import CodeCompare from "../../../../components/CodeCompare.astro";
 
 ## 场景与问题
 
@@ -70,12 +70,15 @@ with open("data.txt", "r", encoding="utf-8") as f:
 
 短对照：Promise 风格读写文件。
 
-<CodeCompare
-  py={`content = await fs.readFile("data.txt", "utf-8")
-await fs.writeFile("out.txt", "Hello", "utf-8")`}
-  ts={`const content = await fs.readFile("data.txt", "utf-8");
-await fs.writeFile("out.txt", "Hello", "utf-8");`}
-/>
+```python
+content = await fs.readFile("data.txt", "utf-8")
+await fs.writeFile("out.txt", "Hello", "utf-8")
+```
+
+```typescript
+const content = await fs.readFile("data.txt", "utf-8");
+await fs.writeFile("out.txt", "Hello", "utf-8");
+```
 
 #### Node.js 实现（回调风格）
 
@@ -181,10 +184,13 @@ async function readWithPromise(): Promise<void> {
 
 短对照：同步 vs Promise 读取。
 
-<CodeCompare
-  py={`data = open("f.txt").read()  # 同步阻塞`}
-  ts={`const data = fs.readFileSync("f.txt", "utf-8"); // 同步阻塞`}
-/>
+```python
+data = open("f.txt").read()  # 同步阻塞
+```
+
+```typescript
+const data = fs.readFileSync("f.txt", "utf-8"); // 同步阻塞
+```
 
 **何时使用同步 API：**
 
@@ -237,12 +243,15 @@ for file in Path(".").glob("*.txt"):
 
 短对照：目录创建与文件遍历。
 
-<CodeCompare
-  py={`os.makedirs("a/b", exist_ok=True)
-for f in Path(".").glob("*.txt"): print(f)`}
-  ts={`await fs.mkdir("a/b", { recursive: true });
-for (const f of await fs.readdir(".")) if (f.endsWith(".txt")) console.log(f);`}
-/>
+```python
+os.makedirs("a/b", exist_ok=True)
+for f in Path(".").glob("*.txt"): print(f)
+```
+
+```typescript
+await fs.mkdir("a/b", { recursive: true });
+for (const f of await fs.readdir(".")) if (f.endsWith(".txt")) console.log(f);
+```
 
 #### Node.js 实现
 
@@ -315,12 +324,15 @@ is_dir = os.path.isdir("data")
 
 短对照：路径拼接与分解。
 
-<CodeCompare
-  py={`full = os.path.join("a", "b", "c.txt")
-print(os.path.dirname(full), os.path.basename(full))`}
-  ts={`const full = path.join("a", "b", "c.txt");
-console.log(path.dirname(full), path.basename(full));`}
-/>
+```python
+full = os.path.join("a", "b", "c.txt")
+print(os.path.dirname(full), os.path.basename(full))
+```
+
+```typescript
+const full = path.join("a", "b", "c.txt");
+console.log(path.dirname(full), path.basename(full));
+```
 
 #### Node.js 实现
 
@@ -386,12 +398,15 @@ const userPath = path.join(process.cwd(), "user-data.json");
 
 短对照：__dirname vs process.cwd()。
 
-<CodeCompare
-  py={`script_dir = Path(__file__).parent  # 脚本目录
-cwd = Path.cwd()  # 工作目录（可能不同）`}
-  ts={`const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const cwd = process.cwd();`}
-/>
+```python
+script_dir = Path(__file__).parent  # 脚本目录
+cwd = Path.cwd()  # 工作目录（可能不同）
+```
+
+```typescript
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const cwd = process.cwd();
+```
 
 ## Buffer 和 Stream
 
@@ -477,12 +492,15 @@ console.log(a.compare(Buffer.from("abd"))); // -1 (a < abd)
 
 短对照：Buffer 拼接与 Base64。
 
-<CodeCompare
-  py={`combined = b"Hello" + b" World"
-b64 = base64.b64encode(b"Hello").decode()`}
-  ts={`const combined = Buffer.concat([Buffer.from("Hello"), Buffer.from(" World")]);
-const b64 = Buffer.from("Hello").toString("base64");`}
-/>
+```python
+combined = b"Hello" + b" World"
+b64 = base64.b64encode(b"Hello").decode()
+```
+
+```typescript
+const combined = Buffer.concat([Buffer.from("Hello"), Buffer.from(" World")]);
+const b64 = Buffer.from("Hello").toString("base64");
+```
 
 ### Buffer 常用编码
 
@@ -547,11 +565,14 @@ print(buffer.getvalue())  # "Hello World"
 
 短对照：Pipeline 管道复制大文件。
 
-<CodeCompare
-  py={`import shutil
-shutil.copy2("src.mp4", "dst.mp4")`}
-  ts={`await pipeline(fs.createReadStream("src.mp4"), fs.createWriteStream("dst.mp4"));`}
-/>
+```python
+import shutil
+shutil.copy2("src.mp4", "dst.mp4")
+```
+
+```typescript
+await pipeline(fs.createReadStream("src.mp4"), fs.createWriteStream("dst.mp4"));
+```
 
 #### Node.js 实现
 
@@ -711,12 +732,15 @@ for key, value in os.environ.items():
 
 短对照：环境变量读取与默认值。
 
-<CodeCompare
-  py={`host = os.environ.get("DB_HOST", "localhost")
-port = int(os.environ.get("PORT", "5432"))`}
-  ts={`const host = process.env.DB_HOST ?? "localhost";
-const port = parseInt(process.env.PORT ?? "3000", 10);`}
-/>
+```python
+host = os.environ.get("DB_HOST", "localhost")
+port = int(os.environ.get("PORT", "5432"))
+```
+
+```typescript
+const host = process.env.DB_HOST ?? "localhost";
+const port = parseInt(process.env.PORT ?? "3000", 10);
+```
 
 #### Node.js 实现
 
@@ -772,12 +796,15 @@ print(f"Output: {args.output}")
 
 短对照：命令行参数切片与解析。
 
-<CodeCompare
-  py={`args = sys.argv[1:]  # 去掉脚本名
-print(args)`}
-  ts={`const args = process.argv.slice(2); // 去掉 node 路径和脚本路径
-console.log(args);`}
-/>
+```python
+args = sys.argv[1:]  # 去掉脚本名
+print(args)
+```
+
+```typescript
+const args = process.argv.slice(2); // 去掉 node 路径和脚本路径
+console.log(args);
+```
 
 #### Node.js 实现
 
@@ -856,12 +883,15 @@ print(f"PPID: {os.getppid()}")  # 父进程 ID
 
 短对照：优雅退出与信号处理。
 
-<CodeCompare
-  py={`import signal
-signal.signal(signal.SIGINT, lambda s,f: sys.exit(0))`}
-  ts={`process.on("SIGINT", () => process.exit(0));
-process.on("SIGTERM", () => process.exit(0));`}
-/>
+```python
+import signal
+signal.signal(signal.SIGINT, lambda s,f: sys.exit(0))
+```
+
+```typescript
+process.on("SIGINT", () => process.exit(0));
+process.on("SIGTERM", () => process.exit(0));
+```
 
 #### Node.js 实现
 

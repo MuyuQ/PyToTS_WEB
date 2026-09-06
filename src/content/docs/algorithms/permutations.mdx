@@ -169,12 +169,15 @@ def permute_brute(nums: list[int]) -> list[list[int]]:
 
 回溯骨架完全一致，差异在布尔数组初始化与拷贝语法上：
 
-<CodeCompare
-  py={`# 布尔标记数组，乘法初始化
-used = [False] * n`}
-  ts={`// 布尔标记数组，fill 初始化
-const used: boolean[] = new Array(n).fill(false);`}
-/>
+```python
+# 布尔标记数组，乘法初始化
+used = [False] * n
+```
+
+```typescript
+// 布尔标记数组，fill 初始化
+const used: boolean[] = new Array(n).fill(false);
+```
 
 | 关注点   | Python                    | TypeScript                              |
 | -------- | ------------------------- | --------------------------------------- |

@@ -210,19 +210,22 @@ def is_valid_bst_naive(root) -> bool:
 
 两份代码逻辑逐行对应，差异在空值与类型声明上：
 
-<CodeCompare
-  py={`# 空区间用 None 表示无穷
+```python
+# 空区间用 None 表示无穷
 def validate(node, min_val, max_val) -> bool:
     if node is None:
         return True
     if min_val is not None and node.val <= min_val:
-        return False`}
-  ts={`// 空区间用 null 表示无穷
+        return False
+```
+
+```typescript
+// 空区间用 null 表示无穷
 function validate(node: TreeNode | null, minVal: number | null, maxVal: number | null): boolean {
   if (node === null) return true;
   if (minVal !== null && node.val <= minVal) return false;
-}`}
-/>
+}
+```
 
 | 关注点 | Python | TypeScript |
 | ------ | ------ | ---------- |

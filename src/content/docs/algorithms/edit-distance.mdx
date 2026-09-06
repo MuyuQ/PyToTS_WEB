@@ -189,12 +189,15 @@ def min_distance_brute(word1: str, word2: str) -> int:
 
 一维 DP 的写法几乎逐行可译：
 
-<CodeCompare
-  py={`# 初始行：range 直接生成 0..n
-dp = list(range(n + 1))`}
-  ts={`// 初始行：Array.from 映射生成 0..n
-const dp: number[] = Array.from({ length: n + 1 }, (_, i) => i);`}
-/>
+```python
+# 初始行：range 直接生成 0..n
+dp = list(range(n + 1))
+```
+
+```typescript
+// 初始行：Array.from 映射生成 0..n
+const dp: number[] = Array.from({ length: n + 1 }, (_, i) => i);
+```
 
 | 关注点 | Python | TypeScript |
 | ------ | ------ | ---------- |

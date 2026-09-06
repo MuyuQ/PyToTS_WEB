@@ -12,7 +12,7 @@ sidebar:
   order: 6
 ---
 
-import CodeCompare from '../../../../components/CodeCompare.astro';
+import CodeCompare from "../../../../components/CodeCompare.astro";
 
 ## 场景与问题
 
@@ -68,16 +68,19 @@ print(dog.speak())  # Woof!
 
 短对照：工厂方法核心结构对比。
 
-<CodeCompare
-  py={`class AnimalFactory:
+```python
+class AnimalFactory:
     _animals = {"dog": Dog, "cat": Cat}
     @classmethod
-    def create(cls, t): return cls._animals[t]()`}
-  ts={`class AnimalFactory {
+    def create(cls, t): return cls._animals[t]()
+```
+
+```typescript
+class AnimalFactory {
   static animals = { dog: Dog, cat: Cat };
   static create(t: "dog"|"cat") { return new this.animals[t](); }
-}`}
-/>
+}
+```
 
 ### TypeScript 实现
 
@@ -139,17 +142,20 @@ class GenericFactory<T> {
 
 短对照：泛型工厂注册与创建。
 
-<CodeCompare
-  py={`class GenericFactory:
+```python
+class GenericFactory:
     def __init__(self): self._reg = {}
     def register(self, t, c): self._reg[t] = c
-    def create(self, t): return self._reg[t]()`}
-  ts={`class GenericFactory<T> {
+    def create(self, t): return self._reg[t]()
+```
+
+```typescript
+class GenericFactory<T> {
   private reg = new Map<string, new()=>T>();
   register(t: string, c: new()=>T) { this.reg.set(t, c); }
   create(t: string) { return new this.reg.get(t)!(); }
-}`}
-/>
+}
+```
 
 ## 2. 观察者模式
 
@@ -193,17 +199,20 @@ service.create_user("Alice")
 
 短对照：事件发射与订阅核心结构。
 
-<CodeCompare
-  py={`class Event:
+```python
+class Event:
     def __init__(self): self._ls = []
     def sub(self, fn): self._ls.append(fn)
-    def emit(self, *a): [f(*a) for f in self._ls]`}
-  ts={`class EventEmitter<T> {
+    def emit(self, *a): [f(*a) for f in self._ls]
+```
+
+```typescript
+class EventEmitter<T> {
   private ls: ((d:T)=>void)[] = [];
   sub(fn: (d:T)=>void) { this.ls.push(fn); return ()=>{...}; }
   emit(d: T) { this.ls.forEach(f=>f(d)); }
-}`}
-/>
+}
+```
 
 ### TypeScript 实现
 
@@ -635,14 +644,15 @@ console.log(a === b); // true
 
 // 或者使用装饰器
 function singleton<T extends new (...args: any[]) => {}>(constructor: T) {
-  let instance: any;
+  let instance: InstanceType<T> | undefined;
   return class extends constructor {
     constructor(...args: any[]) {
       if (instance) {
         return instance;
       }
       super(...args);
-      instance = this;
+      // 派生类实例与基类实例类型结构兼容，TS 无法自动推导，需显式断言
+      instance = this as InstanceType<T>;
     }
   };
 }

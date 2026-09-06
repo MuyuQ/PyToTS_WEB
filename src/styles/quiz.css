@@ -70,7 +70,7 @@
   min-height: 44px;
 }
 
-.quiz-option:hover:not(.disabled) {
+.quiz-option:hover:not([aria-disabled="true"]) {
   border-color: var(--accent);
   background: var(--accent-quiet);
 }
@@ -81,16 +81,16 @@
 }
 
 .quiz-option.correct {
-  border-color: var(--success);
-  background: rgba(34, 197, 94, 0.1);
+  border-color: color-mix(in oklab, var(--success) 32%, transparent);
+  background: var(--success-quiet);
 }
 
 .quiz-option.incorrect {
-  border-color: var(--danger);
-  background: rgba(239, 68, 68, 0.1);
+  border-color: color-mix(in oklab, var(--danger) 32%, transparent);
+  background: var(--danger-quiet);
 }
 
-.quiz-option.disabled {
+.quiz-option[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.7;
 }
@@ -112,19 +112,19 @@
 .quiz-option.selected .option-indicator {
   border-color: var(--accent);
   background: var(--accent);
-  color: white;
+  color: var(--surface-page);
 }
 
 .quiz-option.correct .option-indicator {
   border-color: var(--success);
   background: var(--success);
-  color: white;
+  color: var(--surface-page);
 }
 
 .quiz-option.incorrect .option-indicator {
   border-color: var(--danger);
   background: var(--danger);
-  color: white;
+  color: var(--surface-page);
 }
 
 .quiz-option .option-text {
@@ -138,7 +138,7 @@
   margin-top: var(--space-4);
   padding: var(--space-4);
   background: var(--surface-page);
-  border: 1px solid rgba(84, 136, 232, 0.35);
+  border: 1px solid color-mix(in oklab, var(--accent) 35%, transparent);
   border-radius: var(--radius-sm);
   font-size: 0.875rem;
   line-height: 1.6;
@@ -146,13 +146,26 @@
 }
 
 .quiz-explanation.correct {
-  border-color: rgba(34, 197, 94, 0.4);
-  background: rgba(34, 197, 94, 0.06);
+  border-color: color-mix(in oklab, var(--success) 40%, transparent);
+  background: var(--success-quiet);
 }
 
 .quiz-explanation.incorrect {
-  border-color: rgba(239, 68, 68, 0.4);
-  background: rgba(239, 68, 68, 0.06);
+  border-color: color-mix(in oklab, var(--danger) 40%, transparent);
+  background: var(--danger-quiet);
+}
+
+.explanation-header {
+  font-weight: var(--weight-semibold);
+  margin-bottom: var(--space-2);
+}
+
+.explanation-header.correct {
+  color: var(--success);
+}
+
+.explanation-header.incorrect {
+  color: var(--danger);
 }
 
 .quiz-actions {
@@ -182,7 +195,7 @@
 
 .quiz-action-btn.primary {
   background: var(--accent);
-  color: white;
+  color: var(--surface-page);
   border-color: var(--accent);
 }
 

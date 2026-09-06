@@ -36,6 +36,6 @@ const routes = await learningRoutes();
   }
 
   record();
-  // Starlight 站内走客户端路由，视图切换后要重新记录
+  // Starlight 0.28 是 MPA 全页加载，astro:page-load 当前不会触发；保留监听以便未来升级视图过渡
   document.addEventListener("astro:page-load", record);
 </script>

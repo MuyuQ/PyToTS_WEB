@@ -19,9 +19,9 @@ function tokenValue(name: string): string | undefined {
 
 describe("404 页配色", () => {
   it("从 tokens.css 抽取色值，不在页内硬编码", () => {
-    expect(notFound).toContain("from '../styles/tokens.css?raw'");
-    expect(notFound).toMatch(/resolve\(light\['--surface-page'\]/);
-    expect(notFound).toMatch(/resolve\(dark\['--surface-page'\]/);
+    expect(notFound).toMatch(/from ['"]\.\.\/styles\/tokens\.css\?raw['"]/);
+    expect(notFound).toMatch(/resolve\(light\[["']--surface-page["']\]/);
+    expect(notFound).toMatch(/resolve\(dark\[["']--surface-page["']\]/);
   });
 
   it("不残留旧的 hex 色值", () => {
@@ -68,7 +68,9 @@ describe("404 页配色", () => {
       // 出口用 base 拼接，保证子路径部署下不会 404 到站内
       expect(notFound).toMatch(new RegExp(`href:\\s*\`\\$\\{base\\}${slug}/\``));
     }
-    expect(notFound).toContain("const base = '/PyToTS_WEB/';");
+    // base 来自构建配置（BASE_URL），不允许魔法字符串硬编码
+    expect(notFound).toContain("import.meta.env.BASE_URL");
+    expect(notFound).not.toMatch(/base = ['"]\/PyToTS_WEB/);
   });
 
   it("品牌色变量确实解析得到 OKLCH 值", () => {

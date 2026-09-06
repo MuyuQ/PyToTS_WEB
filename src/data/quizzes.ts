@@ -288,22 +288,26 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       },
       options: [
         {
-          text: "【预期:3】列表长度仍为3",
+          expected: "3",
+          text: "列表长度仍为3",
           correct: true,
           explanation: "pop从末尾取出元素后重新append，数量不变",
         },
         {
-          text: "【预期:1】列表长度变为1",
+          expected: "1",
+          text: "列表长度变为1",
           correct: false,
           explanation: "虽然pop删除了一个元素，但立刻通过append加回去了",
         },
         {
-          text: "【预期:2】列表长度变为2",
+          expected: "2",
+          text: "列表长度变为2",
           correct: false,
           explanation: "pop删除一个，append加回一个，总数不变",
         },
         {
-          text: "【预期:Runtime Error】运行时错误",
+          expected: "Runtime Error",
+          text: "运行时错误",
           correct: false,
           explanation: "list operations不会引发此错误",
         },
@@ -318,18 +322,26 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       },
       options: [
         {
-          text: "【预期:2】长度是2",
+          expected: "2",
+          text: "长度是2",
           correct: false,
           explanation: "扩展运算符拆开前两个元素，然后添加第3个元素，共3个",
         },
-        { text: "【预期:3】长度是3", correct: true, explanation: "创建包含三项的新数组 [1, 2, 3]" },
         {
-          text: "【预期:undefined】undefined",
+          expected: "3",
+          text: "长度是3",
+          correct: true,
+          explanation: "创建包含三项的新数组 [1, 2, 3]",
+        },
+        {
+          expected: "undefined",
+          text: "undefined",
           correct: false,
           explanation: "length属性始终存在并返回数值",
         },
         {
-          text: "【预期:Runtime Error】运行时错误",
+          expected: "Runtime Error",
+          text: "运行时错误",
           correct: false,
           explanation: "这是合法的ES6语法",
         },
@@ -347,22 +359,26 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       },
       options: [
         {
-          text: "【预期:1, 2 在两种语言中】Python: 1, 2; TypeScript: 1, 2",
+          expected: "1, 2 在两种语言中",
+          text: "Python: 1, 2; TypeScript: 1, 2",
           correct: false,
           explanation: "Python的默认参数在多次调用间共享，而TS不会",
         },
         {
-          text: "【预期:1, 1 和 1, 2 分别为Python和TS】Python: 1, 1; TypeScript: 1, 2",
+          expected: "1, 1 和 1, 2 分别为Python和TS",
+          text: "Python: 1, 1; TypeScript: 1, 2",
           correct: false,
           explanation: "Python默认参数在函数定义阶段创建一次，导致行为不同",
         },
         {
-          text: "【预期:1, 2 和 1, 1 分别为Python和TS】Python: 1, 2; TypeScript: 1, 1",
+          expected: "1, 2 和 1, 1 分别为Python和TS",
+          text: "Python: 1, 2; TypeScript: 1, 1",
           correct: true,
           explanation: "Python: 默认列表被持续修改；TS: 每次调用生成新空数组",
         },
         {
-          text: "【预期:都会报错】执行错误",
+          expected: "都会报错",
+          text: "执行错误",
           correct: false,
           explanation: "这些都是有效的函数调用",
         },

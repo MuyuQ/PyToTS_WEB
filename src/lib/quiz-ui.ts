@@ -1,11 +1,13 @@
-import { QuizManager, type QuizOption, type QuizQuestion } from "./quiz-manager";
+import { QuizManager, type QuizOption } from "./quiz-manager";
+import { questionsFor } from "../data/quizzes";
 import { saveQuizResult } from "./progress-store";
 
 /**
  * 测验的客户端交互（渲染 / 判分 / 结果）
  *
- * 原先整段内联在 QuizContainer.astro 的 <script> 里，无法被单测覆盖。
- * 抽成模块后由组件调用 initQuizContainers()。
+ * 题库从 src/data/quizzes.ts 直接 import（构建期随 bundle 打包一份），
+ * 页面只携带 quizId——原先 21 份 JSON.stringify 进 HTML 属性的方案让
+ * 测验页膨胀到 160KB。
  */
 
 /** 初始化（或重新初始化）页面上的全部测验容器 */
@@ -13,16 +15,13 @@ export function initQuizContainers(root: ParentNode = document): void {
   const containers = root.querySelectorAll(".quiz-container[data-quiz-id]");
 
   containers.forEach((container) => {
-    const questionsData = container.getAttribute("data-questions");
-    if (!questionsData) return;
+    const quizId = container.getAttribute("data-quiz-id");
+    if (!quizId) return;
 
-    let questions: QuizQuestion[];
-    try {
-      questions = JSON.parse(questionsData);
-    } catch {
-      console.error("Failed to parse quiz questions");
-      return;
-    }
+    // questionsFor 对未知 quizId 返回空数组；组件侧已为空题渲染占位（无 data-quiz-id），
+    // 这里再兜底一次，保证 quizId 悬空时静默跳过而不是渲染空壳
+    const questions = questionsFor(quizId);
+    if (questions.length === 0) return;
 
     const quiz = new QuizManager(questions);
     initializeQuizUI(container as HTMLElement, quiz);
@@ -61,6 +60,120 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
 
     wrap.append(tag, pre);
     return wrap;
+  }
+
+  /** 预测题选项的展示文案：强调的预期输出 + 文字说明（数据侧已结构化为 expected/text 字段） */
+  function predictionOptionText(option: QuizOption): HTMLElement {
+    const textEl = document.createElement("span");
+    textEl.className = "option-text";
+
+    const label = document.createElement("strong");
+    label.textContent = "预测输出:";
+    const expected = document.createElement("code");
+    expected.textContent = option.expected ?? "";
+    textEl.append(label, expected);
+
+    if (option.text) {
+      const tail = document.createElement("em");
+      tail.textContent = ` - ${option.text}`;
+      textEl.append(tail);
+    }
+    return textEl;
+  }
+
+  /**
+   * roving tabindex：radiogroup 里 Tab 只停一处（选中项，未选时停首项），
+   * 方向键在选项间移动并随焦点选中（原生 radio 语义）。
+   */
+  function syncOptionTabbability() {
+    const buttons = [...optionsEl.querySelectorAll<HTMLButtonElement>(".quiz-option")];
+    const selectedIdx = buttons.findIndex((b) => b.classList.contains("selected"));
+    const tabStop = selectedIdx === -1 ? 0 : selectedIdx;
+    buttons.forEach((btn, i) => {
+      btn.tabIndex = i === tabStop ? 0 : -1;
+    });
+  }
+
+  function handleOptionKeydown(e: KeyboardEvent, index: number) {
+    if (quiz.getState().showExplanation) return;
+
+    const count = quiz.getCurrentQuestion().options.length;
+    let target: number;
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") target = (index + 1) % count;
+    else if (e.key === "ArrowUp" || e.key === "ArrowLeft") target = (index - 1 + count) % count;
+    else if (e.key === " " || e.key === "Enter") {
+      e.preventDefault();
+      quiz.selectOption(index);
+      render();
+      return;
+    } else {
+      return;
+    }
+
+    e.preventDefault();
+    quiz.selectOption(target);
+    render();
+    optionsEl.querySelectorAll<HTMLButtonElement>(".quiz-option")[target]?.focus();
+  }
+
+  function buildOptionButton(
+    option: QuizOption,
+    index: number,
+    isPrediction: boolean,
+    currentSelected: number | null,
+    answered: boolean
+  ): HTMLButtonElement {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "quiz-option";
+    btn.appendChild(buildIndicator(index));
+
+    // 预测题选项渲染为「预测输出: X - 说明」，屏幕阅读器标签与可见文本保持一致
+    const isStructuredPrediction = isPrediction && option.expected !== undefined;
+    let textEl: HTMLElement;
+    let labelText: string;
+    if (isStructuredPrediction) {
+      textEl = predictionOptionText(option);
+      labelText = option.text
+        ? `预测输出: ${option.expected} - ${option.text}`
+        : `预测输出: ${option.expected}`;
+    } else {
+      textEl = document.createElement("span");
+      textEl.className = "option-text";
+      textEl.textContent = option.text;
+      labelText = option.text;
+    }
+    btn.appendChild(textEl);
+
+    btn.setAttribute("role", "radio");
+    btn.setAttribute("aria-checked", currentSelected === index ? "true" : "false");
+    btn.setAttribute("aria-label", `选项 ${index + 1}: ${labelText}`);
+
+    if (currentSelected === index) {
+      btn.classList.add("selected");
+    }
+
+    if (answered) {
+      // 不再用 disabled：从 tab 序消失会让屏幕阅读器拿不到「正确答案」标注
+      btn.setAttribute("aria-disabled", "true");
+      if (option.correct) {
+        btn.classList.add("correct");
+        btn.setAttribute("aria-label", `选项 ${index + 1}: ${labelText} - 正确答案`);
+      } else if (currentSelected === index) {
+        btn.classList.add("incorrect");
+        btn.setAttribute("aria-label", `选项 ${index + 1}: ${labelText} - 回答错误`);
+      }
+    }
+
+    btn.addEventListener("click", () => {
+      if (quiz.getState().showExplanation) return;
+      quiz.selectOption(index);
+      render();
+    });
+
+    btn.addEventListener("keydown", (e) => handleOptionKeydown(e, index));
+
+    return btn;
   }
 
   function render() {
@@ -107,120 +220,20 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
       questionEl.appendChild(buildCodeSnippet("typescript", snippets.typescript));
     }
 
-    // Get current selected option (may be null if none selected)
-    const currentSelected = state.selectedOption;
-
     // Update options
     optionsEl.innerHTML = "";
-
-    if (isPredictionQuestion) {
-      // Render prediction question options specially
-      currentQ.options.forEach((option: QuizOption, index: number) => {
-        const btn = document.createElement("button");
-        btn.className = "quiz-option";
-        btn.appendChild(buildIndicator(index));
-
-        const textEl = document.createElement("span");
-        textEl.className = "option-text";
-        // Show the expected output in bold and description
-        if (option.text.includes("【预期:")) {
-          // Extract and format expected output from specially formatted text
-          const textParts = option.text.split("】");
-          const expectedValue = textParts[0].replace("【预期:", "");
-          const desc = textParts.slice(1).join("】");
-
-          textEl.innerHTML = `<strong>预测输出:</strong> ${expectedValue} - <em>${desc}</em>`;
-        } else {
-          textEl.textContent = option.text;
-        }
-        btn.appendChild(textEl);
-
-        btn.setAttribute("role", "radio");
-        btn.setAttribute("aria-checked", currentSelected === index ? "true" : "false");
-        btn.setAttribute("aria-label", `选项 ${index + 1}: ${option.text}`);
-        btn.setAttribute("tabindex", "0");
-
-        if (currentSelected === index) {
-          btn.classList.add("selected");
-          btn.setAttribute("aria-selected", "true");
-        }
-
-        if (state.showExplanation) {
-          btn.disabled = true;
-          btn.setAttribute("aria-disabled", "true");
-          if (option.correct) {
-            btn.classList.add("correct");
-            btn.setAttribute("aria-label", `选项 ${index + 1}: ${option.text} - 正确答案`);
-          } else if (currentSelected === index) {
-            btn.classList.add("incorrect");
-            btn.setAttribute("aria-label", `选项 ${index + 1}: ${option.text} - 回答错误`);
-          }
-        }
-
-        btn.addEventListener("click", () => {
-          quiz.selectOption(index);
-          render();
-        });
-
-        btn.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            quiz.selectOption(index);
-            render();
-          }
-        });
-
-        optionsEl.appendChild(btn);
-      });
-    } else {
-      // Original rendering logic for multiple choice questions
-      currentQ.options.forEach((option: QuizOption, index: number) => {
-        const btn = document.createElement("button");
-        btn.className = "quiz-option";
-        btn.appendChild(buildIndicator(index));
-
-        const textEl = document.createElement("span");
-        textEl.className = "option-text";
-        textEl.textContent = option.text;
-        btn.appendChild(textEl);
-        btn.setAttribute("role", "radio");
-        btn.setAttribute("aria-checked", currentSelected === index ? "true" : "false");
-        btn.setAttribute("aria-label", `选项 ${index + 1}: ${option.text}`);
-        btn.setAttribute("tabindex", "0");
-
-        if (currentSelected === index) {
-          btn.classList.add("selected");
-          btn.setAttribute("aria-selected", "true");
-        }
-
-        if (state.showExplanation) {
-          btn.disabled = true;
-          btn.setAttribute("aria-disabled", "true");
-          if (option.correct) {
-            btn.classList.add("correct");
-            btn.setAttribute("aria-label", `选项 ${index + 1}: ${option.text} - 正确答案`);
-          } else if (currentSelected === index) {
-            btn.classList.add("incorrect");
-            btn.setAttribute("aria-label", `选项 ${index + 1}: ${option.text} - 回答错误`);
-          }
-        }
-
-        btn.addEventListener("click", () => {
-          quiz.selectOption(index);
-          render();
-        });
-
-        btn.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            quiz.selectOption(index);
-            render();
-          }
-        });
-
-        optionsEl.appendChild(btn);
-      });
-    }
+    currentQ.options.forEach((option, index) => {
+      optionsEl.appendChild(
+        buildOptionButton(
+          option,
+          index,
+          isPredictionQuestion,
+          state.selectedOption,
+          state.showExplanation
+        )
+      );
+    });
+    syncOptionTabbability();
 
     // Update action button
     if (state.showExplanation) {
@@ -232,10 +245,10 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
       actionBtn.onclick = () => {
         quiz.nextQuestion();
         render();
-        // 自动聚焦到新问题的第一个选项
-        const firstOption = container.querySelector(".quiz-option") as HTMLElement;
-        if (firstOption && !quiz.getState().showExplanation) {
-          firstOption.focus();
+        // 自动聚焦到新问题的当前 tab stop（未选时为首项）
+        const tabStop = optionsEl.querySelector<HTMLButtonElement>('.quiz-option[tabindex="0"]');
+        if (tabStop && !quiz.getState().showExplanation) {
+          tabStop.focus();
         }
       };
     } else {
@@ -256,14 +269,21 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
     if (state.showExplanation && state.selectedOption !== null) {
       const currentQ = quiz.getCurrentQuestion();
       const selectedOption = currentQ.options[state.selectedOption];
-      explanationEl.innerHTML = `
-        <div class="explanation-header ${selectedOption.correct ? "correct" : "incorrect"}">
-          ${selectedOption.correct ? "✓ 回答正确" : "✗ 回答错误"}
-        </div>
-        <div class="explanation-content">${selectedOption.explanation}</div>
-      `;
+
+      const header = document.createElement("div");
+      header.className = `explanation-header ${selectedOption.correct ? "correct" : "incorrect"}`;
+      header.textContent = selectedOption.correct ? "✓ 回答正确" : "✗ 回答错误";
+
+      const content = document.createElement("div");
+      content.className = "explanation-content";
+      content.textContent = selectedOption.explanation;
+
+      explanationEl.replaceChildren(header, content);
+      explanationEl.classList.toggle("correct", selectedOption.correct);
+      explanationEl.classList.toggle("incorrect", !selectedOption.correct);
       explanationEl.style.display = "block";
     } else {
+      explanationEl.classList.remove("correct", "incorrect");
       explanationEl.style.display = "none";
     }
 

@@ -166,15 +166,18 @@ def is_valid_brute(s: str) -> bool:
 
 逻辑完全同构，差异在于栈顶访问与映射查表的表达：
 
-<CodeCompare
-  py={`# 栈顶访问：负索引直接取顶
+```python
+# 栈顶访问：负索引直接取顶
 if not stack or stack[-1] != mapping[char]:
-    return False`}
-  ts={`// 栈顶访问：length - 1 显式取顶
+    return False
+```
+
+```typescript
+// 栈顶访问：length - 1 显式取顶
 if (stack.length === 0 || stack[stack.length - 1] !== mapping[char]) {
   return false;
-}`}
-/>
+}
+```
 
 | 关注点   | Python                                         | TypeScript                                                        |
 | -------- | ---------------------------------------------- | ----------------------------------------------------------------- |

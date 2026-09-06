@@ -166,16 +166,19 @@ def longest_brute(s: str) -> int:
 
 两份代码逻辑完全一致，差异集中在哈希表取值与字符串索引的表达上：
 
-<CodeCompare
-  py={`# 成员检查 + 取值一步完成
+```python
+# 成员检查 + 取值一步完成
 if char in char_index and char_index[char] >= left:
-    left = char_index[char] + 1`}
-  ts={`// get 返回联合类型，先收窄再使用
+    left = char_index[char] + 1
+```
+
+```typescript
+// get 返回联合类型，先收窄再使用
 const prev = charIndex.get(char);
 if (prev !== undefined && prev >= left) {
   left = prev + 1;
-}`}
-/>
+}
+```
 
 | 关注点   | Python                              | TypeScript                                              |
 | -------- | ----------------------------------- | ------------------------------------------------------- |

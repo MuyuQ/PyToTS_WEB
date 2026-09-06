@@ -170,17 +170,20 @@ def decodings_brute(s: str, i: int = 0) -> int:
 
 两份代码递推完全一致，差异集中在字符比较与子串转整数的表达上：
 
-<CodeCompare
-  py={`# 切片取两位并转整数
+```python
+# 切片取两位并转整数
 two_digit = int(s[i - 1:i + 1])
 if 10 <= two_digit <= 26:
-    current += prev2`}
-  ts={`// substring 取两位并转整数
+    current += prev2
+```
+
+```typescript
+// substring 取两位并转整数
 const twoDigit = parseInt(s.substring(i - 1, i + 1), 10);
 if (twoDigit >= 10 && twoDigit <= 26) {
   current += prev2;
-}`}
-/>
+}
+```
 
 | 关注点     | Python                              | TypeScript                                      |
 | ---------- | ----------------------------------- | ----------------------------------------------- |

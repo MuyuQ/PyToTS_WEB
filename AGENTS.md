@@ -50,10 +50,10 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 
 - **Frontmatter 必填**: `title`, `kind`, `level`, `topic`, `difficulty`, `prerequisites`, `python_tags`, `ts_tags`, `description`；课程还需 `sidebar.order`（对齐 `src/lib/curriculum.ts` 的教学顺序）
 - **标题规范**: 标题中禁止 emoji（由 `npm run lint:content` 强制）；课程章节使用语义化中文标题（为什么重要 / 核心概念 / Python 回顾 / TypeScript 等价写法 / 差异与常见陷阱 / 练习 / 面试追问）
-- **算法结构**: `## 问题描述` → `## 思路分析` → `## 复杂度分析` → `## 双语实现`（Tabs: Python/TypeScript）→ `## 常见错误分析` → `## 面试变体`
+- **算法结构**（9 段加厚模板，详见 [docs/algorithms-AGENTS.md](./docs/algorithms-AGENTS.md)）: `## 问题描述` → `## 暴力解与瓶颈` → `## 思路分析`（含干跑表）→ `## 复杂度分析` → `## 双语实现`（Tabs: Python/TypeScript）→ `## Python 与 TypeScript 差异点评` → `## 常见错误分析` → `## 面试变体` → `## 面试追问`
 - **链接规范**: 内容内部链接必须使用相对路径（站点部署在 `/PyToTS_WEB/` 子路径，根相对链接会 404，由 `npm run linkcheck` 在构建产物上强制校验）
 - **高亮与提示**: 提示/答案要点使用 `:::note` / `:::tip` aside，不要自定义彩色块
-- **双语对照**: 直接相邻且短小（≤20 行、单行 ≤48 字符）的 Python→TypeScript 代码对使用 `CodeCompare` 组件（`import CodeCompare from '../../../../components/CodeCompare.astro'`，注意相对深度）；长代码保持上下排列，依赖代码块语言徽标
+- **双语对照**: 直接相邻且短小（≤20 行、单行 ≤48 字符）的 Python→TypeScript 代码对使用 `CodeCompare` 组件（`import CodeCompare from "../../../../components/CodeCompare.astro"`，注意相对深度；超限由 `npm run lint:content` 强制）；长代码保持上下排列，依赖代码块语言徽标
 
 ### 代码示例
 
@@ -80,7 +80,8 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 # 开发
 npm run dev -- --host 127.0.0.1
 
-# 质量检查 (lint + typecheck + test + build + linkcheck)
+# 质量检查 (lint + lint:content + typecheck + build + test + linkcheck)
+# 注意 test 在 build 之后：a11y 测试需要新鲜的 dist 产物
 npm run check
 
 # 测试

@@ -271,21 +271,24 @@ def merge_two(a, b):
 
 堆的来源不同，但合并主循环逐行对应：
 
-<CodeCompare
-  py={`# 取最小并推进同一条链表
+```python
+# 取最小并推进同一条链表
 _, idx, node = heapq.heappop(heap)
 current.next = node
 current = current.next
 if node.next:
-    heapq.heappush(heap, (node.next.val, idx, node.next))`}
-  ts={`// 取最小并推进同一条链表
+    heapq.heappush(heap, (node.next.val, idx, node.next))
+```
+
+```typescript
+// 取最小并推进同一条链表
 const node = heap.pop()!;
 current.next = node;
 current = current.next;
 if (node.next) {
   heap.push(node.next);
-}`}
-/>
+}
+```
 
 | 关注点 | Python | TypeScript |
 | ------ | ------ | ---------- |

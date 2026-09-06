@@ -27,6 +27,18 @@ export interface LearningProgress {
 
 const STORAGE_KEY = "ts-py-learning-progress";
 
+/** 路径规范化：统一去掉尾部斜杠，作为进度匹配的口径 */
+export function normPath(path: string): string {
+  return String(path || "").replace(/\/$/, "");
+}
+
+/** localStorage 是外部输入（手改/旧版本/损坏都可能），读取时校验形状而不是盲目 cast */
+function isLearningProgress(value: unknown): value is LearningProgress {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return Array.isArray(v.lessons) && Array.isArray(v.quizzes) && Array.isArray(v.bookmarks);
+}
+
 /**
  * 获取当前进度
  */
@@ -38,7 +50,8 @@ export function getProgress(): LearningProgress {
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) {
-      return JSON.parse(data);
+      const parsed: unknown = JSON.parse(data);
+      if (isLearningProgress(parsed)) return parsed;
     }
   } catch (e) {
     console.error("Failed to load progress:", e);

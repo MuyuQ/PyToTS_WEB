@@ -10,61 +10,50 @@ import { TRACK_ORDER, trackRoutes } from "../lib/curriculum";
 const lessonPaths = TRACK_ORDER.flatMap((track) => trackRoutes(track));
 ---
 
-<script is:inline define:vars={{ lessonPaths }}>
-  function normKey(path) {
-    return String(path).replace(/\/$/, "");
-  }
+<script type="application/json" data-lesson-paths set:html={JSON.stringify(lessonPaths)} />
 
-  function completedPaths() {
+<script>
+  import { getProgress, normPath } from "../lib/progress-store";
+
+  function lessonPaths(): string[] {
+    const el = document.querySelector<HTMLScriptElement>("script[data-lesson-paths]");
     try {
-      var raw = localStorage.getItem("ts-py-learning-progress");
-      if (!raw) return [];
-      var parsed = JSON.parse(raw);
-      return Array.isArray(parsed.lessons)
-        ? parsed.lessons.map(function (l) {
-            return l.path;
-          })
-        : [];
-    } catch (e) {
+      return JSON.parse(el?.textContent || "[]");
+    } catch {
       return [];
     }
   }
 
-  function isCompleted(path) {
-    var completed = completedPaths().map(normKey);
-    return completed.indexOf(normKey(path)) !== -1;
-  }
+  function addCompletionMarkers(): void {
+    const paths = lessonPaths();
+    // 一次读入完成清单；改造前这里对每个链接各 JSON.parse 一遍 localStorage
+    const completed = new Set(getProgress().lessons.map((l) => normPath(l.path)));
 
-  function addCompletionMarkers() {
-    var known = new Map(
-      lessonPaths.map(function (p) {
-        return [normKey(p), p];
-      }),
-    );
+    const known = new Map(paths.map((p) => [normPath(p), p]));
 
-    document.querySelectorAll(".sl-markdown-content a[href]").forEach(function (link) {
-      var rawHref = link.getAttribute("href") || "";
-      var resolved;
+    document.querySelectorAll(".sl-markdown-content a[href]").forEach((link) => {
+      const rawHref = link.getAttribute("href") || "";
+      let resolved: string;
       try {
-        resolved = normKey(new URL(rawHref, window.location.href).pathname);
-      } catch (e) {
+        resolved = normPath(new URL(rawHref, window.location.href).pathname);
+      } catch {
         return;
       }
 
-      var raw = known.get(resolved);
-      if (!raw) {
-        for (var i = 0; i < lessonPaths.length; i += 1) {
-          if (resolved.endsWith(normKey(lessonPaths[i]))) {
-            raw = lessonPaths[i];
+      let matched = known.get(resolved);
+      if (!matched) {
+        for (const p of paths) {
+          if (resolved.endsWith(normPath(p))) {
+            matched = p;
             break;
           }
         }
       }
-      if (!raw) return;
+      if (!matched) return;
       if (link.querySelector(".lesson-completion-marker")) return;
 
-      var done = isCompleted(raw);
-      var marker = document.createElement("span");
+      const done = completed.has(normPath(matched));
+      const marker = document.createElement("span");
       marker.className = "lesson-completion-marker";
       marker.style.cssText =
         "display:inline-block;width:.5rem;height:.5rem;margin-inline-start:.35rem;border:1px solid var(--border-default);border-radius:2px;vertical-align:middle;";
@@ -78,7 +67,7 @@ const lessonPaths = TRACK_ORDER.flatMap((track) => trackRoutes(track));
     });
   }
 
-  function schedule() {
+  function schedule(): void {
     setTimeout(addCompletionMarkers, 60);
   }
 
@@ -89,5 +78,6 @@ const lessonPaths = TRACK_ORDER.flatMap((track) => trackRoutes(track));
   }
 
   window.addEventListener("progress-updated", schedule);
+  // Starlight 0.28 是 MPA 全页加载，astro:page-load 当前不会触发；保留监听以便未来升级视图过渡
   document.addEventListener("astro:page-load", schedule);
 </script>

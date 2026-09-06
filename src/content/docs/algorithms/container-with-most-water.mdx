@@ -157,14 +157,17 @@ def max_area_brute(height: list[int]) -> int:
 
 指针流程完全一致，差异在数学函数与变量声明上：
 
-<CodeCompare
-  py={`# 内置函数直接可用
+```python
+# 内置函数直接可用
 current_height = min(height[left], height[right])
-max_water = max(max_water, current_area)`}
-  ts={`// 数学函数挂在 Math 下
+max_water = max(max_water, current_area)
+```
+
+```typescript
+// 数学函数挂在 Math 下
 const currentHeight = Math.min(height[left], height[right]);
-maxWater = Math.max(maxWater, currentArea);`}
-/>
+maxWater = Math.max(maxWater, currentArea);
+```
 
 | 关注点   | Python                              | TypeScript                                  |
 | -------- | ----------------------------------- | ------------------------------------------- |
