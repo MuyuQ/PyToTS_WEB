@@ -36,6 +36,7 @@ const allRoutes = [...TRACK_ORDER.flatMap((track) => trackRoutes(track)), ...alg
 ---
 
 <script
+  is:inline
   type="application/json"
   data-progress-routes
   set:html={JSON.stringify({ groups, allRoutes })}

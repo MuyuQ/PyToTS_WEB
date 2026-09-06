@@ -10,7 +10,12 @@ import { TRACK_ORDER, trackRoutes } from "../lib/curriculum";
 const lessonPaths = TRACK_ORDER.flatMap((track) => trackRoutes(track));
 ---
 
-<script type="application/json" data-lesson-paths set:html={JSON.stringify(lessonPaths)} />
+<script
+  is:inline
+  type="application/json"
+  data-lesson-paths
+  set:html={JSON.stringify(lessonPaths)}
+/>
 
 <script>
   import { getProgress, normPath } from "../lib/progress-store";

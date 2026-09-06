@@ -4,6 +4,9 @@ import {
   TRACK_ORDER,
   isTrack,
   lessonRoute,
+  neighbourLesson,
+  parseLessonRoute,
+  totalLessonCount,
   trackLessonCount,
   trackRoutes,
 } from "../../src/lib/curriculum";
@@ -36,5 +39,60 @@ describe("curriculum 单一数据源", () => {
   it("isTrack 只认已知路径", () => {
     expect(isTrack("foundation")).toBe(true);
     expect(isTrack("nope")).toBe(false);
+  });
+
+  it("totalLessonCount 是各路径课时之和", () => {
+    const sum = TRACK_ORDER.reduce((acc, t) => acc + trackLessonCount(t), 0);
+    expect(totalLessonCount()).toBe(sum);
+  });
+
+  describe("parseLessonRoute", () => {
+    it("解析课程路由并给出教学序号", () => {
+      const parsed = parseLessonRoute("/paths/foundation/control-flow/");
+      expect(parsed).toEqual({ track: "foundation", slug: "control-flow", index: 2 });
+    });
+
+    it("课程序之外的入口页不参与上一课/下一课（foundation 无 index 条目 → null）", () => {
+      expect(parseLessonRoute("/paths/foundation/")).toBeNull();
+    });
+
+    it("preparation 的入口页在列表内，可解析为 index 第 0 位", () => {
+      expect(parseLessonRoute("/paths/preparation/")).toEqual({
+        track: "preparation",
+        slug: "index",
+        index: 0,
+      });
+    });
+
+    it("非课程路由返回 null", () => {
+      expect(parseLessonRoute("/algorithms/two-sum/")).toBeNull();
+      expect(parseLessonRoute("/paths/unknown-track/x/")).toBeNull();
+      expect(parseLessonRoute("/bookmarks/")).toBeNull();
+    });
+  });
+
+  describe("neighbourLesson", () => {
+    it("向后取下一课", () => {
+      expect(neighbourLesson("foundation", "variables", 1)).toEqual({
+        track: "foundation",
+        slug: "functions-basics",
+        route: "/paths/foundation/functions-basics/",
+      });
+    });
+
+    it("向前取上一课", () => {
+      expect(neighbourLesson("foundation", "control-flow", -1)?.slug).toBe("functions-basics");
+    });
+
+    it("首课无上一课、末课无下一课", () => {
+      const first = CURRICULUM.foundation[0];
+      const last = CURRICULUM.foundation[CURRICULUM.foundation.length - 1];
+      expect(neighbourLesson("foundation", first, -1)).toBeNull();
+      expect(neighbourLesson("foundation", last, 1)).toBeNull();
+    });
+
+    it("未知课程返回 null", () => {
+      expect(neighbourLesson("foundation", "no-such-lesson", 1)).toBeNull();
+    });
   });
 });

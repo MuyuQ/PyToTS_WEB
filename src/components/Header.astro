@@ -1,6 +1,5 @@
 ---
 import config from "virtual:starlight/user-config";
-import type { Props } from "@astrojs/starlight/props";
 
 import LanguageSelect from "virtual:starlight/components/LanguageSelect";
 import Search from "virtual:starlight/components/Search";
@@ -10,22 +9,23 @@ import ThemeSelect from "virtual:starlight/components/ThemeSelect";
 import SiteNav from "./SiteNav.astro";
 import VisitRecorder from "./VisitRecorder.astro";
 
+// Starlight 0.32+：覆盖组件与虚拟组件各自从 Astro.locals.starlightRoute 取数据，无需透传 props
 const shouldRenderSearch =
   config.pagefind || config.components.Search !== "@astrojs/starlight/components/Search.astro";
 ---
 
 <div class="header sl-flex">
   <div class="title-wrapper sl-flex">
-    <SiteTitle {...Astro.props} />
+    <SiteTitle />
   </div>
   <SiteNav />
   <div class="sl-flex right-group">
     <div class="sl-flex social-icons">
-      <SocialIcons {...Astro.props} />
+      <SocialIcons />
     </div>
-    {shouldRenderSearch && <Search {...Astro.props} />}
-    <ThemeSelect {...Astro.props} />
-    <LanguageSelect {...Astro.props} />
+    {shouldRenderSearch && <Search />}
+    <ThemeSelect />
+    <LanguageSelect />
   </div>
   {/* 借顶栏做「每页都渲染」的挂载点，为首页继续学习卡片记录上次学到的位置 */}
   <VisitRecorder />
