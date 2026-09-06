@@ -14,6 +14,20 @@ import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.
 
 适合已经有 Python 开发经验，希望系统迁移到 TypeScript 的工程师。
 
+## 适合谁
+
+- **Python 后端工程师**：熟悉 Django/FastAPI，要写 TS 微服务或前端配合
+- **数据/ML 工程师**：要把 Python 脚本迁移到 TS/Node.js 生产环境
+- **全栈开发者**：前后端统一 TS 栈，需补齐类型系统差异
+- **面试冲刺者**：需快速掌握 TS 与 Python 核心差异点
+
+## 怎么用
+
+1. **按序迁移**：7 节课按"类型系统 → 函数 → 模块 → 异步 → 错误 → 枚举 → 字符串"依赖顺序
+2. **对比迁移**：每节课含双语对照、迁移陷阱对比、自测清单，学完即测
+3. **手动改写**：每节课把 Python 示例手动改写为 TS，强化迁移肌肉记忆
+4. **对照手册**：卡住时去 [手册](../../handbook/cheat-sheet/) 查语法对照表
+
 ## 课程列表
 
 <CardGrid>
@@ -25,7 +39,6 @@ import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.
     - 类型推断与类型注解
 
     [开始学习 →](types/)
-
   </Card>
 
   <Card title="2. 函数与参数" icon="seti:function">
@@ -36,7 +49,6 @@ import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.
     - 对象参数替代 kwargs
 
     [开始学习 →](functions/)
-
   </Card>
 
   <Card title="3. 异步编程" icon="seti:clock">
@@ -47,7 +59,6 @@ import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.
     - 错误处理模式
 
     [开始学习 →](async/)
-
   </Card>
 
   <Card title="4. 模块与包管理" icon="seti:package">
@@ -58,7 +69,6 @@ import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.
     - 项目组织方式
 
     [开始学习 →](modules/)
-
   </Card>
 
   <Card title="5. 错误处理机制" icon="seti:alert">
@@ -69,7 +79,6 @@ import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.
     - 可选链与空值合并
 
     [开始学习 →](error-handling/)
-
   </Card>
 
   <Card title="6. 枚举与常量定义" icon="seti:enum">
@@ -80,7 +89,6 @@ import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.
     - Union Type 替代方案
 
     [开始学习 →](enums/)
-
   </Card>
 
   <Card title="7. 字符串与正则处理" icon="seti:text">
@@ -91,17 +99,31 @@ import LessonProgressMarkers from "../../../../components/LessonProgressMarkers.
     - 正则表达式语法差异
 
     [开始学习 →](strings-regex/)
-
   </Card>
 </CardGrid>
 
-## 学习建议
+## 学完你能做什么
 
-1. 按顺序学习核心课程，先建立类型心智再进入异步与模块。
-2. 每节课都把 Python 示例手动改写为 TypeScript，强化迁移肌肉记忆。
-3. 重点关注错误处理和字符串处理，这是日常开发的高频操作。
-4. 学完后立即进入 [算法练习](../../algorithms/) 做双语实战。
+- ✓ 熟练使用 TS 静态类型系统（联合/交叉/字面量/条件类型）
+- ✓ 编写类型安全的函数签名（默认/剩余/对象参数/重载）
+- ✓ 用 ESM 组织模块、配置 tsconfig、管理 npm 依赖
+- ✓ 用 Promise/async-await 替代 asyncio，掌握并发与错误传播
+- ✓ 用 try/catch、Error 子类、可选链/空值合并做健壮错误处理
+- ✓ 在 TS 中用 enum/const/Union 替代 Python Enum/常量
+- ✓ 用模板字符串、字符串方法、RegExp 做字符串处理
+
+## 下一步
+
+- **去自测**：完成[迁移路径自测清单](../../practice/)
+- **去刷题**：去[算法迁移题](../../algorithms/)按标签筛选（如 `async`、`generics`、`utility-types`）
+- **进进阶**：完成 7 节后进入[进阶路径](../advanced/)补泛型/装饰器/设计模式/Node.js
+
+:::tip
+迁移的关键是"对比肌肉记忆"：每节课把 Python 示例手动改写成 TS，强迫大脑建立新映射，别只看不写。
+:::
 
 ---
 
 **准备开始迁移？** 点击 [类型系统对比](types/) 开始。
+
+(End of file - total 112 lines)
