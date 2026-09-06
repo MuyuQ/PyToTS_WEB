@@ -11,9 +11,22 @@ description: 从 Python 开发者视角学习 Node.js 核心模块，掌握文�
 sidebar:
   order: 8
 ---
+
+import CodeCompare from '../../../../components/CodeCompare.astro';
+
 ## 场景与问题
 
 Python 开发者习惯使用 `open()`、`os.path` 和 `pathlib` 处理文件系统操作。迁移到 Node.js 后，需要理解回调风格、Promise 化 API、Buffer 和 Stream 等概念。这些是构建命令行工具、后端服务和处理大文件的基础。
+
+**学完能做什么**
+
+- 用 `fs/promises` 读写文件、创建目录、遍历文件并处理错误
+- 用 `path.join`/`resolve` 跨平台拼接路径并区分 `__dirname` 与 `process.cwd()`
+- 用 `Buffer.from`/`toString` 处理字符串↔二进制、Base64、十六进制转换
+- 用 `createReadStream`/`createWriteStream`/`pipeline` 处理大文件不爆内存
+- 读写 `process.env`、解析 `process.argv`、优雅处理信号退出
+- 用 `crypto` 计算哈希、HMAC、生成 UUID、PBKDF2 存密码
+- 避免同步/异步混用、Buffer 拼接用 join、process.exit 立即终止等常见坑
 
 ## 核心概念
 
@@ -54,6 +67,15 @@ with open("data.txt", "r", encoding="utf-8") as f:
     for line in f:
         print(line.strip())
 ```
+
+短对照：Promise 风格读写文件。
+
+<CodeCompare
+  py={`content = await fs.readFile("data.txt", "utf-8")
+await fs.writeFile("out.txt", "Hello", "utf-8")`}
+  ts={`const content = await fs.readFile("data.txt", "utf-8");
+await fs.writeFile("out.txt", "Hello", "utf-8");`}
+/>
 
 #### Node.js 实现（回调风格）
 
@@ -157,6 +179,13 @@ async function readWithPromise(): Promise<void> {
 }
 ```
 
+短对照：同步 vs Promise 读取。
+
+<CodeCompare
+  py={`data = open("f.txt").read()  # 同步阻塞`}
+  ts={`const data = fs.readFileSync("f.txt", "utf-8"); // 同步阻塞`}
+/>
+
 **何时使用同步 API：**
 
 - 应用启动时加载配置文件
@@ -205,6 +234,15 @@ path.mkdir(parents=True, exist_ok=True)
 for file in Path(".").glob("*.txt"):
     print(file)
 ```
+
+短对照：目录创建与文件遍历。
+
+<CodeCompare
+  py={`os.makedirs("a/b", exist_ok=True)
+for f in Path(".").glob("*.txt"): print(f)`}
+  ts={`await fs.mkdir("a/b", { recursive: true });
+for (const f of await fs.readdir(".")) if (f.endsWith(".txt")) console.log(f);`}
+/>
 
 #### Node.js 实现
 
@@ -275,6 +313,15 @@ is_file = os.path.isfile("data.txt")
 is_dir = os.path.isdir("data")
 ```
 
+短对照：路径拼接与分解。
+
+<CodeCompare
+  py={`full = os.path.join("a", "b", "c.txt")
+print(os.path.dirname(full), os.path.basename(full))`}
+  ts={`const full = path.join("a", "b", "c.txt");
+console.log(path.dirname(full), path.basename(full));`}
+/>
+
 #### Node.js 实现
 
 ```typescript
@@ -337,6 +384,15 @@ const configPath = path.join(__dirname, "config.json");
 const userPath = path.join(process.cwd(), "user-data.json");
 ```
 
+短对照：__dirname vs process.cwd()。
+
+<CodeCompare
+  py={`script_dir = Path(__file__).parent  # 脚本目录
+cwd = Path.cwd()  # 工作目录（可能不同）`}
+  ts={`const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const cwd = process.cwd();`}
+/>
+
 ## Buffer 和 Stream
 
 ### Buffer 类型
@@ -368,6 +424,17 @@ print(bytes(data))  # b"Jello"
 with open("image.png", "rb") as f:
     binary_data = f.read()
 ```
+
+短对照：字符串↔Buffer 编码转换。
+
+<CodeCompare
+  py={`text = "你好"
+enc = text.encode("utf-8")
+dec = enc.decode("utf-8")`}
+  ts={`const text = "你好";
+const enc = Buffer.from(text, "utf-8");
+const dec = enc.toString("utf-8");`}
+/>
 
 #### Node.js 实现
 
@@ -407,6 +474,17 @@ const b = Buffer.from("abc");
 console.log(a.equals(b)); // true
 console.log(a.compare(Buffer.from("abd"))); // -1 (a < abd)
 ```
+
+短对照：Buffer 拼接与 Base64。
+
+<CodeCompare
+  py={`combined = b"Hello" + b" World"
+b64 = base64.b64encode(b"Hello").decode()`}
+  ts={`const combined = Buffer.concat([Buffer.from("Hello"), Buffer.from(" World")]);
+const b64 = Buffer.from("Hello").toString("base64");`}
+/>
+
+### Buffer 常用编码
 
 ### Buffer 常用编码
 
@@ -466,6 +544,14 @@ buffer.write("Hello")
 buffer.write(" World")
 print(buffer.getvalue())  # "Hello World"
 ```
+
+短对照：Pipeline 管道复制大文件。
+
+<CodeCompare
+  py={`import shutil
+shutil.copy2("src.mp4", "dst.mp4")`}
+  ts={`await pipeline(fs.createReadStream("src.mp4"), fs.createWriteStream("dst.mp4"));`}
+/>
 
 #### Node.js 实现
 
@@ -623,6 +709,15 @@ for key, value in os.environ.items():
     print(f"{key}={value}")
 ```
 
+短对照：环境变量读取与默认值。
+
+<CodeCompare
+  py={`host = os.environ.get("DB_HOST", "localhost")
+port = int(os.environ.get("PORT", "5432"))`}
+  ts={`const host = process.env.DB_HOST ?? "localhost";
+const port = parseInt(process.env.PORT ?? "3000", 10);`}
+/>
+
 #### Node.js 实现
 
 ```typescript
@@ -674,6 +769,15 @@ print(f"File: {args.file}")
 print(f"Verbose: {args.verbose}")
 print(f"Output: {args.output}")
 ```
+
+短对照：命令行参数切片与解析。
+
+<CodeCompare
+  py={`args = sys.argv[1:]  # 去掉脚本名
+print(args)`}
+  ts={`const args = process.argv.slice(2); // 去掉 node 路径和脚本路径
+console.log(args);`}
+/>
 
 #### Node.js 实现
 
@@ -749,6 +853,15 @@ signal.signal(signal.SIGTERM, handle_signal)
 print(f"PID: {os.getpid()}")
 print(f"PPID: {os.getppid()}")  # 父进程 ID
 ```
+
+短对照：优雅退出与信号处理。
+
+<CodeCompare
+  py={`import signal
+signal.signal(signal.SIGINT, lambda s,f: sys.exit(0))`}
+  ts={`process.on("SIGINT", () => process.exit(0));
+process.on("SIGTERM", () => process.exit(0));`}
+/>
 
 #### Node.js 实现
 
@@ -1029,6 +1142,20 @@ const configPath = "../config.json"; // 相对于当前工作目录
 const configPath = path.join(__dirname, "..", "config.json");
 ```
 
+:::tip
+`path.join` 会自动处理平台分隔符（Windows `\`，Unix `/`）。`__dirname` 是脚本所在目录，`process.cwd()` 是运行命令的工作目录，两者在通过 npm scripts 或不同目录启动时可能不同，读取配置文件用 `__dirname`，读取用户文件用 `process.cwd()`。
+:::
+
+错误版硬编码分隔符导致跨平台失败，正确版用 path.join：
+
+```typescript
+// ❌ 错误：Windows 下路径分隔符是反斜杠
+const bad = "data" + "/" + "file.txt"; // Unix only
+
+// ✅ 正确：自动适配平台
+const good = path.join("data", "file.txt");
+```
+
 ### 编码问题
 
 ```typescript
@@ -1043,6 +1170,20 @@ const image = fs.readFileSync("image.png", "utf-8"); // 会损坏数据
 
 // ✓ 正确：二进制文件使用 Buffer
 const image = fs.readFileSync("image.png"); // 返回 Buffer
+```
+
+:::note
+`fs.readFileSync` 不传 encoding 返回 `Buffer`，传 `"utf-8"` 返回字符串。二进制文件（图片、视频、压缩包）必须用 Buffer 处理，用 utf-8 会把非文本字节按替换字符处理导致数据损坏。
+:::
+
+错误版用 utf-8 读二进制文件导致数据损坏，正确版不传 encoding 拿 Buffer：
+
+```typescript
+// ❌ 错误：图片用 utf-8 读取，字节被破坏
+const bad = fs.readFileSync("image.png", "utf-8"); // 字符串，数据已损坏
+
+// ✅ 正确：不传 encoding，得到 Buffer
+const good = fs.readFileSync("image.png"); // Buffer，原始字节完整
 ```
 
 ### 异步陷阱
@@ -1084,6 +1225,27 @@ for (const file of files) {
 const results = await Promise.all(files.map((file) => fs.promises.readFile(file, "utf-8")));
 ```
 
+:::tip
+循环里发起异步操作：顺序用 `for...of` + `await`，并发用 `Promise.all(map(...))`。`forEach` 不支持 await，不要写 `files.forEach(async f => await read(f))`，它不会等待。
+:::
+
+错误版用 forEach 发起异步不等待，正确版用 for...of 或 Promise.all：
+
+```typescript
+// ❌ 错误：forEach 不等待异步，循环立即结束
+files.forEach(async (file) => {
+  await fs.promises.readFile(file); // 这里的 await 只在回调内生效
+});
+
+// ✅ 正确：for...of 顺序等待
+for (const file of files) {
+  await fs.promises.readFile(file);
+}
+
+// ✅ 正确：Promise.all 并发等待
+await Promise.all(files.map(f => fs.promises.readFile(f)));
+```
+
 ### Buffer 拼接陷阱
 
 ```typescript
@@ -1100,6 +1262,20 @@ stream.on("end", () => {
 stream.on("end", () => {
   const result = Buffer.concat(chunks).toString("utf-8");
 });
+```
+
+:::note
+`Buffer[]` 调用 `join()` 会先把每个 Buffer `toString()` 再拼接，导致多字节字符（中文、emoji）在边界处被截断乱码。必须用 `Buffer.concat(chunks)` 合并原始字节，最后再统一 `toString("utf-8")`。
+:::
+
+错误版用 join 拼接导致中文乱码，正确版用 Buffer.concat：
+
+```typescript
+// ❌ 错误：中文在 chunk 边界被截断
+const bad = chunks.join(""); // "Hello 世" + "界" -> "Hello 世�界"
+
+// ✅ 正确：Buffer.concat 保持字节完整
+const good = Buffer.concat(chunks).toString("utf-8"); // "Hello 世界"
 ```
 
 ### process.exit() 陷阱
@@ -1124,6 +1300,24 @@ async function gracefulShutdown(signal: string) {
 
 process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
 process.on("SIGINT", () => gracefulShutdown("SIGINT"));
+```
+
+:::tip
+`process.exit(code)` 会立即终止进程，事件循环里未完成的 Promise、定时器、流都会被强制切断。优雅退出的标准模式：设置 `process.exitCode`，在信号处理器里做清理，清理完再 `process.exit(0)`，或直接让事件循环自然结束。
+:::
+
+错误版直接 exit 导致日志未刷盘、连接未关闭，正确版设置 exitCode 等清理完成：
+
+```typescript
+// ❌ 错误：立即退出，异步清理来不及执行
+console.log("Cleaning up...");
+process.exit(0); // 后台写入、数据库关闭全中断
+
+// ✅ 正确：设置退出码，清理完自然退出
+process.exitCode = 0;
+await db.close();
+await logger.flush();
+// 事件循环空了进程自动按 exitCode 退出
 ```
 
 ## 练习
@@ -1216,6 +1410,17 @@ process.on("SIGINT", () => {
 ```
 
 </details>
+
+## 自测清单
+
+- [ ] 能用 `fs/promises` 读写文件、创建目录、遍历文件并用 try/catch 处理错误
+- [ ] 能用 `path.join`/`resolve` 跨平台拼接路径并区分 `__dirname` 与 `process.cwd()`
+- [ ] 能用 `Buffer.from`/`toString` 处理字符串↔二进制、Base64、十六进制转换
+- [ ] 能用 `createReadStream`/`createWriteStream`/`pipeline` 处理大文件不爆内存
+- [ ] 能读写 `process.env`、解析 `process.argv`、优雅处理 SIGINT/SIGTERM 退出
+- [ ] 能用 `crypto` 计算哈希、HMAC、生成 UUID、PBKDF2 存密码
+- [ ] 能避免同步/异步混用、Buffer 拼接用 join、process.exit 立即终止等常见坑
+- [ ] 能用 `util.promisify` 把回调 API 包装为 Promise
 
 ## 面试追问
 

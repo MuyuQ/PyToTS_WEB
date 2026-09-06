@@ -11,9 +11,22 @@ description: 用 TypeScript 实现常见设计模式，对比 Python 实现
 sidebar:
   order: 6
 ---
+
+import CodeCompare from '../../../../components/CodeCompare.astro';
+
 ## 场景与问题
 
 设计模式是解决常见软件设计问题的方案。Python 和 TypeScript 都可以实现这些模式，但 TypeScript 的类型系统让实现更明确。
+
+**学完能做什么**
+
+- 用 `interface` 定义策略/观察者/工厂契约并实现多态
+- 实现工厂模式统一创建逻辑并用泛型工厂支持动态注册
+- 实现观察者模式并返回取消订阅函数实现资源释放
+- 实现策略模式在运行时切换算法并保持类型安全
+- 实现适配器模式统一新旧接口并复用旧实现
+- 实现单例模式（私有构造器 + 静态工厂或装饰器）
+- 避免接口定义过度抽象导致实现类膨胀
 
 ## 1. 工厂模式
 
@@ -52,6 +65,19 @@ class AnimalFactory:
 dog = AnimalFactory.create("dog")
 print(dog.speak())  # Woof!
 ```
+
+短对照：工厂方法核心结构对比。
+
+<CodeCompare
+  py={`class AnimalFactory:
+    _animals = {"dog": Dog, "cat": Cat}
+    @classmethod
+    def create(cls, t): return cls._animals[t]()`}
+  ts={`class AnimalFactory {
+  static animals = { dog: Dog, cat: Cat };
+  static create(t: "dog"|"cat") { return new this.animals[t](); }
+}`}
+/>
 
 ### TypeScript 实现
 
@@ -111,6 +137,20 @@ class GenericFactory<T> {
 }
 ```
 
+短对照：泛型工厂注册与创建。
+
+<CodeCompare
+  py={`class GenericFactory:
+    def __init__(self): self._reg = {}
+    def register(self, t, c): self._reg[t] = c
+    def create(self, t): return self._reg[t]()`}
+  ts={`class GenericFactory<T> {
+  private reg = new Map<string, new()=>T>();
+  register(t: string, c: new()=>T) { this.reg.set(t, c); }
+  create(t: string) { return new this.reg.get(t)!(); }
+}`}
+/>
+
 ## 2. 观察者模式
 
 ### Python 实现
@@ -150,6 +190,20 @@ service = UserService()
 service.user_created.subscribe(lambda name: print(f"Notification: {name} created"))
 service.create_user("Alice")
 ```
+
+短对照：事件发射与订阅核心结构。
+
+<CodeCompare
+  py={`class Event:
+    def __init__(self): self._ls = []
+    def sub(self, fn): self._ls.append(fn)
+    def emit(self, *a): [f(*a) for f in self._ls]`}
+  ts={`class EventEmitter<T> {
+  private ls: ((d:T)=>void)[] = [];
+  sub(fn: (d:T)=>void) { this.ls.push(fn); return ()=>{...}; }
+  emit(d: T) { this.ls.forEach(f=>f(d)); }
+}`}
+/>
 
 ### TypeScript 实现
 
@@ -203,6 +257,31 @@ const unsubscribe = service.userCreated.subscribe(({ name }) =>
 
 service.createUser("Alice");
 unsubscribe(); // 取消订阅
+```
+
+:::tip
+订阅返回取消函数是 TypeScript 常见模式（如 RxJS、React hooks）。调用方只需保存返回值，销毁时调用即可，无需持有原始监听器引用。
+:::
+
+错误版订阅不返回取消函数导致无法清理，正确版返回取消函数：
+
+```typescript
+// ❌ 错误：subscribe 返回 void，无法取消订阅，内存泄漏风险
+class BadEmitter<T> {
+  private ls: ((d:T)=>void)[] = [];
+  sub(fn: (d:T)=>void) { this.ls.push(fn); }
+  emit(d: T) { this.ls.forEach(f=>f(d)); }
+}
+
+// ✅ 正确：返回取消函数，支持及时清理
+class GoodEmitter<T> {
+  private ls: ((d:T)=>void)[] = [];
+  sub(fn: (d:T)=>void) {
+    this.ls.push(fn);
+    return () => { const i = this.ls.indexOf(fn); if (i>-1) this.ls.splice(i,1); };
+  }
+  emit(d: T) { this.ls.forEach(f=>f(d)); }
+}
 ```
 
 ## 3. 策略模式
@@ -345,6 +424,46 @@ sorter.setStrategy(new MergeSort());
 console.log(sorter.sort([3, 1, 4, 1, 5])); // [1, 1, 3, 4, 5]
 ```
 
+短对照：策略接口与上下文切换。
+
+<CodeCompare
+  py={`class Sorter:
+    def __init__(self, s): self._s = s
+    def sort(self, d): return self._s.sort(d)
+    def set(self, s): self._s = s`}
+  ts={`class Sorter {
+  constructor(private s: SortStrategy) {}
+  sort(d: number[]) { return this.s.sort(d); }
+  setStrategy(s: SortStrategy) { this.s = s; }
+}`}
+/>
+
+:::note
+策略模式的关键是 `interface` 定义契约，`implements` 保证实现完整。TypeScript 编译期会强制所有策略实现 `sort` 方法，Python ABC 只在实例化时检查。
+:::
+
+错误版直接用条件分支硬编码算法，正确版抽象策略接口：
+
+```typescript
+// ❌ 错误：算法硬编码在 Sorter 中，违反开闭原则
+class BadSorter {
+  sort(data: number[], algo: "quick" | "merge"): number[] {
+    if (algo === "quick") { /* quick sort logic */ return data; }
+    else { /* merge sort logic */ return data; }
+  }
+}
+
+// ✅ 正确：策略独立，新增算法不修改 Sorter
+interface SortStrategy { sort(data: number[]): number[]; }
+class QuickSort implements SortStrategy { sort(d) { ... } }
+class MergeSort implements SortStrategy { sort(d) { ... } }
+class GoodSorter {
+  constructor(private s: SortStrategy) {}
+  sort(d: number[]) { return this.s.sort(d); }
+  setStrategy(s: SortStrategy) { this.s = s; }
+}
+```
+
 ## 4. 适配器模式
 
 ### Python 实现
@@ -372,6 +491,18 @@ old_printer = OldPrinter()
 adapter = PrinterAdapter(old_printer)
 adapter.print("Hello")  # 统一使用 print 方法
 ```
+
+短对照：适配器包装旧接口转新接口。
+
+<CodeCompare
+  py={`class PrinterAdapter:
+    def __init__(self, p): self._p = p
+    def print(self, t): self._p.old_print(t)`}
+  ts={`class OldPrinterAdapter implements Printer {
+  constructor(private p: OldPrinter) {}
+  print(t: string) { this.p.oldPrint(t); }
+}`}
+/>
 
 ### TypeScript 实现
 
@@ -417,6 +548,26 @@ const newPrinter = new NewPrinter();
 printDocument(newPrinter, "World"); // 同样的接口
 ```
 
+:::tip
+适配器模式的核心是 `implements` 目标接口，构造函数接收被适配对象。TypeScript 编译期会检查适配器是否实现了 `Printer` 的所有方法，防止漏写。
+:::
+
+错误版适配器未实现接口导致类型不匹配，正确版显式 implements：
+
+```typescript
+// ❌ 错误：未 implements Printer，printDocument 接受时类型报错
+class BadAdapter {
+  constructor(private p: OldPrinter) {}
+  print(t: string) { this.p.oldPrint(t); }
+}
+
+// ✅ 正确：显式实现接口，编译期保证契约完整
+class GoodAdapter implements Printer {
+  constructor(private p: OldPrinter) {}
+  print(t: string) { this.p.oldPrint(t); }
+}
+```
+
 ## 差异与优势
 
 | 特性       | Python         | TypeScript         |
@@ -426,6 +577,16 @@ printDocument(newPrinter, "World"); // 同样的接口
 | 泛型支持   | 有限           | 完整               |
 | 抽象类     | ABC            | abstract class     |
 | 实现灵活性 | 高（鸭子类型） | 中等（需实现接口） |
+
+## 自测清单
+
+- [ ] 能用 `interface` 定义策略/观察者/工厂契约并实现多态
+- [ ] 能实现工厂模式并用泛型工厂支持动态注册类型
+- [ ] 能实现观察者模式并返回取消订阅函数防止内存泄漏
+- [ ] 能实现策略模式在运行时切换算法并保持类型安全
+- [ ] 能实现适配器模式统一新旧接口并复用旧实现
+- [ ] 能实现单例模式（私有构造器 + 静态工厂或装饰器）
+- [ ] 能指出接口过度抽象导致实现类膨胀的反模式
 
 ## 练习
 
@@ -497,6 +658,37 @@ console.log(config1 === config2); // true
 ```
 
 </details>
+
+:::note
+单例模式的关键点：私有构造器防止外部 `new`，静态实例字段保存唯一实例，静态方法控制创建时机。装饰器版本通过返回包装类实现，更优雅但需启用实验性装饰器。
+:::
+
+错误版构造器公开允许直接 new，正确版私有构造器强制走 getInstance：
+
+```typescript
+// ❌ 错误：构造器公开，外部可直接 new Singleton() 破坏单例
+class BadSingleton {
+  static instance: BadSingleton;
+  static getInstance() { ... }
+  constructor() {} // 公开构造器
+}
+const b1 = new BadSingleton(); // 绕过 getInstance
+const b2 = BadSingleton.getInstance();
+console.log(b1 === b2); // false！
+
+// ✅ 正确：私有构造器，只能通过 getInstance 获取
+class GoodSingleton {
+  private static instance: GoodSingleton;
+  private constructor() {} // 私有构造器
+  static getInstance() {
+    if (!GoodSingleton.instance) GoodSingleton.instance = new GoodSingleton();
+    return GoodSingleton.instance;
+  }
+}
+const g1 = GoodSingleton.getInstance();
+const g2 = GoodSingleton.getInstance();
+console.log(g1 === g2); // true
+```
 
 ## 面试追问
 
