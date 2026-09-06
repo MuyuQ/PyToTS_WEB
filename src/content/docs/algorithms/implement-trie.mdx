@@ -9,280 +9,299 @@ description: 实现一个 Trie (前缀树)，支持插入、搜索单词和前�
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-请你实现一个 Trie (前缀树)，包含 `insert`、`search` 和 `startsWith` 三个操作：
+实现 Trie（前缀树），支持 `insert`、`search`、`startsWith` 三个操作：
 
-- `void insert(String word)` 向 Trie 中插入字符串 `word`
-- `boolean search(String word)` 如果 `word` 在 Trie 中，返回 `true`，否则返回 `false`
-- `boolean startsWith(String prefix)` 如果之前插入的字符串中有以 `prefix` 为前缀的，返回 `true`，否则返回 `false`
+- `insert(word)`：向 Trie 中插入字符串 `word`
+- `search(word)`：`word` 在 Trie 中完整出现过则返回 `true`，否则返回 `false`
+- `startsWith(prefix)`：之前插入的字符串中有以 `prefix` 为前缀的则返回 `true`，否则返回 `false`
 
-**示例：**
+**示例 1**
 
-```
+```text
+输入：
 Trie trie = new Trie();
 trie.insert("apple");
-trie.search("apple");   // 返回 true
+trie.search("apple");    // 返回 true
 trie.search("app");      // 返回 false
 trie.startsWith("app");  // 返回 true
+输出：[true, false, true]
+解释：只有完整插入过的单词才能被 search 命中，前缀命中走 startsWith。
+```
+
+**示例 2**
+
+```text
+输入：
 trie.insert("app");
 trie.search("app");      // 返回 true
+trie.startsWith("ap");   // 返回 true
+trie.search("ap");       // 返回 false
+输出：[true, true, false]
+解释：插入 "app" 后，"ap" 只是路径存在，不是完整单词。
 ```
 
-## 思路引导
+**约束条件**
 
-**第一步：理解前缀树**
+- `1 <= word.length, prefix.length <= 2000`
+- `word` 和 `prefix` 仅由小写英文字母组成
+- `insert`、`search`、`startsWith` 的调用总数不超过 `3 * 10^4` 次
+- 插入的单词不会重复插入相同完整单词以外的特殊处理，结果保持幂等
 
-Trie 是一种树形数据结构，专门用于处理字符串集合：
+**边界情况**：空 Trie 上查询直接返回 `false`；`search` 必须同时满足路径存在与结尾标记，`startsWith` 只要求路径存在；重复插入同一单词不改变结构，只重复标记结尾。
 
-- 每个节点代表一个字符
-- 从根节点到某节点的路径代表一个前缀
-- 根节点代表空字符串
+## 暴力解与瓶颈
 
-```
-         root
-        / | \
-       a  b  c
-       |  |  |
-       p  a  a
-       |  |  |
-       p  t  t
-       |     |
-       l     (end)
-       |
-       e
-       |
-      (end)
+朴素解法是用集合存下所有插入过的单词，查询时直接查集合或扫描前缀：
 
-插入: "app", "apple", "bat", "cat"
-```
+```python
+class NaiveTrie:
+    def __init__(self) -> None:
+        self.words: set[str] = set()
 
-**第二步：节点设计**
+    def insert(self, word: str) -> None:
+        self.words.add(word)
 
-每个节点需要：
+    def search(self, word: str) -> bool:
+        return word in self.words
 
-1. 子节点映射：`字符 -> 子节点`
-2. 结束标记：是否是某个单词的结尾
-
-**第三步：操作实现**
-
-- `insert`：遍历字符，不存在则创建，最后标记结束
-- `search`：遍历字符，必须完整匹配且是单词结尾
-- `startsWith`：遍历字符，只要路径存在就返回 true
-
-## 直观理解
-
-想象一个自动补全系统：
-
-- 输入 "app"，系统可以补全 "apple"、"application"、"append"
-- Trie 就是让这种补全变得高效的秘密武器
-
-为什么不用简单的数组或哈希表？
-
-```
-问题：找出所有以 "app" 开头的单词
-
-方法 1：遍历所有单词，检查前缀
-["apple", "banana", "appetite", "cherry", "application"]
-时间：O(n * m)，n = 单词数，m = 平均长度
-
-方法 2：Trie
-只需走到 "app" 节点，子树所有单词都是答案
-时间：O(3)，3 是 "app" 的长度
+    def startsWith(self, prefix: str) -> bool:
+        return any(w.startswith(prefix) for w in self.words)
 ```
 
-Trie 的优势：前缀相关操作极其高效。
+它的瓶颈在 `startsWith`：每次都要遍历全部单词并逐字符比较前缀，最坏时间 O(N * m)，N 为单词数，m 为前缀长度。当单词量大且前缀查询频繁时，扫描成为瓶颈。优化方向是把公共前缀只存一次，用树形结构共享路径，让每次查询只走 `len(prefix)` 步。
+
+## 思路分析
+
+最优解是标准 Trie：每个节点保存子节点映射 `children` 与结尾标记 `is_end`。根节点表示空串，从根出发的一条路径表示一个前缀。
+
+- `insert(word)`：从根开始逐字符下走，缺失则新建节点，走完后标记 `is_end = True`
+- `search(word)`：走完整个 `word` 且落点 `is_end` 为真才返回真
+- `startsWith(prefix)`：能走完整个 `prefix` 即返回真，不检查结尾
+
+以空 Trie 依次插入 `"apple"` 再插入 `"app"`，第二次插入的干跑过程如下：
+
+| 步骤 | `char` | 查表前动作 | 结果 |
+| ---- | ------ | ---------- | ---- |
+| 1 | `a` | 根已有 `a` | 下走到 `a` |
+| 2 | `p` | `a` 已有 `p` | 下走到 `p` |
+| 3 | `p` | 已有第二层 `p` | 下走到 `p`，标记该节点 `is_end = True` |
+
+此时 `"app"` 节点与 `"apple"` 路径上的节点是同一个对象，只是多了一个结尾标记。`search("app")` 因此由假变真，而 `startsWith("ap")` 在插入前后一直为真。
+
+:::tip
+关键细节是区分路径存在与单词结尾：`search` 必须检查 `is_end`，`startsWith` 不检查。插入 `"apple"` 后 `search("app")` 为假，正是因为中间节点缺少结尾标记。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：
-  - `insert`：O(m)，m 是单词长度
-  - `search`：O(m)
-  - `startsWith`：O(m)
-- **空间复杂度**：O(N)，N 是所有插入字符串的字符总数
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| ---- | ---------- | ---------- | ---- |
+| 暴力集合 | `insert` O(1)，`search` O(1)，`startsWith` O(N * m) | O(总字符数) | 前缀查询每次全量扫描 |
+| Trie 最优解 | `insert`/`search`/`startsWith` 均为 O(m) | O(总字符数) | 公共前缀只存一次，查询只走 key 长度 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
+    ```python
+    # 实现 Trie - Python 实现，insert/search/startsWith 均为 O(m)
+    # 核心思路: 共享前缀，children 存边，is_end 区分单词与前缀
+    class TrieNode:
+        def __init__(self) -> None:
+            self.children: dict[str, TrieNode] = {}
+            self.is_end = False
 
-```python
-# Trie (前缀树) - Python 实现
-# 时间复杂度: insert/search/startsWith 都是 O(m), m=单词长度
-# 空间复杂度: O(N), N=所有插入字符串的字符总数
-# 核心思路: 树形结构，每个节点存储子节点映射和结束标记
+    class Trie:
+        def __init__(self) -> None:
+            self.root = TrieNode()
 
-class TrieNode:
-    """Trie 节点"""
-    def __init__(self):
-        # 子节点映射：字符 -> TrieNode
-        # 使用字典存储，支持任意字符
-        self.children = {}
-        # 结束标记：是否是某个单词的结尾
-        self.is_end = False
+        def insert(self, word: str) -> None:
+            node = self.root
+            for char in word:
+                if char not in node.children:
+                    node.children[char] = TrieNode()
+                node = node.children[char]
+            node.is_end = True
 
-class Trie:
-    """Trie (前缀树) 实现"""
+        def search(self, word: str) -> bool:
+            node = self._find_node(word)
+            return node is not None and node.is_end
 
-    def __init__(self):
-        # 根节点不代表任何字符，是空字符串的起点
-        self.root = TrieNode()
+        def startsWith(self, prefix: str) -> bool:
+            return self._find_node(prefix) is not None
 
-    def insert(self, word: str) -> None:
-        """插入单词到Trie中"""
-        # 从根节点开始遍历
-        node = self.root
-        # 遍历单词的每个字符
-        for char in word:
-            # 如果字符不存在于子节点中，创建新节点
-            if char not in node.children:
-                node.children[char] = TrieNode()
-            # 移动到子节点
-            node = node.children[char]
-        # 单词遍历完成后，标记当前节点为单词结尾
-        node.is_end = True
+        def _find_node(self, prefix: str):
+            node = self.root
+            for char in prefix:
+                if char not in node.children:
+                    return None
+                node = node.children[char]
+            return node
 
-    def search(self, word: str) -> bool:
-        """搜索完整单词，必须存在且是单词结尾"""
-        # 先找到单词对应的节点
-        node = self._find_node(word)
-        # 节点存在且是单词结尾才返回True
-        return node is not None and node.is_end
-
-    def startsWith(self, prefix: str) -> bool:
-        """检查前缀是否存在，只要路径存在就返回True"""
-        # 只要找到前缀对应的节点就返回True
-        return self._find_node(prefix) is not None
-
-    def _find_node(self, prefix: str):
-        """辅助方法：找到前缀对应的节点"""
-        # 从根节点开始遍历
-        node = self.root
-        # 遍历前缀的每个字符
-        for char in prefix:
-            # 如果字符不存在，说明前缀/单词不存在
-            if char not in node.children:
-                return None
-            # 移动到子节点
-            node = node.children[char]
-        # 返回前缀对应的最后一个节点
-        return node
-
-# 测试用例
-trie = Trie()
-trie.insert("apple")
-print(trie.search("apple")) # True
-print(trie.search("app")) # False
-print(trie.startsWith("app")) # True
-trie.insert("app")
-print(trie.search("app")) # True
-print(trie.startsWith("ap")) # True
-print(trie.search("ap")) # False
-```
+    # 测试用例
+    trie = Trie()
+    trie.insert("apple")
+    print(trie.search("apple"))  # True
+    print(trie.search("app"))  # False
+    print(trie.startsWith("app"))  # True
+    trie.insert("app")
+    print(trie.search("app"))  # True
+    print(trie.startsWith("ap"))  # True
+    print(trie.search("ap"))  # False
+    ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 实现 Trie - TypeScript 实现，insert/search/startsWith 均为 O(m)
+    // 核心思路: 共享前缀，children 存边，isEnd 区分单词与前缀
+    class TrieNode {
+      children: Map<string, TrieNode>;
+      isEnd: boolean;
 
-```typescript
-// Trie (前缀树) - TypeScript 实现
-// 时间复杂度: insert/search/startsWith 都是 O(m), m=单词长度
-// 空间复杂度: O(N), N=所有插入字符串的字符总数
-// 核心思路: 树形结构，每个节点存储子节点Map和结束标记
-
-/**
- * Trie 节点
- */
-class TrieNode {
-  // 子节点映射：字符 -> TrieNode
-  // 使用Map存储，支持任意字符，类型安全
-  children: Map<string, TrieNode>;
-  // 结束标记：是否是某个单词的结尾
-  isEnd: boolean;
-
-  constructor() {
-    this.children = new Map();
-    this.isEnd = false;
-  }
-}
-
-/**
- * Trie (前缀树) 实现
- */
-class Trie {
-  // 根节点不代表任何字符，是空字符串的起点
-  private root: TrieNode;
-
-  constructor() {
-    this.root = new TrieNode();
-  }
-
-  insert(word: string): void {
-    // 从根节点开始遍历
-    let node = this.root;
-    // 遍历单词的每个字符
-    for (const char of word) {
-      // 如果字符不存在于子节点中，创建新节点
-      if (!node.children.has(char)) {
-        node.children.set(char, new TrieNode());
+      constructor() {
+        this.children = new Map();
+        this.isEnd = false;
       }
-      // 移动到子节点
-      node = node.children.get(char)!;
     }
-    // 单词遍历完成后，标记当前节点为单词结尾
-    node.isEnd = true;
-  }
 
-  search(word: string): boolean {
-    // 先找到单词对应的节点
-    const node = this.findNode(word);
-    // 节点存在且是单词结尾才返回True
-    return node !== null && node.isEnd;
-  }
+    class Trie {
+      private root: TrieNode;
 
-  startsWith(prefix: string): boolean {
-    // 只要找到前缀对应的节点就返回True
-    return this.findNode(prefix) !== null;
-  }
-
-  /**
-   * 辅助方法：找到前缀对应的节点
-   */
-  private findNode(prefix: string): TrieNode | null {
-    // 从根节点开始遍历
-    let node = this.root;
-    // 遍历前缀的每个字符
-    for (const char of prefix) {
-      // 获取子节点
-      const child = node.children.get(char);
-      // 如果字符不存在，说明前缀/单词不存在
-      if (child === undefined) {
-        return null;
+      constructor() {
+        this.root = new TrieNode();
       }
-      // 移动到子节点
-      node = child;
-    }
-    // 返回前缀对应的最后一个节点
-    return node;
-  }
-}
 
-// 测试用例
-const trie = new Trie();
-trie.insert("apple");
-console.log(trie.search("apple")); // true
-console.log(trie.search("app")); // false
-console.log(trie.startsWith("app")); // true
-trie.insert("app");
-console.log(trie.search("app")); // true
-console.log(trie.startsWith("ap")); // true
-console.log(trie.search("ap")); // false
-```
+      insert(word: string): void {
+        let node = this.root;
+        for (const char of word) {
+          if (!node.children.has(char)) {
+            node.children.set(char, new TrieNode());
+          }
+          node = node.children.get(char)!;
+        }
+        node.isEnd = true;
+      }
+
+      search(word: string): boolean {
+        // 必须路径存在且是单词结尾
+        const node = this.findNode(word);
+        return node !== null && node.isEnd;
+      }
+
+      startsWith(prefix: string): boolean {
+        // 路径存在即命中
+        return this.findNode(prefix) !== null;
+      }
+
+      private findNode(prefix: string): TrieNode | null {
+        let node = this.root;
+        for (const char of prefix) {
+          const child = node.children.get(char);
+          if (child === undefined) {
+            return null;
+          }
+          node = child;
+        }
+        return node;
+      }
+    }
+
+    // 测试用例
+    const trie = new Trie();
+    trie.insert("apple");
+    console.log(trie.search("apple")); // true
+    console.log(trie.search("app")); // false
+    console.log(trie.startsWith("app")); // true
+    trie.insert("app");
+    console.log(trie.search("app")); // true
+    console.log(trie.startsWith("ap")); // true
+    console.log(trie.search("ap")); // false
+    ```
 
   </TabItem>
 </Tabs>
 
-## 互动练习
+## Python 与 TypeScript 差异点评
+
+两份代码结构完全对应，差异集中在容器类型与空值表达上：
+
+<CodeCompare
+  py={`# 缺边检查：in 直接判断键是否存在
+if char not in node.children:
+    node.children[char] = TrieNode()
+node = node.children[char]`}
+  ts={`// 缺边检查：has 判存在，get 取值
+if (!node.children.has(char)) {
+  node.children.set(char, new TrieNode());
+}
+node = node.children.get(char)!;`}
+/>
+
+| 关注点 | Python | TypeScript |
+| ------ | ------ | ---------- |
+| 子节点容器 | `dict[str, TrieNode]`，字面量即可 | `Map<string, TrieNode>`，泛型写清键值类型 |
+| 缺边检查 | `char not in node.children` | `!node.children.has(char)` |
+| 取子节点 | `node.children[char]`，缺席抛 `KeyError` | `node.children.get(char)` 返回 `TrieNode \| undefined`，命中后用 `!` 断言 |
+| 辅助方法 | `_find_node`，单下划线表示内部使用 | `private findNode`，访问修饰符强制封装 |
+| 命名风格 | `is_end`、`_find_node` 蛇形 | `isEnd`、`findNode` 驼峰 |
+| 空值 | `None` | `null`，配合 `undefined` 区分缺席 |
+
+:::note
+`node.children.get(char)!` 的 `!` 是非空断言，前提是上一行 `has` 或 `child === undefined` 检查已经确认存在。不要在没有依据的位置使用 `!`，更稳妥的写法是像 `findNode` 那样用局部变量 `child` 收窄。
+:::
+
+## 常见错误分析
+
+### 1. 插入后忘记标记结尾
+
+```python
+# 错误：走完路径但没有标记
+node = node.children[char]
+# 缺少 node.is_end = True
+```
+
+`search` 依赖 `is_end` 区分单词与前缀，缺少标记会导致插入后依然查不到。**改法**：`insert` 末尾固定写 `node.is_end = True`。
+
+### 2. `search` 复用了 `startsWith` 的逻辑
+
+```python
+# 错误：只判断路径存在
+def search(self, word: str) -> bool:
+    return self._find_node(word) is not None
+```
+
+插入 `"apple"` 后 `search("app")` 会误报 `True`。**改法**：追加 `and node.is_end`，只有结尾标记才能算单词命中。
+
+### 3. TypeScript 里忽略 `Map.get` 的 `undefined`
+
+```typescript
+// 错误：strict 模式下编译不通过
+node = node.children.get(char); // TrieNode | undefined 不能赋给 TrieNode
+```
+
+`Map.get` 的返回类型永远带 `undefined`。**改法**：先 `has` 检查再 `get(char)!` 断言，或用 `const child = get(...)`判空后赋值，Python 侧对应问题是直接下标访问缺席键会抛 `KeyError`，需要先做成员检查。
+
+## 面试变体
+
+1. **实现删除**：支持 `erase(word)` 删除一个单词。只清除结尾标记不够，还要自底向上回收不再被共享的节点。时间 O(m)，空间 O(1) 额外开销，难点是判断何时停止回收。
+2. **前缀计数**：每个节点额外存 `count` 表示经过该节点的单词数，`startsWith` 升级为返回个数。写入时沿路加一，时间仍为 O(m)。
+3. **自动补全**：给定前缀返回全部补全结果。先定位到前缀节点，再对子树做 DFS 收集，时间 O(p + k)，p 为前缀长，k 为输出总长度。
+4. **单词搜索 II**：在字符矩阵中找字典里出现过的全部单词（详见[单词搜索](../word-search/)）。把字典建成 Trie 后在矩阵上做 DFS，剪枝掉无前缀分支，总复杂度远小于每个单词单独搜索。
+5. **设计题串联**：Trie 属于典型设计类题目，可对比[最近最少使用缓存](../lru-cache/)的哈希加链表设计，体会空间换时间的通用思路。
+
+## 面试追问
+
+- 为什么不用哈希表存所有前缀？（前缀总数是字符总数的平方级展开，Trie 把公共前缀合并，查询同样 O(m) 但空间更省。）
+- `search` 与 `startsWith` 的区别在实现上只有一行，背后语义是什么？（路径存在表示前缀成立，结尾标记表示单词成立，插入 `"apple"` 与 `"app"` 共享路径但结尾不同。）
+- 字符集很大（如 Unicode）时如何控制内存？（子节点改用排序数组或压缩边的基数树，用查询时间换空间，或按需建边。）
+- 如何支持通配符搜索（如 `.` 匹配任意字符）？（遇到通配符时对当前节点全部子节点做 DFS，时间退化到 O(分支数 ^ 通配符数)。）
+
+## 巩固练习
 
 ### 练习 1：跟踪插入过程
 
@@ -327,88 +346,3 @@ console.log(trie.search("ap")); // false
 实现思路：递归从叶子往根删除，遇到分支点停止。
 
 </details>
-
-## 常见错误详解
-
-### 错误 1：忘记标记单词结尾
-
-```typescript
-// 错误：没有标记结尾
-insert(word: string): void {
-    let node = this.root;
-    for (const char of word) {
-        if (!node.children.has(char)) {
-            node.children.set(char, new TrieNode());
-        }
-        node = node.children.get(char)!;
-    }
-    // 忘了 node.isEnd = true;
-}
-```
-
-**后果**：`search("apple")` 返回 false，因为没有单词结尾标记。
-
-### 错误 2：search 和 startsWith 混淆
-
-```typescript
-// 错误：search 返回了 startsWith 的结果
-search(word: string): boolean {
-    return this.findNode(word) !== null;  // 缺少 isEnd 检查
-}
-```
-
-**后果**：插入 "apple" 后，`search("app")` 错误地返回 true。
-
-### 错误 3：使用对象而非 Map
-
-```typescript
-// 不推荐：对象作为字典
-children: Record<string, TrieNode>;
-
-// 推荐：Map 更类型安全
-children: Map<string, TrieNode>;
-```
-
-**为什么？** TypeScript 中 `Map` 提供更好的类型推断，避免 `undefined` 问题。
-
-### 错误 4：Python 使用 setdefault 的陷阱
-
-```python
-# 不推荐：可读性差
-node = node.children.setdefault(char, TrieNode())
-
-# 推荐：更清晰
-if char not in node.children:
-    node.children[char] = TrieNode()
-node = node.children[char]
-```
-
-## 记忆口诀
-
-- **节点结构**：`children` + `is_end`，子节点映射加结束标记
-- **插入**：不存在就创建，最后标记结尾
-- **搜索**：必须完整路径 + 结尾标记
-- **前缀**：只要路径存在，不检查结尾
-
-## 面试变体
-
-1. **添加 delete 方法**：删除单词，考虑共享路径
-2. **统计以某前缀开头的单词数量**：每个节点存储子树单词数
-3. **实现自动补全**：返回所有以某前缀开头的单词
-4. **最长公共前缀**：找出一组字符串的最长公共前缀
-5. **单词搜索 II**：在字符矩阵中找出所有字典中的单词（LeetCode 212）
-
-## TypeScript vs Python 对比
-
-| 特性       | Python                         | TypeScript                            |
-| ---------- | ------------------------------ | ------------------------------------- |
-| 子节点存储 | `dict` 或 `defaultdict`        | `Map<K, V>`                           |
-| 空值判断   | `if char not in node.children` | `if (!node.children.has(char))`       |
-| 获取值     | `node.children.get(char)`      | `node.children.get(char)!` (非空断言) |
-| 类型安全   | 运行时检查                     | 编译时检查                            |
-
-**TypeScript 注意点**：
-
-- 使用 `Map` 而非 `Record` 或 `{}`，类型更安全
-- `get()` 返回 `undefined`，需要显式检查或用 `!` 非空断言
-- `for...of` 遍历字符串比 `for...in` 更直接

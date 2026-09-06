@@ -9,210 +9,258 @@ description: 判断链表是否有环
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给定一个链表，判断链表中是否有环。如果链表中存在环，则返回 `true`，否则返回 `false`。
+给定单链表的头节点 `head`，判断链表中是否存在环。存在环返回 `true`，否则返回 `false`。环指某节点的 `next` 指向链表中已出现过的节点。
+
+**示例 1**
+
+```text
+输入：head = [3, 2, 0, -4]，尾节点连向索引 1 的节点
+输出：true
+解释：节点 -4 指回节点 2，形成环
+```
+
+**示例 2**
+
+```text
+输入：head = [1, 2]，无环
+输出：false
+解释：快指针抵达末尾空引用，全程未相遇
+```
+
+**约束条件**
+
+- 链表节点数范围为 `[0, 10⁴]`
+- `-10⁵ <= Node.val <= 10⁵`
+
+**边界情况**：空链表与单节点无环直接返回 `false`；比较的是节点引用而非节点值，值相同但对象不同不算相遇；无环时快指针必先到末尾，循环条件必须同时 guard `fast` 与 `fast.next`。
+
+## 暴力解与瓶颈
+
+朴素做法是用集合记录访问过的节点引用：
+
+```python
+def has_cycle_brute(head) -> bool:
+    seen = set()
+    curr = head
+    while curr:
+        if curr in seen:
+            return True
+        seen.add(curr)
+        curr = curr.next
+    return False
+```
+
+正确但需要 O(n) 额外空间存储引用，最坏存下整个链表。瓶颈在于为"是否见过"付出线性空间。优化方向是利用相对速度消除存储：快指针每次两步、慢指针每次一步，有环则快指针必从后方追上慢指针，无环则快指针先到终点，全程 O(1) 空间。
 
 ## 思路分析
 
-使用快慢指针（龟兔赛跑算法）：
+快慢指针均从 `head` 出发。循环条件为 `fast` 与 `fast.next` 均非空（快指针一次走两步，需预留两跳）。每轮慢指针走一步、快指针走两步；相遇即有环；快指针到空即无环。
 
-- 慢指针每次移动一步
-- 快指针每次移动两步
-- 如果有环，快指针最终会追上慢指针
+以 `1 -> 2 -> 3 -> 2（环）` 为例，指针均为引用：
+
+| 步骤 | `slow` | `fast` | 是否相遇 |
+| ---- | ------ | ------ | -------- |
+| 初始 | 1      | 1      | 否       |
+| 1    | 2      | 3      | 否       |
+| 2    | 3      | 3      | 是，返真 |
+
+无环 `1 -> 2 -> None` 的过程：首轮 `slow = 2, fast = None`，循环条件破坏，退出返假。
+
+:::tip
+关键细节有三：起点同为 `head`（错开起点会引入误判或漏判）；循环 guard 必须写 `fast and fast.next`（只 guard `fast` 会在取 `fast.next.next` 时空引用）；相遇比较引用恒等而非 `val` 相等。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n)，最坏情况遍历整个链表
-- **空间复杂度**：O(1)，只使用两个指针
+| 解法     | 时间复杂度 | 空间复杂度 | 说明                         |
+| -------- | ---------- | ---------- | ---------------------------- |
+| 哈希集合 | O(n)       | O(n)       | 存全部访问引用，一遍可判     |
+| 快慢指针 | O(n)       | O(1)       | 相对速度追及，仅两个指针     |
+
+快慢指针时间同样线性：无环时快指针遍历约 `n` 步；有环时慢指针入环后一圈内必被追上。空间降为常数，为最优解。
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 环形链表 - Python 实现 (快慢指针/龟兔赛跑算法)
+    # 环形链表 - Python 实现（快慢指针）
     # 时间复杂度: O(n), 空间复杂度: O(1)
-    # 核心思路: 快指针每次走2步，慢指针每次走1步
-    # 如果有环，快指针一定会追上慢指针（就像操场跑步，快的人套慢的人一圈）
-    # 如果无环，快指针会先到达链表末尾(None)
+    # 核心思路: 快走两步慢走一步，相遇即有环
     class ListNode:
-        """链表节点定义"""
-        def __init__(self, val: int = 0, next: 'ListNode' = None):
+        def __init__(self, val: int = 0, next=None):
             self.val = val
             self.next = next
 
-    def has_cycle(head: ListNode) -> bool: # 边界条件: 空链表或只有一个节点且无后继，不可能有环 # head 为 None: 空链表 # head.next 为 None: 只有一个节点，没有环
-    if not head or not head.next:
-    return False
+    def has_cycle(head: ListNode | None) -> bool:
+        # 空链表或单节点无后继，不可能成环
+        if not head or not head.next:
+            return False
 
-        # 快慢指针都从头节点出发
-        # 注意: 都从 head 开始，而不是 slow=head, fast=head.next
-        slow = head      # 慢指针: 每次移动一步
-        fast = head      # 快指针: 每次移动两步
+        # 快慢指针同起点出发
+        slow = head
+        fast = head
 
-        # 循环条件: fast 和 fast.next 都不为空
-        # 必须同时检查两个条件，因为 fast.next.next 需要 fast.next 非空
+        # fast 走两步，需同时保证 fast 与 fast.next 非空
         while fast and fast.next:
-            slow = slow.next          # 慢指针走一步
-            fast = fast.next.next     # 快指针走两步
-
-            # 快慢指针相遇，说明有环
-            # 比较的是节点引用(内存地址)，不是节点值
-            if slow == fast:
+            # 慢指针走一步
+            slow = slow.next
+            # 快指针走两步
+            fast = fast.next.next
+            # 引用相遇说明有环
+            if slow is fast:
                 return True
 
-        # fast 到达链表末尾(None)，说明无环
+        # 快指针到末尾，说明无环
         return False
 
     # 测试用例
-
-    # 创建有环链表: 1 -> 2 -> 3 -> 2 (环)
-
     node1 = ListNode(1)
     node2 = ListNode(2)
     node3 = ListNode(3)
     node1.next = node2
     node2.next = node3
-    node3.next = node2 # 环: 节点3指向节点2
-
-    print(has_cycle(node1)) # True
+    node3.next = node2  # 构造环
+    print(has_cycle(node1))  # True
+    print(has_cycle(ListNode(1)))  # False
+    print(has_cycle(None))  # False
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 环形链表 - TypeScript 实现 (快慢指针/龟兔赛跑算法)
+    // 环形链表 - TypeScript 实现（快慢指针）
     // 时间复杂度: O(n), 空间复杂度: O(1)
-    // 核心思路: 快指针每次走2步，慢指针每次走1步
-    // 如果有环，快指针一定会追上慢指针（就像操场跑步，快的人套慢的人一圈）
-    // 如果无环，快指针会先到达链表末尾(null)
+    // 核心思路: 快走两步慢走一步，相遇即有环
     class ListNode {
-    val: number;
-    next: ListNode | null;
+      val: number;
+      next: ListNode | null;
 
-        constructor(val: number = 0, next: ListNode | null = null) {
-            this.val = val;
-            this.next = next;
-        }
-
+      constructor(val: number = 0, next: ListNode | null = null) {
+        this.val = val;
+        this.next = next;
+      }
     }
 
     function hasCycle(head: ListNode | null): boolean {
-    // 边界条件: 空链表或只有一个节点且无后继，不可能有环
-    // head 为 null: 空链表
-    // head.next 为 null: 只有一个节点，没有环
-    if (!head || !head.next) {
-    return false;
-    }
-
-        // 快慢指针都从头节点出发
-        // 注意: 都从 head 开始，而不是 slow=head, fast=head.next
-        let slow: ListNode | null = head;  // 慢指针: 每次移动一步
-        let fast: ListNode | null = head;  // 快指针: 每次移动两步
-
-        // 循环条件: fast 和 fast.next 都不为空
-        // 必须同时检查两个条件，因为 fast.next.next 需要 fast.next 非空
-        while (fast && fast.next) {
-            slow = slow!.next;         // ! 断言 slow 非空（因为 fast 非空意味着 slow 也非空）
-            fast = fast.next.next;     // 快指针走两步
-
-            // 快慢指针相遇，说明有环
-            // 比较的是节点引用(内存地址)，不是节点值
-            if (slow === fast) {
-                return true;
-            }
-        }
-
-        // fast 到达链表末尾(null)，说明无环
+      // 空链表或单节点无后继，不可能成环
+      if (!head || !head.next) {
         return false;
+      }
 
+      // 快慢指针同起点出发
+      let slow: ListNode | null = head;
+      let fast: ListNode | null = head;
+
+      // fast 走两步，需同时保证 fast 与 fast.next 非空
+      while (fast && fast.next) {
+        // 慢指针走一步，非空断言有循环条件背书
+        slow = slow!.next;
+        // 快指针走两步
+        fast = fast.next.next;
+        // 引用相遇说明有环
+        if (slow === fast) {
+          return true;
+        }
+      }
+
+      // 快指针到末尾，说明无环
+      return false;
     }
 
     // 测试用例
-    // 创建有环链表: 1 -> 2 -> 3 -> 2 (环)
     const node1 = new ListNode(1);
     const node2 = new ListNode(2);
     const node3 = new ListNode(3);
     node1.next = node2;
     node2.next = node3;
-    node3.next = node2; // 环: 节点3指向节点2
-
+    node3.next = node2; // 构造环
     console.log(hasCycle(node1)); // true
+    console.log(hasCycle(new ListNode(1))); // false
+    console.log(hasCycle(null)); // false
     ```
 
   </TabItem>
 </Tabs>
 
-## TypeScript 实现
+## Python 与 TypeScript 差异点评
+
+追及逻辑一致，差异在空值守卫与恒等比较的表达：
+
+<CodeCompare
+  py={`# 引用恒等用 is，循环守卫靠真值
+while fast and fast.next:
+    slow = slow.next
+    if slow is fast:
+        return True`}
+  ts={`// 引用恒等用 ===，守卫后用 ! 收窄
+while (fast && fast.next) {
+  slow = slow!.next;
+  if (slow === fast) {
+    return true;
+  }
+}`}
+/>
+
+| 关注点   | Python                                        | TypeScript                                              |
+| -------- | --------------------------------------------- | ------------------------------------------------------- |
+| 空指针   | `None`，`not head` 判空                       | `null`，`!head` 判空                                    |
+| 循环守卫 | `while fast and fast.next:` 真值测试          | `while (fast && fast.next)` 同构                        |
+| 慢指针推进 | `slow = slow.next` 无需断言                 | `slow = slow!.next`，`!` 依赖守卫背书                   |
+| 引用比较 | `is` 比较引用恒等                             | `===` 比较引用恒等                                      |
+| 节点类型 | `ListNode \| None`                            | `ListNode \| null`                                      |
+| 布尔字面 | `True` / `False`                              | `true` / `false`                                        |
+
+:::note
+`slow!.next` 的 `!` 并非随意断言：`fast` 非空意味着链表至少还有一个有效节点，`slow` 不可能先一步为空。若守卫改错（如只检查 `fast`），该断言即失去依据，运行时可能空引用。
+:::
+
+## 常见错误分析
+
+### 1. 循环只检查 `fast`，取 `fast.next.next` 时崩溃
+
+```python
+# 错误：fast.next 为空时取其 next 越界
+while fast:
+    slow = slow.next
+    fast = fast.next.next
+```
+
+无环链表尾部 `fast.next` 为空，对空取 `next` 直接抛异常。**改法**：固定模板 `while fast and fast.next`，两跳预留两个非空保证。
+
+### 2. 比较节点值而非引用，误报有环
+
+```python
+# 错误：值相等不代表同一节点
+if slow.val == fast.val:
+    return True
+```
+
+链表 `1 -> 1 -> None` 无环但值重复，会被误判为有环。**改法**：比较引用恒等（Python 用 `is`，TypeScript 用 `===`），值仅为载荷。
+
+### 3. TypeScript 里对 `slow` 的空值处理不当
 
 ```typescript
-// 环形链表 - TypeScript 实现 (快慢指针/龟兔赛跑算法)
-// 时间复杂度: O(n), 空间复杂度: O(1)
-// 核心思路: 快指针每次走2步，慢指针每次走1步
-// 如果有环，快指针一定会追上慢指针（就像操场跑步，快的人套慢的人一圈）
-// 如果无环，快指针会先到达链表末尾(null)
-class ListNode {
-  val: number;
-  next: ListNode | null;
-
-  constructor(val: number = 0, next: ListNode | null = null) {
-    this.val = val;
-    this.next = next;
-  }
-}
-
-function hasCycle(head: ListNode | null): boolean {
-  // 边界条件: 空链表或只有一个节点且无后继，不可能有环
-  // head 为 null: 空链表
-  // head.next 为 null: 只有一个节点，没有环
-  if (!head || !head.next) {
-    return false;
-  }
-
-  // 快慢指针都从头节点出发
-  // 注意: 都从 head 开始，而不是 slow=head, fast=head.next
-  let slow: ListNode | null = head; // 慢指针: 每次移动一步
-  let fast: ListNode | null = head; // 快指针: 每次移动两步
-
-  // 循环条件: fast 和 fast.next 都不为空
-  // 必须同时检查两个条件，因为 fast.next.next 需要 fast.next 非空
-  while (fast && fast.next) {
-    slow = slow!.next; // ! 断言 slow 非空（因为 fast 非空意味着 slow 也非空）
-    fast = fast.next.next; // 快指针走两步
-
-    // 快慢指针相遇，说明有环
-    // 比较的是节点引用(内存地址)，不是节点值
-    if (slow === fast) {
-      return true;
-    }
-  }
-
-  // fast 到达链表末尾(null)，说明无环
-  return false;
-}
-
-// 测试用例
-// 创建有环链表: 1 -> 2 -> 3 -> 2 (环)
-const node1 = new ListNode(1);
-const node2 = new ListNode(2);
-const node3 = new ListNode(3);
-node1.next = node2;
-node2.next = node3;
-node3.next = node2; // 环: 节点3指向节点2
-
-console.log(hasCycle(node1)); // true
+// 错误：strict 下 slow 可能为 null
+slow = slow.next; // Object is possibly 'null'
 ```
+
+`slow` 类型为 `ListNode | null`，直接取 `.next` 编译不通过。**改法**：写 `slow!.next` 并以循环守卫为依据，或引入局部变量收窄。Python 无编译期空检查，迁移时需补上"先收窄后解引用"的习惯。
 
 ## 面试变体
 
-1. **找环的入口**：找到环的起始节点
-2. **计算环的长度**：返回环中节点的数量
-3. **检测两个链表是否相交**：判断两个链表是否有公共节点
+1. **求环入口**：相遇后将一指针重置到头节点，双方同速前进，再次相遇处即入口。基于快指针路程倍数关系，时间 O(n)、空间 O(1)。
+2. **求环长度**：相遇后固定一指针，另一指针绕环计数到再次相遇。时间 O(n)、空间 O(1)，注意计数起点与终止条件的配套。
+3. **两链表是否相交**：分别求两链表尾节点，尾引用相同即相交（无环前提）。时间 O(n)、空间 O(1)，相交比较同样是引用恒等。指针定位手法可对照[反转链表](../reverse-linked-list/)的三指针推进。
+4. **LRU 缓存中的链表操作**：哈希表加双向链表实现 O(1) 存取，判环思想退化为指针合法性维护。工程实现可对照[LRU 缓存](../lru-cache/)体会链表在系统设计中的角色。
 
-## 常见错误
+## 面试追问
 
-1. 没有检查 `fast.next` 是否为空就移动指针
-2. 只检查 `fast` 而忘记检查 `fast.next`
-3. 初始化时 `slow` 和 `fast` 不在同一个位置，可能导致误判
+- 快指针为何每次走两步？走三步是否可行？（两步足以保证相对速度为 1 而不错过相遇；三步同样可判但追及论证更复杂，且步幅越大单轮跨度越大，常数并无优势。）
+- 慢指针入环后，为何一圈内必被追上？（入环后相对距离小于环长，相对速度为 1，每轮缩小 1，故至多环长轮相遇。）
+- 哈希集合解法还有何价值？（需同时记录入环路径或调试时，集合保留了访问历史；快慢指针只回答存在性，不保留历史。）
+- 起点错开（如 `fast = head.next`）会带来什么问题？（空链表与单节点需额外分支；相遇条件需同步偏移，容易引入差一错误；同起点模板分支最少。）

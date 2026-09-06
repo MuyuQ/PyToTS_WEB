@@ -9,307 +9,339 @@ description: 将k个升序链表合并成一个升序链表
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给你一个链表数组，每个链表都已经按升序排列。
+给你一个链表数组 `lists`，每个链表都已经按升序排列。请将所有链表合并到一个升序链表中，返回合并后的链表头节点。
 
-请你将所有链表合并到一个升序链表中，返回合并后的链表。
+**示例 1**
+
+```text
+输入：lists = [[1, 4, 5], [1, 3, 4], [2, 6]]
+输出：[1, 1, 2, 3, 4, 4, 5, 6]
+解释：三个有序链表逐个取最小头节点拼接，结果仍然有序。
+```
+
+**示例 2**
+
+```text
+输入：lists = [[], [], []]
+输出：[]
+解释：全部为空链表，合并结果为空。
+```
+
+**约束条件**
+
+- `0 <= k <= 10^4`，`k` 为 `lists` 的长度
+- `0 <= 每个链表长度 <= 500`
+- 所有节点值之和 N 满足 `0 <= N <= 10^4`
+- `-10^4 <= Node.val <= 10^4`
+
+**边界情况**：`lists` 为空数组直接返回空；含空链表时先过滤；k 为 1 时直接返回该链表，无需建堆。
+
+## 暴力解与瓶颈
+
+朴素解法是顺序合并：先合并前两条，再把结果与第三条合并，依此类推：
+
+```python
+def merge_two(a, b):
+    dummy = ListNode(0)
+    cur = dummy
+    while a and b:
+        if a.val <= b.val:
+            cur.next, a = a, a.next
+        else:
+            cur.next, b = b, b.next
+        cur = cur.next
+    cur.next = a or b
+    return dummy.next
+```
+
+设节点总数 N，链表数 k，第 i 次合并的规模约 O(N)，共 k 次，总时间 O(N * k)。瓶颈在于每轮都重复扫描已合并的长链表。优化方向是让每条链表的头节点公平竞争：每次只取全局最小，用堆把取最小做到 O(log k)，或用分治两两合并复用归并排序的思想。
 
 ## 思路分析
 
-### 方法一：最小堆（优先队列）
+最优解之一是最小堆：堆中始终保存 k 条链表当前的头节点，每次弹出最小值拼到结果尾部，再把该节点的 `next` 推入堆。
 
-- 维护一个大小为k的最小堆
-- 每次取出堆顶（最小元素），加入该元素的下一个节点
-- 时间复杂度：O(N log k)，N是所有节点总数
+以示例 1 的 `[[1, 4, 5], [1, 3, 4], [2, 6]]` 为例：
 
-### 方法二：分治法
+| 步骤 | 堆顶弹出 | 推入的新头 | 结果链表 |
+| ---- | -------- | ---------- | -------- |
+| 1 | `1(表1)` | `4(表1)` | `[1]` |
+| 2 | `1(表2)` | `3(表2)` | `[1, 1]` |
+| 3 | `2(表3)` | `6(表3)` | `[1, 1, 2]` |
+| 4 | `3(表2)` | `4(表2)` | `[1, 1, 2, 3]` |
 
-- 两两合并，类似归并排序
-- 时间复杂度：O(N log k)
+之后依次弹出 `4, 4, 5, 6` 即完成。每个节点恰好入堆出堆一次。
 
-### 方法三：顺序合并
-
-- 逐个合并链表
-- 时间复杂度：O(N \* k)
+:::tip
+关键细节是堆元素需要打破平局：Python 不能直接比较 `ListNode`，存入 `(node.val, idx, node)` 三元组；虚拟头节点 `dummy` 让拼接无需特判空结果。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(N log k)，N是所有节点总数，k是链表数
-- **空间复杂度**：O(k)，堆的大小
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| ---- | ---------- | ---------- | ---- |
+| 顺序合并暴力解 | O(N * k) | O(1) | 每轮扫描已合并长链表 |
+| 最小堆最优解 | O(N log k) | O(k) | 每个节点入堆出堆一次，堆大小不超过 k |
+| 分治两两合并 | O(N log k) | O(log k) 栈 | 归并排序式合并，堆空间换成递归栈 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
+    ```python
+    # 合并K个升序链表 - Python 实现（最小堆法）
+    # 时间复杂度: O(N log k), 空间复杂度: O(k)
+    # 核心思路: 堆中保存各链表当前头节点，每次取最小拼接到结果
+    from typing import Optional, List
+    import heapq
 
-```python
-# 合并K个升序链表 - Python 实现 (最小堆法)
-# 时间复杂度: O(N log k), 空间复杂度: O(k)
-# 核心思路: 用最小堆维护k个链表的当前最小节点，每次取出堆顶并加入下一个节点
-from typing import Optional, List
-import heapq
+    class ListNode:
+        def __init__(self, val: int = 0, next=None):
+            # 节点值
+            self.val = val
+            # 后继指针
+            self.next = next
 
-class ListNode:
-    """链表节点"""
-    def __init__(self, val=0, next=None):
-        # 节点值
-        self.val = val
-        # 指向下一个节点
-        self.next = next
+    def merge_k_lists(lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        # 过滤空链表
+        valid_lists = [lst for lst in lists if lst]
+        if not valid_lists:
+            return None
+        # 建堆：(值, 序号, 节点)，序号用于打破值相等的比较
+        heap: list = []
+        for idx, node in enumerate(valid_lists):
+            heapq.heappush(heap, (node.val, idx, node))
+        # 虚拟头节点简化拼接
+        dummy = ListNode(0)
+        current = dummy
+        while heap:
+            _, idx, node = heapq.heappop(heap)
+            current.next = node
+            current = current.next
+            # 把同一条链表的下一个节点推入堆
+            if node.next:
+                heapq.heappush(heap, (node.next.val, idx, node.next))
+        return dummy.next
 
-    # 定义比较方法，用于堆排序
-    # 堆需要比较节点大小，这里按val比较
-    def __lt__(self, other):
-        return self.val < other.val
+    def create_list(nums: list[int]):
+        dummy = ListNode(0)
+        current = dummy
+        for num in nums:
+            current.next = ListNode(num)
+            current = current.next
+        return dummy.next
 
-def merge_k_lists(lists: List[Optional[ListNode]]) -> Optional[ListNode]:
-    # 过滤掉空链表，只保留非空链表
-    lists = [lst for lst in lists if lst]
-    # 如果没有有效链表，返回None
-    if not lists:
-        return None
+    def to_list(node) -> list[int]:
+        result: list[int] = []
+        while node:
+            result.append(node.val)
+            node = node.next
+        return result
 
-    # 初始化最小堆
-    heap = []
-    # 将每个链表的头节点加入堆
-    for i, node in enumerate(lists):
-        # 存储(值, 索引, 节点)
-        # 索引用于打破值相同时的比较（避免比较ListNode对象）
-        heapq.heappush(heap, (node.val, i, node))
-
-    # 创建虚拟头节点，简化链表操作
-    dummy = ListNode(0)
-    # current指向结果链表的当前末尾
-    current = dummy
-
-    # 当堆不为空时，持续取出最小节点
-    while heap:
-        # 弹出堆顶（值最小的节点）
-        val, idx, node = heapq.heappop(heap)
-        # 将最小节点连接到结果链表
-        current.next = node
-        # 移动current指针
-        current = current.next
-
-        # 如果该节点有下一个节点，将下一个节点加入堆
-        if node.next:
-            heapq.heappush(heap, (node.next.val, idx, node.next))
-
-    # 返回虚拟头节点的下一个节点（真实头节点）
-    return dummy.next
-
-# 测试用例
-def create_list(nums):
-    """从数组创建链表"""
-    dummy = ListNode(0)
-    current = dummy
-    for num in nums:
-        current.next = ListNode(num)
-        current = current.next
-    return dummy.next
-
-def print_list(node):
-    """将链表转为数组打印"""
-    result = []
-    while node:
-        result.append(node.val)
-        node = node.next
-    return result
-
-# 创建3个链表
-list1 = create_list([1, 4, 5])
-list2 = create_list([1, 3, 4])
-list3 = create_list([2, 6])
-
-merged = merge_k_lists([list1, list2, list3])
-print(print_list(merged)) # [1, 1, 2, 3, 4, 4, 5, 6]
-```
+    # 测试用例
+    list1 = create_list([1, 4, 5])
+    list2 = create_list([1, 3, 4])
+    list3 = create_list([2, 6])
+    print(to_list(merge_k_lists([list1, list2, list3])))  # [1, 1, 2, 3, 4, 4, 5, 6]
+    print(to_list(merge_k_lists([])))  # []
+    ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 合并K个升序链表 - TypeScript 实现（最小堆法）
+    // 时间复杂度: O(N log k), 空间复杂度: O(k)
+    // 核心思路: 堆中保存各链表当前头节点，每次取最小拼接到结果
+    class ListNode {
+      val: number;
+      next: ListNode | null;
 
-```typescript
-// 合并K个升序链表 - TypeScript 实现 (最小堆法)
-// 时间复杂度: O(N log k), 空间复杂度: O(k)
-// 核心思路: 用最小堆维护k个链表的当前最小节点，每次取出堆顶并加入下一个节点
-
-/**
- * 链表节点
- */
-class ListNode {
-  val: number;
-  next: ListNode | null;
-
-  constructor(val?: number, next?: ListNode | null) {
-    this.val = val ?? 0;
-    this.next = next ?? null;
-  }
-}
-
-/**
- * 最小堆实现
- */
-class MinHeap {
-  // 堆数据数组
-  private data: ListNode[] = [];
-
-  // 插入节点并维护堆性质
-  push(node: ListNode): void {
-    // 添加到数组末尾
-    this.data.push(node);
-    // 上浮操作，维护最小堆
-    this.heapifyUp(this.data.length - 1);
-  }
-
-  // 弹出堆顶节点
-  pop(): ListNode | undefined {
-    // 空堆返回undefined
-    if (this.data.length === 0) return undefined;
-    // 只有一个元素直接弹出
-    if (this.data.length === 1) return this.data.pop();
-
-    // 保存堆顶元素
-    const root = this.data[0];
-    // 将最后一个元素移到堆顶
-    this.data[0] = this.data.pop()!;
-    // 下沉操作，维护最小堆
-    this.heapifyDown(0);
-    // 返回原堆顶
-    return root;
-  }
-
-  // 获取堆的大小
-  size(): number {
-    return this.data.length;
-  }
-
-  // 上浮操作：将节点从底部移到正确位置
-  private heapifyUp(index: number): void {
-    while (index > 0) {
-      // 计算父节点索引
-      const parent = Math.floor((index - 1) / 2);
-      // 如果父节点值小于等于当前节点，堆性质已满足
-      if (this.data[parent].val <= this.data[index].val) break;
-      // 否则交换父节点和当前节点
-      [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
-      // 继续向上检查
-      index = parent;
-    }
-  }
-
-  // 下沉操作：将节点从顶部移到正确位置
-  private heapifyDown(index: number): void {
-    while (true) {
-      let smallest = index;
-      // 计算左右子节点索引
-      const left = 2 * index + 1;
-      const right = 2 * index + 2;
-
-      // 如果左子节点值更小，更新smallest
-      if (left < this.data.length && this.data[left].val < this.data[smallest].val) {
-        smallest = left;
+      constructor(val?: number, next?: ListNode | null) {
+        this.val = val ?? 0;
+        this.next = next ?? null;
       }
-      // 如果右子节点值更小，更新smallest
-      if (right < this.data.length && this.data[right].val < this.data[smallest].val) {
-        smallest = right;
+    }
+
+    class MinHeap {
+      private data: ListNode[] = [];
+
+      push(node: ListNode): void {
+        this.data.push(node);
+        this.heapifyUp(this.data.length - 1);
       }
 
-      // 如果smallest没变，说明堆性质已满足
-      if (smallest === index) break;
-      // 否则交换并继续下沉
-      [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
-      index = smallest;
+      pop(): ListNode | undefined {
+        if (this.data.length === 0) return undefined;
+        if (this.data.length === 1) return this.data.pop();
+        const root = this.data[0];
+        this.data[0] = this.data.pop()!;
+        this.heapifyDown(0);
+        return root;
+      }
+
+      size(): number {
+        return this.data.length;
+      }
+
+      private heapifyUp(index: number): void {
+        while (index > 0) {
+          const parent = Math.floor((index - 1) / 2);
+          if (this.data[parent].val <= this.data[index].val) break;
+          [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
+          index = parent;
+        }
+      }
+
+      private heapifyDown(index: number): void {
+        while (true) {
+          let smallest = index;
+          const left = 2 * index + 1;
+          const right = 2 * index + 2;
+          if (left < this.data.length && this.data[left].val < this.data[smallest].val) {
+            smallest = left;
+          }
+          if (right < this.data.length && this.data[right].val < this.data[smallest].val) {
+            smallest = right;
+          }
+          if (smallest === index) break;
+          [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
+          index = smallest;
+        }
+      }
     }
-  }
-}
 
-/**
- * 合并K个升序链表 - 最小堆法
- * @param lists k个升序链表的头节点列表
- * @returns 合并后的链表头节点
- */
-function mergeKLists(lists: Array<ListNode | null>): ListNode | null {
-  // 过滤掉空链表，只保留非空链表
-  const validLists = lists.filter((lst) => lst !== null) as ListNode[];
-  // 如果没有有效链表，返回null
-  if (validLists.length === 0) return null;
-
-  // 初始化最小堆
-  const heap = new MinHeap();
-  // 将每个链表的头节点加入堆
-  for (const node of validLists) {
-    heap.push(node);
-  }
-
-  // 创建虚拟头节点，简化链表操作
-  const dummy = new ListNode(0);
-  // current指向结果链表的当前末尾
-  let current: ListNode = dummy;
-
-  // 当堆不为空时，持续取出最小节点
-  while (heap.size() > 0) {
-    // 弹出堆顶（值最小的节点）
-    const node = heap.pop()!;
-    // 将最小节点连接到结果链表
-    current.next = node;
-    // 移动current指针
-    current = current.next;
-
-    // 如果该节点有下一个节点，将下一个节点加入堆
-    if (node.next) {
-      heap.push(node.next);
+    function mergeKLists(lists: Array<ListNode | null>): ListNode | null {
+      // 过滤空链表
+      const validLists = lists.filter((lst) => lst !== null) as ListNode[];
+      if (validLists.length === 0) return null;
+      // 建堆：推入各链表头节点
+      const heap = new MinHeap();
+      for (const node of validLists) {
+        heap.push(node);
+      }
+      // 虚拟头节点简化拼接
+      const dummy = new ListNode(0);
+      let current: ListNode = dummy;
+      while (heap.size() > 0) {
+        const node = heap.pop()!;
+        current.next = node;
+        current = current.next;
+        // 把同一条链表的下一个节点推入堆
+        if (node.next) {
+          heap.push(node.next);
+        }
+      }
+      return dummy.next;
     }
-  }
 
-  // 返回虚拟头节点的下一个节点（真实头节点）
-  return dummy.next;
-}
+    function createList(nums: number[]): ListNode | null {
+      const dummy = new ListNode(0);
+      let current: ListNode = dummy;
+      for (const num of nums) {
+        current.next = new ListNode(num);
+        current = current.next;
+      }
+      return dummy.next;
+    }
 
-// 测试用例
-function createList(nums: number[]): ListNode | null {
-  const dummy = new ListNode(0);
-  let current: ListNode = dummy;
-  for (const num of nums) {
-    current.next = new ListNode(num);
-    current = current.next;
-  }
-  return dummy.next;
-}
+    function toList(node: ListNode | null): number[] {
+      const result: number[] = [];
+      while (node) {
+        result.push(node.val);
+        node = node.next;
+      }
+      return result;
+    }
 
-function printList(node: ListNode | null): number[] {
-  const result: number[] = [];
-  while (node) {
-    result.push(node.val);
-    node = node.next;
-  }
-  return result;
-}
-
-// 创建3个链表
-const list1 = createList([1, 4, 5]);
-const list2 = createList([1, 3, 4]);
-const list3 = createList([2, 6]);
-
-const merged = mergeKLists([list1, list2, list3]);
-console.log(printList(merged)); // [1, 1, 2, 3, 4, 4, 5, 6]
-```
+    // 测试用例
+    const list1 = createList([1, 4, 5]);
+    const list2 = createList([1, 3, 4]);
+    const list3 = createList([2, 6]);
+    console.log(toList(mergeKLists([list1, list2, list3]))); // [1, 1, 2, 3, 4, 4, 5, 6]
+    console.log(toList(mergeKLists([]))); // []
+    ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+堆的来源不同，但合并主循环逐行对应：
+
+<CodeCompare
+  py={`# 取最小并推进同一条链表
+_, idx, node = heapq.heappop(heap)
+current.next = node
+current = current.next
+if node.next:
+    heapq.heappush(heap, (node.next.val, idx, node.next))`}
+  ts={`// 取最小并推进同一条链表
+const node = heap.pop()!;
+current.next = node;
+current = current.next;
+if (node.next) {
+  heap.push(node.next);
+}`}
+/>
+
+| 关注点 | Python | TypeScript |
+| ------ | ------ | ---------- |
+| 堆实现 | `heapq` 标准库直接可用 | 手写 `MinHeap`，需实现上浮下沉 |
+| 平局处理 | `(val, idx, node)` 三元组，`idx` 打破比较 | 堆内只存 `ListNode`，比较 `val` 即可 |
+| 空链表过滤 | `[lst for lst in lists if lst]` | `lists.filter((lst) => lst !== null)` |
+| 虚拟头节点 | `dummy = ListNode(0)`，`current = dummy` | `const dummy = new ListNode(0)`，`let current = dummy` |
+| 命名风格 | `merge_k_lists`、`valid_lists` 蛇形 | `mergeKLists`、`validLists` 驼峰 |
+| 空值 | `None` | `null`，`pop()` 额外返回 `undefined` 需断言 |
+
+:::note
+Python 的 `heapq` 要求元素可比较，`ListNode` 不可比较时必须加序号兜底；TypeScript 手写堆比较的是 `node.val`，不存在对象比较问题，但 `pop()` 在空堆返回 `undefined`，主循环用 `heap.size() > 0` 守卫后才能写 `!` 断言。
+:::
+
+## 常见错误分析
+
+### 1. 忘记过滤空链表
+
+```python
+# 错误：空链表头直接入堆
+heapq.heappush(heap, (node.val, idx, node))  # node 可能为 None
+```
+
+空链表取 `val` 直接抛异常。**改法**：建堆前统一过滤，空数组直接返回 `None`。
+
+### 2. 只比较值而丢了链表推进
+
+```python
+# 错误：弹出最小值后忘记推入 node.next
+current.next = node
+current = current.next
+# 缺少 if node.next: heappush(...)
+```
+
+结果链表会丢失该条链的剩余节点。**改法**：弹出后固定检查 `node.next` 并入堆，保证每条链有序推进。
+
+### 3. TypeScript 里对 `pop()` 的 `undefined` 视而不见
+
+```typescript
+// 错误：strict 模式下编译不通过
+const node: ListNode = heap.pop();
+```
+
+`pop()` 签名返回 `ListNode | undefined`。**改法**：循环条件保证非空后写 `heap.pop()!`，或用局部变量判空收窄。Python 没有编译期检查，对应坑是忘记判空导致 `None.val` 运行时报错。
+
 ## 面试变体
 
-1. **合并K个数组**：类似思路，但数组支持随机访问
-2. **第K小的元素**：在多个有序数组中找第K小
-3. **数据流的中位数**：两个堆维护中位数
-4. **Top K Frequent**：统计频率最高的K个元素
-5. **滑动窗口最大值**：双端队列解法
+1. **合并两个有序链表**：k 退化为 2 的特例，双指针一次遍历即可（详见[反转链表](../reverse-linked-list/)同类指针操作）。时间 O(n)、空间 O(1)。
+2. **分治合并**：两两合并复用归并排序框架，时间同样 O(N log k)，空间 O(log k) 递归栈，适合不允许额外堆的场景。
+3. **链表判环对照**：合并时若输入含环会死循环，可先用[链表判环](../linked-list-cycle/)确认输入合法。
+4. **数据流中位数**：同样用堆维护动态最值（详见[数据流的中位数](../find-median-from-data-stream/)）。本题是 k 路最小堆，那题是大小顶双堆。
+5. **K 路归并扩展**：输入换成有序数组时支持随机访问，可用下标堆代替节点堆，时间不变，空间仍为 O(k)。
 
-## 常见错误
+## 面试追问
 
-1. 忘记处理空链表
-2. 堆比较时只比较值，忽略链表节点的引用
-3. 分治时边界条件处理错误
-4. 忘记将当前节点的next置空（形成环）
+- 为什么堆大小始终不超过 k？（堆中每条链表最多贡献一个待选头节点，弹出一个才补一个。）
+- Python 为什么需要 `idx`？（值相等时元组会继续比较第三项 `ListNode`，而该类型不可比较，序号保证前两项即可定序。）
+- 分治与堆如何取舍？（k 很大但 N 小时堆更省，分治更贴近归并排序，缓存友好且无需手写堆。）
+- 如果链表长度极不均匀，堆解法会退化吗？（不会，复杂度只与 N 与 k 有关，短链提前耗尽只是提前退出竞争。）

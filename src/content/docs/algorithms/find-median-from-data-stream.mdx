@@ -9,252 +9,308 @@ description: 实时计算数据流的中位数
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-中位数是有序整数列表中的中间值。如果列表的大小是偶数，则没有中间值，中位数是两个中间值的平均值。
+中位数是有序列表的中间值。列表长度为奇数时取中间元素，偶数时取中间两元素的平均值。设计数据结构支持 `addNum(num)` 添加整数与 `findMedian()` 返回当前中位数。
 
-设计一个支持以下两种操作的数据结构：
+**示例 1**
 
-- `void addNum(int num)` - 从数据流中添加一个整数到数据结构中
-- `double findMedian()` - 返回目前所有元素的中位数
+```text
+输入：
+medianFinder.addNum(1);
+medianFinder.addNum(2);
+medianFinder.findMedian();
+输出：1.5
+解释：有序列表为 [1, 2]，中位数为 (1 + 2) / 2 = 1.5。
+```
+
+**示例 2**
+
+```text
+输入：
+medianFinder.addNum(1);
+medianFinder.addNum(2);
+medianFinder.findMedian();
+medianFinder.addNum(3);
+medianFinder.findMedian();
+输出：1.5, 2.0
+解释：加入 3 后有序列表为 [1, 2, 3]，中位数为 2.0。
+```
+
+**约束条件**
+
+- `-10^5 <= num <= 10^5`
+- `addNum` 与 `findMedian` 合计调用不超过 `5 * 10^4` 次
+- `findMedian` 调用时保证至少存在一个元素
+- 偶数长度要求返回浮点平均值，不能做整数截断
+
+**边界情况**：首个元素直接进入 `small` 堆；两堆为空时不调用 `findMedian`；负数与重复值不影响堆序，只影响分支走向。
+
+## 暴力解与瓶颈
+
+朴素解法是用数组保存全部元素，每次查询前排序：
+
+```python
+class NaiveMedianFinder:
+    def __init__(self) -> None:
+        self.nums: list[int] = []
+
+    def addNum(self, num: int) -> None:
+        self.nums.append(num)
+
+    def findMedian(self) -> float:
+        data = sorted(self.nums)
+        n = len(data)
+        mid = n // 2
+        return float(data[mid]) if n % 2 else (data[mid - 1] + data[mid]) / 2.0
+```
+
+`addNum` 为 O(1)，但 `findMedian` 每次 O(n log n)。调用频繁时排序成为瓶颈。优化方向是维护有序结构且读写分离：插入保持 O(log n)，查询做到 O(1)。
 
 ## 思路分析
 
-双堆法：
+最优解是双堆：大顶堆 `small` 存较小的一半，小顶堆 `large` 存较大的一半。约定 `small` 可比 `large` 多一个元素，中位数即堆顶或堆顶平均。
 
-- 大顶堆 `small`：存储较小的一半数，堆顶是最大值
-- 小顶堆 `large`：存储较大的一半数，堆顶是最小值
-- 保持两个堆的大小平衡（相差不超过1）
-- 中位数：奇数时大顶堆的堆顶，偶数时两个堆顶的平均值
+以 `addNum(1), addNum(2), addNum(3)` 为例：
+
+| 步骤 | 操作 | `small`（大顶） | `large`（小顶） | 中位数 |
+| ---- | ---- | --------------- | --------------- | ------ |
+| 1 | 加 `1` | `[1]` | `[]` | `1.0` |
+| 2 | 加 `2` | `[1]` | `[2]` | `1.5` |
+| 3 | 加 `3` | `[2, 1]` | `[3]` | `2.0` |
+
+插入时先按与 `small` 堆顶的大小关系选堆，再按尺寸规则搬运一个堆顶，保证 `len(small) == len(large)` 或 `len(small) == len(large) + 1`。
+
+:::tip
+关键细节是 Python 用负数模拟大顶堆：存入 `-num`，读取用 `-small[0]` 还原。搬运时同样取反，两堆比较的是原始值，堆内存储的是变换值。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：`addNum` O(log n)，`findMedian` O(1)
-- **空间复杂度**：O(n)，存储所有元素
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| ---- | ---------- | ---------- | ---- |
+| 数组排序暴力解 | `addNum` O(1)，`findMedian` O(n log n) | O(n) | 每次查询全量排序 |
+| 双堆最优解 | `addNum` O(log n)，`findMedian` O(1) | O(n) | 插入走一次堆，查询只看堆顶 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
+    ```python
+    # 数据流的中位数 - Python 实现（双堆法）
+    # 时间复杂度: addNum O(log n), findMedian O(1)
+    # 空间复杂度: O(n)
+    # 核心思路: small 存较小一半（大顶），large 存较大一半（小顶）
+    import heapq
 
-```python
-# 数据流的中位数 - Python 实现 (双堆法)
-# 时间复杂度: addNum O(log n), findMedian O(1)
-# 空间复杂度: O(n)
-# 核心思路: 大顶堆存储较小一半，小顶堆存储较大一半，保持平衡
-import heapq
+    class MedianFinder:
+        def __init__(self) -> None:
+            # 较小一半，大顶堆用负数模拟
+            self.small: list[int] = []
+            # 较大一半，原生小顶堆
+            self.large: list[int] = []
 
-class MedianFinder:
-    """数据流中位数计算器"""
+        def addNum(self, num: int) -> None:
+            # 按与 small 堆顶的大小关系选堆
+            if not self.small or num <= -self.small[0]:
+                heapq.heappush(self.small, -num)
+            else:
+                heapq.heappush(self.large, num)
+            # 再平衡：small 可比 large 多一个，反之搬运
+            if len(self.small) > len(self.large) + 1:
+                heapq.heappush(self.large, -heapq.heappop(self.small))
+            elif len(self.large) > len(self.small):
+                heapq.heappush(self.small, -heapq.heappop(self.large))
 
-    def __init__(self):
-        # 大顶堆（存储较小的一半）
-        # Python的heapq是最小堆，用负数模拟大顶堆
-        # small[0]的负数是较小一半的最大值
-        self.small = []
-        # 小顶堆（存储较大的一半）
-        # large[0]是较大一半的最小值
-        self.large = []
+        def findMedian(self) -> float:
+            # small 多一个时取 small 堆顶
+            if len(self.small) > len(self.large):
+                return float(-self.small[0])
+            # 等长时取双堆顶平均
+            return (-self.small[0] + self.large[0]) / 2.0
 
-    def addNum(self, num: int) -> None:
-        """添加数字到数据流中"""
-        # 判断数字应该加入哪个堆
-        # 如果small为空或num小于等于small的最大值，加入small
-        if not self.small or num <= -self.small[0]:
-            # 负数存入，模拟大顶堆
-            heapq.heappush(self.small, -num)
-        else:
-            # 否则加入large
-            heapq.heappush(self.large, num)
-
-        # 保持两个堆的大小平衡
-        # 规则：small的大小可以比large大1，但不能小
-        if len(self.small) > len(self.large) + 1:
-            # small太多，将最大值移到large
-            # 取出small的堆顶（负数），取反后加入large
-            heapq.heappush(self.large, -heapq.heappop(self.small))
-        elif len(self.large) > len(self.small):
-            # large太多，将最小值移到small
-            # 取出large的堆顶，取反后加入small
-            heapq.heappush(self.small, -heapq.heappop(self.large))
-
-    def findMedian(self) -> float:
-        """返回当前数据流的中位数"""
-        # 如果small的元素更多，中位数就是small的堆顶
-        if len(self.small) > len(self.large):
-            # 取反还原原始值
-            return -self.small[0]
-        # 如果两堆元素相等，中位数是两个堆顶的平均值
-        return (-self.small[0] + self.large[0]) / 2.0
-
-# 测试用例
-mf = MedianFinder()
-mf.addNum(1)
-mf.addNum(2)
-print(mf.findMedian()) # 1.5
-mf.addNum(3)
-print(mf.findMedian()) # 2.0
-```
+    # 测试用例
+    mf = MedianFinder()
+    mf.addNum(1)
+    mf.addNum(2)
+    print(mf.findMedian())  # 1.5
+    mf.addNum(3)
+    print(mf.findMedian())  # 2.0
+    ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 数据流的中位数 - TypeScript 实现（双堆法）
+    // 时间复杂度: addNum O(log n), findMedian O(1)
+    // 空间复杂度: O(n)
+    // 核心思路: small 存较小一半（大顶），large 存较大一半（小顶）
+    class MinHeap {
+      private data: number[] = [];
 
-```typescript
-// 数据流的中位数 - TypeScript 实现 (双堆法)
-// 时间复杂度: addNum O(log n), findMedian O(1)
-// 空间复杂度: O(n)
-// 核心思路: 大顶堆存储较小一半，小顶堆存储较大一半，保持平衡
-
-/**
- * 最小堆实现
- */
-class MinHeap {
-  // 堆数据数组
-  private data: number[] = [];
-
-  // 插入元素并维护堆性质
-  push(val: number): void {
-    // 添加到数组末尾
-    this.data.push(val);
-    // 上浮操作，维护最小堆
-    this.heapifyUp(this.data.length - 1);
-  }
-
-  // 弹出堆顶元素
-  pop(): number | undefined {
-    // 空堆返回undefined
-    if (this.data.length === 0) return undefined;
-    // 只有一个元素直接弹出
-    if (this.data.length === 1) return this.data.pop();
-
-    // 保存堆顶元素
-    const root = this.data[0];
-    // 将最后一个元素移到堆顶
-    this.data[0] = this.data.pop()!;
-    // 下沉操作，维护最小堆
-    this.heapifyDown(0);
-    // 返回原堆顶
-    return root;
-  }
-
-  // 查看堆顶元素（不弹出）
-  peek(): number | undefined {
-    return this.data[0];
-  }
-
-  // 获取堆的大小
-  size(): number {
-    return this.data.length;
-  }
-
-  // 上浮操作：将元素从底部移到正确位置
-  private heapifyUp(index: number): void {
-    while (index > 0) {
-      // 计算父节点索引
-      const parent = Math.floor((index - 1) / 2);
-      // 如果父节点小于等于当前节点，堆性质已满足
-      if (this.data[parent] <= this.data[index]) break;
-      // 否则交换父节点和当前节点
-      [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
-      // 继续向上检查
-      index = parent;
-    }
-  }
-
-  // 下沉操作：将元素从顶部移到正确位置
-  private heapifyDown(index: number): void {
-    while (true) {
-      let smallest = index;
-      // 计算左右子节点索引
-      const left = 2 * index + 1;
-      const right = 2 * index + 2;
-
-      // 如果左子节点更小，更新smallest
-      if (left < this.data.length && this.data[left] < this.data[smallest]) {
-        smallest = left;
-      }
-      // 如果右子节点更小，更新smallest
-      if (right < this.data.length && this.data[right] < this.data[smallest]) {
-        smallest = right;
+      push(val: number): void {
+        this.data.push(val);
+        this.heapifyUp(this.data.length - 1);
       }
 
-      // 如果smallest没变，说明堆性质已满足
-      if (smallest === index) break;
-      // 否则交换并继续下沉
-      [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
-      index = smallest;
+      pop(): number | undefined {
+        if (this.data.length === 0) return undefined;
+        if (this.data.length === 1) return this.data.pop();
+        const root = this.data[0];
+        this.data[0] = this.data.pop()!;
+        this.heapifyDown(0);
+        return root;
+      }
+
+      peek(): number | undefined {
+        return this.data[0];
+      }
+
+      size(): number {
+        return this.data.length;
+      }
+
+      private heapifyUp(index: number): void {
+        while (index > 0) {
+          const parent = Math.floor((index - 1) / 2);
+          if (this.data[parent] <= this.data[index]) break;
+          [this.data[parent], this.data[index]] = [this.data[index], this.data[parent]];
+          index = parent;
+        }
+      }
+
+      private heapifyDown(index: number): void {
+        while (true) {
+          let smallest = index;
+          const left = 2 * index + 1;
+          const right = 2 * index + 2;
+          if (left < this.data.length && this.data[left] < this.data[smallest]) {
+            smallest = left;
+          }
+          if (right < this.data.length && this.data[right] < this.data[smallest]) {
+            smallest = right;
+          }
+          if (smallest === index) break;
+          [this.data[index], this.data[smallest]] = [this.data[smallest], this.data[index]];
+          index = smallest;
+        }
+      }
     }
-  }
-}
 
-/**
- * 数据流中位数计算器
- */
-class MedianFinder {
-  // 大顶堆（用负数存入小顶堆模拟）
-  private small: MinHeap;
-  // 小顶堆
-  private large: MinHeap;
+    class MedianFinder {
+      private small: MinHeap;
+      private large: MinHeap;
 
-  constructor() {
-    this.small = new MinHeap();
-    this.large = new MinHeap();
-  }
+      constructor() {
+        this.small = new MinHeap();
+        this.large = new MinHeap();
+      }
 
-  addNum(num: number): void {
-    // 判断数字应该加入哪个堆
-    // 如果small为空或num小于等于small的最大值（取反后比较），加入small
-    if (this.small.size() === 0 || num <= -(this.small.peek() || 0)) {
-      // 负数存入，模拟大顶堆
-      this.small.push(-num);
-    } else {
-      // 否则加入large
-      this.large.push(num);
+      addNum(num: number): void {
+        // 按与 small 堆顶的大小关系选堆，small 存负数模拟大顶
+        if (this.small.size() === 0 || num <= -(this.small.peek() ?? 0)) {
+          this.small.push(-num);
+        } else {
+          this.large.push(num);
+        }
+        // 再平衡：small 可比 large 多一个，反之搬运
+        if (this.small.size() > this.large.size() + 1) {
+          this.large.push(-(this.small.pop() ?? 0));
+        } else if (this.large.size() > this.small.size()) {
+          this.small.push(-(this.large.pop() ?? 0));
+        }
+      }
+
+      findMedian(): number {
+        // small 多一个时取 small 堆顶
+        if (this.small.size() > this.large.size()) {
+          return -(this.small.peek() ?? 0);
+        }
+        // 等长时取双堆顶平均
+        return (-(this.small.peek() ?? 0) + (this.large.peek() ?? 0)) / 2;
+      }
     }
 
-    // 保持两个堆的大小平衡
-    // 规则：small的大小可以比large大1，但不能小
-    if (this.small.size() > this.large.size() + 1) {
-      // small太多，将最大值移到large
-      this.large.push(-(this.small.pop() || 0));
-    } else if (this.large.size() > this.small.size()) {
-      // large太多，将最小值移到small
-      this.small.push(-(this.large.pop() || 0));
-    }
-  }
-
-  findMedian(): number {
-    // 如果small的元素更多，中位数就是small的堆顶
-    if (this.small.size() > this.large.size()) {
-      // 取反还原原始值
-      return -(this.small.peek() || 0);
-    }
-    // 如果两堆元素相等，中位数是两个堆顶的平均值
-    return (-(this.small.peek() || 0) + (this.large.peek() || 0)) / 2;
-  }
-}
-
-// 测试用例
-const mf = new MedianFinder();
-mf.addNum(1);
-mf.addNum(2);
-console.log(mf.findMedian()); // 1.5
-mf.addNum(3);
-console.log(mf.findMedian()); // 2.0
-```
+    // 测试用例
+    const mf = new MedianFinder();
+    mf.addNum(1);
+    mf.addNum(2);
+    console.log(mf.findMedian()); // 1.5
+    mf.addNum(3);
+    console.log(mf.findMedian()); // 2.0
+    ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+双堆骨架一致，差异在堆来源与空值处理上：
+
+<CodeCompare
+  py={`# 大顶堆：负数存入，取反还原
+heapq.heappush(self.small, -num)
+median = -self.small[0]`}
+  ts={`// 大顶堆：同样负数存入小顶堆模拟
+this.small.push(-num);
+const median = -(this.small.peek() ?? 0);`}
+/>
+
+| 关注点 | Python | TypeScript |
+| ------ | ------ | ---------- |
+| 小顶堆 | `heapq` 标准库 | 手写 `MinHeap`，上浮下沉自维护 |
+| 大顶堆 | 存 `-num` 模拟，无原生支持 | 同样存 `-num` 模拟，思想一致 |
+| 看堆顶 | `self.small[0]` 直接索引 | `peek()` 方法，返回 `number \| undefined` |
+| 空值兜底 | `if not self.small` 先判空 | `?? 0` 兜底，配合 `size() === 0` 先判空 |
+| 命名风格 | `addNum`、`findMedian` 与题面保持驼峰 | 同名 `addNum`、`findMedian`，双语一致 |
+| 除法 | `/ 2.0` 显式浮点 | `/ 2` 即浮点，无整数截断 |
+
+:::note
+TypeScript 的 `peek() ?? 0` 只在判空后使用，`addNum` 首行已保证非空分支，`findMedian` 调用前保证至少一个元素。`!` 断言不如 `?? 0` 稳妥的原因是堆顶在逻辑上必存在，用兜底不会掩盖越界。
+:::
+
+## 常见错误分析
+
+### 1. 忘记用负数模拟大顶堆
+
+```python
+# 错误：两堆都是小顶，small 堆顶变成最小而非最大
+heapq.heappush(self.small, num)
+```
+
+中位数依赖 `small` 堆顶为较小一半的最大值。**改法**：`small` 存取一律取反，`large` 保持原值。
+
+### 2. 再平衡条件写反
+
+```python
+# 错误：允许 large 比 small 大
+if len(self.large) > len(self.small) + 1:
+```
+
+约定是 `small` 可多一个，`large` 永不超 `small`。**改法**：固定两条分支 `len(small) > len(large) + 1` 与 `len(large) > len(small)`，搬运方向不要写反。
+
+### 3. TypeScript 里忽略 `peek()` 的 `undefined`
+
+```typescript
+// 错误：strict 模式下编译不通过
+return -this.small.peek() / 2; // number | undefined 不能取反运算
+```
+
+`peek()` 可能返回 `undefined`。**改法**：判空后用 `?? 0` 兜底或局部变量收窄。Python 对应坑是空堆索引 `self.small[0]` 抛 `IndexError`，同样需要先判空。
+
 ## 面试变体
 
-1. **滑动窗口中位数**：固定大小的滑动窗口，求每个窗口的中位数
-2. **Top K问题**：求数据流中第 K 大的元素
-3. **频率统计**：按频率排序的数据流
+1. **滑动窗口中位数**：窗口固定大小，滑出元素需延迟删除（详见[无重复字符的最长子串](../longest-substring-without-repeating/)的窗口思想）。时间 O(n log k)、空间 O(k)。
+2. **第 K 大元素**：只需一个大小为 K 的小顶堆，堆顶即答案，时间 O(n log k)、空间 O(k)。
+3. **合并 K 个有序链表**：同样用堆维护多路最值（详见[合并 K 个升序链表](../merge-k-sorted-lists/)）。本题是双堆平衡，那题是 K 路最小堆。
+4. **Top K 高频**：堆键换成频率，时间 O(n log k)、空间 O(n)，注意比较器从数值换成频次。
+5. **百分位数扩展**：把尺寸比例从 1:1 换成 p:(1-p)，即支持任意分位数，查询仍为 O(1)。
 
-## 常见错误
+## 面试追问
 
-1. Python 中忘记用负数模拟大顶堆
-2. 堆平衡条件判断错误
-3. 偶数情况中位数计算错误（应该是平均不是中间值）
+- 为什么约定 `small` 可多一个而不是 `large`？（奇数时中位数唯一确定，只需看一个堆顶，约定后分支唯一。）
+- 两个堆顶为什么能代表中位数？（`small` 最大不超过 `large` 最小，双堆合起来即有序数组的左右两半。）
+- 数据规模很大且只需近似值怎么办？（采样或 t-digest 等草图算法，用精度换空间，本题精确解仍需 O(n)。）
+- `findMedian` 偶数时为什么除以 `2.0`？（Python 需显式浮点避免截断语义混淆，TypeScript 无整数除法但保持写法一致更清晰。）
