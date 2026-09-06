@@ -16,9 +16,7 @@ export default defineConfig({
           lang: "zh-CN",
         },
       },
-      social: {
-        github: "https://github.com/MuyuQ/PyToTS_WEB",
-      },
+      social: [{ label: "GitHub", href: "https://github.com/MuyuQ/PyToTS_WEB", icon: "github" }],
       head: [
         {
           tag: "meta",
@@ -61,7 +59,9 @@ export default defineConfig({
           },
         },
         {
-          // 主题底色提前落地，避免首帧白闪。颜色取自 tokens.css 的语义令牌。
+          // 主题底色提前落地，避免首帧白闪。必须内联（首帧前执行）。
+          // DARK/LIGHT 是 tokens.css 的 --surface-page 字面值快照——tokens.css
+          // 改底色时这里必须同步（404 页走构建期抽取，没有这个维护点）。
           tag: "script",
           attrs: { "is:inline": true },
           content: `
@@ -102,7 +102,8 @@ export default defineConfig({
       },
       /* 侧边栏按「用户任务」而不是「内容类型」分组：
          课程（按顺序学）→ 实战（练）→ 参考（查）→ 我的（进度）→ 关于
-         每个 autogenerate 组的目录均含 index.mdx，点击组名即进入该组入口页。 */
+         每个 autogenerate 组的目录均含 index.mdx，点击组名即进入该组入口页。
+         注意：Starlight 0.39 起自动生成组必须包一层带 label 的分组。 */
       sidebar: [
         {
           label: "课程",
@@ -111,22 +112,22 @@ export default defineConfig({
             {
               label: "准备",
               collapsed: true,
-              autogenerate: { directory: "paths/preparation" },
+              items: [{ autogenerate: { directory: "paths/preparation" } }],
             },
             {
               label: "基础",
               collapsed: true,
-              autogenerate: { directory: "paths/foundation" },
+              items: [{ autogenerate: { directory: "paths/foundation" } }],
             },
             {
               label: "迁移",
               collapsed: true,
-              autogenerate: { directory: "paths/migration" },
+              items: [{ autogenerate: { directory: "paths/migration" } }],
             },
             {
               label: "进阶",
               collapsed: true,
-              autogenerate: { directory: "paths/advanced" },
+              items: [{ autogenerate: { directory: "paths/advanced" } }],
             },
           ],
         },
@@ -136,7 +137,7 @@ export default defineConfig({
             {
               label: "算法题库",
               collapsed: true,
-              autogenerate: { directory: "algorithms" },
+              items: [{ autogenerate: { directory: "algorithms" } }],
             },
             { label: "编程测验", link: "/practice/quiz/" },
             { label: "练习与自测", link: "/practice/" },
@@ -145,10 +146,7 @@ export default defineConfig({
         {
           label: "参考",
           items: [
-            {
-              label: "对照手册",
-              autogenerate: { directory: "handbook" },
-            },
+            { label: "对照手册", items: [{ autogenerate: { directory: "handbook" } }] },
             { label: "标签索引", link: "/tags/" },
             { label: "难度索引", link: "/difficulty/" },
           ],
@@ -164,7 +162,7 @@ export default defineConfig({
             {
               label: "English（未完成）",
               collapsed: true,
-              autogenerate: { directory: "en" },
+              items: [{ autogenerate: { directory: "en" } }],
             },
           ],
         },

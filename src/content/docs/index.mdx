@@ -37,23 +37,25 @@ export const algoTotal = allRoutes.filter((r) => r.kind === "algorithm").length;
 
 不是"用 TypeScript 再写一遍教程"，而是把每个差异点摆在一起让你看。类型注解在 Python 里是建议，在 TypeScript 里是规则：
 
-<CodeCompare
-  caption={`同一个函数签名：Python 在运行时才发现键不存在，TypeScript 在编译期就拒绝这段代码。`}
-  py={`def process_user(user: dict) -> str:
+```python
+def process_user(user: dict) -> str:
     return user["name"]  # 类型注解只是"建议"
 
-process_user({"age": 25}) # 运行时才报 KeyError`}
-  ts={`function processUser(user: { name: string }): string {
-return user.name;
+process_user({"age": 25}) # 运行时才报 KeyError
+```
+
+```typescript
+function processUser(user: { name: string }): string {
+  return user.name;
 }
 
 processUser({ age: 25 });
-// ~~~~~ 编译期直接报错，根本跑不起来`}
-/>
+// ~~~~~ 编译期直接报错，根本跑不起来
+```
 
 ## 四条路径，按顺序走
 
-课前后的顺序是按教学法排的，不是字母序。每节课都保持 Python 在前、TypeScript 在后的对照节奏。
+课程的顺序是按教学法排的，不是字母序。每节课都保持 Python 在前、TypeScript 在后的对照节奏。
 
 <HomePaths />
 

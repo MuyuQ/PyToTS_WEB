@@ -3,8 +3,6 @@ title: Type System Comparison
 description: Understanding the differences between Python and TypeScript type systems
 ---
 
-# Type System Comparison
-
 This guide compares Python's type system with TypeScript's approach to typing.
 
 ## Basic Types
@@ -12,12 +10,14 @@ This guide compares Python's type system with TypeScript's approach to typing.
 ### Numbers
 
 **Python:**
+
 ```python
 x: int = 10
 y: float = 3.14
 ```
 
 **TypeScript:**
+
 ```typescript
 const x: number = 10;
 const y: number = 3.14;
@@ -28,11 +28,13 @@ TypeScript uses `number` for both integers and floats, similar to JavaScript.
 ### Strings
 
 **Python:**
+
 ```python
 name: str = "Alice"
 ```
 
 **TypeScript:**
+
 ```typescript
 const name: string = "Alice";
 ```
@@ -40,11 +42,13 @@ const name: string = "Alice";
 ### Booleans
 
 **Python:**
+
 ```python
 is_active: bool = True
 ```
 
 **TypeScript:**
+
 ```typescript
 const isActive: boolean = true;
 ```
@@ -54,12 +58,14 @@ const isActive: boolean = true;
 ### Lists/Arrays
 
 **Python:**
+
 ```python
 numbers: list[int] = [1, 2, 3]
 names: list[str] = ["Alice", "Bob"]
 ```
 
 **TypeScript:**
+
 ```typescript
 const numbers: number[] = [1, 2, 3];
 const names: string[] = ["Alice", "Bob"];
@@ -70,11 +76,13 @@ const numbers2: Array<number> = [1, 2, 3];
 ### Dictionaries/Objects
 
 **Python:**
+
 ```python
 person: dict[str, str] = {"name": "Alice", "city": "NYC"}
 ```
 
 **TypeScript:**
+
 ```typescript
 const person: Record<string, string> = { name: "Alice", city: "NYC" };
 // Or using interface:
@@ -88,6 +96,7 @@ const person2: Person = { name: "Alice", city: "NYC" };
 ## Union Types
 
 **Python:**
+
 ```python
 from typing import Union
 
@@ -97,6 +106,7 @@ value2: int | str = "hello"
 ```
 
 **TypeScript:**
+
 ```typescript
 let value: number | string = 42;
 value = "hello";
@@ -105,6 +115,7 @@ value = "hello";
 ## Optional Types
 
 **Python:**
+
 ```python
 from typing import Optional
 
@@ -115,16 +126,17 @@ def greet(name: Optional[str] = None) -> str:
 ```
 
 **TypeScript:**
+
 ```typescript
 function greet(name?: string): string {
-    if (name) {
-        return `Hello, ${name}!`;
-    }
-    return "Hello!";
+  if (name) {
+    return `Hello, ${name}!`;
+  }
+  return "Hello!";
 }
 
 // Or explicitly:
 function greet2(name: string | undefined): string {
-    // ...
+  // ...
 }
 ```

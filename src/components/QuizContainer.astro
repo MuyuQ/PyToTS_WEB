@@ -24,28 +24,36 @@ const questions = questionsFor(quizId);
     // 抛 TypeError 的空壳（questionsFor「空数组降级」契约在此兑现）
     <div class="quiz-container" role="region" aria-label="编程测验">
       <p class="quiz-empty">
-        测验「{quizId}」暂无题目：quizId 与 src/data/quizzes.ts 中的键不匹配，请修正页面引用或补录题目。
+        测验「{quizId}」暂无题目：quizId 与 src/data/quizzes.ts
+        中的键不匹配，请修正页面引用或补录题目。
       </p>
     </div>
   ) : (
     <div
       class="quiz-container"
       data-quiz-id={quizId}
-      data-questions={JSON.stringify(questions)}
       role="region"
       aria-label="编程测验"
       tabindex="-1"
     >
       <div class="quiz-header">
-        <span class="quiz-progress" aria-live="polite"></span>
+        <span class="quiz-progress" aria-live="polite" />
       </div>
-      <div class="quiz-question" role="heading" aria-level="3"></div>
-      <div class="quiz-options" role="radiogroup" aria-label="选项"></div>
-      <div class="quiz-explanation" style="display: none;" role="alert" aria-live="polite" tabindex="-1"></div>
+      <div class="quiz-question" role="heading" aria-level="3" />
+      <div class="quiz-options" role="radiogroup" aria-label="选项" />
+      <div
+        class="quiz-explanation"
+        style="display: none;"
+        aria-live="polite"
+        aria-atomic="true"
+        tabindex="-1"
+      />
       <div class="quiz-actions">
-        <button class="quiz-action-btn" disabled aria-label="提交答案">提交答案</button>
+        <button class="quiz-action-btn" disabled aria-label="提交答案">
+          提交答案
+        </button>
       </div>
-      <div class="quiz-result" style="display: none;" role="region" aria-label="测验结果"></div>
+      <div class="quiz-result" style="display: none;" role="region" aria-label="测验结果" />
     </div>
   )
 }
@@ -55,6 +63,7 @@ const questions = questionsFor(quizId);
 
   // Astro 的 <script> 是 module（defer 执行），DOM 此时已就绪，无需再等 DOMContentLoaded
   initQuizContainers();
-  // Starlight 站内走客户端路由，视图切换后要重新初始化
+  // Starlight 0.28 是 MPA 全页加载，astro:page-load 当前不会触发；
+  // 保留监听，未来升级视图过渡后无需改动即可恢复行为
   document.addEventListener("astro:page-load", () => initQuizContainers());
 </script>

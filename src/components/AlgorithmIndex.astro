@@ -2,9 +2,10 @@
 /**
  * 算法题库索引：构建时从内容集合生成，支持按难度筛选与标题检索（纯客户端，无框架）。
  */
-import type { CollectionEntry } from 'astro:content';
-import { getCollection } from 'astro:content';
-import DifficultyBadge from './DifficultyBadge.astro';
+import type { CollectionEntry } from "astro:content";
+import { getCollection } from "astro:content";
+import DifficultyBadge from "./DifficultyBadge.astro";
+import { docSlug } from "../lib/doc-id";
 
 interface AlgorithmEntry {
   title: string;
@@ -17,13 +18,10 @@ interface AlgorithmEntry {
 
 const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
 
-// Astro 4 内容集合的 entry.id 保留扩展名（如 algorithms/3sum.mdx），统一归一为路由 slug
-const slugFor = (id: string) => id.replace(/\.(mdx|md)$/, "").replace(/(^|\/)index$/, "");
-
 const entries = await getCollection(
-  'docs',
-  (entry: CollectionEntry<'docs'>) =>
-    entry.id.startsWith('algorithms/') && entry.data.kind === 'algorithm',
+  "docs",
+  (entry: CollectionEntry<"docs">) =>
+    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm"
 );
 
 const DIFFICULTY_ORDER: Record<string, number> = { easy: 0, medium: 1, hard: 2 };
@@ -31,16 +29,16 @@ const DIFFICULTY_ORDER: Record<string, number> = { easy: 0, medium: 1, hard: 2 }
 const algorithms: AlgorithmEntry[] = entries
   .map((entry) => ({
     title: entry.data.title,
-    slug: slugFor(entry.id).replace(/^algorithms\//, ''),
-    difficulty: entry.data.difficulty ?? 'medium',
+    slug: docSlug(entry.id).replace(/^algorithms\//, ""),
+    difficulty: entry.data.difficulty ?? "medium",
     tags: entry.data.tags ?? [],
-    time: entry.data.time_complexity ?? '',
-    space: entry.data.space_complexity ?? '',
+    time: entry.data.time_complexity ?? "",
+    space: entry.data.space_complexity ?? "",
   }))
   .sort(
     (a, b) =>
       (DIFFICULTY_ORDER[a.difficulty] ?? 9) - (DIFFICULTY_ORDER[b.difficulty] ?? 9) ||
-      a.title.localeCompare(b.title, 'zh-Hans-CN'),
+      a.title.localeCompare(b.title, "zh-Hans-CN")
   );
 
 const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).length;
@@ -53,13 +51,13 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
         全部 <span class="filter-count">{algorithms.length}</span>
       </button>
       <button type="button" class="filter-btn" data-filter="easy">
-        入门 <span class="filter-count">{countBy('easy')}</span>
+        入门 <span class="filter-count">{countBy("easy")}</span>
       </button>
       <button type="button" class="filter-btn" data-filter="medium">
-        进阶 <span class="filter-count">{countBy('medium')}</span>
+        进阶 <span class="filter-count">{countBy("medium")}</span>
       </button>
       <button type="button" class="filter-btn" data-filter="hard">
-        高阶 <span class="filter-count">{countBy('hard')}</span>
+        高阶 <span class="filter-count">{countBy("hard")}</span>
       </button>
     </div>
     <label class="algo-index__search">
@@ -84,7 +82,7 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
           algorithms.map((a) => (
             <tr
               data-difficulty={a.difficulty}
-              data-search={`${a.title} ${a.tags.join(' ')}`.toLowerCase()}
+              data-search={`${a.title} ${a.tags.join(" ")}`.toLowerCase()}
             >
               <td data-label="题目">
                 <a href={`${base}/algorithms/${a.slug}/`} class="algo-link">
@@ -94,9 +92,15 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
               <td data-label="难度">
                 <DifficultyBadge difficulty={a.difficulty} />
               </td>
-              <td class="algo-tags" data-label="标签">{a.tags.join(' · ')}</td>
-              <td class="algo-complexity" data-label="时间">{a.time}</td>
-              <td class="algo-complexity" data-label="空间">{a.space}</td>
+              <td class="algo-tags" data-label="标签">
+                {a.tags.join(" · ")}
+              </td>
+              <td class="algo-complexity" data-label="时间">
+                {a.time}
+              </td>
+              <td class="algo-complexity" data-label="空间">
+                {a.space}
+              </td>
             </tr>
           ))
         }
@@ -370,22 +374,22 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
 
 <script>
   function initAlgoIndex() {
-    const root = document.querySelector<HTMLElement>('[data-algo-index]');
+    const root = document.querySelector<HTMLElement>("[data-algo-index]");
     if (!root || root.dataset.init) return;
-    root.dataset.init = '1';
+    root.dataset.init = "1";
 
-    const rows = Array.from(root.querySelectorAll<HTMLTableRowElement>('tbody tr'));
-    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>('.filter-btn'));
-    const search = root.querySelector<HTMLInputElement>('[data-algo-search]');
-    const empty = root.querySelector<HTMLElement>('[data-algo-empty]');
-    let filter = 'all';
+    const rows = Array.from(root.querySelectorAll<HTMLTableRowElement>("tbody tr"));
+    const buttons = Array.from(root.querySelectorAll<HTMLButtonElement>(".filter-btn"));
+    const search = root.querySelector<HTMLInputElement>("[data-algo-search]");
+    const empty = root.querySelector<HTMLElement>("[data-algo-empty]");
+    let filter = "all";
 
     function apply() {
-      const query = (search?.value ?? '').trim().toLowerCase();
+      const query = (search?.value ?? "").trim().toLowerCase();
       let visible = 0;
       for (const row of rows) {
-        const matchFilter = filter === 'all' || row.dataset.difficulty === filter;
-        const matchQuery = !query || (row.dataset.search ?? '').includes(query);
+        const matchFilter = filter === "all" || row.dataset.difficulty === filter;
+        const matchQuery = !query || (row.dataset.search ?? "").includes(query);
         const show = matchFilter && matchQuery;
         row.hidden = !show;
         if (show) visible += 1;
@@ -394,18 +398,18 @@ const countBy = (d: string) => algorithms.filter((a) => a.difficulty === d).leng
     }
 
     for (const button of buttons) {
-      button.addEventListener('click', () => {
-        filter = button.dataset.filter ?? 'all';
-        for (const b of buttons) b.classList.toggle('is-active', b === button);
+      button.addEventListener("click", () => {
+        filter = button.dataset.filter ?? "all";
+        for (const b of buttons) b.classList.toggle("is-active", b === button);
         apply();
       });
     }
 
-    search?.addEventListener('input', apply);
+    search?.addEventListener("input", apply);
   }
 
-  document.addEventListener('astro:page-load', initAlgoIndex);
-  if (document.readyState !== 'loading') {
+  document.addEventListener("astro:page-load", initAlgoIndex);
+  if (document.readyState !== "loading") {
     initAlgoIndex();
   }
 </script>

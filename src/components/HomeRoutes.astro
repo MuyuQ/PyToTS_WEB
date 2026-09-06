@@ -12,7 +12,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const algorithms = await getCollection(
   "docs",
   (entry: CollectionEntry<"docs">) =>
-    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm",
+    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm"
 );
 
 const byDifficulty = DIFFICULTY_ORDER.map((level) => ({

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://muyuq.github.io/PyToTS_WEB/sitemap-index.xml

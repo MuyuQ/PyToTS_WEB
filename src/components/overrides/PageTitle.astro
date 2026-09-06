@@ -2,47 +2,62 @@
 /**
  * Starlight PageTitle 覆盖：在标题下方渲染来自 frontmatter 的元数据徽章。
  * 数据全部来自内容集合 schema，页面无需改动 Markdown 正文。
+ * Starlight 0.32+：覆盖组件从 Astro.locals.starlightRoute 取路由数据（props 已废弃）。
  */
-import type { Props } from '@astrojs/starlight/props';
-import PageTitleComponent from '@astrojs/starlight/components/PageTitle.astro';
-import DifficultyBadge from '../DifficultyBadge.astro';
-import BookmarkToggle from '../BookmarkToggle.astro';
+import type { StarlightRouteData } from "@astrojs/starlight/route-data";
+import PageTitleComponent from "@astrojs/starlight/components/PageTitle.astro";
+import DifficultyBadge from "../DifficultyBadge.astro";
+import BookmarkToggle from "../BookmarkToggle.astro";
+import { docSlug } from "../../lib/doc-id";
 
-const props = Astro.props as Props;
-// 非文档页（首页 splash、404）可能没有 entry，兜底空对象避免构建/渲染抛错
+const { entry } = Astro.locals.starlightRoute as StarlightRouteData;
+// 非文档页可能没有 entry，兜底空对象避免构建/渲染抛错；
+// 本组件只消费这些标量元数据字段，显式收窄避免 data 的宽联合类型渗出
+type DocMeta = {
+  kind?: string;
+  level?: string;
+  difficulty?: string;
+  tags?: string[];
+  time_complexity?: string;
+  space_complexity?: string;
+};
 const { kind, level, difficulty, tags, time_complexity, space_complexity } =
-  props.entry?.data ?? {};
+  (entry?.data as DocMeta | undefined) ?? {};
 
-// entry.id 形如 paths/migration/types.mdx：归一为与 progress-store 一致的原始路径
-const rawId = typeof props.entry?.id === 'string' ? props.entry.id : '';
-const slug = rawId.replace(/\.(mdx|md)$/, '').replace(/(^|\/)index$/, '');
-const pagePath = slug ? `/${slug}/` : '';
+// entry.id 形如 paths/migration/types：归一为与 progress-store 一致的原始路径
+const rawId = typeof entry?.id === "string" ? entry.id : "";
+const slug = docSlug(rawId);
+const pagePath = slug ? `/${slug}/` : "";
 
 const LEVEL_LABELS: Record<string, string> = {
-  preparation: '准备',
-  foundation: '基础',
-  migration: '迁移',
-  advanced: '进阶',
+  preparation: "准备",
+  foundation: "基础",
+  migration: "迁移",
+  advanced: "进阶",
 };
 
-const showMeta = kind === 'algorithm' || kind === 'lesson';
+const showMeta = kind === "algorithm" || kind === "lesson";
 ---
 
 <div class="pt-wrap">
-  <PageTitleComponent {...props} />
-  {showMeta && (
-    <div class="page-meta">
-      {kind === 'lesson' && level && level in LEVEL_LABELS && (
-        <span class="meta-chip meta-chip--track">{LEVEL_LABELS[level]}课程</span>
-      )}
-      {kind === 'algorithm' && <span class="meta-chip meta-chip--track">算法题</span>}
-      <DifficultyBadge difficulty={difficulty} />
-      {time_complexity && <span class="meta-chip meta-chip--mono">时间 {time_complexity}</span>}
-      {space_complexity && <span class="meta-chip meta-chip--mono">空间 {space_complexity}</span>}
-      {tags?.map((tag) => <span class="meta-chip">{tag}</span>)}
-      {pagePath && <BookmarkToggle path={pagePath} />}
-    </div>
-  )}
+  <PageTitleComponent />
+  {
+    showMeta && (
+      <div class="page-meta">
+        {kind === "lesson" && level && level in LEVEL_LABELS && (
+          <span class="meta-chip meta-chip--track">{LEVEL_LABELS[level]}课程</span>
+        )}
+        {kind === "algorithm" && <span class="meta-chip meta-chip--track">算法题</span>}
+        <DifficultyBadge difficulty={difficulty} />
+        {time_complexity && <span class="meta-chip meta-chip--mono">时间 {time_complexity}</span>}
+        {space_complexity && <span class="meta-chip meta-chip--mono">空间 {space_complexity}</span>}
+        {tags?.map((tag) => (
+          <span class="meta-chip">{tag}</span>
+        ))}
+        {pagePath && <BookmarkToggle path={pagePath} />}
+      </div>
+    )
+  }
 </div>
 
 <style>

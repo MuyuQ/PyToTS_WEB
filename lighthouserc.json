@@ -3,7 +3,10 @@
     "collect": {
       "numberOfRuns": 3,
       "startServerCommand": "npm run preview -- --host 127.0.0.1 --port 4321",
-      "url": ["http://127.0.0.1:4321"],
+      "url": [
+        "http://127.0.0.1:4321/PyToTS_WEB/",
+        "http://127.0.0.1:4321/PyToTS_WEB/algorithms/two-sum/"
+      ],
       "startServerReadyPattern": "ready in",
       "startServerReadyTimeout": 60000
     },

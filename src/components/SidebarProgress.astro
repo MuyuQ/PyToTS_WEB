@@ -13,7 +13,7 @@ import { TRACK_ORDER, TRACKS, trackRoutes, CURRICULUM, lessonRoute } from "../li
 const algorithms = await getCollection(
   "docs",
   (entry: CollectionEntry<"docs">) =>
-    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm",
+    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm"
 );
 
 const algorithmRoutes = algorithms.map((entry) => {
@@ -26,10 +26,8 @@ const algorithmRoutes = algorithms.map((entry) => {
 const groups: Record<string, string[]> = Object.fromEntries(
   TRACK_ORDER.map((track) => [
     TRACKS[track].label,
-    CURRICULUM[track]
-      .filter((slug) => slug !== "index")
-      .map((slug) => lessonRoute(track, slug)),
-  ]),
+    CURRICULUM[track].filter((slug) => slug !== "index").map((slug) => lessonRoute(track, slug)),
+  ])
 );
 groups["算法"] = algorithmRoutes;
 
@@ -37,81 +35,60 @@ groups["算法"] = algorithmRoutes;
 const allRoutes = [...TRACK_ORDER.flatMap((track) => trackRoutes(track)), ...algorithmRoutes];
 ---
 
-<script is:inline define:vars={{ groups, allRoutes }}>
-  var PROGRESS_KEY = "ts-py-learning-progress";
-  var ALL_PATHS = allRoutes;
-  var GROUP_PATHS = groups;
+<script
+  is:inline
+  type="application/json"
+  data-progress-routes
+  set:html={JSON.stringify({ groups, allRoutes })}
+/>
+
+<script>
+  import { getProgress, markAsCompleted, normPath } from "../lib/progress-store";
+
+  /**
+   * 路由清单在构建期写入 JSON payload，脚本只从 DOM 读取——
+   * module script 拿不到构建期变量，也不该从 script 地址反推 base。
+   */
+  function payload(): { groups: Record<string, string[]>; allRoutes: string[] } {
+    const el = document.querySelector<HTMLScriptElement>("script[data-progress-routes]");
+    try {
+      return JSON.parse(el?.textContent || "{}");
+    } catch {
+      return { groups: {}, allRoutes: [] };
+    }
+  }
+
+  const { groups: GROUP_PATHS, allRoutes: ALL_PATHS } = payload();
 
   // 子路径部署下 href 会带 base 前缀，存储的仍是站内路径：以后缀匹配兼容两种情况
-  function matchesPath(href, path) {
+  function matchesPath(href: string | null, path: string): boolean {
     if (!href) return false;
-    var bare = String(path).replace(/\/$/, "");
+    const bare = normPath(path);
     return href === path || href === bare || href.endsWith(path) || href.endsWith(bare);
   }
 
-  function getCurrentPath() {
-    return ALL_PATHS.find(function (p) {
-      return matchesPath(window.location.pathname, p);
-    });
+  function getCurrentPath(): string | undefined {
+    return ALL_PATHS.find((p) => matchesPath(window.location.pathname, p));
   }
 
-  function readProgress() {
-    try {
-      var raw = localStorage.getItem(PROGRESS_KEY);
-      if (!raw) return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
-      var parsed = JSON.parse(raw);
-      return {
-        lessons: Array.isArray(parsed.lessons) ? parsed.lessons : [],
-        quizzes: Array.isArray(parsed.quizzes) ? parsed.quizzes : [],
-        bookmarks: Array.isArray(parsed.bookmarks) ? parsed.bookmarks : [],
-        lastVisited: parsed.lastVisited || "",
-      };
-    } catch (e) {
-      return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
-    }
-  }
+  function markCompleted(path: string): void {
+    // 已存在则不动，避免重复记完成时刷新 completedAt
+    if (getProgress().lessons.some((l) => normPath(l.path) === normPath(path))) return;
 
-  function completedPaths() {
-    return readProgress().lessons.map(function (l) {
-      return l.path;
-    });
-  }
-
-  function isCompleted(path) {
-    var completed = completedPaths();
-    return completed.indexOf(path) !== -1 || completed.indexOf(path.replace(/\/$/, "")) !== -1;
-  }
-
-  function markCompleted(path) {
-    try {
-      var progress = readProgress();
-      var exists = progress.lessons.some(function (l) {
-        return l.path === path;
-      });
-      if (exists) return;
-
-      var heading = document.querySelector("h1");
-      progress.lessons.push({
-        path: path,
-        title: heading ? heading.textContent.trim() : "",
-        completedAt: new Date().toISOString(),
-        type: "lesson",
-      });
-      localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress));
-      window.dispatchEvent(new CustomEvent("progress-updated", { detail: progress }));
-    } catch (e) {
-      console.error("保存学习进度失败：", e);
-    }
+    const heading = document.querySelector("h1");
+    const type = path.startsWith("/algorithms/") ? "algorithm" : "lesson";
+    markAsCompleted(path, heading ? heading.textContent.trim() : "", type);
   }
 
   // 滚到正文末尾才算学完，避免刚打开就记完成
-  function watchCompletion(path) {
-    var marked = false;
-    var retries = 0;
-    var observer = null;
+  function watchCompletion(path: string): void {
+    let marked = false;
+    let retries = 0;
+    let observer: IntersectionObserver | null = null;
 
-    function anchor() {
-      var target = document.querySelector(".pagination-links") ||
+    function anchor(): void {
+      let target =
+        document.querySelector(".pagination-links") ||
         document.querySelector("footer") ||
         document.querySelector(".sl-markdown-content > *:last-child");
 
@@ -121,22 +98,22 @@ const allRoutes = [...TRACK_ORDER.flatMap((track) => trackRoutes(track)), ...alg
         return;
       }
       if (!target) {
-        var content = document.querySelector(".sl-markdown-content");
+        const content = document.querySelector(".sl-markdown-content");
         target = content ? content.lastElementChild : null;
       }
       if (!target) return;
 
       observer = new IntersectionObserver(
-        function (entries) {
-          entries.forEach(function (entry) {
+        (entries) => {
+          entries.forEach((entry) => {
             if (entry.isIntersecting && !marked) {
               marked = true;
               markCompleted(path);
-              if (observer) observer.disconnect();
+              observer?.disconnect();
             }
           });
         },
-        { threshold: 0.1 },
+        { threshold: 0.1 }
       );
       observer.observe(target);
     }
@@ -144,29 +121,25 @@ const allRoutes = [...TRACK_ORDER.flatMap((track) => trackRoutes(track)), ...alg
     anchor();
   }
 
-  function renderIndicators() {
-    var sidebar = document.querySelector("nav.sidebar, .sl-sidebar, [data-sidebar]");
+  function renderIndicators(): void {
+    const sidebar = document.querySelector("nav.sidebar, .sl-sidebar, [data-sidebar]");
     if (!sidebar) return;
 
     // 幂等：先清掉上一轮渲染的标记
-    sidebar.querySelectorAll(".progress-dot").forEach(function (el) {
-      el.remove();
-    });
-    sidebar.querySelectorAll(".group-progress").forEach(function (el) {
-      el.remove();
-    });
+    sidebar.querySelectorAll(".progress-dot").forEach((el) => el.remove());
+    sidebar.querySelectorAll(".group-progress").forEach((el) => el.remove());
 
-    sidebar.querySelectorAll("a[href]").forEach(function (link) {
+    const completed = new Set(getProgress().lessons.map((l) => normPath(l.path)));
+
+    sidebar.querySelectorAll("a[href]").forEach((link) => {
       if (link.querySelector(".progress-dot")) return;
 
-      var href = link.getAttribute("href") || "";
-      var matched = ALL_PATHS.find(function (path) {
-        return matchesPath(href, path);
-      });
+      const href = link.getAttribute("href") || "";
+      const matched = ALL_PATHS.find((path) => matchesPath(href, path));
       if (!matched) return;
 
-      var done = isCompleted(matched);
-      var dot = document.createElement("span");
+      const done = completed.has(normPath(matched));
+      const dot = document.createElement("span");
       dot.className = "progress-dot" + (done ? " completed" : "");
       dot.textContent = done ? "已完成" : "未完成";
       dot.setAttribute("aria-label", done ? "已完成" : "未完成");
@@ -174,26 +147,24 @@ const allRoutes = [...TRACK_ORDER.flatMap((track) => trackRoutes(track)), ...alg
       link.appendChild(dot);
     });
 
-    Object.keys(GROUP_PATHS).forEach(function (groupKey) {
-      var paths = GROUP_PATHS[groupKey] || [];
-      var done = paths.filter(isCompleted).length;
+    Object.keys(GROUP_PATHS).forEach((groupKey) => {
+      const paths = GROUP_PATHS[groupKey] || [];
       if (!paths.length) return;
+      const done = paths.filter((p) => completed.has(normPath(p))).length;
 
-      var firstLink = Array.prototype.find.call(
+      const firstLink = Array.prototype.find.call(
         sidebar.querySelectorAll("a[href]"),
-        function (link) {
-          return matchesPath(link.getAttribute("href") || "", paths[0]);
-        },
-      );
+        (link: HTMLAnchorElement) => matchesPath(link.getAttribute("href"), paths[0])
+      ) as HTMLAnchorElement | undefined;
       if (!firstLink) return;
 
-      var groupEl = firstLink.closest(".sl-sidebar-group, [data-sidebar-group], details");
+      const groupEl = firstLink.closest(".sl-sidebar-group, [data-sidebar-group], details");
       if (!groupEl) return;
 
-      var toggle = groupEl.querySelector("button, summary, .sl-sidebar-group-toggle");
+      const toggle = groupEl.querySelector("button, summary, .sl-sidebar-group-toggle");
       if (!toggle || toggle.querySelector(".group-progress")) return;
 
-      var badge = document.createElement("span");
+      const badge = document.createElement("span");
       badge.className = "group-progress " + (done > 0 ? "has-progress" : "no-progress");
       badge.textContent = done + "/" + paths.length;
       badge.setAttribute("title", groupKey + "：" + done + " / " + paths.length + " 已完成");
@@ -201,19 +172,21 @@ const allRoutes = [...TRACK_ORDER.flatMap((track) => trackRoutes(track)), ...alg
     });
   }
 
-  function init() {
+  function init(): void {
     renderIndicators();
-    var current = getCurrentPath();
+    const current = getCurrentPath();
     if (current) watchCompletion(current);
   }
 
-  function schedule(fn) {
-    return function () {
+  function schedule(fn: () => void): () => void {
+    return () => {
       setTimeout(fn, 100);
     };
   }
 
   window.addEventListener("progress-updated", schedule(renderIndicators));
+  // Starlight 0.28 是 MPA 全页加载，astro:page-load 当前不会触发；
+  // 保留监听，未来升级视图过渡后无需改动即可恢复行为
   document.addEventListener("astro:page-load", schedule(init));
 
   if (document.readyState === "loading") {

@@ -66,11 +66,11 @@ def is_valid_bst_naive(root) -> bool:
 
 以示例 2 的 `root = [5, 1, 4, null, null, 3, 6]` 为例：
 
-| 步骤 | `node` | 允许区间 | 检查 | 结果 |
-| ---- | ------ | -------- | ---- | ---- |
-| 1 | `5` | `(-inf, +inf)` | `5` 在区间内 | 继续 |
-| 2 | `1` | `(-inf, 5)` | `1` 在区间内，叶子 | 通过 |
-| 3 | `4` | `(5, +inf)` | `4 <= 5` 越下界 | 返回 `False` |
+| 步骤 | `node` | 允许区间       | 检查               | 结果         |
+| ---- | ------ | -------------- | ------------------ | ------------ |
+| 1    | `5`    | `(-inf, +inf)` | `5` 在区间内       | 继续         |
+| 2    | `1`    | `(-inf, 5)`    | `1` 在区间内，叶子 | 通过         |
+| 3    | `4`    | `(5, +inf)`    | `4 <= 5` 越下界    | 返回 `False` |
 
 走到节点 `4` 时已经失败，无需再看 `3` 与 `6`。中序遍历解法与之等价：BST 的中序序列严格递增，一旦出现 `node.val <= prev_val` 即可判定无效。
 
@@ -80,11 +80,11 @@ def is_valid_bst_naive(root) -> bool:
 
 ## 复杂度分析
 
-| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
-| ---- | ---------- | ---------- | ---- |
-| 局部比较暴力解 | O(n) | O(h) | 时间看似线性，但结论错误，漏掉祖先约束 |
-| 范围约束递归 | O(n) | O(h)，最坏 O(n) | 每个节点访问一次，栈深度等于树高 |
-| 中序遍历迭代 | O(n) | O(h) | 同样一次遍历，用前驱值代替区间传递 |
+| 解法           | 时间复杂度 | 空间复杂度      | 说明                                   |
+| -------------- | ---------- | --------------- | -------------------------------------- |
+| 局部比较暴力解 | O(n)       | O(h)            | 时间看似线性，但结论错误，漏掉祖先约束 |
+| 范围约束递归   | O(n)       | O(h)，最坏 O(n) | 每个节点访问一次，栈深度等于树高       |
+| 中序遍历迭代   | O(n)       | O(h)            | 同样一次遍历，用前驱值代替区间传递     |
 
 ## 双语实现
 
@@ -210,28 +210,31 @@ def is_valid_bst_naive(root) -> bool:
 
 两份代码逻辑逐行对应，差异在空值与类型声明上：
 
-<CodeCompare
-  py={`# 空区间用 None 表示无穷
+```python
+# 空区间用 None 表示无穷
 def validate(node, min_val, max_val) -> bool:
     if node is None:
         return True
     if min_val is not None and node.val <= min_val:
-        return False`}
-  ts={`// 空区间用 null 表示无穷
+        return False
+```
+
+```typescript
+// 空区间用 null 表示无穷
 function validate(node: TreeNode | null, minVal: number | null, maxVal: number | null): boolean {
   if (node === null) return true;
   if (minVal !== null && node.val <= minVal) return false;
-}`}
-/>
+}
+```
 
-| 关注点 | Python | TypeScript |
-| ------ | ------ | ---------- |
-| 节点类型 | `Optional[TreeNode]`，运行时不检查 | `TreeNode \| null`，编译期强制判空 |
-| 无穷边界 | `None` 表示无下界或上界 | `null` 表示无下界或上界，语义一致 |
-| 空判断 | `is None` / `is not None` | `=== null` / `!== null`，另有 `undefined` 需要区分 |
-| 闭包变量 | `nonlocal prev_val` 声明外层变量 | 直接捕获 `let prevVal`，无需关键字 |
-| 命名风格 | `is_valid_bst_range`、`min_val` 蛇形 | `isValidBSTRange`、`minVal` 驼峰 |
-| 输出测试 | `print(...)` | `console.log(...)` |
+| 关注点   | Python                               | TypeScript                                         |
+| -------- | ------------------------------------ | -------------------------------------------------- |
+| 节点类型 | `Optional[TreeNode]`，运行时不检查   | `TreeNode \| null`，编译期强制判空                 |
+| 无穷边界 | `None` 表示无下界或上界              | `null` 表示无下界或上界，语义一致                  |
+| 空判断   | `is None` / `is not None`            | `=== null` / `!== null`，另有 `undefined` 需要区分 |
+| 闭包变量 | `nonlocal prev_val` 声明外层变量     | 直接捕获 `let prevVal`，无需关键字                 |
+| 命名风格 | `is_valid_bst_range`、`min_val` 蛇形 | `isValidBSTRange`、`minVal` 驼峰                   |
+| 输出测试 | `print(...)`                         | `console.log(...)`                                 |
 
 :::note
 TypeScript 的 `left?: TreeNode | null` 与 `left ?? null` 组合保证缺省参数统一收敛到 `null`，避免 `undefined` 与 `null` 混用导致 `validate` 的空判断失效。

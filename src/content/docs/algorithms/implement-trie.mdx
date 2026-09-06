@@ -72,7 +72,7 @@ class NaiveTrie:
         return any(w.startswith(prefix) for w in self.words)
 ```
 
-它的瓶颈在 `startsWith`：每次都要遍历全部单词并逐字符比较前缀，最坏时间 O(N * m)，N 为单词数，m 为前缀长度。当单词量大且前缀查询频繁时，扫描成为瓶颈。优化方向是把公共前缀只存一次，用树形结构共享路径，让每次查询只走 `len(prefix)` 步。
+它的瓶颈在 `startsWith`：每次都要遍历全部单词并逐字符比较前缀，最坏时间 O(N \* m)，N 为单词数，m 为前缀长度。当单词量大且前缀查询频繁时，扫描成为瓶颈。优化方向是把公共前缀只存一次，用树形结构共享路径，让每次查询只走 `len(prefix)` 步。
 
 ## 思路分析
 
@@ -84,11 +84,11 @@ class NaiveTrie:
 
 以空 Trie 依次插入 `"apple"` 再插入 `"app"`，第二次插入的干跑过程如下：
 
-| 步骤 | `char` | 查表前动作 | 结果 |
-| ---- | ------ | ---------- | ---- |
-| 1 | `a` | 根已有 `a` | 下走到 `a` |
-| 2 | `p` | `a` 已有 `p` | 下走到 `p` |
-| 3 | `p` | 已有第二层 `p` | 下走到 `p`，标记该节点 `is_end = True` |
+| 步骤 | `char` | 查表前动作     | 结果                                   |
+| ---- | ------ | -------------- | -------------------------------------- |
+| 1    | `a`    | 根已有 `a`     | 下走到 `a`                             |
+| 2    | `p`    | `a` 已有 `p`   | 下走到 `p`                             |
+| 3    | `p`    | 已有第二层 `p` | 下走到 `p`，标记该节点 `is_end = True` |
 
 此时 `"app"` 节点与 `"apple"` 路径上的节点是同一个对象，只是多了一个结尾标记。`search("app")` 因此由假变真，而 `startsWith("ap")` 在插入前后一直为真。
 
@@ -98,10 +98,10 @@ class NaiveTrie:
 
 ## 复杂度分析
 
-| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
-| ---- | ---------- | ---------- | ---- |
-| 暴力集合 | `insert` O(1)，`search` O(1)，`startsWith` O(N * m) | O(总字符数) | 前缀查询每次全量扫描 |
-| Trie 最优解 | `insert`/`search`/`startsWith` 均为 O(m) | O(总字符数) | 公共前缀只存一次，查询只走 key 长度 |
+| 解法        | 时间复杂度                                           | 空间复杂度  | 说明                                |
+| ----------- | ---------------------------------------------------- | ----------- | ----------------------------------- |
+| 暴力集合    | `insert` O(1)，`search` O(1)，`startsWith` O(N \* m) | O(总字符数) | 前缀查询每次全量扫描                |
+| Trie 最优解 | `insert`/`search`/`startsWith` 均为 O(m)             | O(总字符数) | 公共前缀只存一次，查询只走 key 长度 |
 
 ## 双语实现
 
@@ -242,14 +242,14 @@ if (!node.children.has(char)) {
 node = node.children.get(char)!;`}
 />
 
-| 关注点 | Python | TypeScript |
-| ------ | ------ | ---------- |
-| 子节点容器 | `dict[str, TrieNode]`，字面量即可 | `Map<string, TrieNode>`，泛型写清键值类型 |
-| 缺边检查 | `char not in node.children` | `!node.children.has(char)` |
-| 取子节点 | `node.children[char]`，缺席抛 `KeyError` | `node.children.get(char)` 返回 `TrieNode \| undefined`，命中后用 `!` 断言 |
-| 辅助方法 | `_find_node`，单下划线表示内部使用 | `private findNode`，访问修饰符强制封装 |
-| 命名风格 | `is_end`、`_find_node` 蛇形 | `isEnd`、`findNode` 驼峰 |
-| 空值 | `None` | `null`，配合 `undefined` 区分缺席 |
+| 关注点     | Python                                   | TypeScript                                                                |
+| ---------- | ---------------------------------------- | ------------------------------------------------------------------------- |
+| 子节点容器 | `dict[str, TrieNode]`，字面量即可        | `Map<string, TrieNode>`，泛型写清键值类型                                 |
+| 缺边检查   | `char not in node.children`              | `!node.children.has(char)`                                                |
+| 取子节点   | `node.children[char]`，缺席抛 `KeyError` | `node.children.get(char)` 返回 `TrieNode \| undefined`，命中后用 `!` 断言 |
+| 辅助方法   | `_find_node`，单下划线表示内部使用       | `private findNode`，访问修饰符强制封装                                    |
+| 命名风格   | `is_end`、`_find_node` 蛇形              | `isEnd`、`findNode` 驼峰                                                  |
+| 空值       | `None`                                   | `null`，配合 `undefined` 区分缺席                                         |
 
 :::note
 `node.children.get(char)!` 的 `!` 是非空断言，前提是上一行 `has` 或 `child === undefined` 检查已经确认存在。不要在没有依据的位置使用 `!`，更稳妥的写法是像 `findNode` 那样用局部变量 `child` 收窄。

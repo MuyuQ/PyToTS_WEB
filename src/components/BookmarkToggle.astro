@@ -62,9 +62,7 @@ const { path } = Astro.props;
   initBookmarkToggles();
   document.addEventListener("astro:page-load", initBookmarkToggles);
   window.addEventListener("progress-updated", () => {
-    document
-      .querySelectorAll<HTMLButtonElement>(".bookmark-toggle")
-      .forEach(syncToggle);
+    document.querySelectorAll<HTMLButtonElement>(".bookmark-toggle").forEach(syncToggle);
   });
 </script>
 

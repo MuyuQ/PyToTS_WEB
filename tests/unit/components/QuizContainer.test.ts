@@ -1,340 +1,260 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { JSDOM } from "jsdom";
+import { QuizManager } from "../../../src/lib/quiz-manager";
+import { initQuizContainers } from "../../../src/lib/quiz-ui";
+import { questionsFor } from "../../../src/data/quizzes";
+import { getProgress } from "../../../src/lib/progress-store";
 
-// Quiz data type definitions matching QuizContainer.astro
-interface QuizOption {
-  text: string;
-  correct: boolean;
-  explanation: string;
+/**
+ * 直接测真实模块：quiz-manager（状态机）、quiz-ui（渲染/交互/判分）、
+ * data/quizzes（真实题库）、progress-store（成绩持久化）。
+ * DOM 骨架与 QuizContainer.astro 的服务端模板一致（quizId 挂在 data 属性上，
+ * 题目数据由 quiz-ui 从题库模块自行 import，不再走 HTML 属性）。
+ *
+ * 历史教训：本文件曾复制一份 QuizManager 进测试来跑「全绿」，而真实的
+ * quiz-manager/quiz-ui 零覆盖——改坏真实现象这里毫无反应。
+ */
+
+const QUESTIONS = questionsFor("variables");
+
+/** 与 QuizContainer.astro 模板一致的容器骨架 */
+function mountContainer(quizId: string): HTMLElement {
+  const host = document.createElement("div");
+  host.innerHTML = `
+    <div class="quiz-container" data-quiz-id="${quizId}" role="region" aria-label="编程测验" tabindex="-1">
+      <div class="quiz-header">
+        <span class="quiz-progress" aria-live="polite"></span>
+      </div>
+      <div class="quiz-question" role="heading" aria-level="3"></div>
+      <div class="quiz-options" role="radiogroup" aria-label="选项"></div>
+      <div class="quiz-explanation" style="display: none;" aria-live="polite" aria-atomic="true" tabindex="-1"></div>
+      <div class="quiz-actions">
+        <button class="quiz-action-btn" disabled aria-label="提交答案">提交答案</button>
+      </div>
+      <div class="quiz-result" style="display: none;" role="region" aria-label="测验结果"></div>
+    </div>`;
+  document.body.appendChild(host);
+  return host.querySelector(".quiz-container") as HTMLElement;
 }
 
-interface QuizQuestion {
-  question: string;
-  options: QuizOption[];
+function options(container: HTMLElement): HTMLButtonElement[] {
+  return [...container.querySelectorAll<HTMLButtonElement>(".quiz-option")];
 }
 
-// Mock quiz data for testing
-const mockQuestions: QuizQuestion[] = [
-  {
-    question: "Test question 1?",
-    options: [
-      { text: "Option A", correct: true, explanation: "This is correct" },
-      { text: "Option B", correct: false, explanation: "This is wrong" },
-    ],
-  },
-  {
-    question: "Test question 2?",
-    options: [
-      { text: "Option C", correct: false, explanation: "Not this one" },
-      { text: "Option D", correct: true, explanation: "Correct answer" },
-    ],
-  },
-];
+function actionBtn(container: HTMLElement): HTMLButtonElement {
+  return container.querySelector(".quiz-action-btn") as HTMLButtonElement;
+}
 
-// QuizManager class extracted from QuizContainer for testing
-class QuizManager {
-  private questions: QuizQuestion[];
-  private state: {
-    currentQuestion: number;
-    selectedOption: number | null;
-    showExplanation: boolean;
-    score: number;
-    completed: boolean;
-  };
-
-  constructor(questions: QuizQuestion[]) {
-    this.questions = questions;
-    this.state = {
-      currentQuestion: 0,
-      selectedOption: null,
-      showExplanation: false,
-      score: 0,
-      completed: false,
-    };
-  }
-
-  selectOption(index: number) {
-    if (this.state.showExplanation) return;
-    this.state.selectedOption = index;
-  }
-
-  submitAnswer() {
-    if (this.state.selectedOption === null) return;
-
-    const currentQ = this.questions[this.state.currentQuestion];
-    const isCorrect = currentQ.options[this.state.selectedOption].correct;
-
-    if (isCorrect) this.state.score++;
-    this.state.showExplanation = true;
-  }
-
-  nextQuestion() {
-    if (this.state.currentQuestion < this.questions.length - 1) {
-      this.state.currentQuestion++;
-      this.state.selectedOption = null;
-      this.state.showExplanation = false;
-    } else {
-      this.state.completed = true;
+describe("QuizManager（src/lib/quiz-manager.ts 状态机）", () => {
+  it("题库 variables 存在且每题恰好一个正确答案", () => {
+    expect(QUESTIONS.length).toBeGreaterThan(0);
+    for (const q of QUESTIONS) {
+      expect(q.options.length).toBeGreaterThanOrEqual(2);
+      expect(q.options.filter((o) => o.correct)).toHaveLength(1);
     }
-  }
+  });
 
-  reset() {
-    this.state = {
+  it("初始化状态", () => {
+    const quiz = new QuizManager(QUESTIONS);
+    expect(quiz.getState()).toEqual({
       currentQuestion: 0,
       selectedOption: null,
       showExplanation: false,
       score: 0,
       completed: false,
-    };
-  }
-
-  getState() {
-    return { ...this.state };
-  }
-
-  getQuestions() {
-    return this.questions;
-  }
-
-  getCurrentQuestion() {
-    return this.questions[this.state.currentQuestion];
-  }
-}
-
-describe("QuizContainer Logic", () => {
-  let quiz: QuizManager;
-
-  beforeEach(() => {
-    quiz = new QuizManager(mockQuestions);
-  });
-
-  describe("Initialization", () => {
-    it("should initialize with correct default state", () => {
-      const state = quiz.getState();
-      expect(state.currentQuestion).toBe(0);
-      expect(state.selectedOption).toBeNull();
-      expect(state.showExplanation).toBe(false);
-      expect(state.score).toBe(0);
-      expect(state.completed).toBe(false);
-    });
-
-    it("should load questions correctly", () => {
-      expect(quiz.getQuestions()).toHaveLength(2);
-      expect(quiz.getCurrentQuestion().question).toBe("Test question 1?");
     });
   });
 
-  describe("Option Selection", () => {
-    it("should select an option", () => {
-      quiz.selectOption(0);
-      expect(quiz.getState().selectedOption).toBe(0);
-    });
+  it("未选择时提交是 no-op，选择后提交展示解释并计分", () => {
+    const quiz = new QuizManager(QUESTIONS);
+    quiz.submitAnswer();
+    expect(quiz.getState().showExplanation).toBe(false);
 
-    it("should not allow selection after submitting", () => {
-      quiz.selectOption(0);
-      quiz.submitAnswer();
-      quiz.selectOption(1);
-      expect(quiz.getState().selectedOption).toBe(0);
-    });
+    const correctIdx = QUESTIONS[0].options.findIndex((o) => o.correct);
+    quiz.selectOption(correctIdx);
+    quiz.submitAnswer();
+    expect(quiz.getState().showExplanation).toBe(true);
+    expect(quiz.getState().score).toBe(1);
 
-    it("should allow changing selection before submitting", () => {
-      quiz.selectOption(0);
-      quiz.selectOption(1);
-      expect(quiz.getState().selectedOption).toBe(1);
-    });
+    // 提交后选择被锁定
+    quiz.selectOption(0);
+    expect(quiz.getState().selectedOption).toBe(correctIdx);
   });
 
-  describe("Answer Submission", () => {
-    it("should not submit if no option selected", () => {
-      quiz.submitAnswer();
-      expect(quiz.getState().showExplanation).toBe(false);
-    });
-
-    it("should show explanation after submission", () => {
+  it("nextQuestion 推进并在末题后标记 completed", () => {
+    const quiz = new QuizManager(QUESTIONS);
+    for (let i = 0; i < QUESTIONS.length; i++) {
       quiz.selectOption(0);
       quiz.submitAnswer();
-      expect(quiz.getState().showExplanation).toBe(true);
-    });
-
-    it("should increment score for correct answer", () => {
-      quiz.selectOption(0); // Correct option
-      quiz.submitAnswer();
-      expect(quiz.getState().score).toBe(1);
-    });
-
-    it("should not increment score for incorrect answer", () => {
-      quiz.selectOption(1); // Incorrect option
-      quiz.submitAnswer();
-      expect(quiz.getState().score).toBe(0);
-    });
+      quiz.nextQuestion();
+    }
+    expect(quiz.getState().completed).toBe(true);
   });
 
-  describe("Navigation", () => {
-    it("should move to next question", () => {
-      quiz.selectOption(0);
-      quiz.submitAnswer();
-      quiz.nextQuestion();
-      expect(quiz.getState().currentQuestion).toBe(1);
-      expect(quiz.getState().selectedOption).toBeNull();
-      expect(quiz.getState().showExplanation).toBe(false);
-    });
-
-    it("should mark as completed on last question", () => {
-      quiz.selectOption(0);
-      quiz.submitAnswer();
-      quiz.nextQuestion();
-      quiz.selectOption(1);
-      quiz.submitAnswer();
-      quiz.nextQuestion();
-      expect(quiz.getState().completed).toBe(true);
-    });
-  });
-
-  describe("Reset", () => {
-    it("should reset to initial state", () => {
-      quiz.selectOption(0);
-      quiz.submitAnswer();
-      quiz.nextQuestion();
-      quiz.reset();
-
-      const state = quiz.getState();
-      expect(state.currentQuestion).toBe(0);
-      expect(state.selectedOption).toBeNull();
-      expect(state.showExplanation).toBe(false);
-      expect(state.score).toBe(0);
-      expect(state.completed).toBe(false);
-    });
-  });
-
-  describe("Score Calculation", () => {
-    it("should calculate score correctly for all correct answers", () => {
-      // Question 1 - correct
-      quiz.selectOption(0);
-      quiz.submitAnswer();
-      quiz.nextQuestion();
-      // Question 2 - correct
-      quiz.selectOption(1);
-      quiz.submitAnswer();
-      quiz.nextQuestion();
-
-      expect(quiz.getState().score).toBe(2);
-    });
-
-    it("should calculate score correctly for mixed answers", () => {
-      // Question 1 - incorrect
-      quiz.selectOption(1);
-      quiz.submitAnswer();
-      quiz.nextQuestion();
-      // Question 2 - correct
-      quiz.selectOption(1);
-      quiz.submitAnswer();
-      quiz.nextQuestion();
-
-      expect(quiz.getState().score).toBe(1);
+  it("reset 复位全部状态", () => {
+    const quiz = new QuizManager(QUESTIONS);
+    quiz.selectOption(0);
+    quiz.submitAnswer();
+    quiz.nextQuestion();
+    quiz.reset();
+    expect(quiz.getState()).toEqual({
+      currentQuestion: 0,
+      selectedOption: null,
+      showExplanation: false,
+      score: 0,
+      completed: false,
     });
   });
 });
 
-describe("QuizContainer DOM", () => {
-  let dom: JSDOM;
-  let document: Document;
-
+describe("initQuizContainers（src/lib/quiz-ui.ts 渲染与交互）", () => {
   beforeEach(() => {
-    // Create a mock HTML structure similar to QuizContainer output
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <body>
-          <div class="quiz-container" data-quiz-id="test" role="region" aria-label="编程测验" tabindex="-1">
-            <div class="quiz-header">
-              <span class="quiz-progress" aria-live="polite"></span>
-            </div>
-            <div class="quiz-question" role="heading" aria-level="3"></div>
-            <div class="quiz-options" role="radiogroup" aria-label="选项"></div>
-            <div class="quiz-explanation" style="display: none;" role="alert" aria-live="polite"></div>
-            <div class="quiz-actions">
-              <button class="quiz-action-btn" disabled aria-label="提交答案">提交答案</button>
-            </div>
-            <div class="quiz-result" style="display: none;" role="region" aria-label="测验结果"></div>
-          </div>
-        </body>
-      </html>
-    `;
-    dom = new JSDOM(html);
-    document = dom.window.document;
+    localStorage.clear();
+    document.body.innerHTML = "";
   });
 
-  describe("Accessibility Attributes", () => {
-    it("should have role region for quiz container", () => {
-      const container = document.querySelector(".quiz-container");
-      expect(container?.getAttribute("role")).toBe("region");
-      expect(container?.getAttribute("aria-label")).toBe("编程测验");
-    });
+  it("从题库渲染第一题：题干、选项、进度", () => {
+    const container = mountContainer("variables");
+    initQuizContainers();
 
-    it("should have proper heading structure", () => {
-      const question = document.querySelector(".quiz-question");
-      expect(question?.getAttribute("role")).toBe("heading");
-      expect(question?.getAttribute("aria-level")).toBe("3");
-    });
-
-    it("should have radiogroup for options", () => {
-      const options = document.querySelector(".quiz-options");
-      expect(options?.getAttribute("role")).toBe("radiogroup");
-      expect(options?.getAttribute("aria-label")).toBe("选项");
-    });
-
-    it("should have aria-live region for progress", () => {
-      const progress = document.querySelector(".quiz-progress");
-      expect(progress?.getAttribute("aria-live")).toBe("polite");
-    });
-
-    it("should have alert role for explanation", () => {
-      const explanation = document.querySelector(".quiz-explanation");
-      expect(explanation?.getAttribute("role")).toBe("alert");
-      expect(explanation?.getAttribute("aria-live")).toBe("polite");
-    });
-
-    it("should have aria-label for action button", () => {
-      const button = document.querySelector(".quiz-action-btn");
-      expect(button?.getAttribute("aria-label")).toBe("提交答案");
-      expect(button?.hasAttribute("disabled")).toBe(true);
-    });
+    expect(container.querySelector(".quiz-question")?.textContent).toContain(QUESTIONS[0].question);
+    expect(options(container)).toHaveLength(QUESTIONS[0].options.length);
+    expect(container.querySelector(".quiz-progress")?.textContent).toBe(
+      `问题 1 / ${QUESTIONS.length}`
+    );
   });
 
-  describe("HTML Structure", () => {
-    it("should have all required elements", () => {
-      expect(document.querySelector(".quiz-container")).toBeTruthy();
-      expect(document.querySelector(".quiz-header")).toBeTruthy();
-      expect(document.querySelector(".quiz-progress")).toBeTruthy();
-      expect(document.querySelector(".quiz-question")).toBeTruthy();
-      expect(document.querySelector(".quiz-options")).toBeTruthy();
-      expect(document.querySelector(".quiz-explanation")).toBeTruthy();
-      expect(document.querySelector(".quiz-actions")).toBeTruthy();
-      expect(document.querySelector(".quiz-action-btn")).toBeTruthy();
-      expect(document.querySelector(".quiz-result")).toBeTruthy();
-    });
-  });
-});
+  it("roving tabindex：Tab 停靠唯一，且随选中项移动", () => {
+    const container = mountContainer("variables");
+    initQuizContainers();
 
-describe("QuizContainer Data Parsing", () => {
-  it("should parse valid quiz data JSON", () => {
-    const json = JSON.stringify(mockQuestions);
-    const parsed = JSON.parse(json);
-    expect(parsed).toHaveLength(2);
-    expect(parsed[0].question).toBe("Test question 1?");
+    expect(options(container).filter((b) => b.tabIndex === 0)).toHaveLength(1);
+    expect(options(container)[0].tabIndex).toBe(0);
+
+    options(container)[1].click();
+    // 点击触发 render 重建全部选项节点，断言前必须重查
+    const btns = options(container);
+    expect(btns[1].tabIndex).toBe(0);
+    expect(btns[0].tabIndex).toBe(-1);
   });
 
-  it("should handle empty questions array", () => {
-    const quiz = new QuizManager([]);
-    expect(quiz.getQuestions()).toHaveLength(0);
-    expect(quiz.getCurrentQuestion()).toBeUndefined();
+  it("方向键在选项间移动、随焦点选中（原生 radio 语义）", () => {
+    const container = mountContainer("variables");
+    initQuizContainers();
+
+    options(container)[0].focus();
+    options(container)[0].dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true })
+    );
+
+    const btns = options(container);
+    expect(btns[1].getAttribute("aria-checked")).toBe("true");
+    expect(document.activeElement).toBe(btns[1]);
+    expect(btns[1].tabIndex).toBe(0);
   });
 
-  it("should preserve option properties", () => {
-    const quiz = new QuizManager(mockQuestions);
-    const question = quiz.getCurrentQuestion();
-    expect(question.options[0].text).toBe("Option A");
-    expect(question.options[0].correct).toBe(true);
-    expect(question.options[0].explanation).toBe("This is correct");
+  it("aria-checked 反映选中，且不出现 radio 不支持的 aria-selected", () => {
+    const container = mountContainer("variables");
+    initQuizContainers();
+
+    options(container)[0].click();
+    const btns = options(container);
+    expect(btns[0].getAttribute("aria-checked")).toBe("true");
+    for (const btn of btns) {
+      expect(btn.hasAttribute("aria-selected")).toBe(false);
+    }
+  });
+
+  it("提交后：选项用 aria-disabled 而非 disabled（留在 tab 序），解释区是 polite live region 且无 role=alert", () => {
+    const container = mountContainer("variables");
+    initQuizContainers();
+
+    options(container)[0].click();
+    actionBtn(container).click();
+
+    const btns = options(container);
+    expect(btns.every((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
+    expect(btns.some((b) => b.disabled)).toBe(false);
+
+    const explanation = container.querySelector(".quiz-explanation") as HTMLElement;
+    expect(explanation.style.display).toBe("block");
+    expect(explanation.getAttribute("aria-live")).toBe("polite");
+    expect(explanation.getAttribute("role")).toBeNull();
+
+    // 正确答案要能被屏幕阅读器读到
+    const correctBtn = btns[QUESTIONS[0].options.findIndex((o) => o.correct)];
+    expect(correctBtn.classList.contains("correct")).toBe(true);
+    expect(correctBtn.getAttribute("aria-label")).toContain("正确答案");
+  });
+
+  it("答完整套题：渲染结果并把成绩写入 localStorage", () => {
+    const container = mountContainer("variables");
+    initQuizContainers();
+
+    // 每题两个动作（选择 + 提交/下一题），留足余量
+    for (let i = 0; i <= QUESTIONS.length * 2 + 2; i++) {
+      options(container)[0].click();
+      actionBtn(container).click();
+      if (actionBtn(container).textContent === "查看结果") {
+        actionBtn(container).click();
+        break;
+      }
+    }
+
+    const result = container.querySelector(".quiz-result") as HTMLElement;
+    expect(result.style.display).toBe("block");
+    expect(getProgress().quizzes.some((q) => q.quizId === "variables")).toBe(true);
+  });
+
+  it("重新测验：结果页重启后回到第一题并清空选择", () => {
+    const container = mountContainer("variables");
+    initQuizContainers();
+
+    for (let i = 0; i <= QUESTIONS.length * 2 + 2; i++) {
+      options(container)[0].click();
+      actionBtn(container).click();
+      if (actionBtn(container).textContent === "查看结果") {
+        actionBtn(container).click();
+        break;
+      }
+    }
+
+    const restart = container.querySelector<HTMLButtonElement>(".quiz-restart-btn");
+    expect(restart).toBeTruthy();
+    restart!.click();
+
+    expect((container.querySelector(".quiz-progress") as HTMLElement).textContent).toBe(
+      `问题 1 / ${QUESTIONS.length}`
+    );
+    expect(options(container)).toHaveLength(QUESTIONS[0].options.length);
+    const btns = options(container);
+    expect(btns.every((b) => b.classList.contains("selected"))).toBe(false);
+    expect(btns.filter((b) => b.tabIndex === 0)).toHaveLength(1);
+  });
+
+  it("重复初始化不叠加渲染（astro:page-load 复跑安全）", () => {
+    const container = mountContainer("variables");
+    initQuizContainers();
+    initQuizContainers();
+    expect(options(container)).toHaveLength(QUESTIONS[0].options.length);
+  });
+
+  it("预测题：渲染代码片段与「预测输出: X - 说明」结构化文案", () => {
+    const container = mountContainer("prediction");
+    initQuizContainers();
+
+    const question = container.querySelector(".quiz-question") as HTMLElement;
+    expect(question.querySelector(".quiz-snippet--python")).toBeTruthy();
+    expect(question.querySelector(".quiz-prediction-label")).toBeTruthy();
+
+    const btns = options(container);
+    const first = btns[0].querySelector(".option-text");
+    expect(first?.querySelector("strong")?.textContent).toBe("预测输出:");
+    expect(first?.querySelector("code")?.textContent).toBeTruthy();
+  });
+
+  it("未知 quizId：容器保持空壳（服务端已渲染占位的场景）", () => {
+    mountContainer("no-such-quiz");
+    initQuizContainers();
+    expect(document.querySelectorAll(".quiz-option")).toHaveLength(0);
   });
 });

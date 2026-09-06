@@ -78,10 +78,10 @@ def longest_brute(s: str) -> int:
 
 ## 复杂度分析
 
-| 解法           | 时间复杂度      | 空间复杂度    | 说明                         |
-| -------------- | --------------- | ------------- | ---------------------------- |
-| 暴力双循环     | O(n²)           | O(min(m, n))  | 每个起点都要建集合向右扩展   |
-| 滑动窗口+哈希表 | O(n)            | O(min(m, n))  | 左右指针各走一遍，表存字符集 |
+| 解法            | 时间复杂度 | 空间复杂度   | 说明                         |
+| --------------- | ---------- | ------------ | ---------------------------- |
+| 暴力双循环      | O(n²)      | O(min(m, n)) | 每个起点都要建集合向右扩展   |
+| 滑动窗口+哈希表 | O(n)       | O(min(m, n)) | 左右指针各走一遍，表存字符集 |
 
 ## 双语实现
 
@@ -166,25 +166,28 @@ def longest_brute(s: str) -> int:
 
 两份代码逻辑完全一致，差异集中在哈希表取值与字符串索引的表达上：
 
-<CodeCompare
-  py={`# 成员检查 + 取值一步完成
+```python
+# 成员检查 + 取值一步完成
 if char in char_index and char_index[char] >= left:
-    left = char_index[char] + 1`}
-  ts={`// get 返回联合类型，先收窄再使用
+    left = char_index[char] + 1
+```
+
+```typescript
+// get 返回联合类型，先收窄再使用
 const prev = charIndex.get(char);
 if (prev !== undefined && prev >= left) {
   left = prev + 1;
-}`}
-/>
+}
+```
 
-| 关注点   | Python                              | TypeScript                                              |
-| -------- | ----------------------------------- | ------------------------------------------------------- |
-| 哈希结构 | `dict[str, int]`，字面量即可        | `Map<string, number>`，泛型写清键值类型                 |
-| 成员检查 | `in` 直接判断键是否存在             | `get()` 返回 `number \| undefined`，需与 `undefined` 比较 |
-| 取值方式 | `char_index[char]` 命中即返回值     | `charIndex.get(char)!` 或局部变量收窄后使用             |
-| 字符串索引 | `s[i]` 与 `enumerate(s)` 均可      | `s[right]` 取字符，`s.length` 取长度                    |
-| 最大值   | 内置 `max()`                        | `Math.max()`                                            |
-| 输出测试 | `print(...)`                        | `console.log(...)`                                      |
+| 关注点     | Python                          | TypeScript                                                |
+| ---------- | ------------------------------- | --------------------------------------------------------- |
+| 哈希结构   | `dict[str, int]`，字面量即可    | `Map<string, number>`，泛型写清键值类型                   |
+| 成员检查   | `in` 直接判断键是否存在         | `get()` 返回 `number \| undefined`，需与 `undefined` 比较 |
+| 取值方式   | `char_index[char]` 命中即返回值 | `charIndex.get(char)!` 或局部变量收窄后使用               |
+| 字符串索引 | `s[i]` 与 `enumerate(s)` 均可   | `s[right]` 取字符，`s.length` 取长度                      |
+| 最大值     | 内置 `max()`                    | `Math.max()`                                              |
+| 输出测试   | `print(...)`                    | `console.log(...)`                                        |
 
 :::note
 TypeScript 正解用 `prev !== undefined` 收窄代替 `has() + !` 断言，只查一次表且通过 `strict` 检查。`Map.get` 的返回值永远带 `undefined`，收窄要有依据，不建议满屏 `!`。

@@ -397,9 +397,11 @@ Read existing `src/components/ThemeToggle.astro` first, then update:
 
 ```astro
 ---
-import { readTheme, writeTheme } from '../lib/theme-store';
+import { readTheme, writeTheme } from "../lib/theme-store";
 
-const currentTheme = readTheme(typeof window !== 'undefined' ? localStorage.getItem.bind(localStorage) : () => null);
+const currentTheme = readTheme(
+  typeof window !== "undefined" ? localStorage.getItem.bind(localStorage) : () => null
+);
 ---
 
 <div class="theme-toggle" role="group" aria-label="主题切换">
@@ -409,9 +411,18 @@ const currentTheme = readTheme(typeof window !== 'undefined' ? localStorage.getI
     data-theme="light"
     aria-pressed={currentTheme === "light"}
   >
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <circle cx="12" cy="12" r="5"/>
-      <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <circle cx="12" cy="12" r="5"></circle>
+      <path
+        d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
+      ></path>
     </svg>
   </button>
   <button
@@ -420,31 +431,38 @@ const currentTheme = readTheme(typeof window !== 'undefined' ? localStorage.getI
     data-theme="dark"
     aria-pressed={currentTheme === "dark"}
   >
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
     </svg>
   </button>
 </div>
 
 <script>
-  import { initThemeDetector, applyTheme } from '../lib/theme-detector';
+  import { initThemeDetector, applyTheme } from "../lib/theme-detector";
 
   // Initialize theme on load
   initThemeDetector();
 
   // Handle button clicks
-  document.querySelectorAll('.theme-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+  document.querySelectorAll(".theme-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
       const theme = (btn as HTMLElement).dataset.theme;
       if (theme) {
-        localStorage.setItem('site-theme', theme);
+        localStorage.setItem("site-theme", theme);
         applyTheme(theme as any);
 
         // Update pressed state
-        document.querySelectorAll('.theme-btn').forEach(b => {
-          b.setAttribute('aria-pressed', 'false');
+        document.querySelectorAll(".theme-btn").forEach((b) => {
+          b.setAttribute("aria-pressed", "false");
         });
-        btn.setAttribute('aria-pressed', 'true');
+        btn.setAttribute("aria-pressed", "true");
       }
     });
   });
@@ -586,15 +604,32 @@ const { title } = Astro.props;
     <h3 class="section-title">工具</h3>
     <div class="tool-buttons">
       <button class="tool-btn bookmark-btn" aria-label="添加书签">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
         </svg>
         <span>书签</span>
       </button>
       <button class="tool-btn share-btn" aria-label="分享此页">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
-          <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle
+            cx="18"
+            cy="19"
+            r="3"></circle>
+          <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"></path>
         </svg>
         <span>分享</span>
       </button>
@@ -618,52 +653,52 @@ const { title } = Astro.props;
 <script>
   // Highlight current TOC item on scroll
   function updateTocHighlight() {
-    const headings = document.querySelectorAll('.sl-markdown-content h2');
-    const tocLinks = document.querySelectorAll('.toc-link');
+    const headings = document.querySelectorAll(".sl-markdown-content h2");
+    const tocLinks = document.querySelectorAll(".toc-link");
 
     let currentHeading = null;
-    headings.forEach(heading => {
+    headings.forEach((heading) => {
       const rect = heading.getBoundingClientRect();
       if (rect.top < 100) {
         currentHeading = heading;
       }
     });
 
-    tocLinks.forEach(link => {
-      link.classList.remove('active');
-      if (currentHeading && link.getAttribute('href') === `#${currentHeading.id}`) {
-        link.classList.add('active');
+    tocLinks.forEach((link) => {
+      link.classList.remove("active");
+      if (currentHeading && link.getAttribute("href") === `#${currentHeading.id}`) {
+        link.classList.add("active");
       }
     });
   }
 
-  window.addEventListener('scroll', updateTocHighlight);
+  window.addEventListener("scroll", updateTocHighlight);
   updateTocHighlight();
 
   // Bookmark functionality
-  const bookmarkBtn = document.querySelector('.bookmark-btn');
+  const bookmarkBtn = document.querySelector(".bookmark-btn");
   if (bookmarkBtn) {
-    bookmarkBtn.addEventListener('click', () => {
+    bookmarkBtn.addEventListener("click", () => {
       const path = window.location.pathname;
-      const bookmarks = JSON.parse(localStorage.getItem('ts-py-learning-progress') || '{}');
+      const bookmarks = JSON.parse(localStorage.getItem("ts-py-learning-progress") || "{}");
       if (!bookmarks.bookmarks) bookmarks.bookmarks = [];
 
       if (bookmarks.bookmarks.includes(path)) {
         bookmarks.bookmarks = bookmarks.bookmarks.filter((b: string) => b !== path);
-        bookmarkBtn.classList.remove('bookmarked');
+        bookmarkBtn.classList.remove("bookmarked");
       } else {
         bookmarks.bookmarks.push(path);
-        bookmarkBtn.classList.add('bookmarked');
+        bookmarkBtn.classList.add("bookmarked");
       }
 
-      localStorage.setItem('ts-py-learning-progress', JSON.stringify(bookmarks));
+      localStorage.setItem("ts-py-learning-progress", JSON.stringify(bookmarks));
     });
   }
 
   // Share functionality
-  const shareBtn = document.querySelector('.share-btn');
+  const shareBtn = document.querySelector(".share-btn");
   if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
+    shareBtn.addEventListener("click", async () => {
       if (navigator.share) {
         await navigator.share({
           title: document.title,
@@ -671,8 +706,8 @@ const { title } = Astro.props;
         });
       } else {
         await navigator.clipboard.writeText(window.location.href);
-        shareBtn.classList.add('copied');
-        setTimeout(() => shareBtn.classList.remove('copied'), 2000);
+        shareBtn.classList.add("copied");
+        setTimeout(() => shareBtn.classList.remove("copied"), 2000);
       }
     });
   }
@@ -873,14 +908,14 @@ const { track, current } = Astro.props;
 </article>
 
 <script>
-  import { markAsCompleted, updateLastVisited } from '../lib/progress-store';
+  import { markAsCompleted, updateLastVisited } from "../lib/progress-store";
 
   function initLessonProgress() {
-    const article = document.querySelector('.lesson[data-track][data-current]');
+    const article = document.querySelector(".lesson[data-track][data-current]");
     if (!article) return;
 
-    const track = article.getAttribute('data-track');
-    const current = article.getAttribute('data-current');
+    const track = article.getAttribute("data-track");
+    const current = article.getAttribute("data-current");
 
     if (track && current) {
       updateLastVisited(current);
@@ -888,11 +923,11 @@ const { track, current } = Astro.props;
       let markedCompleted = false;
       const observer = new IntersectionObserver(
         (entries) => {
-          entries.forEach(entry => {
+          entries.forEach((entry) => {
             if (entry.isIntersecting && !markedCompleted) {
               markedCompleted = true;
-              const title = document.querySelector('h1')?.textContent || '';
-              markAsCompleted(current, title, 'lesson');
+              const title = document.querySelector("h1")?.textContent || "";
+              markAsCompleted(current, title, "lesson");
               observer.disconnect();
             }
           });
@@ -900,15 +935,15 @@ const { track, current } = Astro.props;
         { threshold: 0.5 }
       );
 
-      const pathNavigator = article.querySelector('.path-navigator');
+      const pathNavigator = article.querySelector(".path-navigator");
       if (pathNavigator) {
         observer.observe(pathNavigator);
       }
     }
   }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initLessonProgress);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initLessonProgress);
   } else {
     initLessonProgress();
   }
@@ -1229,20 +1264,39 @@ const { python, typescript, title } = {
 const codeId = crypto.randomUUID();
 ---
 
-<div class="dual-code-block" role="region" aria-label={title ? `${title} - 双语代码对比` : "双语代码对比"} data-code-id={codeId}>
+<div
+  class="dual-code-block"
+  role="region"
+  aria-label={title ? `${title} - 双语代码对比` : "双语代码对比"}
+  data-code-id={codeId}
+>
   {title && <h4 class="block-title">{title}</h4>}
 
   <div class="code-actions">
     <button class="action-btn copy-btn" aria-label="复制全部代码" data-code-id={codeId}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
       </svg>
       <span>复制全部</span>
     </button>
     <button class="action-btn toggle-btn" aria-label="折叠/展开" data-code-id={codeId}>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <polyline points="6 9 12 15 18 9"/>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
     </button>
   </div>
@@ -1251,26 +1305,56 @@ const codeId = crypto.randomUUID();
     <div class="code-panel">
       <div class="panel-header">
         <span class="lang-badge python" aria-label="Python 代码">Python</span>
-        <button class="copy-lang-btn" aria-label="复制 Python 代码" data-lang="python" data-code-id={codeId}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        <button
+          class="copy-lang-btn"
+          aria-label="复制 Python 代码"
+          data-lang="python"
+          data-code-id={codeId}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
         </button>
       </div>
-      <pre class="code" tabindex="0" aria-label="Python 代码"><code class="language-python">{python}</code></pre>
+      <pre
+        class="code"
+        tabindex="0"
+        aria-label="Python 代码"><code class="language-python">{python}</code></pre>
     </div>
     <div class="code-panel">
       <div class="panel-header">
         <span class="lang-badge typescript" aria-label="TypeScript 代码">TypeScript</span>
-        <button class="copy-lang-btn" aria-label="复制 TypeScript 代码" data-lang="typescript" data-code-id={codeId}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+        <button
+          class="copy-lang-btn"
+          aria-label="复制 TypeScript 代码"
+          data-lang="typescript"
+          data-code-id={codeId}
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
           </svg>
         </button>
       </div>
-      <pre class="code" tabindex="0" aria-label="TypeScript 代码"><code class="language-typescript">{typescript}</code></pre>
+      <pre
+        class="code"
+        tabindex="0"
+        aria-label="TypeScript 代码"><code class="language-typescript">{typescript}</code></pre>
     </div>
   </div>
 </div>
@@ -1281,21 +1365,23 @@ const codeId = crypto.randomUUID();
     const container = document.querySelector(`.code-container[data-code-id="${codeId}"]`);
     if (!container) return;
 
-    const panels = container.querySelectorAll('.code');
+    const panels = container.querySelectorAll(".code");
     let syncing = false;
 
-    panels.forEach(panel => {
-      panel.addEventListener('scroll', () => {
+    panels.forEach((panel) => {
+      panel.addEventListener("scroll", () => {
         if (syncing) return;
         syncing = true;
 
-        panels.forEach(other => {
+        panels.forEach((other) => {
           if (other !== panel) {
             other.scrollTop = panel.scrollTop;
           }
         });
 
-        requestAnimationFrame(() => { syncing = false; });
+        requestAnimationFrame(() => {
+          syncing = false;
+        });
       });
     });
   }
@@ -1306,24 +1392,26 @@ const codeId = crypto.randomUUID();
     const container = document.querySelector(`.code-container[data-code-id="${codeId}"]`);
 
     if (copyAllBtn && container) {
-      copyAllBtn.addEventListener('click', async () => {
-        const codes = container.querySelectorAll('code');
-        const text = Array.from(codes).map(code => code.textContent).join('\n\n');
+      copyAllBtn.addEventListener("click", async () => {
+        const codes = container.querySelectorAll("code");
+        const text = Array.from(codes)
+          .map((code) => code.textContent)
+          .join("\n\n");
 
         await navigator.clipboard.writeText(text);
-        copyAllBtn.classList.add('copied');
-        setTimeout(() => copyAllBtn.classList.remove('copied'), 2000);
+        copyAllBtn.classList.add("copied");
+        setTimeout(() => copyAllBtn.classList.remove("copied"), 2000);
       });
     }
 
-    document.querySelectorAll(`.copy-lang-btn[data-code-id="${codeId}"]`).forEach(btn => {
-      btn.addEventListener('click', async () => {
+    document.querySelectorAll(`.copy-lang-btn[data-code-id="${codeId}"]`).forEach((btn) => {
+      btn.addEventListener("click", async () => {
         const lang = (btn as HTMLElement).dataset.lang;
         const code = container?.querySelector(`.language-${lang}`);
         if (code) {
-          await navigator.clipboard.writeText(code.textContent || '');
-          btn.classList.add('copied');
-          setTimeout(() => btn.classList.remove('copied'), 2000);
+          await navigator.clipboard.writeText(code.textContent || "");
+          btn.classList.add("copied");
+          setTimeout(() => btn.classList.remove("copied"), 2000);
         }
       });
     });
@@ -1335,15 +1423,15 @@ const codeId = crypto.randomUUID();
     const container = document.querySelector(`.code-container[data-code-id="${codeId}"]`);
 
     if (toggleBtn && container) {
-      toggleBtn.addEventListener('click', () => {
-        const isCollapsed = container.classList.toggle('collapsed');
-        toggleBtn.setAttribute('aria-expanded', !isCollapsed);
+      toggleBtn.addEventListener("click", () => {
+        const isCollapsed = container.classList.toggle("collapsed");
+        toggleBtn.setAttribute("aria-expanded", !isCollapsed);
       });
     }
   }
 
   // Initialize all code blocks
-  document.querySelectorAll('.dual-code-block').forEach(block => {
+  document.querySelectorAll(".dual-code-block").forEach((block) => {
     const codeId = block.dataset.codeId;
     if (codeId) {
       initSyncScroll(codeId);
