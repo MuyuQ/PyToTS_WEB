@@ -9,172 +9,274 @@ description: 判断是否能完成所有课程（拓扑排序）
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-你这个学期必须选修 `numCourses` 门课程，记为 `0` 到 `numCourses - 1`。
+这个学期必须选修 `numCourses` 门课程，记为 `0` 到 `numCourses - 1`。
 
-在选修某些课程之前需要一些先修课程。先修课程按数组 `prerequisites` 给出，其中 `prerequisites[i] = [a, b]`，表示如果要学习课程 `a` 则必须先学习课程 `b`。
+在选修某些课程之前需要先修课程。先修关系按数组 `prerequisites` 给出，其中 `prerequisites[i] = [a, b]` 表示学习课程 `a` 之前必须先学习课程 `b`。判断是否可能完成所有课程，返回 `true` 或 `false`。
 
-请你判断是否可能完成所有课程的学习？如果可以，返回 `true`；否则，返回 `false`。
+**示例 1**
+
+```text
+输入：numCourses = 2, prerequisites = [[1, 0]]
+输出：true
+解释：学习课程 1 之前先学习课程 0，可以完成所有课程。
+```
+
+**示例 2**
+
+```text
+输入：numCourses = 2, prerequisites = [[1, 0], [0, 1]]
+输出：false
+解释：课程 0 和课程 1 互相依赖，存在循环依赖，无法完成。
+```
+
+**约束条件**
+
+- `1 <= numCourses <= 2000`
+- `0 <= prerequisites.length <= 5000`
+- `prerequisites[i].length == 2`
+- `0 <= a, b < numCourses`
+- 先修关系中可能出现重复边
+
+**边界情况**：`prerequisites` 为空时无任何依赖，直接返回 `true`；`numCourses` 为 1 时同样返回 `true`。重复边会让入度多加，需要按实际计数消减，只要加减配对逻辑就不受影响。
+
+## 暴力解与瓶颈
+
+朴素想法是对每门课程单独沿先修链向上追溯，看能否回到自己：
+
+```python
+def can_finish_brute(numCourses: int, prerequisites: list[list[int]]) -> bool:
+    prereq_of: dict[int, list[int]] = {}
+    for course, prereq in prerequisites:
+        prereq_of.setdefault(course, []).append(prereq)
+
+    def has_cycle(start: int) -> bool:
+        stack = [(start, iter(prereq_of.get(start, [])))]
+        seen = {start}
+        while stack:
+            node, it = stack[-1]
+            advanced = False
+            for nxt in it:
+                if nxt == start:
+                    return True
+                if nxt not in seen:
+                    seen.add(nxt)
+                    stack.append((nxt, iter(prereq_of.get(nxt, []))))
+                    advanced = True
+                    break
+            if not advanced:
+                stack.pop()
+        return False
+
+    return not any(has_cycle(c) for c in range(numCourses))
+```
+
+该写法对每个起点都重新走一遍先修链，大量边被反复访问，最坏时间 O(V·E)。瓶颈在于**重复遍历**：同一条边的"可完成"结论被计算了多次。优化方向是**只处理每条边一次**：用入度数组记录每门课还剩几个先修要求，修完一门就把后续课程的计数减一，这就是 Kahn 拓扑排序。
 
 ## 思路分析
 
-拓扑排序：
+把先修关系看成有向图，边 `prereq -> course` 表示"修完 `prereq` 才能修 `course`"；`in_degree[course]` 表示课程 `course` 还剩几个未完成的先修要求。所有入度为 0 的课程都可以直接学习。修完一门课程，就把它的后续课程入度减一；某门课入度减到 0，说明先修要求全部满足，加入队列。最后比较学完的课程数与总数：相等则无环，否则存在循环依赖。
 
-- 构建有向图和入度数组
-- 将所有入度为0的节点加入队列
-- BFS遍历，每访问一个节点，将其邻居的入度减1
-- 如果邻居入度变为0，加入队列
-- 最后检查是否所有节点都被访问
+以 `numCourses = 4, prerequisites = [[1, 0], [2, 0], [3, 1], [3, 2]]` 为例：
+
+| 步骤 | 出队课程 | 队列变化 | 入度变化 | 已学 `learned` |
+| ---- | -------- | -------- | -------- | -------------- |
+| 初始 | — | `[0]` | `[0, 1, 1, 2]` | 0 |
+| 1 | 0 | `[1, 2]` | 课程 1、2 入度变为 0 | 1 |
+| 2 | 1 | `[2]` | 课程 3 入度 2 → 1 | 2 |
+| 3 | 2 | `[3]` | 课程 3 入度 1 → 0 | 3 |
+| 4 | 3 | `[]` | 无后续 | 4 |
+
+`learned == numCourses`，返回 `true`。
+
+:::tip
+关键细节是**边的方向**：`[course, prereq]` 表示边 `prereq -> course`，入度加在 `course` 上。方向建反会导致入度数组全错，是本题最高频的 bug 来源。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(V + E)，V 是课程数，E 是先修课程数
-- **空间复杂度**：O(V + E)，图和入度数组
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| ---- | ---------- | ---------- | ---- |
+| 逐起点追溯 | O(V·E) | O(V) | 每个起点重复走先修链，边被反复访问 |
+| Kahn 拓扑排序 | O(V + E) | O(V + E) | 每条边、每个节点恰好处理一次，邻接表存边 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
+    ```python
+    # 课程表 - Python 实现 (Kahn 拓扑排序)
+    # 时间复杂度: O(V+E), 空间复杂度: O(V+E)
+    # 核心思路: 入度数组 + BFS，修完一门就把后续课程入度减一
+    from collections import deque
 
-```python
-# 课程表 - Python 实现 (拓扑排序)
-# 时间复杂度: O(V+E), 空间复杂度: O(V+E)
-# 核心思路: Kahn算法，BFS拓扑排序检测环
-from collections import deque
+    def can_finish(numCourses: int, prerequisites: list[list[int]]) -> bool:
+        # graph[i] 存储课程 i 的所有后续课程
+        graph = [[] for _ in range(numCourses)]
+        # in_degree[i] 存储课程 i 还剩几个先修要求
+        in_degree = [0] * numCourses
 
-def can_finish(numCourses: int, prerequisites: list[list[int]]) -> bool:
-    # 构建邻接表和入度数组
-    # graph[i] 存储课程i的所有后续课程
-    graph = [[] for _ in range(numCourses)]
-    # in_degree[i] 存储课程i的先修课程数量
-    in_degree = [0] * numCourses
+        # 建图：边 prereq -> course，入度加在 course 上
+        for course, prereq in prerequisites:
+            graph[prereq].append(course)
+            in_degree[course] += 1
 
-    # 遍历先修关系，构建图
-    for course, prereq in prerequisites:
-        # 从先修课程指向后续课程
-        graph[prereq].append(course)
-        # 后续课程的入度+1
-        in_degree[course] += 1
+        # 入度为 0 的课程可以直接学习
+        queue = deque()
+        for i in range(numCourses):
+            if in_degree[i] == 0:
+                queue.append(i)
 
-    # 将所有入度为0的课程（无先修要求）加入队列
-    queue = deque()
-    for i in range(numCourses):
-        if in_degree[i] == 0:
-            queue.append(i)
+        # 已学习的课程数量
+        learned = 0
 
-    # 记录已学习的课程数量
-    learned = 0
+        # BFS 拓扑排序：队列非空说明还有可学的课
+        while queue:
+            # popleft 队首出队，平均 O(1)
+            course = queue.popleft()
+            learned += 1
 
-    # BFS拓扑排序
-    while queue:
-        # 取出一个可以学习的课程
-        course = queue.popleft()
-        # 已学习课程数+1
-        learned += 1
+            # 修完 course，释放它的所有后续课程
+            for next_course in graph[course]:
+                in_degree[next_course] -= 1
+                # 入度归零说明先修要求全部满足
+                if in_degree[next_course] == 0:
+                    queue.append(next_course)
 
-        # 遍历该课程的所有后续课程
-        for next_course in graph[course]:
-            # 将后续课程的入度减1（完成了一个先修要求）
-            in_degree[next_course] -= 1
-            # 如果入度变为0，说明所有先修课程都已完成
-            if in_degree[next_course] == 0:
-                queue.append(next_course)
+        # 学完的课程数等于总数说明图中无环
+        return learned == numCourses
 
-    # 如果学习的课程数等于总课程数，说明可以完成所有课程
-    return learned == numCourses
-
-# 测试用例
-print(can_finish(2, [[1, 0]])) # True
-print(can_finish(2, [[1, 0], [0, 1]])) # False (循环依赖)
-print(can_finish(4, [[1, 0], [2, 0], [3, 1], [3, 2]])) # True
-```
+    # 测试用例
+    print(can_finish(2, [[1, 0]]))  # True
+    print(can_finish(2, [[1, 0], [0, 1]]))  # False
+    print(can_finish(4, [[1, 0], [2, 0], [3, 1], [3, 2]]))  # True
+    ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 课程表 - TypeScript 实现 (Kahn 拓扑排序)
+    // 时间复杂度: O(V+E), 空间复杂度: O(V+E)
+    // 核心思路: 入度数组 + BFS，修完一门就把后续课程入度减一
+    function canFinish(numCourses: number, prerequisites: number[][]): boolean {
+      // graph[i] 存储课程 i 的所有后续课程
+      const graph: number[][] = Array.from({ length: numCourses }, () => []);
+      // inDegree[i] 存储课程 i 还剩几个先修要求
+      const inDegree: number[] = new Array(numCourses).fill(0);
 
-```typescript
-// 课程表 - TypeScript 实现 (拓扑排序)
-// 时间复杂度: O(V+E), 空间复杂度: O(V+E)
-// 核心思路: Kahn算法，BFS拓扑排序检测环
-function canFinish(numCourses: number, prerequisites: number[][]): boolean {
-  // 构建邻接表和入度数组
-  // graph[i] 存储课程i的所有后续课程
-  const graph: number[][] = Array.from({ length: numCourses }, () => []);
-  // inDegree[i] 存储课程i的先修课程数量
-  const inDegree: number[] = new Array(numCourses).fill(0);
-
-  // 遍历先修关系，构建图
-  for (const [course, prereq] of prerequisites) {
-    // 从先修课程指向后续课程
-    graph[prereq].push(course);
-    // 后续课程的入度+1
-    inDegree[course]++;
-  }
-
-  // 将所有入度为0的课程（无先修要求）加入队列
-  const queue: number[] = [];
-  for (let i = 0; i < numCourses; i++) {
-    if (inDegree[i] === 0) {
-      queue.push(i);
-    }
-  }
-
-  // 记录已学习的课程数量
-  let learned = 0;
-
-  // BFS拓扑排序
-  while (queue.length > 0) {
-    // 取出一个可以学习的课程
-    const course = queue.shift()!;
-    // 已学习课程数+1
-    learned++;
-
-    // 遍历该课程的所有后续课程
-    for (const nextCourse of graph[course]) {
-      // 将后续课程的入度减1（完成了一个先修要求）
-      inDegree[nextCourse]--;
-      // 如果入度变为0，说明所有先修课程都已完成
-      if (inDegree[nextCourse] === 0) {
-        queue.push(nextCourse);
+      // 建图：边 prereq -> course，入度加在 course 上
+      for (const [course, prereq] of prerequisites) {
+        graph[prereq].push(course);
+        inDegree[course]++;
       }
+
+      // 入度为 0 的课程可以直接学习
+      const queue: number[] = [];
+      for (let i = 0; i < numCourses; i++) {
+        if (inDegree[i] === 0) {
+          queue.push(i);
+        }
+      }
+
+      // 已学习的课程数量
+      let learned = 0;
+      // head 下标模拟队首，避免 shift() 的 O(n) 开销
+      let head = 0;
+
+      // BFS 拓扑排序：head < length 说明还有可学的课
+      while (head < queue.length) {
+        const course = queue[head++];
+        learned++;
+
+        // 修完 course，释放它的所有后续课程
+        for (const nextCourse of graph[course]) {
+          inDegree[nextCourse]--;
+          // 入度归零说明先修要求全部满足
+          if (inDegree[nextCourse] === 0) {
+            queue.push(nextCourse);
+          }
+        }
+      }
+
+      // 学完的课程数等于总数说明图中无环
+      return learned === numCourses;
     }
-  }
 
-  // 如果学习的课程数等于总课程数，说明可以完成所有课程
-  return learned === numCourses;
-}
-
-// 测试用例
-console.log(canFinish(2, [[1, 0]])); // true
-console.log(
-  canFinish(2, [
-    [1, 0],
-    [0, 1],
-  ])
-); // false
-console.log(
-  canFinish(4, [
-    [1, 0],
-    [2, 0],
-    [3, 1],
-    [3, 2],
-  ])
-); // true
-```
+    // 测试用例
+    console.log(canFinish(2, [[1, 0]])); // true
+    console.log(canFinish(2, [[1, 0], [0, 1]])); // false
+    console.log(canFinish(4, [[1, 0], [2, 0], [3, 1], [3, 2]])); // true
+    ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+两份代码逻辑完全一致，差异集中在队列写法与解构上：
+
+<CodeCompare
+  py={`# deque 双端队列，popleft 平均 O(1)
+from collections import deque
+queue = deque()
+course = queue.popleft()`}
+  ts={`// 数组 + head 下标模拟队列，取队首 O(1)
+const queue: number[] = [];
+let head = 0;
+const course = queue[head++];`}
+/>
+
+| 关注点 | Python | TypeScript |
+| ------ | ------ | ---------- |
+| 队列结构 | `collections.deque`，`popleft()` 平均 O(1) | 数组 + `head` 下标递增，同样 O(1) |
+| 出队代价 | `list.pop(0)` 是 O(n)，必须用 `deque` | `shift()` 是 O(n)，用 `head` 指针规避 |
+| 边关系解构 | `for course, prereq in prerequisites` | `for (const [course, prereq] of prerequisites)`，写法一一对应 |
+| 邻接表初始化 | `[[] for _ in range(n)]` 推导式 | `Array.from({ length: n }, () => [])`，箭头函数保证每个桶独立 |
+| 入度数组 | `[0] * n` | `new Array(n).fill(0)` |
+| 输出测试 | `print(...)`，布尔显示 `True` | `console.log(...)`，布尔显示 `true` |
+
+:::note
+`Array.from({ length: n }, () => [])` 里的回调不能省略：如果写成 `new Array(n).fill([])`，所有位置会引用同一个数组，一次 `push` 污染全部邻接表。
+:::
+
+## 常见错误分析
+
+### 1. 建图方向搞反
+
+```python
+# 错误：边 course -> prereq，入度加错了位置
+for course, prereq in prerequisites:
+    graph[course].append(prereq)
+    in_degree[prereq] += 1
+```
+
+输入 `[[1, 0]]` 时，课程 0 入度变成 1 永不出队，`learned = 1 != 2` 返回 `False`，而正确答案是 `True`。**改法**：牢记语义"修完 `prereq` 释放 `course`"，边是 `prereq -> course`，入度加在 `course` 上。
+
+### 2. 只看队列是否为空，忘记比较总数
+
+BFS 结束时队列一定为空，无论有环无环。存在环时环上节点永远入不了队，所以必须用 `learned == numCourses` 收尾。少了这一行，有环输入也会返回 `true`。
+
+### 3. TypeScript 里用 `shift()` 取队首
+
+```typescript
+// 能跑但有两处隐患：shift() 是 O(n)，且 strict 下返回 number | undefined
+const course = queue.shift();
+for (const nextCourse of graph[course]) { /* ... */ }
+```
+
+`strict` 下 `shift()` 的类型是 `number | undefined`，直接当下标用会编译报错，被迫加 `!` 断言。**改法**：正解的 `head` 下标写法既保持 O(1)，又天然符合 `strict` 空检查，不需要任何断言。
+
 ## 面试变体
 
-1. **课程表 II**：返回一个可行的学习顺序
-2. **并行课程**：最多同时上 k 门课，求最短时间
-3. **最长路径**：求最长的先修课程链
+1. **课程表 II（返回学习顺序）**：出队时把课程追加到答案数组即可。无环时数组长度为 `numCourses`，有环时长度不足，调用方据此判断。复杂度不变，时间 O(V + E)、空间 O(V + E)。
+2. **并行修课（每学期最多 k 门）**：按层 BFS，每层至多取 k 门，层数即最少学期数。本质是拓扑分层，只是出队从"一个一个取"变成"一批一批取"。时间仍为 O(V + E)，空间 O(V + E)。
+3. **网络延迟时间**：从无权图升级到带权图（详见[网络延迟时间](../network-delay-time/)）。"修完释放"的思路不变，但最短时间需要 Dijkstra 按到达时间松弛，复杂度变为 O(E log V)，空间 O(V + E)。
 
-## 常见错误
+## 面试追问
 
-1. 图的方向搞反（应该是 prereq -> course）
-2. 忘记处理入度数组
-3. BFS结束后忘记判断是否所有节点都被访问
+- 为什么最后要比较 `learned == numCourses`，而不是队列一空就返回 `true`？（环上节点入度永远降不到 0，根本进不了队列；计数学完的节点数才能区分"学完了"和"卡住了"。）
+- 不连通的图（多门课之间毫无关系）会影响算法吗？（不会。所有入度为 0 的节点初始都在队列里，天然覆盖多连通分量；每个分量各自拓扑展开。）
+- 除了 Kahn BFS，还有什么判环方法？（DFS 三色标记：白未访问、灰在栈中、黑已完成，遇到灰色邻居即有环。时间同样 O(V + E)，但递归写法在大图上有栈溢出风险。）

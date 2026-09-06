@@ -9,123 +9,209 @@ description: 计算凑成总金额所需的最少硬币数
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给你一个整数数组 `coins`，表示不同面额的硬币；以及一个整数 `amount`，表示总金额。
+给你一个整数数组 `coins`，表示不同面额的硬币，以及一个整数 `amount`，表示总金额。计算并返回可以凑成总金额所需的最少的硬币个数。如果没有任何一种硬币组合能组成总金额，返回 `-1`。每种硬币的数量视为无限。
 
-计算并返回可以凑成总金额所需的**最少的硬币个数**。如果没有任何一种硬币组合能组成总金额，返回 `-1`。
+**示例 1**
 
-你可以认为每种硬币的数量是无限的。
+```text
+输入：coins = [1, 2, 5], amount = 11
+输出：3
+解释：11 = 5 + 5 + 1，使用 3 枚硬币
+```
+
+**示例 2**
+
+```text
+输入：coins = [2], amount = 3
+输出：-1
+解释：面额 2 无法凑出金额 3
+```
+
+**约束条件**
+
+- `1 <= coins.length <= 12`
+- `1 <= coins[i] <= 2³¹ - 1`
+- `0 <= amount <= 10⁴`
+
+**边界情况**：`amount = 0` 时不需要任何硬币，返回 `0`；`coins` 为空或所有面额都大于 `amount` 时返回 `-1`。实现中用无穷大表示"不可达"，最后需要把无穷大翻译回 `-1`。
+
+## 暴力解与瓶颈
+
+朴素想法是递归枚举每个金额的最后一枚硬币：
+
+```python
+def coin_change_brute(coins: list[int], amount: int) -> int:
+    if amount == 0:
+        return 0
+    if amount < 0:
+        return -1
+    best = float('inf')
+    for coin in coins:
+        sub = coin_change_brute(coins, amount - coin)
+        if sub != -1:
+            best = min(best, sub + 1)
+    return -1 if best == float('inf') else int(best)
+```
+
+该解法会反复求解相同子金额，例如 `amount = 11` 时 `amount = 6` 会被多条路径重复计算，时间复杂度指数级。瓶颈在于子问题高度重叠。优化方向是自底向上记录每个金额的最优值，每个金额只算一次。
 
 ## 思路分析
 
-完全背包问题（动态规划）：
+完全背包动态规划。定义 `dp[i]` 为凑成金额 `i` 的最少硬币数，`dp[0] = 0`，其余初始化为无穷大。对每个金额 `i` 尝试每种面额 `coin`，若 `coin <= i` 则 `dp[i] = min(dp[i], dp[i - coin] + 1)`，含义为"最后一枚使用该面额"。
 
-- `dp[i]`：凑成金额 i 所需的最少硬币数
-- 状态转移：`dp[i] = min(dp[i], dp[i - coin] + 1)` 对于每个 coin
-- 初始化：`dp[0] = 0`，其他为无穷大
+以 `coins = [1, 2, 5], amount = 6` 为例（只列关键转移）：
+
+| 金额 `i` | 候选转移 | 取值过程 | `dp[i]` |
+| -------- | -------- | -------- | ------- |
+| 0 | — | 初始状态 | 0 |
+| 1 | `dp[0]+1` | min(inf, 1) | 1 |
+| 2 | `dp[1]+1`, `dp[0]+1` | min(2, 1) | 1 |
+| 3 | `dp[2]+1`, `dp[1]+1` | min(2, 2) | 2 |
+| 5 | `dp[4]+1`, `dp[3]+1`, `dp[0]+1` | min(3, 3, 1) | 1 |
+| 6 | `dp[5]+1`, `dp[4]+1`, `dp[1]+1` | min(2, 4, 2) | 2 |
+
+:::tip
+关键细节是内外循环的含义：外层按金额递增，保证 `dp[i - coin]` 在计算 `dp[i]` 时已经是最优值；内层遍历全部面额，对应"最后一枚硬币有多种选择"。本题为完全背包，按金额外循环、硬币内循环可复用同一面额多次。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(amount \* n)，n 是硬币种类数
-- **空间复杂度**：O(amount)，dp数组
+| 解法       | 时间复杂度      | 空间复杂度 | 说明                       |
+| ---------- | --------------- | ---------- | -------------------------- |
+| 递归暴力   | 指数级          | O(amount)  | 子问题重复计算，栈深度为金额 |
+| 动态规划   | O(amount * n)   | O(amount)  | 每个金额尝试全部 n 种面额  |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 零钱兑换 - 完全背包问题 (动态规划)
-    # 算法: Coin Change
-    # 时间复杂度: O(amount * n), n = 硬币种类数
-    # 空间复杂度: O(amount), dp数组
-
-    def coin_change(coins: list[int], amount: int) -> int: # dp[i] 表示凑成金额 i 所需的最少硬币数 # 初始化为无穷大，表示初始时所有金额都不可达
-    dp = [float('inf')] * (amount + 1) # 创建长度为 amount+1 的数组，索引 0~amount
-
-        # 边界条件：凑成金额 0 需要 0 个硬币
+    # 零钱兑换 - Python 实现
+    # 时间复杂度: O(amount * n), 空间复杂度: O(amount)
+    # 核心思路: dp[i] 表示凑成金额 i 的最少硬币数
+    def coin_change(coins: list[int], amount: int) -> int:
+        # dp 索引 0~amount，初始为无穷大表示不可达
+        dp: list[float] = [float('inf')] * (amount + 1)
+        # 凑成金额 0 需要 0 枚硬币
         dp[0] = 0
 
-        # 外层循环：遍历每个金额 1 到 amount
+        # 金额从小到大递推，保证 dp[i - coin] 已是最优
         for i in range(1, amount + 1):
-            # 内层循环：尝试每种硬币面额
+            # 尝试每种面额作为最后一枚硬币
             for coin in coins:
-                # 只有当硬币面额不超过当前金额时才能使用
                 if coin <= i:
-                    # 状态转移方程：
-                    # dp[i] = min(当前值, 使用当前硬币后的硬币数)
-                    # dp[i - coin] + 1 表示：凑成金额 i-coin 的最少硬币数 + 当前这枚硬币
+                    # dp[i - coin] + 1 表示接上当前硬币
                     dp[i] = min(dp[i], dp[i - coin] + 1)
 
-        # 如果 dp[amount] 仍是无穷大，说明无法凑成该金额，返回 -1
-        # 否则返回最少硬币数
-        return dp[amount] if dp[amount] != float('inf') else -1
+        # 仍为无穷大说明不可达，按题目要求返回 -1
+        return -1 if dp[amount] == float('inf') else int(dp[amount])
 
     # 测试用例
-
-    print(coin_change([1, 2, 5], 11)) # 3 (5+5+1)
-    print(coin_change([2], 3)) # -1 (无法用面额2凑成3)
-    print(coin_change([1], 0)) # 0 (金额0需要0个硬币)
-    print(coin_change([1], 1)) # 1
-    print(coin_change([1], 2)) # 2
+    print(coin_change([1, 2, 5], 11))  # 3
+    print(coin_change([2], 3))  # -1
+    print(coin_change([1], 0))  # 0
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 零钱兑换 - 完全背包问题 (动态规划)
-    // 算法: Coin Change
-    // 时间复杂度: O(amount * n), n = 硬币种类数
-    // 空间复杂度: O(amount), dp数组
-
+    // 零钱兑换 - TypeScript 实现
+    // 时间复杂度: O(amount * n), 空间复杂度: O(amount)
+    // 核心思路: dp[i] 表示凑成金额 i 的最少硬币数
     function coinChange(coins: number[], amount: number): number {
-    // dp[i] 表示凑成金额 i 所需的最少硬币数
-    // 初始化为 Infinity，表示初始时所有金额都不可达
-    const dp: number[] = new Array(amount + 1).fill(Infinity); // 创建长度为 amount+1 的数组，索引 0~amount
+      // dp 索引 0~amount，初始为 Infinity 表示不可达
+      const dp: number[] = new Array(amount + 1).fill(Infinity);
+      // 凑成金额 0 需要 0 枚硬币
+      dp[0] = 0;
 
-        // 边界条件：凑成金额 0 需要 0 个硬币
-        dp[0] = 0;
-
-        // 外层循环：遍历每个金额 1 到 amount
-        for (let i = 1; i <= amount; i++) {
-            // 内层循环：尝试每种硬币面额
-            for (const coin of coins) {
-                // 只有当硬币面额不超过当前金额时才能使用
-                if (coin <= i) {
-                    // 状态转移方程：
-                    // dp[i] = min(当前值, 使用当前硬币后的硬币数)
-                    // dp[i - coin] + 1 表示：凑成金额 i-coin 的最少硬币数 + 当前这枚硬币
-                    dp[i] = Math.min(dp[i], dp[i - coin] + 1);
-                }
-            }
+      // 金额从小到大递推，保证 dp[i - coin] 已是最优
+      for (let i = 1; i <= amount; i++) {
+        // 尝试每种面额作为最后一枚硬币
+        for (const coin of coins) {
+          if (coin <= i) {
+            // dp[i - coin] + 1 表示接上当前硬币
+            dp[i] = Math.min(dp[i], dp[i - coin] + 1);
+          }
         }
+      }
 
-        // 如果 dp[amount] 仍是 Infinity，说明无法凑成该金额，返回 -1
-        // 否则返回最少硬币数
-        return dp[amount] === Infinity ? -1 : dp[amount];
-
+      // 仍为 Infinity 说明不可达，按题目要求返回 -1
+      return dp[amount] === Infinity ? -1 : dp[amount];
     }
 
     // 测试用例
     console.log(coinChange([1, 2, 5], 11)); // 3
     console.log(coinChange([2], 3)); // -1
     console.log(coinChange([1], 0)); // 0
-    console.log(coinChange([1], 1)); // 1
-    console.log(coinChange([1], 2)); // 2
     ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+两份代码递推结构完全一致，差异集中在"无穷大"与数组初始化的表达上：
+
+<CodeCompare
+  py={`# 无穷大初始化与收尾判断
+dp: list[float] = [float('inf')] * (amount + 1)
+return -1 if dp[amount] == float('inf') else int(dp[amount])`}
+  ts={`// Infinity 初始化与收尾判断
+const dp: number[] = new Array(amount + 1).fill(Infinity);
+return dp[amount] === Infinity ? -1 : dp[amount];`}
+/>
+
+| 关注点     | Python                                  | TypeScript                                  |
+| ---------- | --------------------------------------- | ------------------------------------------- |
+| 无穷大     | `float('inf')`，需与同值比较            | `Infinity`，用 `===` 比较                   |
+| 数组初始化 | `[float('inf')] * (amount + 1)` 乘法复制 | `new Array(amount + 1).fill(Infinity)`      |
+| 取最小值   | 内置 `min(a, b)`                        | `Math.min(a, b)`                            |
+| 类型注解   | `list[int]`，运行时不检查               | `number[]`，编译期检查越界与类型            |
+| 分支返回   | 三元表达式 `x if cond else y`           | 三元表达式 `cond ? x : y`                   |
+| 输出测试   | `print(...)`                            | `console.log(...)`                          |
+
+:::note
+Python 的 `dp` 混入 `float` 无穷大后类型变为 `list[float]`，返回前用 `int()` 收窄为整数。TypeScript 全程 `number` 即可表示 `Infinity`，无需类型转换，但要注意 `Infinity + 1` 仍为 `Infinity`，不会污染最小值比较。
+:::
+
+## 常见错误分析
+
+### 1. `dp[0]` 初始化错误
+
+```python
+# 错误：dp[0] 保持无穷大
+dp = [float('inf')] * (amount + 1)
+for i in range(1, amount + 1):
+    ...
+```
+
+`dp[0]` 是全部递推的起点。若不置 `0`，所有 `dp[coin]` 都从无穷大转移而来，结果恒为不可达。**改法**：初始化后立即写 `dp[0] = 0`。
+
+### 2. 忘记把无穷大翻译回 `-1`
+
+直接返回 `dp[amount]` 会在无解时返回 `inf` 或 `Infinity`，不符合题目约定的 `-1` 哨兵值。收尾必须显式判断，这也是测试用例 `coins = [2], amount = 3` 的考察点。
+
+### 3. TypeScript 里误用 `Number.MAX_VALUE` 代替 `Infinity`
+
+```typescript
+// 错误：加 1 后可能溢出为非预期值，且语义不如 Infinity 清晰
+const dp: number[] = new Array(amount + 1).fill(Number.MAX_VALUE);
+```
+
+`Infinity` 参与 `Math.min` 比较时语义最干净，且 `strict` 模式下类型仍为 `number`，无需额外断言。应优先使用 `Infinity` 表示不可达。
+
 ## 面试变体
 
-1. **零钱兑换 II**：计算凑成金额的组合数（不考虑顺序）
-2. **每种硬币有限**：每种硬币数量有限制
-3. **找零问题**：不仅求最少硬币数，还要返回具体硬币组合
+1. **零钱兑换 II（组合数）**：求凑成金额的组合数而非最少个数。递推改为计数，外层必须遍历硬币、内层遍历金额，避免把顺序不同的同种组合重复计数。时间 O(amount * n)、空间 O(amount)。
+2. **输出具体方案**：除最少个数外还要返回硬币明细。增加 `choice[i]` 记录每个金额的最优最后一枚面额，结束后从 `amount` 回溯。时间 O(amount * n)、空间 O(amount)，回溯部分 O(amount)。
+3. **0-1 背包对照**：若每种面额只能用一次，问题退化为子集和判定（详见[分割等和子集](../partition-equal-subset-sum/)）。此时内层金额必须倒序遍历，防止同一物品被复用。DP 入门对照可参考[爬楼梯](../climbing-stairs/) 的线性递推写法。
 
-## 常见错误
+## 面试追问
 
-1. 初始化 `dp[0]` 错误，应该是 0 不是 1
-2. 使用 `float('inf')` 或 `Infinity` 初始化，但最后忘记判断
-3. 循环顺序错误（完全背包和0-1背包的区别）
+- 为什么外层金额递增、内层遍历硬币就能允许同一面额复用？（计算 `dp[i]` 时 `dp[i - coin]` 可能是本轮已更新的值，天然包含复用语义。）
+- 若把循环交换为外层硬币、内层金额，结果还正确吗？对最少数有何影响？（仍正确，只是转移顺序变化；但计数类问题会改变组合与排列语义，需要区分。）
+- `amount` 很大而 `coins` 包含 `1` 时，空间还能优化吗？（最少数递推依赖任意靠前位置，无法压缩到 O(1)；BFS 按层扩展也需 O(amount)  visited 数组。）

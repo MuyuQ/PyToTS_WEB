@@ -9,27 +9,77 @@ description: 计算爬楼梯的不同方法数
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-假设你正在爬楼梯。需要 `n` 阶你才能到达楼顶。
+假设楼梯共 `n` 阶，每次可以爬 `1` 或 `2` 个台阶，求爬到楼顶的不同方法数。
 
-每次你可以爬 `1` 或 `2` 个台阶。你有多少种不同的方法可以爬到楼顶呢？
+**示例 1**
+
+```text
+输入：n = 2
+输出：2
+解释：1 + 1，2，共 2 种方法
+```
+
+**示例 2**
+
+```text
+输入：n = 3
+输出：3
+解释：1 + 1 + 1，1 + 2，2 + 1，共 3 种方法
+```
+
+**约束条件**
+
+- `1 <= n <= 45`
+- 答案保证落在 32 位有符号整数范围内
+
+**边界情况**：`n = 1` 时只有一种方法（爬 1 阶）；`n = 0` 按 1 种处理（保持递推基一致）；`n = 45` 接近 int 上限，递归无记忆化会因指数爆炸超时，必须使用迭代或记忆化。
+
+## 暴力解与瓶颈
+
+朴素递归直接按"最后一步是 1 阶还是 2 阶"分解：
+
+```python
+def climb_stairs_brute(n: int) -> int:
+    if n <= 1:
+        return 1
+    return climb_stairs_brute(n - 1) + climb_stairs_brute(n - 2)
+```
+
+语义正确，但存在大量重复子问题：`climb_stairs_brute(5)` 会反复计算 `climb_stairs_brute(3)`。时间复杂度 O(2ⁿ)，`n = 40` 即显著超时；递归深度 O(n) 还带来栈开销。优化方向是记忆化或自底向上递推：每个状态只算一次，时间降至线性；再观察到转移只依赖前两个状态，可把空间压缩到常数。
 
 ## 思路分析
 
-动态规划问题，本质是斐波那契数列：
+定义 `dp[i]` 为到达第 `i` 阶的方法数。最后一步要么从 `i - 1` 爬 1 阶，要么从 `i - 2` 爬 2 阶，因此 `dp[i] = dp[i - 1] + dp[i - 2]`，基为 `dp[0] = 1, dp[1] = 1`。自底向上只需滚动保存前两个值。
 
-- `dp[i]` 表示到达第 i 阶的方法数
-- 状态转移：`dp[i] = dp[i-1] + dp[i-2]`
-- 初始条件：`dp[0] = 1, dp[1] = 1`
+以 `n = 5` 为例：
 
-可以优化空间复杂度到 O(1)。
+| 步骤 | `i` | `prev2 (dp[i-2])` | `prev1 (dp[i-1])` | `current` |
+| ---- | --- | ----------------- | ----------------- | --------- |
+| 初始 | —   | 1 (`dp[0]`)       | 1 (`dp[1]`)       | —         |
+| 1    | 2   | 1                 | 1                 | 2         |
+| 2    | 3   | 1                 | 2                 | 3         |
+| 3    | 4   | 2                 | 3                 | 5         |
+| 4    | 5   | 3                 | 5                 | 8         |
+
+最终返回 8，与斐波那契数列形态一致。
+
+:::tip
+关键细节是滚动顺序：先算 `current = prev1 + prev2`，再 `prev2 = prev1`，最后 `prev1 = current`。若先覆盖 `prev2`，旧的 `prev1` 即丢失，加和引用错误值，结果整体偏移。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n)，需要计算到第 n 阶
-- **空间复杂度**：O(1)，只使用两个变量
+| 解法         | 时间复杂度 | 空间复杂度 | 说明                       |
+| ------------ | ---------- | ---------- | -------------------------- |
+| 朴素递归     | O(2ⁿ)      | O(n)       | 重复子问题，调用树指数膨胀 |
+| 记忆化递归   | O(n)       | O(n)       | 每个状态算一次，仍需栈与表 |
+| 迭代滚动变量 | O(n)       | O(1)       | 自底向上，仅保留两个状态   |
+
+最优解为迭代滚动变量：从 2 到 `n` 单遍递推，时间线性，空间常数，且无递归栈溢出风险。
 
 ## 双语实现
 
@@ -38,40 +88,31 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
     ```python
     # 爬楼梯 - Python 实现
     # 时间复杂度: O(n), 空间复杂度: O(1)
-    # 核心思路: 动态规划，本质是斐波那契数列
-    # 状态转移: dp[i] = dp[i-1] + dp[i-2]
-    # 到达第 i 阶的方法 = 从 i-1 阶爬1步 + 从 i-2 阶爬2步
+    # 核心思路: dp[i] = dp[i-1] + dp[i-2]，滚动优化
     def climb_stairs(n: int) -> int:
-        # 边界条件: 0阶和1阶都只有1种方法
-        # 0阶: 不动，算1种方法
-        # 1阶: 只能爬1步
+        # 基：0 阶与 1 阶各 1 种方法
         if n <= 1:
             return 1
-        
-        # 空间优化: 只保留前两个状态，不需要完整 dp 数组
-        # prev2 代表 dp[i-2]，prev1 代表 dp[i-1]
-        # 初始值: dp[0]=1, dp[1]=1
+
+        # prev2 = dp[i-2]，prev1 = dp[i-1]
         prev2, prev1 = 1, 1
-        
-        # 从第2阶开始计算到第n阶
-        # range(2, n+1) 生成 2, 3, ..., n
+
+        # 自底向上计算到第 n 阶
         for i in range(2, n + 1):
-            # 当前阶的方法数 = 前一阶 + 前两阶
+            # 当前阶方法数等于前两阶之和
             current = prev1 + prev2
-            # 状态滚动: prev2 更新为原来的 prev1
+            # 向前滚动：旧 prev1 变为新 prev2
             prev2 = prev1
-            # prev1 更新为当前计算出的值
+            # current 变为新 prev1
             prev1 = current
-        
-        # 循环结束时，prev1 存储的是 dp[n]
+
+        # 结束时 prev1 即 dp[n]
         return prev1
 
     # 测试用例
-
-    print(climb_stairs(2)) # 2: (1+1), (2)
-    print(climb_stairs(3)) # 3: (1+1+1), (1+2), (2+1)
-    print(climb_stairs(4)) # 5: (1+1+1+1), (1+1+2), (1+2+1), (2+1+1), (2+2)
-    print(climb_stairs(5)) # 8: 斐波那契数列第6项
+    print(climb_stairs(2))  # 2
+    print(climb_stairs(3))  # 3
+    print(climb_stairs(5))  # 8
     ```
 
   </TabItem>
@@ -79,57 +120,113 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
     ```typescript
     // 爬楼梯 - TypeScript 实现
     // 时间复杂度: O(n), 空间复杂度: O(1)
-    // 核心思路: 动态规划，本质是斐波那契数列
-    // 状态转移: dp[i] = dp[i-1] + dp[i-2]
-    // 到达第 i 阶的方法 = 从 i-1 阶爬1步 + 从 i-2 阶爬2步
+    // 核心思路: dp[i] = dp[i-1] + dp[i-2]，滚动优化
     function climbStairs(n: number): number {
-    // 边界条件: 0阶和1阶都只有1种方法
-    // 0阶: 不动，算1种方法
-    // 1阶: 只能爬1步
-    if (n <= 1) {
-    return 1;
-    }
+      // 基：0 阶与 1 阶各 1 种方法
+      if (n <= 1) {
+        return 1;
+      }
 
-        // 空间优化: 只保留前两个状态，不需要完整 dp 数组
-        // prev2 代表 dp[i-2]，prev1 代表 dp[i-1]
-        // 初始值: dp[0]=1, dp[1]=1
-        let prev2 = 1;  // dp[i-2]
-        let prev1 = 1;  // dp[i-1]
+      // prev2 = dp[i-2]，prev1 = dp[i-1]
+      let prev2 = 1;
+      let prev1 = 1;
 
-        // 从第2阶开始计算到第n阶
-        // 注意: i <= n 包含第n阶
-        for (let i = 2; i <= n; i++) {
-            // 当前阶的方法数 = 前一阶 + 前两阶
-            const current = prev1 + prev2;
-            // 状态滚动: prev2 更新为原来的 prev1
-            prev2 = prev1;
-            // prev1 更新为当前计算出的值
-            prev1 = current;
-        }
+      // 自底向上计算到第 n 阶，含 n 本身
+      for (let i = 2; i <= n; i++) {
+        // 当前阶方法数等于前两阶之和
+        const current = prev1 + prev2;
+        // 向前滚动：旧 prev1 变为新 prev2
+        prev2 = prev1;
+        // current 变为新 prev1
+        prev1 = current;
+      }
 
-        // 循环结束时，prev1 存储的是 dp[n]
-        return prev1;
-
+      // 结束时 prev1 即 dp[n]
+      return prev1;
     }
 
     // 测试用例
-    console.log(climbStairs(2)); // 2: (1+1), (2)
-    console.log(climbStairs(3)); // 3: (1+1+1), (1+2), (2+1)
-    console.log(climbStairs(4)); // 5
+    console.log(climbStairs(2)); // 2
+    console.log(climbStairs(3)); // 3
     console.log(climbStairs(5)); // 8
     ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+递推逻辑逐行对应，差异在循环与变量声明习惯上：
+
+<CodeCompare
+  py={`# 多重赋值初始化滚动变量
+prev2, prev1 = 1, 1
+for i in range(2, n + 1):
+    current = prev1 + prev2`}
+  ts={`// 分开声明，const 承载中间值
+let prev2 = 1;
+let prev1 = 1;
+for (let i = 2; i <= n; i++) {
+  const current = prev1 + prev2;`}
+/>
+
+| 关注点   | Python                                  | TypeScript                                   |
+| -------- | --------------------------------------- | -------------------------------------------- |
+| 变量初始化 | `prev2, prev1 = 1, 1` 多重赋值        | `let prev2 = 1` / `let prev1 = 1` 逐个声明   |
+| 循环区间 | `range(2, n + 1)` 右端含 `n`            | `i <= n` 条件显式含 `n`                      |
+| 中间值   | `current` 默认可重新赋值                | `const current` 不可重新赋值，语义更紧       |
+| 可变状态 | 需重新赋值故不用元组                   | 需重新赋值故用 `let` 而非 `const`            |
+| 类型注解 | `n: int) -> int` 运行时不检查           | `n: number): number` 编译期检查              |
+| 输出测试 | `print(...)`                            | `console.log(...)`                           |
+
+:::note
+`const` 优先原则在此的体现：`current` 每轮重新声明而非复用，适合 `const`；`prev1` / `prev2` 需要跨轮更新，只能用 `let`。Python 无对应约束，靠命名与注释表达同样的滚动语义。
+:::
+
+## 常见错误分析
+
+### 1. 递归无记忆化，大 `n` 直接超时
+
+```python
+# 错误：指数级重复计算
+def climb_stairs(n: int) -> int:
+    if n <= 1:
+        return 1
+    return climb_stairs(n - 1) + climb_stairs(n - 2)
+```
+
+`n = 40` 时调用次数达亿级。**改法**：加 `@lru_cache` 记忆化，或改用自底向上迭代。识别信号：递归分支重复求解相同参数即需记忆化。
+
+### 2. 滚动赋值顺序颠倒，结果整体错位
+
+```python
+# 错误：先覆盖 prev1，prev2 拿到的是新值
+prev1 = prev1 + prev2
+prev2 = prev1
+```
+
+第二行右边的 `prev1` 已是新值，相当于 `prev2` 与 `prev1` 同步，递推退化。**改法**：引入 `current` 中转，或用 Python 元组赋值 `prev2, prev1 = prev1, prev1 + prev2` 保证原子更新。
+
+### 3. TypeScript 里误将滚动变量声明为 `const`
+
+```typescript
+// 错误：strict 下重复赋值编译失败
+const prev1 = 1;
+prev1 = current; // Cannot assign to 'prev1'
+```
+
+`const` 绑定不可重新赋值，滚动更新必须可变。**改法**：`prev1` / `prev2` 用 `let`，`current` 用 `const`。Python 没有该编译期约束，迁移时需建立"可变用 `let`、单次绑定用 `const`"的条件反射。
+
 ## 面试变体
 
-1. **每次可以爬1/2/3阶**：状态转移变为 `dp[i] = dp[i-1] + dp[i-2] + dp[i-3]`
-2. **某些台阶不能踩**：给定一个不能踩的台阶集合
-3. **最小花费**：每阶有不同的体力花费，求最小花费
+1. **每次可爬 1 / 2 / 3 阶**：转移扩展为 `dp[i] = dp[i-1] + dp[i-2] + dp[i-3]`，基需补到 `dp[2]`。时间 O(n)、空间 O(1)（保留三个滚动变量），可追问步长集合任意化后的滑窗优化。
+2. **含障碍台阶**：给定不可落脚的台阶集合，障碍处方法数为 0 且不向后贡献。递推时先判障碍再加和，复杂度仍为时间 O(n)、空间 O(1)，障碍用集合实现 O(1) 查询。
+3. **最小花费爬楼梯**：每阶附带体力花费，求最小总花费。转移变为 `dp[i] = cost[i] + min(dp[i-1], dp[i-2])`，从计数变为最优化，但滚动结构不变，复杂度不变。该类花费 DP 可对照[零钱兑换](../coin-change/)与[打家劫舍](../house-robber/)体会状态定义差异。
+4. **大 `n` 取模**：方法数对 `10⁹ + 7` 取模。递推每步取模即可，时间 O(n)、空间 O(1)，追问点在于矩阵快速幂可进一步优化到 O(log n)。
 
-## 常见错误
+## 面试追问
 
-1. 初始化错误，忘记 `dp[0] = 1` 的情况
-2. 使用递归没有记忆化，导致超时
-3. 混淆索引，循环范围设置错误
+- 为什么 `dp[0] = 1` 而不是 0？（`dp[2] = dp[1] + dp[0]` 需等于 2，反推 `dp[0]` 必须为 1；组合语义上空操作视为一种基准方案。）
+- 自顶向下记忆化与自底向上迭代如何取舍？（前者只算可达状态、代码贴近递推式；后者无递归栈开销、空间更易压缩，本题迭代更优。）
+- 空间还能否压到 O(1) 以下？（不能，至少需要常数个变量保存滚动状态；O(1) 已是渐进下界。）
+- `n = 10¹⁸` 时 O(n) 递推不可行怎么办？（转移为线性递推，可用矩阵快速幂在 O(log n) 内求第 `n` 项斐波那契数。）
