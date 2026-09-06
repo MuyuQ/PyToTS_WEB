@@ -26,6 +26,7 @@ Execution rules:
 ### Task 1: Bootstrap Astro + Starlight Project
 
 **Files:**
+
 - Create: `package.json`
 - Create: `astro.config.mjs`
 - Create: `tsconfig.json`
@@ -94,6 +95,7 @@ git commit -m "chore: bootstrap astro starlight project"
 ### Task 2: Add Lint, Format, Typecheck, and Test Tooling
 
 **Files:**
+
 - Modify: `package.json`
 - Create: `eslint.config.mjs`
 - Create: `.prettierrc.json`
@@ -152,6 +154,7 @@ git commit -m "chore: add lint typecheck and test tooling"
 ### Task 3: Enforce Frontmatter Schema for Lessons and Algorithms
 
 **Files:**
+
 - Create: `src/lib/frontmatter-schema.ts`
 - Create: `src/content.config.ts`
 - Create: `tests/unit/frontmatter-schema.test.ts`
@@ -224,6 +227,7 @@ git commit -m "feat(content): enforce frontmatter schema"
 ### Task 4: Build Information Architecture and Navigation Shell
 
 **Files:**
+
 - Modify: `astro.config.mjs`
 - Create: `src/content/docs/paths/index.mdx`
 - Create: `src/content/docs/handbook/index.mdx`
@@ -270,6 +274,7 @@ git commit -m "feat(site): add mvp navigation structure"
 ### Task 5: Implement Theme Tokens and Theme Persistence
 
 **Files:**
+
 - Modify: `src/styles/tokens.css`
 - Create: `src/lib/theme-store.ts`
 - Create: `src/components/ThemeToggle.astro`
@@ -283,9 +288,11 @@ import { readTheme, writeTheme } from "../../src/lib/theme-store";
 
 describe("theme-store", () => {
   it("falls back to light when localStorage is unavailable", () => {
-    expect(readTheme(() => {
-      throw new Error("blocked");
-    })).toBe("light");
+    expect(
+      readTheme(() => {
+        throw new Error("blocked");
+      })
+    ).toBe("light");
   });
 
   it("stores explicit user preference", () => {
@@ -337,6 +344,7 @@ git commit -m "feat(theme): add light-dark tokens and persistence"
 ### Task 6: Implement `DualCodeBlock` for Python ↔ TypeScript Comparison
 
 **Files:**
+
 - Create: `src/lib/code-example.ts`
 - Create: `src/components/DualCodeBlock.astro`
 - Test: `tests/unit/code-example.test.ts`
@@ -353,7 +361,7 @@ describe("normalizeDualCodeInput", () => {
       normalizeDualCodeInput({
         python: "print('ok')",
         typescript: "",
-      }),
+      })
     ).toThrow(/typescript/i);
   });
 });
@@ -393,6 +401,7 @@ git commit -m "feat(components): add bilingual dual code block"
 ### Task 7: Implement `DiffInsight` and `PathNavigator` Components
 
 **Files:**
+
 - Create: `src/lib/path-map.ts`
 - Create: `src/components/DiffInsight.astro`
 - Create: `src/components/PathNavigator.astro`
@@ -448,6 +457,7 @@ git commit -m "feat(components): add diff insight and path navigator"
 ### Task 8: Add Lesson Template and Core Migration Lessons
 
 **Files:**
+
 - Create: `src/layouts/LessonLayout.astro`
 - Create: `src/content/docs/paths/migration/types.mdx`
 - Create: `src/content/docs/paths/migration/functions.mdx`
@@ -496,6 +506,7 @@ git commit -m "feat(content): add core migration lessons"
 ### Task 9: Add Algorithm Template and First Problem Set
 
 **Files:**
+
 - Create: `src/layouts/AlgorithmLayout.astro`
 - Create: `src/content/docs/algorithms/two-sum.mdx`
 - Create: `src/content/docs/algorithms/binary-search.mdx`
@@ -545,6 +556,7 @@ git commit -m "feat(algo): add initial bilingual algorithm set"
 ### Task 10: Add Static Search and Taxonomy Pages
 
 **Files:**
+
 - Modify: `astro.config.mjs`
 - Create: `src/content/docs/tags/index.mdx`
 - Create: `src/content/docs/difficulty/index.mdx`
@@ -589,6 +601,7 @@ git commit -m "feat(site): add search and taxonomy index pages"
 ### Task 11: Add CI + GitHub Pages Deployment Workflows
 
 **Files:**
+
 - Create: `.github/workflows/ci.yml`
 - Create: `.github/workflows/deploy-pages.yml`
 - Create: `README.md`
@@ -629,6 +642,7 @@ git commit -m "ci: add validation and github pages deployment"
 ### Task 12: Add Final Quality Checklist and Contribution Rules
 
 **Files:**
+
 - Create: `CONTRIBUTING.md`
 - Modify: `README.md`
 - Modify: `docs/plans/2026-03-11-python-to-typescript-learning-site-design.md`

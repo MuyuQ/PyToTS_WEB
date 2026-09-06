@@ -14,12 +14,12 @@ A learning platform designed for Python developers transitioning to TypeScript. 
 
 ## Learning Paths
 
-| Path       | Lessons | Topics                                                            |
-| ---------- | ------- | ----------------------------------------------------------------- |
-| Preparation| 2       | TypeScript Introduction, Environment Setup                        |
-| Foundation | 5       | Variables, Control Flow, Data Structures, Functions, Classes      |
-| Migration  | 7       | Type System, Functions Advanced, Modules, Error Handling, Enums, Strings & Regex, Async |
-| Advanced   | 8       | Generics, Type Guards, Utility Types, Decorators, Declarations & Config, Design Patterns, Date & Time, Node.js Basics |
+| Path        | Lessons | Topics                                                                                                                |
+| ----------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
+| Preparation | 2       | TypeScript Introduction, Environment Setup                                                                            |
+| Foundation  | 5       | Variables, Control Flow, Data Structures, Functions, Classes                                                          |
+| Migration   | 7       | Type System, Functions Advanced, Modules, Error Handling, Enums, Strings & Regex, Async                               |
+| Advanced    | 8       | Generics, Type Guards, Utility Types, Decorators, Declarations & Config, Design Patterns, Date & Time, Node.js Basics |
 
 ## Quick Start
 
@@ -42,17 +42,17 @@ npm run dev
 
 ### Available Commands
 
-| Command            | Description                 |
-| ------------------ | --------------------------- |
-| `npm run dev`      | Start development server    |
-| `npm run build`    | Build for production        |
-| `npm run preview`  | Preview production build    |
-| `npm run test`     | Run unit tests              |
-| `npm run test:e2e` | Run E2E tests               |
-| `npm run lint`     | Run linter                  |
-| `npm run format`   | Check code formatting       |
-| `npm run linkcheck`| Verify internal links       |
-| `npm run check`    | Run full quality check      |
+| Command             | Description              |
+| ------------------- | ------------------------ |
+| `npm run dev`       | Start development server |
+| `npm run build`     | Build for production     |
+| `npm run preview`   | Preview production build |
+| `npm run test`      | Run unit tests           |
+| `npm run test:e2e`  | Run E2E tests            |
+| `npm run lint`      | Run linter               |
+| `npm run format`    | Check code formatting    |
+| `npm run linkcheck` | Verify internal links    |
+| `npm run check`     | Run full quality check   |
 
 ## Project Structure
 

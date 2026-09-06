@@ -99,13 +99,15 @@ Python 3.5+ 引入了类型注解，但仍是可选的：
 def add(a: int, b: int) -> int:
     return a + b
 
-add("1", "2")  # 运行正常，返回 "12"（mypy 会警告）`}
+add("1", "2") # 运行正常，返回 "12"（mypy 会警告）
+`}
   ts={`// TypeScript - 类型检查是强制的
 function add(a: number, b: number): number {
-  return a + b;
+return a + b;
 }
 
-add("1", "2"); // 编译错误`}
+add("1", "2"); // 编译错误
+`}
 />
 
 ## 谁在使用 TypeScript

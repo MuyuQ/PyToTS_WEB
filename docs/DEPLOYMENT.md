@@ -17,6 +17,7 @@ This guide covers the deployment process for [PyToTS](https://muyuq.github.io/Py
 The site automatically deploys when changes are pushed to the `main` branch.
 
 1. Push changes to `main`:
+
    ```bash
    git push origin main
    ```
@@ -34,6 +35,7 @@ The site automatically deploys when changes are pushed to the `main` branch.
 ### Manual Deployment (if needed)
 
 1. Build the project:
+
    ```bash
    npm ci
    npm run build
@@ -53,6 +55,7 @@ The site automatically deploys when changes are pushed to the `main` branch.
 ## Post-deployment Verification
 
 1. Check site loads:
+
    ```bash
    curl -sSf https://muyuq.github.io/PyToTS_WEB/ > /dev/null && echo "OK" || echo "FAILED"
    ```

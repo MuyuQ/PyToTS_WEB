@@ -15,7 +15,7 @@
     "test:a11y": "vitest run tests/a11y/",
     "test:e2e": "playwright test",
     "linkcheck": "node scripts/link-check.mjs",
-    "check": "npm run lint && npm run lint:content && npm run typecheck && npm run build && npm run test:coverage && npm run linkcheck",
+    "check": "npm run lint && npm run lint:content && npm run format && npm run typecheck && npm run build && npm run test:coverage && npm run linkcheck",
     "lighthouse": "npx --yes @lhci/cli autorun --config=lighthouserc.json",
     "lint:content": "node scripts/content-lint.mjs"
   },

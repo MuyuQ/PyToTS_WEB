@@ -75,12 +75,12 @@ function lintCodeCompare(rel, text, issues) {
       const lineNo = text.slice(0, match.index).split("\n").length;
       if (lines.length > CODE_COMPARE_MAX_LINES) {
         issues.push(
-          `${rel}:${lineNo} CodeCompare 超过 ${CODE_COMPARE_MAX_LINES} 行（${lines.length} 行），请改为上下排列的代码块`,
+          `${rel}:${lineNo} CodeCompare 超过 ${CODE_COMPARE_MAX_LINES} 行（${lines.length} 行），请改为上下排列的代码块`
         );
       }
       if (maxLen > CODE_COMPARE_MAX_LINE_LENGTH) {
         issues.push(
-          `${rel}:${lineNo} CodeCompare [${name}] 单行 ${maxLen} 字符，超过 ${CODE_COMPARE_MAX_LINE_LENGTH}，请改为上下排列的代码块`,
+          `${rel}:${lineNo} CodeCompare [${name}] 单行 ${maxLen} 字符，超过 ${CODE_COMPARE_MAX_LINE_LENGTH}，请改为上下排列的代码块`
         );
       }
     }

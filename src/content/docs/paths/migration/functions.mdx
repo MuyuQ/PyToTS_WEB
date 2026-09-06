@@ -10,7 +10,6 @@ ts_tags: ["function", "optional", "rest", "default"]
 description: 掌握 Python 和 TypeScript 函数定义的差异
 sidebar:
   order: 2
-
 ---
 
 import CodeCompare from "../../../../components/CodeCompare.astro";
@@ -61,13 +60,15 @@ function get_data() {
 def add(a: int, b: int) -> int:
     return a + b
 
-add("1", "2")  # 运行时不会报错，但逻辑可能不是你想要的`}
+add("1", "2") # 运行时不会报错，但逻辑可能不是你想要的
+`}
   ts={`// TypeScript：合同是"法律"
 function add(a: number, b: number): number {
-  return a + b;
+return a + b;
 }
 
-add("1", "2"); // ❌ 编译报错：类型不匹配`}
+add("1", "2"); // ❌ 编译报错：类型不匹配
+`}
 />
 
 ## 代码对比
@@ -118,15 +119,17 @@ greet("Bob", "Hi"); // "Hi, Bob"
 def sum_all(*args: int) -> int:
     return sum(args)
 
-sum_all(1, 2, 3)  # 6
-sum_all()         # 0`}
+sum_all(1, 2, 3) # 6
+sum_all() # 0
+`}
   ts={`// TypeScript：...rest 参数（注意三个点）
 function sumAll(...args: number[]): number {
-  return args.reduce((a, b) => a + b, 0);
+return args.reduce((a, b) => a + b, 0);
 }
 
 sumAll(1, 2, 3); // 6
-sumAll(); // 0`}
+sumAll(); // 0
+`}
 />
 
 **类比**：`*args` 和 `...rest` 就像"打包袋"——把散落的东西打包成一个数组。
@@ -426,6 +429,7 @@ function formatMessage(title: string, body: string, urgent?: boolean): string {
 | 类型推断   | 运行时检查 | 编译时检查 | TS 能提前发现错误     |
 
 ## 面试追问
+
 1. **TypeScript 箭头函数和普通函数的 `this` 有什么区别？**
 
 <details>

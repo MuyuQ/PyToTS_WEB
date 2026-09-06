@@ -15,13 +15,13 @@
 
 ### 1.2 五个最严重的问题（按优先级）
 
-| # | 级别 | 问题 | 证据 |
-|---|------|------|------|
-| 1 | **P0** | **生产环境全站链接断裂**：内容中有 75 个唯一根相对链接（`](/algorithms/...')、`](/paths/...)`），站点部署在 `https://muyuq.github.io/PyToTS_WEB/` 子路径下，这些链接全部 404。已在新构建产物的 HTML 中核实（`href="/paths/advanced/"` 等，未带 base 前缀）。`Pagination.astro` 的 `parsePath` 正则 `^\/paths\/...` 在带 base 的真实 URL 上永远匹配失败，其自建链接同样缺 base；`404.astro` 的"返回首页"链接 `href="/"` 同理 | 构建产物 grep + 截图 |
-| 2 | **P0** | **课程顺序是字母序而非教学顺序**：Starlight `autogenerate` 侧边栏按 slug 字母排序——迁移路径显示为「异步编程、枚举与常量定义、错误处理机制、函数与参数、模块与包管理、字符串与正则处理、类型系统对比」，完全颠倒；上一课/下一课同理（类型系统对比的"下一课"是进阶路径首页）。`lib/path-map.ts` 里精心维护的教学顺序只被死代码使用 | 侧边栏截图 + 源码 |
-| 3 | **P1** | **首页是空文档页**：标题「欢迎」下三行要点 + 一个链接；frontmatter h1「欢迎」与正文 h1「Python 到 TypeScript」双 H1；右侧目录只有 3 条；左右大片空白。第一印象等于"这个站没做完" | home-light.png |
-| 4 | **P1** | **视觉语言不专业**：① 全站 emoji 标题（🎯💡🐍🚀⚠️📝🌈📊），目录里每条都带 emoji，噪音极大；② `:::tip[答案要点]` 渲染成高饱和亮紫色大色块，一处课程页出现两个，刺眼且与靛蓝主题冲突；③ 路径首页 CardGrid `stagger` 交错布局导致卡片高低错位像排版事故；④ 卡片 icon 槽渲染成空色块、难度用 ⭐ emoji 表达 | lesson-asides.png、paths-top.png |
-| 5 | **P1** | **双语对照没有视觉表达**：Python 和 TypeScript 代码块外观完全相同（同样式、无语言标签、无文件头）。"双语对照"是站点唯一的差异化卖点，目前靠读者从 `def` 还是 `function` 猜 | lesson-top.png、lesson-mid.png |
+| #   | 级别   | 问题                                                                                                                                                                                                                                                                                                                                                                                                                        | 证据                             |
+| --- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| 1   | **P0** | **生产环境全站链接断裂**：内容中有 75 个唯一根相对链接（`](/algorithms/...')、`](/paths/...)`），站点部署在 `https://muyuq.github.io/PyToTS_WEB/` 子路径下，这些链接全部 404。已在新构建产物的 HTML 中核实（`href="/paths/advanced/"` 等，未带 base 前缀）。`Pagination.astro` 的 `parsePath` 正则 `^\/paths\/...` 在带 base 的真实 URL 上永远匹配失败，其自建链接同样缺 base；`404.astro` 的"返回首页"链接 `href="/"` 同理 | 构建产物 grep + 截图             |
+| 2   | **P0** | **课程顺序是字母序而非教学顺序**：Starlight `autogenerate` 侧边栏按 slug 字母排序——迁移路径显示为「异步编程、枚举与常量定义、错误处理机制、函数与参数、模块与包管理、字符串与正则处理、类型系统对比」，完全颠倒；上一课/下一课同理（类型系统对比的"下一课"是进阶路径首页）。`lib/path-map.ts` 里精心维护的教学顺序只被死代码使用                                                                                            | 侧边栏截图 + 源码                |
+| 3   | **P1** | **首页是空文档页**：标题「欢迎」下三行要点 + 一个链接；frontmatter h1「欢迎」与正文 h1「Python 到 TypeScript」双 H1；右侧目录只有 3 条；左右大片空白。第一印象等于"这个站没做完"                                                                                                                                                                                                                                            | home-light.png                   |
+| 4   | **P1** | **视觉语言不专业**：① 全站 emoji 标题（🎯💡🐍🚀⚠️📝🌈📊），目录里每条都带 emoji，噪音极大；② `:::tip[答案要点]` 渲染成高饱和亮紫色大色块，一处课程页出现两个，刺眼且与靛蓝主题冲突；③ 路径首页 CardGrid `stagger` 交错布局导致卡片高低错位像排版事故；④ 卡片 icon 槽渲染成空色块、难度用 ⭐ emoji 表达                                                                                                                      | lesson-asides.png、paths-top.png |
+| 5   | **P1** | **双语对照没有视觉表达**：Python 和 TypeScript 代码块外观完全相同（同样式、无语言标签、无文件头）。"双语对照"是站点唯一的差异化卖点，目前靠读者从 `def` 还是 `function` 猜                                                                                                                                                                                                                                                  | lesson-top.png、lesson-mid.png   |
 
 ### 1.3 次级问题（P2）
 
@@ -66,71 +66,71 @@
 
 > 目标：站点在真实部署路径下"能用"。先于一切美化。
 
-| 任务 | 具体动作 | 涉及文件 | 验收标准 |
-|------|---------|---------|---------|
-| 0.1 内容链接改写 | 75 个根相对链接改为相对链接（如 `](/paths/foundation/variables)` → `](../foundation/variables/)` 或 Starlight 推荐的相对路径写法）；可用脚本批量转换 + 人工抽查 | `src/content/docs/**/*.mdx` | 构建产物 HTML 中不再存在 `href="/` 形式的内部链接 |
-| 0.2 Pagination 修复 | 用 `Astro.url.pathname` 剥离 `import.meta.env.BASE_URL` 后再匹配；自建链接统一走 `import.meta.env.BASE_URL` 前缀（或改用相对 URL） | `src/components/Pagination.astro` | 课程页上一课/下一课指向教学顺序相邻课程（依赖 0.4） |
-| 0.3 404 页修复 | 返回链接带 base；文案中文化；样式接入站点 token（支持暗色） | `src/pages/404.astro` | 子路径 404 页可一键返回首页 |
-| 0.4 课程顺序修复 | 为每篇课程 frontmatter 增加 `sidebar.order`（值取自 `lib/path-map.ts` 的数组下标）；侧边栏「迁移路径 → 迁移路径」重名问题通过 track index 页 `sidebar.label` 解决（如「总览」） | 22 篇课程 MDX + 各 track `index.mdx` | 侧边栏与上一课/下一课严格按 准备→基础→迁移→进阶 教学顺序 |
-| 0.5 linkcheck 升级防回归 | `scripts/link-check.mjs` 目前只对 src 里的 markdown 链接做正则校验，无法发现 base 前缀缺失。改为对 `dist/` 产物 HTML 全量校验 `href/src`（带 base 拼接后必须 200 或命中 dist 内文件），并把「内容中出现根相对链接」定为 lint 错误 | `scripts/link-check.mjs` | `npm run check` 能拦住本类 bug，永久防回归 |
-| 0.6 死代码清理 | 删除 §1.3 列出的死代码群（9 个文件），`LessonProgressMarkers` 保留；`test-common-mistakes.astro` 一并删除或移入 tests | `src/components/`、`src/layouts/`、`src/pages/` | `npm run check` 通过；`grep -r "LessonLayout\|AlgorithmLayout\|PathNavigator\|RightSidebar\|MobileNav"` 无真实引用 |
+| 任务                     | 具体动作                                                                                                                                                                                                                          | 涉及文件                                        | 验收标准                                                                                                           |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| 0.1 内容链接改写         | 75 个根相对链接改为相对链接（如 `](/paths/foundation/variables)` → `](../foundation/variables/)` 或 Starlight 推荐的相对路径写法）；可用脚本批量转换 + 人工抽查                                                                   | `src/content/docs/**/*.mdx`                     | 构建产物 HTML 中不再存在 `href="/` 形式的内部链接                                                                  |
+| 0.2 Pagination 修复      | 用 `Astro.url.pathname` 剥离 `import.meta.env.BASE_URL` 后再匹配；自建链接统一走 `import.meta.env.BASE_URL` 前缀（或改用相对 URL）                                                                                                | `src/components/Pagination.astro`               | 课程页上一课/下一课指向教学顺序相邻课程（依赖 0.4）                                                                |
+| 0.3 404 页修复           | 返回链接带 base；文案中文化；样式接入站点 token（支持暗色）                                                                                                                                                                       | `src/pages/404.astro`                           | 子路径 404 页可一键返回首页                                                                                        |
+| 0.4 课程顺序修复         | 为每篇课程 frontmatter 增加 `sidebar.order`（值取自 `lib/path-map.ts` 的数组下标）；侧边栏「迁移路径 → 迁移路径」重名问题通过 track index 页 `sidebar.label` 解决（如「总览」）                                                   | 22 篇课程 MDX + 各 track `index.mdx`            | 侧边栏与上一课/下一课严格按 准备→基础→迁移→进阶 教学顺序                                                           |
+| 0.5 linkcheck 升级防回归 | `scripts/link-check.mjs` 目前只对 src 里的 markdown 链接做正则校验，无法发现 base 前缀缺失。改为对 `dist/` 产物 HTML 全量校验 `href/src`（带 base 拼接后必须 200 或命中 dist 内文件），并把「内容中出现根相对链接」定为 lint 错误 | `scripts/link-check.mjs`                        | `npm run check` 能拦住本类 bug，永久防回归                                                                         |
+| 0.6 死代码清理           | 删除 §1.3 列出的死代码群（9 个文件），`LessonProgressMarkers` 保留；`test-common-mistakes.astro` 一并删除或移入 tests                                                                                                             | `src/components/`、`src/layouts/`、`src/pages/` | `npm run check` 通过；`grep -r "LessonLayout\|AlgorithmLayout\|PathNavigator\|RightSidebar\|MobileNav"` 无真实引用 |
 
 ### Phase 1 — 站点门面（P1，2–3 个工作日）
 
 > 目标：首页像"作品"，不再像"没写完的文档"。
 
-| 任务 | 具体动作 | 涉及文件 | 验收标准 |
-|------|---------|---------|---------|
-| 1.1 首页重做 | 用 Starlight 0.28 原生 `hero` frontmatter（已确认 schema 支持）+ `template: splash` 搭建：一句价值主张、两个动作（「开始学习」→ 学习路径 /「进入题库」→ 算法）；下方用 CardGrid 呈现三条学习路径（统一卡片、非 stagger）；删除正文重复 H1；加入"双语对照"真实示例（一对 Python/TS 代码片段）作为首屏信任信号 | `src/content/docs/index.mdx` | 单 H1；首屏有明确入口；无空荡区 |
-| 1.2 界面中文化 | 配置 `locales: { root: { lang: 'zh-CN', label: '简体中文' } }`（翻译文件已内置）；侧边栏「分类索引」下 Tags/Difficulty 改中文标题或并入其他分组；工具页 frontmatter 用 `prev`/`next` 关闭课程式分页 | `astro.config.mjs`、`src/content/docs/tags/`、`difficulty/` 等 | 全站无裸英文 UI 字符串；工具页无「上一课/下一课」 |
-| 1.3 移动端标题截断 | `.site-title` 加 `white-space: nowrap` + 响应式字号，或缩短移动端显示名 | `src/components/Header.astro`（已 override） | 390px 视口完整显示 |
-| 1.4 测验入口修复 | `practice/index.mdx` 三个测验卡片分别锚点链接 `](/practice/quiz/#...)`（相对路径），卡片正文恢复为列表；长期：每个 quizId 一个页面 | `src/content/docs/practice/index.mdx` | 每个卡片链接指向对应测验 |
+| 任务               | 具体动作                                                                                                                                                                                                                                                                                                     | 涉及文件                                                       | 验收标准                                          |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ------------------------------------------------- |
+| 1.1 首页重做       | 用 Starlight 0.28 原生 `hero` frontmatter（已确认 schema 支持）+ `template: splash` 搭建：一句价值主张、两个动作（「开始学习」→ 学习路径 /「进入题库」→ 算法）；下方用 CardGrid 呈现三条学习路径（统一卡片、非 stagger）；删除正文重复 H1；加入"双语对照"真实示例（一对 Python/TS 代码片段）作为首屏信任信号 | `src/content/docs/index.mdx`                                   | 单 H1；首屏有明确入口；无空荡区                   |
+| 1.2 界面中文化     | 配置 `locales: { root: { lang: 'zh-CN', label: '简体中文' } }`（翻译文件已内置）；侧边栏「分类索引」下 Tags/Difficulty 改中文标题或并入其他分组；工具页 frontmatter 用 `prev`/`next` 关闭课程式分页                                                                                                          | `astro.config.mjs`、`src/content/docs/tags/`、`difficulty/` 等 | 全站无裸英文 UI 字符串；工具页无「上一课/下一课」 |
+| 1.3 移动端标题截断 | `.site-title` 加 `white-space: nowrap` + 响应式字号，或缩短移动端显示名                                                                                                                                                                                                                                      | `src/components/Header.astro`（已 override）                   | 390px 视口完整显示                                |
+| 1.4 测验入口修复   | `practice/index.mdx` 三个测验卡片分别锚点链接 `](/practice/quiz/#...)`（相对路径），卡片正文恢复为列表；长期：每个 quizId 一个页面                                                                                                                                                                           | `src/content/docs/practice/index.mdx`                          | 每个卡片链接指向对应测验                          |
 
 ### Phase 2 — 视觉系统专业化（P1，3–5 个工作日）
 
 > 目标：去掉"模板感"与 AI 痕迹，建立一套成体系的视觉语言。本阶段产出即 DESIGN.md 的实施基础。
 
-| 任务 | 具体动作 | 涉及文件 | 验收标准 |
-|------|---------|---------|---------|
-| 2.1 去 emoji 标题 | 删除所有 `## 💡` 类 emoji；章节语义改用 Starlight aside（低饱和）或加粗引导句；AGENTS.md 同步更新规范（现规范本身与实际内容脱节：规定 `## 场景与问题` 结构，实际内容全是 `## 🎯 为什么这个很重要`，需二选一后对齐） | 全部 MDX + `AGENTS.md` | 目录无 emoji；标题体系全文一致 |
-| 2.2 Aside 重配色 | 为 note/tip/caution/danger 定义低饱和 tint（背景 8–12% 色度 + 全边框或无边框 + 图标），替换 Starlight 默认高饱和样式；12 处 `:::tip[答案要点]` 在课程语境下建议改为统一的「答案要点」自定义组件，视觉上安静一档 | `tokens.css` 或 aside 覆盖组件 | 无高饱和紫块；提示块与主题协调 |
-| 2.3 代码块语言系统 | 用 rehype 插件或 CSS `::before` + `data-language` 给代码块加语言头（语言名 + 徽标色）；重点建设 `CodeCompare` 双语对照组件：桌面左右双栏同步滚动、移动端 Python/TS Tab；在 3–5 篇核心课程试点后推广 | 新组件 + `astro.config.mjs`（rehype） | 任意代码块 0.5 秒内可辨语言；试点课程出现真对照 |
-| 2.4 徽章与卡片体系 | 新增 `DifficultyBadge`（入门/进阶/高阶，文字徽章非 emoji 星）、`ComplexityChip`；`paths/*.mdx` 卡片去 `stagger`、去 emoji 图标槽、统一结构（标题/一句描述/难度徽章/课时数/CTA） | 新组件 + `paths/**/*.mdx` | 卡片网格整齐；难度信息组件化 |
-| 2.5 检测器缺陷清零 | 修复 7 处：`.alert`/blockquote/CommonMistakes/QuizContainer 的左侧彩条改为全边框或 tint 背景；进度条 `transition: width` 改 `transform: scaleX` | `components.css`、`custom-layout.css`、`CommonMistakes.astro`、`QuizContainer.astro` | `detect.mjs` 重扫 0 finding |
-| 2.6 中文排版细节 | 标题 `text-wrap: balance`；正文行高 1.8（CJK）；中英混排间距走 `text-autospace` 或人工空格规范；正文列宽上限 65–75ch（现 ~720px 已合规，保持） | `custom-layout.css` | 长段落阅读不憋、不散 |
-| 2.7 暗色主题联检 | aside tint、代码语言头、徽章、卡片 hover 全部在 dark 下核校对比度（正文 ≥ 4.5:1） | 各样式文件 | 明暗两套截图联检通过 |
+| 任务               | 具体动作                                                                                                                                                                                                            | 涉及文件                                                                             | 验收标准                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| 2.1 去 emoji 标题  | 删除所有 `## 💡` 类 emoji；章节语义改用 Starlight aside（低饱和）或加粗引导句；AGENTS.md 同步更新规范（现规范本身与实际内容脱节：规定 `## 场景与问题` 结构，实际内容全是 `## 🎯 为什么这个很重要`，需二选一后对齐） | 全部 MDX + `AGENTS.md`                                                               | 目录无 emoji；标题体系全文一致                  |
+| 2.2 Aside 重配色   | 为 note/tip/caution/danger 定义低饱和 tint（背景 8–12% 色度 + 全边框或无边框 + 图标），替换 Starlight 默认高饱和样式；12 处 `:::tip[答案要点]` 在课程语境下建议改为统一的「答案要点」自定义组件，视觉上安静一档     | `tokens.css` 或 aside 覆盖组件                                                       | 无高饱和紫块；提示块与主题协调                  |
+| 2.3 代码块语言系统 | 用 rehype 插件或 CSS `::before` + `data-language` 给代码块加语言头（语言名 + 徽标色）；重点建设 `CodeCompare` 双语对照组件：桌面左右双栏同步滚动、移动端 Python/TS Tab；在 3–5 篇核心课程试点后推广                 | 新组件 + `astro.config.mjs`（rehype）                                                | 任意代码块 0.5 秒内可辨语言；试点课程出现真对照 |
+| 2.4 徽章与卡片体系 | 新增 `DifficultyBadge`（入门/进阶/高阶，文字徽章非 emoji 星）、`ComplexityChip`；`paths/*.mdx` 卡片去 `stagger`、去 emoji 图标槽、统一结构（标题/一句描述/难度徽章/课时数/CTA）                                     | 新组件 + `paths/**/*.mdx`                                                            | 卡片网格整齐；难度信息组件化                    |
+| 2.5 检测器缺陷清零 | 修复 7 处：`.alert`/blockquote/CommonMistakes/QuizContainer 的左侧彩条改为全边框或 tint 背景；进度条 `transition: width` 改 `transform: scaleX`                                                                     | `components.css`、`custom-layout.css`、`CommonMistakes.astro`、`QuizContainer.astro` | `detect.mjs` 重扫 0 finding                     |
+| 2.6 中文排版细节   | 标题 `text-wrap: balance`；正文行高 1.8（CJK）；中英混排间距走 `text-autospace` 或人工空格规范；正文列宽上限 65–75ch（现 ~720px 已合规，保持）                                                                      | `custom-layout.css`                                                                  | 长段落阅读不憋、不散                            |
+| 2.7 暗色主题联检   | aside tint、代码语言头、徽章、卡片 hover 全部在 dark 下核校对比度（正文 ≥ 4.5:1）                                                                                                                                   | 各样式文件                                                                           | 明暗两套截图联检通过                            |
 
 ### Phase 3 — 导航与信息架构（P2，2–3 个工作日）
 
 > 目标：让 36 道题、22 节课"可扫视、可过滤"，让已维护的元数据产生价值。
 
-| 任务 | 具体动作 | 涉及文件 | 验收标准 |
-|------|---------|---------|---------|
-| 3.1 算法题库索引页 | 新建 `algorithms` 索引页：从 content collection 自动生成表格/卡片（题名、难度徽章、标签、复杂度），支持按难度/标签筛选（纯静态：预生成 + 少量客户端 JS）；侧边栏「算法」分组默认折叠，只留索引入口 + 可选的按难度分子组 | 新索引页 + `astro.config.mjs` sidebar | 侧边栏不再平铺 36 项；索引页可按难度过滤 |
-| 3.2 元数据上页面 | 算法页 H1 下方渲染 难度徽章 + 标签 + 复杂度 chip（数据全部来自现有 frontmatter）；课程页渲染 难度 + 前置课程 | `AlgorithmLayout` 相关渲染路径（用 Starlight 组件覆盖或内容组件） | 元数据与正文同屏可见 |
-| 3.3 分类索引做实 | `/tags/`、`/difficulty/` 从 collection 自动生成（数据已有，只是目前只覆盖少量页面——顺带补齐缺失的 frontmatter），覆盖不足的标签先隐藏而非展示空壳 | `tags/`、`difficulty/` 页面 | 索引页与真实内容一致，无空分组 |
-| 3.4 手册做实 | 「Python ↔ TypeScript 手册」目前 8 行，不配"速查"之名：扩为分类对照表（变量/类型/集合/函数/异步/模块/错误处理），每行链接到对应课程 | `handbook/` | 手册页 ≥ 1 屏密度，行内可跳课程 |
-| 3.5 进度体验接回 | `LessonProgressMarkers` 已在 track 页使用；把"学习进度"呈现到首页/侧边栏（复用 `lib/progress-store.ts`），删除死代码中假进度 UI | `SidebarProgress` 替代实现 + `index.mdx` | 已学课程在侧边栏可见标记 |
+| 任务               | 具体动作                                                                                                                                                                                                                | 涉及文件                                                          | 验收标准                                 |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ---------------------------------------- |
+| 3.1 算法题库索引页 | 新建 `algorithms` 索引页：从 content collection 自动生成表格/卡片（题名、难度徽章、标签、复杂度），支持按难度/标签筛选（纯静态：预生成 + 少量客户端 JS）；侧边栏「算法」分组默认折叠，只留索引入口 + 可选的按难度分子组 | 新索引页 + `astro.config.mjs` sidebar                             | 侧边栏不再平铺 36 项；索引页可按难度过滤 |
+| 3.2 元数据上页面   | 算法页 H1 下方渲染 难度徽章 + 标签 + 复杂度 chip（数据全部来自现有 frontmatter）；课程页渲染 难度 + 前置课程                                                                                                            | `AlgorithmLayout` 相关渲染路径（用 Starlight 组件覆盖或内容组件） | 元数据与正文同屏可见                     |
+| 3.3 分类索引做实   | `/tags/`、`/difficulty/` 从 collection 自动生成（数据已有，只是目前只覆盖少量页面——顺带补齐缺失的 frontmatter），覆盖不足的标签先隐藏而非展示空壳                                                                       | `tags/`、`difficulty/` 页面                                       | 索引页与真实内容一致，无空分组           |
+| 3.4 手册做实       | 「Python ↔ TypeScript 手册」目前 8 行，不配"速查"之名：扩为分类对照表（变量/类型/集合/函数/异步/模块/错误处理），每行链接到对应课程                                                                                     | `handbook/`                                                       | 手册页 ≥ 1 屏密度，行内可跳课程          |
+| 3.5 进度体验接回   | `LessonProgressMarkers` 已在 track 页使用；把"学习进度"呈现到首页/侧边栏（复用 `lib/progress-store.ts`），删除死代码中假进度 UI                                                                                         | `SidebarProgress` 替代实现 + `index.mdx`                          | 已学课程在侧边栏可见标记                 |
 
 ### Phase 4 — 工程化与长期防回归（P2，1–2 个工作日）
 
-| 任务 | 具体动作 | 验收标准 |
-|------|---------|---------|
+| 任务               | 具体动作                                                                                                                                                                   | 验收标准                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
 | 4.1 内容 lint 脚本 | 新增 `scripts/content-lint.mjs`：① 标题含 emoji 即报错；② 根相对内部链接报错；③ `kind: lesson/algorithm` 缺必填 frontmatter 报错；④ 中英标题混杂报错。接入 `npm run check` | `npm run check` 全绿成为合并门槛 |
-| 4.2 OG 图与元信息 | 制作 1200×630 OG 图（靛蓝底 + 双语对照排版示意），`astro.config.mjs` 配合 sitemap 补全；README 清理三段重复时间戳 | 分享卡片有图 |
-| 4.3 E2E 补测试 | Playwright 增加：① 构建产物全内链爬取（配合 0.5）；② 侧边栏顺序断言（取 path-map 与 DOM 对比）；③ 明暗主题截图快照各 1 张首页/课程页 | 三条测试进 `npm run test:e2e` |
-| 4.4 对比度专项 | `--sl-color-gray-3`（#8b949e）当前用于小字（分页 label）仅 3.5:1，提到 gray-2；全站跑一次 axe（依赖已有 axe-core） | `test:a11y` 无 violation |
+| 4.2 OG 图与元信息  | 制作 1200×630 OG 图（靛蓝底 + 双语对照排版示意），`astro.config.mjs` 配合 sitemap 补全；README 清理三段重复时间戳                                                          | 分享卡片有图                     |
+| 4.3 E2E 补测试     | Playwright 增加：① 构建产物全内链爬取（配合 0.5）；② 侧边栏顺序断言（取 path-map 与 DOM 对比）；③ 明暗主题截图快照各 1 张首页/课程页                                       | 三条测试进 `npm run test:e2e`    |
+| 4.4 对比度专项     | `--sl-color-gray-3`（#8b949e）当前用于小字（分页 label）仅 3.5:1，提到 gray-2；全站跑一次 axe（依赖已有 axe-core）                                                         | `test:a11y` 无 violation         |
 
 ---
 
 ## 4. 里程碑与工作量
 
-| 里程碑 | 内容 | 预估 | 累计效果 |
-|--------|------|------|---------|
-| M1「能用」 | Phase 0 | 1 天 | 生产链接全通、课程顺序正确 |
-| M2「像样」 | Phase 1 + 2.1/2.2 | 3–4 天 | 首页像作品、无 emoji/紫块，第一印象达标 |
-| M3「专业」 | Phase 2 剩余 + 3 | 5–7 天 | 双语对照成视觉系统、索引可过滤、元数据可见 |
-| M4「可持续」 | Phase 4 | 1–2 天 | lint + E2E 防回归 |
+| 里程碑       | 内容              | 预估   | 累计效果                                   |
+| ------------ | ----------------- | ------ | ------------------------------------------ |
+| M1「能用」   | Phase 0           | 1 天   | 生产链接全通、课程顺序正确                 |
+| M2「像样」   | Phase 1 + 2.1/2.2 | 3–4 天 | 首页像作品、无 emoji/紫块，第一印象达标    |
+| M3「专业」   | Phase 2 剩余 + 3  | 5–7 天 | 双语对照成视觉系统、索引可过滤、元数据可见 |
+| M4「可持续」 | Phase 4           | 1–2 天 | lint + E2E 防回归                          |
 
 按兼职节奏 2–3 周内可全部落地；若只投入两个工作日，做 Phase 0 + 1.1 + 2.1/2.2，收益最大。
 

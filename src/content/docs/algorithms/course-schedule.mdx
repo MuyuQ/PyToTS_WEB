@@ -82,13 +82,13 @@ def can_finish_brute(numCourses: int, prerequisites: list[list[int]]) -> bool:
 
 以 `numCourses = 4, prerequisites = [[1, 0], [2, 0], [3, 1], [3, 2]]` 为例：
 
-| 步骤 | 出队课程 | 队列变化 | 入度变化 | 已学 `learned` |
-| ---- | -------- | -------- | -------- | -------------- |
-| 初始 | — | `[0]` | `[0, 1, 1, 2]` | 0 |
-| 1 | 0 | `[1, 2]` | 课程 1、2 入度变为 0 | 1 |
-| 2 | 1 | `[2]` | 课程 3 入度 2 → 1 | 2 |
-| 3 | 2 | `[3]` | 课程 3 入度 1 → 0 | 3 |
-| 4 | 3 | `[]` | 无后续 | 4 |
+| 步骤 | 出队课程 | 队列变化 | 入度变化             | 已学 `learned` |
+| ---- | -------- | -------- | -------------------- | -------------- |
+| 初始 | —        | `[0]`    | `[0, 1, 1, 2]`       | 0              |
+| 1    | 0        | `[1, 2]` | 课程 1、2 入度变为 0 | 1              |
+| 2    | 1        | `[2]`    | 课程 3 入度 2 → 1    | 2              |
+| 3    | 2        | `[3]`    | 课程 3 入度 1 → 0    | 3              |
+| 4    | 3        | `[]`     | 无后续               | 4              |
 
 `learned == numCourses`，返回 `true`。
 
@@ -98,10 +98,10 @@ def can_finish_brute(numCourses: int, prerequisites: list[list[int]]) -> bool:
 
 ## 复杂度分析
 
-| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
-| ---- | ---------- | ---------- | ---- |
-| 逐起点追溯 | O(V·E) | O(V) | 每个起点重复走先修链，边被反复访问 |
-| Kahn 拓扑排序 | O(V + E) | O(V + E) | 每条边、每个节点恰好处理一次，邻接表存边 |
+| 解法          | 时间复杂度 | 空间复杂度 | 说明                                     |
+| ------------- | ---------- | ---------- | ---------------------------------------- |
+| 逐起点追溯    | O(V·E)     | O(V)       | 每个起点重复走先修链，边被反复访问       |
+| Kahn 拓扑排序 | O(V + E)   | O(V + E)   | 每条边、每个节点恰好处理一次，邻接表存边 |
 
 ## 双语实现
 
@@ -229,14 +229,14 @@ let head = 0;
 const course = queue[head++];`}
 />
 
-| 关注点 | Python | TypeScript |
-| ------ | ------ | ---------- |
-| 队列结构 | `collections.deque`，`popleft()` 平均 O(1) | 数组 + `head` 下标递增，同样 O(1) |
-| 出队代价 | `list.pop(0)` 是 O(n)，必须用 `deque` | `shift()` 是 O(n)，用 `head` 指针规避 |
-| 边关系解构 | `for course, prereq in prerequisites` | `for (const [course, prereq] of prerequisites)`，写法一一对应 |
-| 邻接表初始化 | `[[] for _ in range(n)]` 推导式 | `Array.from({ length: n }, () => [])`，箭头函数保证每个桶独立 |
-| 入度数组 | `[0] * n` | `new Array(n).fill(0)` |
-| 输出测试 | `print(...)`，布尔显示 `True` | `console.log(...)`，布尔显示 `true` |
+| 关注点       | Python                                     | TypeScript                                                    |
+| ------------ | ------------------------------------------ | ------------------------------------------------------------- |
+| 队列结构     | `collections.deque`，`popleft()` 平均 O(1) | 数组 + `head` 下标递增，同样 O(1)                             |
+| 出队代价     | `list.pop(0)` 是 O(n)，必须用 `deque`      | `shift()` 是 O(n)，用 `head` 指针规避                         |
+| 边关系解构   | `for course, prereq in prerequisites`      | `for (const [course, prereq] of prerequisites)`，写法一一对应 |
+| 邻接表初始化 | `[[] for _ in range(n)]` 推导式            | `Array.from({ length: n }, () => [])`，箭头函数保证每个桶独立 |
+| 入度数组     | `[0] * n`                                  | `new Array(n).fill(0)`                                        |
+| 输出测试     | `print(...)`，布尔显示 `True`              | `console.log(...)`，布尔显示 `true`                           |
 
 :::note
 `Array.from({ length: n }, () => [])` 里的回调不能省略：如果写成 `new Array(n).fill([])`，所有位置会引用同一个数组，一次 `push` 污染全部邻接表。
@@ -264,7 +264,9 @@ BFS 结束时队列一定为空，无论有环无环。存在环时环上节点�
 ```typescript
 // 能跑但有两处隐患：shift() 是 O(n)，且 strict 下返回 number | undefined
 const course = queue.shift();
-for (const nextCourse of graph[course]) { /* ... */ }
+for (const nextCourse of graph[course]) {
+  /* ... */
+}
 ```
 
 `strict` 下 `shift()` 的类型是 `number | undefined`，直接当下标用会编译报错，被迫加 `!` 断言。**改法**：正解的 `head` 下标写法既保持 O(1)，又天然符合 `strict` 空检查，不需要任何断言。

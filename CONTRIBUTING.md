@@ -25,10 +25,10 @@
 
 ## 目录结构指南
 
-| 内容类型 | 位置 | 说明 |
-|---------|------|------|
-| 算法题解 | `src/content/docs/algorithms/` | 见 `docs/algorithms-AGENTS.md` |
-| 课程内容 | `src/content/docs/paths/*/` | 每课独立 MDX |
-| 组件开发 | `src/components/` | Astro 组件 |
-| 测验题目 | `src/components/QuizContainer.astro` | 内置题库 |
-| 样式调整 | `src/styles/` | CSS 变量驱动 |
+| 内容类型 | 位置                                 | 说明                           |
+| -------- | ------------------------------------ | ------------------------------ |
+| 算法题解 | `src/content/docs/algorithms/`       | 见 `docs/algorithms-AGENTS.md` |
+| 课程内容 | `src/content/docs/paths/*/`          | 每课独立 MDX                   |
+| 组件开发 | `src/components/`                    | Astro 组件                     |
+| 测验题目 | `src/components/QuizContainer.astro` | 内置题库                       |
+| 样式调整 | `src/styles/`                        | CSS 变量驱动                   |

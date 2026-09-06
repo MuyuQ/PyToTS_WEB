@@ -11,6 +11,7 @@
 ## Context
 
 We needed to establish a comprehensive testing strategy for the learning site that ensures:
+
 - Component reliability
 - Accessibility compliance
 - End-to-end user flows work
@@ -19,6 +20,7 @@ We needed to establish a comprehensive testing strategy for the learning site th
 ## Decision
 
 We will use a multi-layered testing approach:
+
 1. **Unit Testing:** Vitest + Testing Library
 2. **Accessibility Testing:** vitest-axe + axe-core
 3. **End-to-End Testing:** Playwright
@@ -53,6 +55,7 @@ We will use a multi-layered testing approach:
 Jest for unit testing.
 
 **Why rejected:**
+
 - Slower than Vitest
 - More configuration required
 - Less native ESM support
@@ -62,6 +65,7 @@ Jest for unit testing.
 Cypress for E2E testing.
 
 **Why rejected:**
+
 - Playwright has better cross-browser support
 - Playwright is faster and more reliable
 - Better CI integration with Playwright
@@ -71,20 +75,21 @@ Cypress for E2E testing.
 Pa11y for accessibility testing.
 
 **Why rejected:**
+
 - axe-core is more comprehensive
 - Better integration with Testing Library
 - More widely adopted
 
 ## Tooling Details
 
-| Layer | Tool | Purpose |
-|-------|------|---------|
-| Unit | Vitest | Component and function testing |
-| DOM | Testing Library | User-centric queries |
-| A11y | vitest-axe | Automated accessibility checks |
-| E2E | Playwright | Full user journey testing |
-| Lint | ESLint | Code style and best practices |
-| Types | TypeScript | Static type checking |
+| Layer | Tool            | Purpose                        |
+| ----- | --------------- | ------------------------------ |
+| Unit  | Vitest          | Component and function testing |
+| DOM   | Testing Library | User-centric queries           |
+| A11y  | vitest-axe      | Automated accessibility checks |
+| E2E   | Playwright      | Full user journey testing      |
+| Lint  | ESLint          | Code style and best practices  |
+| Types | TypeScript      | Static type checking           |
 
 ## References
 

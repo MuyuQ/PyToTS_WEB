@@ -78,7 +78,9 @@ class AnimalFactory:
 ```typescript
 class AnimalFactory {
   static animals = { dog: Dog, cat: Cat };
-  static create(t: "dog"|"cat") { return new this.animals[t](); }
+  static create(t: "dog" | "cat") {
+    return new this.animals[t]();
+  }
 }
 ```
 
@@ -151,9 +153,13 @@ class GenericFactory:
 
 ```typescript
 class GenericFactory<T> {
-  private reg = new Map<string, new()=>T>();
-  register(t: string, c: new()=>T) { this.reg.set(t, c); }
-  create(t: string) { return new this.reg.get(t)!(); }
+  private reg = new Map<string, new () => T>();
+  register(t: string, c: new () => T) {
+    this.reg.set(t, c);
+  }
+  create(t: string) {
+    return new this.reg.get(t)!();
+  }
 }
 ```
 
@@ -277,19 +283,28 @@ unsubscribe(); // 取消订阅
 ```typescript
 // ❌ 错误：subscribe 返回 void，无法取消订阅，内存泄漏风险
 class BadEmitter<T> {
-  private ls: ((d:T)=>void)[] = [];
-  sub(fn: (d:T)=>void) { this.ls.push(fn); }
-  emit(d: T) { this.ls.forEach(f=>f(d)); }
+  private ls: ((d: T) => void)[] = [];
+  sub(fn: (d: T) => void) {
+    this.ls.push(fn);
+  }
+  emit(d: T) {
+    this.ls.forEach((f) => f(d));
+  }
 }
 
 // ✅ 正确：返回取消函数，支持及时清理
 class GoodEmitter<T> {
-  private ls: ((d:T)=>void)[] = [];
-  sub(fn: (d:T)=>void) {
+  private ls: ((d: T) => void)[] = [];
+  sub(fn: (d: T) => void) {
     this.ls.push(fn);
-    return () => { const i = this.ls.indexOf(fn); if (i>-1) this.ls.splice(i,1); };
+    return () => {
+      const i = this.ls.indexOf(fn);
+      if (i > -1) this.ls.splice(i, 1);
+    };
   }
-  emit(d: T) { this.ls.forEach(f=>f(d)); }
+  emit(d: T) {
+    this.ls.forEach((f) => f(d));
+  }
 }
 ```
 
@@ -567,13 +582,17 @@ printDocument(newPrinter, "World"); // 同样的接口
 // ❌ 错误：未 implements Printer，printDocument 接受时类型报错
 class BadAdapter {
   constructor(private p: OldPrinter) {}
-  print(t: string) { this.p.oldPrint(t); }
+  print(t: string) {
+    this.p.oldPrint(t);
+  }
 }
 
 // ✅ 正确：显式实现接口，编译期保证契约完整
 class GoodAdapter implements Printer {
   constructor(private p: OldPrinter) {}
-  print(t: string) { this.p.oldPrint(t); }
+  print(t: string) {
+    this.p.oldPrint(t);
+  }
 }
 ```
 

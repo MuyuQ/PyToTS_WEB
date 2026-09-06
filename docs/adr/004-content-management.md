@@ -11,6 +11,7 @@
 ## Context
 
 We needed to decide how to manage content for the learning site. The content includes:
+
 - Markdown lessons
 - Code examples (Python and TypeScript)
 - Algorithm explanations
@@ -21,6 +22,7 @@ We needed to decide how to manage content for the learning site. The content inc
 We will use **Git-based Markdown content** with frontmatter for metadata.
 
 Content structure:
+
 - Markdown files in `src/content/docs/`
 - TypeScript schema validation with Zod
 - Astro Content Collections for type safety
@@ -55,14 +57,14 @@ Content structure:
 
 ```typescript
 // src/content/config.ts
-import { defineCollection, z } from 'astro:content';
+import { defineCollection, z } from "astro:content";
 
 const docsCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
     tags: z.array(z.string()).optional(),
-    difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+    difficulty: z.enum(["beginner", "intermediate", "advanced"]).optional(),
   }),
 });
 ```
@@ -74,12 +76,14 @@ const docsCollection = defineCollection({
 Cloud-based content management system.
 
 **Why rejected:**
+
 - Adds complexity and cost
 - Requires network for content updates
 - Vendor lock-in
 - Overkill for our content volume
 
 **When to reconsider:**
+
 - Many non-technical contributors
 - Need content scheduling
 - Need complex content relationships
@@ -89,11 +93,13 @@ Cloud-based content management system.
 Notion as a CMS with API integration.
 
 **Why rejected:**
+
 - Rate limits on API
 - Not designed for documentation
 - Requires custom sync solution
 
 **When to reconsider:**
+
 - Team already uses Notion heavily
 - Need collaborative editing
 
@@ -102,11 +108,13 @@ Notion as a CMS with API integration.
 Hosted documentation platform with Git sync.
 
 **Why rejected:**
+
 - Limited customization
 - Paid for advanced features
 - Proprietary platform
 
 **When to reconsider:**
+
 - Need collaborative editing
 - Don't want to maintain infrastructure
 
@@ -115,6 +123,7 @@ Hosted documentation platform with Git sync.
 GitHub's built-in wiki feature.
 
 **Why rejected:**
+
 - Limited structure/navigation
 - No custom components
 - Hard to customize appearance

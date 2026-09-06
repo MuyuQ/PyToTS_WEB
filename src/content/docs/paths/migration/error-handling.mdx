@@ -10,7 +10,6 @@ ts_tags: ["try", "catch", "throw", "finally", "Error"]
 description: 理解 Python 和 TypeScript 错误处理的差异
 sidebar:
   order: 5
-
 ---
 
 import CodeCompare from "../../../../components/CodeCompare.astro";
@@ -42,6 +41,7 @@ Error: Invalid input
 错误处理是代码健壮性的最后一道防线。理解两种语言的差异，才能写出可靠的程序。
 
 ---
+
 ## 核心概念：用类比理解
 
 | 概念              | 类比       | 说明                                         |
@@ -57,6 +57,7 @@ Error: Invalid input
 | **空值合并 `??`** | 保底方案   | 值为 null 或 undefined 时使用默认值          |
 
 ---
+
 ## Python 回顾
 
 ```python
@@ -107,6 +108,7 @@ raise ValidationError("email", "格式不正确")
 - `as` 关键字绑定异常对象
 
 ---
+
 ## TypeScript 等价写法
 
 ```typescript
@@ -165,6 +167,7 @@ throw new ValidationError("email", "格式不正确");
 - 必须用 `instanceof` 检查错误类型
 
 ---
+
 ## 语法速查表
 
 | 特性         | Python                      | TypeScript                          |
@@ -180,6 +183,7 @@ throw new ValidationError("email", "格式不正确");
 | 断言         | `assert condition, "msg"`   | `console.assert()` 或自定义断言函数 |
 
 ---
+
 ## 差异与常见陷阱
 
 ### 1. catch 块的参数类型
@@ -220,15 +224,17 @@ try {
 <CodeCompare
   py={`# Python：raise 可以抛出任何对象
 raise "出错了"  # 允许，但不推荐
-raise ValueError("值错误")  # 推荐`}
+raise ValueError("值错误")  # 推荐
+`}
   ts={`// TypeScript：throw 可以抛出任何值
 throw "出错了"; // 允许，但不推荐
 throw new Error("出错了"); // 推荐
 
 // 但推荐的做法是抛出 Error 对象
 function safeThrow(message: string): never {
-  throw new Error(message);
-}`}
+throw new Error(message);
+}
+`}
 />
 
 ### 3. 自定义错误类的原型链
@@ -273,7 +279,8 @@ else:
     # 只有 try 成功才执行
     save_to_db(result)
 finally:
-    cleanup()`}
+    cleanup()
+`}
   ts={`// TypeScript：需要用变量标记
 let success = false;
 try {
@@ -286,7 +293,8 @@ try {
   }
 } finally {
   cleanup();
-}`}
+}
+`}
 />
 
 ### 5. finally 中的 return
@@ -301,17 +309,19 @@ def get_value():
     finally:
         return 2  # 覆盖了上面的 return 1
 
-print(get_value())  # 2，不是 1`}
+print(get_value()) # 2，不是 1
+`}
   ts={`// TypeScript：同样的行为
 function getValue(): number {
-  try {
-    return 1;
-  } finally {
-    return 2; // 覆盖了上面的 return 1
-  }
+try {
+return 1;
+} finally {
+return 2; // 覆盖了上面的 return 1
+}
 }
 
-console.log(getValue()); // 2，不是 1`}
+console.log(getValue()); // 2，不是 1
+`}
 />
 
 ### 6. 可选链和空值合并
@@ -348,6 +358,7 @@ const value2 = count ?? 10; // 0（因为 0 不是 null/undefined）
 ```
 
 ---
+
 ## 开发者对话
 
 **Python 开发者**：为什么 TypeScript 的 `catch` 不能像 Python 那样指定异常类型？
@@ -416,6 +427,7 @@ class AppError extends Error {
 不修复原型链，`instanceof AppError` 可能返回 `false`。
 
 ---
+
 ## 试试看
 
 ### 预测输出
@@ -520,6 +532,7 @@ console.log(data?.name); // 使用可选链
 </details>
 
 ---
+
 ## 练习
 
 将以下 Python 错误处理代码转换为 TypeScript：
@@ -612,7 +625,9 @@ function processWithdrawal(balance: number, amount: number): number {
 </details>
 
 ---
+
 ## 面试追问
+
 ### 问题 1：throw 可以抛出非 Error 对象吗？
 
 可以。JavaScript 允许抛出任何值：
