@@ -9,204 +9,276 @@ description: 深度拷贝一个无向连通图
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给你无向**连通**图中一个节点的引用，请你返回该图的**深拷贝**（克隆）。
+给你无向连通图中一个节点的引用，返回该图的深拷贝（克隆）。每个节点包含值 `val` 和邻居列表 `neighbors`。测试用例中每个节点的值与其索引相同（第一个节点值为 1，第二个为 2，以此类推），但实现不能依赖该假设。
 
-图中的每个节点都包含它的值 `val` 和邻居列表 `neighbors`。
+**示例 1**
 
-测试用例格式：
+```text
+输入：adjList = [[2, 4], [1, 3], [2, 4], [1, 3]]
+输出：[[2, 4], [1, 3], [2, 4], [1, 3]]
+解释：方形图 1 -- 2、|    |、4 -- 3，克隆后结构完全相同但节点全新。
+```
 
-- 简单起见，每个节点的值都与它的索引相同
-- 例如，第一个节点值为 1，第二个节点值为 2，以此类推
+**示例 2**
+
+```text
+输入：adjList = [[]]
+输出：[[]]
+解释：单个孤立节点，克隆后返回同样孤立的新节点。
+```
+
+**约束条件**
+
+- 节点数范围 `[0, 100]`
+- `1 <= Node.val <= 100`
+- 每个节点值唯一（`Node.val` 不重复）
+- 图连通，不含重边与自环
+
+**边界情况**：输入 `null`（空图）返回 `null`；单个无邻居节点返回只含自身的新节点。深拷贝意味着新旧节点无任何引用交叉，`cloned === node` 必须为 `false`。
+
+## 暴力解与瓶颈
+
+朴素想法是递归拷贝：为当前节点建新节点，再递归拷贝每个邻居挂到新邻居列表：
+
+```python
+def clone_graph_brute(node):
+    if not node:
+        return None
+    new_node = GraphNode(node.val)  # 每次都新建
+    for neighbor in node.neighbors:
+        new_node.neighbors.append(clone_graph_brute(neighbor))
+    return new_node
+```
+
+无向图的边是双向的，`1 -> 2 -> 1 -> 2 ...` 递归永远到不了底，直接栈溢出；即使是无环图，菱形结构也会让汇聚节点被重复克隆多次。瓶颈在于**没有"已克隆"记忆**：同一个原节点在不同路径上被当成新节点处理。优化方向是**哈希表记录映射**：原节点到克隆节点一一对应，见过直接返回，建点前先登记。
 
 ## 思路分析
 
-### 方法一：DFS
+DFS 加哈希表：`old_to_new` 记录原节点到克隆节点的映射。进入 `dfs(old_node)` 先查表，命中直接返回；未命中则新建空邻居列表的克隆节点并立即登记，再递归克隆全部邻居逐个挂上。"先登记后递归"的顺序是处理环的关键：环上节点第二次被访问时，表里已经有它（虽然邻居还没挂完），递归就此终止。
 
-- 使用哈希表记录原节点到克隆节点的映射
-- 递归克隆每个节点及其邻居
+以方形图 `1 -- 2、| |、4 -- 3` 从节点 1 出发为例：
 
-### 方法二：BFS
+| 步骤 | 调用 | 查表 | 动作 |
+| ---- | ---- | ---- | ---- |
+| 1 | `dfs(1)` | 未命中 | 建 `1'` 并登记，递归邻居 2、4 |
+| 2 | `dfs(2)` | 未命中 | 建 `2'` 并登记，递归邻居 1、3 |
+| 3 | `dfs(1)` | 命中 | 返回 `1'`，挂到 `2'.neighbors` |
+| 4 | `dfs(3)` | 未命中 | 建 `3'` 并登记，递归邻居 2、4 |
+| 5 | `dfs(2)` | 命中 | 返回 `2'`，挂到 `3'.neighbors` |
+| 6 | `dfs(4)` | 未命中 | 建 `4'` 并登记，递归邻居 1、3 均命中 |
+| 7 | 回溯 | — | `4'` 挂到 `3'`，`3'` 挂到 `2'`，`2'`、`4'` 挂到 `1'` |
 
-- 使用队列和哈希表
-- 先克隆起始节点，然后逐层克隆邻居
+每个节点恰好建一次，每条边恰好走两次（两个端点各一次）。
+
+:::tip
+关键细节是**建点后立刻登记，再递归邻居**：`old_to_new[old_node] = new_node` 必须在 `for neighbor` 循环之前。如果顺序反过来，环上第二次访问时表里还没有它，递归无法终止。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(V + E)，V是节点数，E是边数
-- **空间复杂度**：O(V)，哈希表存储克隆节点
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| ---- | ---------- | ---------- | ---- |
+| 无记忆递归 | 环上不终止；无环时指数级重复 | O(V)，调用栈 | 同一节点被多条路径重复克隆 |
+| DFS + 哈希表 | O(V + E) | O(V) | 每节点建一次，每条边两个端点各走一次；空间为映射表加递归栈 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
+    ```python
+    # 克隆图 - Python 实现 (DFS + 哈希表)
+    # 时间复杂度: O(V+E), 空间复杂度: O(V)
+    # 核心思路: 映射表去重，先登记后递归，环上自动终止
+    from typing import Optional
 
-```python
-# 克隆图 - Python 实现 (DFS)
-# 时间复杂度: O(V+E), 空间复杂度: O(V)
-# 核心思路: DFS递归克隆，用哈希表记录原节点到克隆节点的映射，避免环导致无限递归
-from typing import Optional
-from collections import deque
+    class GraphNode:
+        """图节点定义"""
 
-class Node:
-    """图节点定义"""
-    def __init__(self, val=0, neighbors=None):
-        # 节点值
-        self.val = val
-        # 邻居节点列表
-        self.neighbors = neighbors if neighbors is not None else []
+        def __init__(self, val=0, neighbors=None):
+            # 节点值
+            self.val = val
+            # 邻居列表，默认空列表（避免可变默认参数）
+            self.neighbors = neighbors if neighbors is not None else []
 
-def clone_graph(node: Optional[Node]) -> Optional[Node]:
-    # 处理空图边界情况
-    if not node:
-        return None
+    def clone_graph(node: Optional[GraphNode]) -> Optional[GraphNode]:
+        # 空图守卫
+        if not node:
+            return None
 
-    # 哈希表：原节点 -> 克隆节点的映射
-    # 用于避免重复克隆和检测环
-    old_to_new = {}
+        # 映射表：原节点 -> 克隆节点，去重兼判环
+        old_to_new = {}
 
-    def dfs(old_node: Node) -> Node:
-        # 如果节点已克隆过，直接返回克隆节点
-        # 这是处理环的关键：避免无限递归
-        if old_node in old_to_new:
-            return old_to_new[old_node]
+        def dfs(old_node: GraphNode) -> GraphNode:
+            # 已克隆过直接返回，这是环的出口
+            if old_node in old_to_new:
+                return old_to_new[old_node]
 
-        # 创建当前节点的克隆（此时neighbors为空）
-        new_node = Node(old_node.val)
-        # 立即存入哈希表，防止环导致的重复处理
-        old_to_new[old_node] = new_node
+            # 建空邻居列表的克隆并立即登记
+            new_node = GraphNode(old_node.val)
+            old_to_new[old_node] = new_node
 
-        # 递归克隆所有邻居节点
-        for neighbor in old_node.neighbors:
-            # 将克隆后的邻居添加到新节点的邻居列表
-            new_node.neighbors.append(dfs(neighbor))
+            # 递归克隆全部邻居并挂上
+            for neighbor in old_node.neighbors:
+                new_node.neighbors.append(dfs(neighbor))
 
-        # 返回克隆完成的节点
-        return new_node
+            return new_node
 
-    # 从起始节点开始DFS克隆
-    return dfs(node)
+        return dfs(node)
 
-# 测试用例
+    # 测试用例：方形图 1 -- 2 / |    | / 4 -- 3
+    node1 = GraphNode(1)
+    node2 = GraphNode(2)
+    node3 = GraphNode(3)
+    node4 = GraphNode(4)
+    node1.neighbors = [node2, node4]
+    node2.neighbors = [node1, node3]
+    node3.neighbors = [node2, node4]
+    node4.neighbors = [node1, node3]
 
-# 构建图: 1 -- 2
-#          |    |
-#          4 -- 3
-
-node1 = Node(1)
-node2 = Node(2)
-node3 = Node(3)
-node4 = Node(4)
-
-node1.neighbors = [node2, node4]
-node2.neighbors = [node1, node3]
-node3.neighbors = [node2, node4]
-node4.neighbors = [node1, node3]
-
-cloned = clone_graph(node1)
-print(cloned.val)  # 1
-print(cloned.neighbors[0].val)  # 2
-print(cloned is node1)  # False (深拷贝)
-```
+    cloned = clone_graph(node1)
+    print(cloned.val)  # 1
+    print(cloned.neighbors[0].val)  # 2
+    print(cloned is node1)  # False（深拷贝）
+    ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // 克隆图 - TypeScript 实现 (DFS + Map)
+    // 时间复杂度: O(V+E), 空间复杂度: O(V)
+    // 核心思路: 映射表去重，先登记后递归，环上自动终止
+    class GraphNode {
+      val: number;
+      neighbors: GraphNode[];
 
-```typescript
-// 克隆图 - TypeScript 实现 (DFS)
-// 时间复杂度: O(V+E), 空间复杂度: O(V)
-// 核心思路: DFS递归克隆，用Map记录原节点到克隆节点的映射，避免环导致无限递归
-
-/**
- * 图节点定义
- */
-class Node {
-  val: number;
-  neighbors: Node[];
-
-  constructor(val?: number, neighbors?: Node[]) {
-    // 节点值
-    this.val = val ?? 0;
-    // 邻居节点列表
-    this.neighbors = neighbors ?? [];
-  }
-}
-
-/**
- * 克隆图 - DFS实现
- * @param node 原图节点
- * @returns 克隆后的节点
- */
-function cloneGraph(node: Node | null): Node | null {
-  // 处理空图边界情况
-  if (!node) return null;
-
-  // Map：原节点 -> 克隆节点的映射
-  // 用于避免重复克隆和检测环
-  const oldToNew = new Map<Node, Node>();
-
-  function dfs(oldNode: Node): Node {
-    // 如果节点已克隆过，直接返回克隆节点
-    // 这是处理环的关键：避免无限递归
-    if (oldToNew.has(oldNode)) {
-      return oldToNew.get(oldNode)!;
+      constructor(val?: number, neighbors?: GraphNode[]) {
+        // 节点值，未传时默认为 0
+        this.val = val ?? 0;
+        // 邻居列表，未传时默认为空数组
+        this.neighbors = neighbors ?? [];
+      }
     }
 
-    // 创建当前节点的克隆（此时neighbors为空）
-    const newNode = new Node(oldNode.val);
-    // 立即存入Map，防止环导致的重复处理
-    oldToNew.set(oldNode, newNode);
+    function cloneGraph(node: GraphNode | null): GraphNode | null {
+      // 空图守卫
+      if (!node) return null;
 
-    // 递归克隆所有邻居节点
-    for (const neighbor of oldNode.neighbors) {
-      // 将克隆后的邻居添加到新节点的邻居列表
-      newNode.neighbors.push(dfs(neighbor));
+      // 映射表：原节点 -> 克隆节点，去重兼判环
+      const oldToNew = new Map<GraphNode, GraphNode>();
+
+      function dfs(oldNode: GraphNode): GraphNode {
+        // 已克隆过直接返回，这是环的出口
+        if (oldToNew.has(oldNode)) {
+          return oldToNew.get(oldNode)!;
+        }
+
+        // 建空邻居列表的克隆并立即登记
+        const newNode = new GraphNode(oldNode.val);
+        oldToNew.set(oldNode, newNode);
+
+        // 递归克隆全部邻居并挂上
+        for (const neighbor of oldNode.neighbors) {
+          newNode.neighbors.push(dfs(neighbor));
+        }
+
+        return newNode;
+      }
+
+      return dfs(node);
     }
 
-    // 返回克隆完成的节点
-    return newNode;
-  }
+    // 测试用例：方形图 1 -- 2 / |    | / 4 -- 3
+    const node1 = new GraphNode(1);
+    const node2 = new GraphNode(2);
+    const node3 = new GraphNode(3);
+    const node4 = new GraphNode(4);
+    node1.neighbors = [node2, node4];
+    node2.neighbors = [node1, node3];
+    node3.neighbors = [node2, node4];
+    node4.neighbors = [node1, node3];
 
-  // 从起始节点开始DFS克隆
-  return dfs(node);
-}
-
-// 测试用例
-// 构建图: 1 -- 2
-//          |    |
-//          4 -- 3
-const node1 = new Node(1);
-const node2 = new Node(2);
-const node3 = new Node(3);
-const node4 = new Node(4);
-
-node1.neighbors = [node2, node4];
-node2.neighbors = [node1, node3];
-node3.neighbors = [node2, node4];
-node4.neighbors = [node1, node3];
-
-const cloned = cloneGraph(node1);
-console.log(cloned?.val); // 1
-console.log(cloned?.neighbors[0].val); // 2
-console.log(cloned === node1); // false (深拷贝)
-```
+    const cloned = cloneGraph(node1);
+    console.log(cloned?.val); // 1
+    console.log(cloned?.neighbors[0].val); // 2
+    console.log(cloned === node1); // false（深拷贝）
+    ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+映射查表是两边差异最集中的地方：
+
+<CodeCompare
+  py={`# in 判存 + 下标取值，两步同 key
+if old_node in old_to_new:
+    return old_to_new[old_node]`}
+  ts={`// has 判存 + get 取值，get 带 undefined 需断言
+if (oldToNew.has(oldNode)) {
+  return oldToNew.get(oldNode)!;
+}`}
+/>
+
+| 关注点 | Python | TypeScript |
+| ------ | ------ | ---------- |
+| 映射结构 | `dict`，键为对象引用（默认按身份哈希） | `Map<GraphNode, GraphNode>`，键同样按引用比较 |
+| 判存取值 | `in` + 下标，两次哈希 | `has()` + `get()`，取值后类型带 `undefined` |
+| 非空断言 | 不需要（下标缺席抛 `KeyError`） | `get(oldNode)!`，依据是上一行 `has()` 已确认 |
+| 可选参数 | `neighbors=None` 哨兵避开可变默认参数 | `neighbors?: GraphNode[]` + `?? []` |
+| 空图类型 | `Optional[GraphNode]` | `GraphNode \| null` |
+| 类名 | `GraphNode`（刻意避开 `Node`） | `GraphNode`（同左，见下） |
+
+:::note
+类名用 `GraphNode` 而不是 `Node` 是有意的：TypeScript 默认编译带 DOM 类型库，里面已有 `Node` 接口，`class Node` 会报 `Duplicate identifier`。Python 这边同步改名，保持双语变量名一致。
+:::
+
+## 常见错误分析
+
+### 1. 先递归后登记，环上栈溢出
+
+```python
+# 错误：邻居全递归完才登记，环上第二次访问时表里还没有它
+new_node = GraphNode(old_node.val)
+for neighbor in old_node.neighbors:
+    new_node.neighbors.append(dfs(neighbor))
+old_to_new[old_node] = new_node  # 登记太晚
+```
+
+方形图里 `dfs(1) -> dfs(2) -> dfs(1) -> ...` 无限往返。**改法**：建点下一行就登记，"占位"优先于"展开"，递归出口依赖的正是这个占位。
+
+### 2. 只 copier 值不 copier 结构（浅拷贝）
+
+```python
+# 错误：邻居列表直接引用原节点的
+new_node = GraphNode(old_node.val, old_node.neighbors)
+```
+
+新旧节点共享同一个 `neighbors` 列表，改一边另一边跟着变，`cloned is node` 虽为 `False` 但深拷贝语义已破。**改法**：新节点从空列表起步，邻居逐个递归克隆后 `append`。
+
+### 3. TypeScript 里 `Map.get` 不收窄
+
+```typescript
+// 错误：strict 下 GraphNode | undefined 不能直接返回
+if (oldToNew.has(oldNode)) {
+  return oldToNew.get(oldNode); // 类型不匹配 GraphNode
+}
+```
+
+Python 下标取值要么命中要么抛异常，类型上没有"缺席"态；TS 的 `get` 把缺席表达为 `undefined`，必须处理。用 `!` 断言的前提是 `has()` 已确认存在——断言依据写在同一 `if` 块里，不要隔太远。
+
 ## 面试变体
 
-1. **克隆带随机指针的链表**：类似思路，哈希表记录映射
-2. **序列化和反序列化图**：将图转为字符串再还原
-3. **判断图是否同构**：结构相同但值可能不同
-4. **克隆有向图**：需要考虑入度和出度
-5. **克隆N叉树**：简化版的图克隆
+1. **BFS 版本**：队列加映射表逐层克隆。先登记起点，弹出一个克隆一个邻居层，环同样靠查表终止。时间 O(V + E)、空间 O(V)，递归深度风险换成队列内存，两种写法都要会。
+2. **课程表判环**：同为图遍历，但目标从"复制结构"变成"检测环"（详见[课程表](../course-schedule/)）。映射表换成入度数组或三色标记，对比两题能讲清"访问标记"的多种形态。
+3. **随机指针链表克隆**：链表加一条随机边，同样用"原到新"映射一次遍历解决。思路与本题完全同构：先建点登记，再补指针，是面试常考的降维版本。
 
-## 常见错误
+## 面试追问
 
-1. 忘记处理环，导致无限递归
-2. 浅拷贝而不是深拷贝
-3. 哈希表键的类型错误（对象引用 vs 值）
-4. BFS时忘记先创建节点再加入队列
+- 映射表的键为什么用节点引用而不用 `val`？（`val` 唯一只是本题测试用例的巧合；通用图里值可重复，按引用才能区分两个同值节点。Python `dict` 与 TS `Map` 默认都按引用比较，正好符合要求。）
+- 如何验证返回的是深拷贝而不是浅拷贝？（三检查：`cloned is not node`；对应邻居 `is not`；修改克隆的邻居列表后原图不变。）
+- DFS 递归深度最坏是多少？（V，链状图时调用栈最深；节点上限 100 安全，通用场景考虑 BFS 迭代版。）

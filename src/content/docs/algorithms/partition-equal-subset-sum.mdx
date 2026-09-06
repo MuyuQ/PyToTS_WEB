@@ -9,153 +9,219 @@ description: 判断数组是否能分成两个和相等的子集
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给你一个 **只包含正整数** 的 **非空** 数组 `nums`。请你判断是否可以将这个数组分割成两个子集，使得两个子集的元素和相等。
+给你一个只包含正整数的非空数组 `nums`，判断是否可以将该数组分割成两个子集，使得两个子集的元素和相等。每个元素必须且只能使用一次。
+
+**示例 1**
+
+```text
+输入：nums = [1, 5, 11, 5]
+输出：true
+解释：可分割为 [1, 5, 5] 与 [11]
+```
+
+**示例 2**
+
+```text
+输入：nums = [1, 2, 3, 5]
+输出：false
+解释：总和为 11 的奇数，不可能平分
+```
+
+**约束条件**
+
+- `1 <= nums.length <= 200`
+- `1 <= nums[i] <= 100`
+
+**边界情况**：总和为奇数直接返回 `false`；总和一半超过全部元素之和不可能发生；单个元素除 `0` 外无法平分（本题元素为正整数，故单元素恒为 `false`）。`target = total // 2` 的规模决定 `dp` 数组长度。
+
+## 暴力解与瓶颈
+
+朴素想法是枚举全部子集并检查子集和：
+
+```python
+def can_partition_brute(nums: list[int]) -> bool:
+    total = sum(nums)
+    if total % 2 != 0:
+        return False
+    target = total // 2
+    n = len(nums)
+    for mask in range(1 << n):
+        if sum(nums[i] for i in range(n) if mask >> i & 1) == target:
+            return True
+    return False
+```
+
+子集总数为 2ⁿ，每个子集求和又需 O(n)，总复杂度 O(n·2ⁿ)。瓶颈在于不同子集共享大量前缀和却每次都重算。优化方向是记录"哪些和已经可达"，把指数枚举压缩为多项式递推，即 0-1 背包。
 
 ## 思路分析
 
-0-1 背包问题：
+转化为 0-1 背包：若总和为偶数，问题等价于能否选出若干数凑出 `target = total / 2`。定义 `dp[i]` 表示和 `i` 是否可达，`dp[0] = True`。对每个 `num` 倒序更新 `dp[i] = dp[i] or dp[i - num]`，倒序保证每个数只用一次。
 
-1. 首先计算总和，如果是奇数，直接返回 False
-2. 目标：找到一个子集，其和为总和的一半
-3. 转化为背包问题：能否从数组中选出一些数，使它们的和等于 target = sum // 2
+以 `nums = [1, 5, 11, 5]`（`target = 11`）为例：
 
-- `dp[i]`：能否用数组中的数凑成和 i
-- 状态转移：`dp[i] = dp[i] or dp[i - num]`
+| 处理的 `num` | 倒序更新区间 | 更新后新增可达和 | `dp[11]` |
+| ------------ | ------------ | ---------------- | -------- |
+| 1 | 11→1 | 1 | False |
+| 5 | 11→5 | 5、6 | False |
+| 11 | 11→11 | 11、12 越界忽略，11 可达 | True（提前返回） |
+| 5 | 无需处理 | — | True |
+
+:::tip
+关键细节是内层必须倒序遍历。若正序遍历，`dp[i - num]` 可能是本轮刚更新的值，相当于同一元素被复用多次，问题会被错误转化为完全背包。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n \* sum)，n 是数组长度，sum 是数组总和
-- **空间复杂度**：O(sum)，dp数组
+| 解法       | 时间复杂度   | 空间复杂度 | 说明                         |
+| ---------- | ------------ | ---------- | ---------------------------- |
+| 子集枚举   | O(n·2ⁿ)      | O(1)       | 枚举掩码并逐个求和           |
+| 二维 DP    | O(n·sum)     | O(n·sum)   | `dp[i][j]` 保留每个前缀的结果 |
+| 一维倒序 DP | O(n·sum)    | O(sum)     | 复用一维数组，倒序防复用     |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 分割等和子集 - 0-1背包问题 (动态规划)
-    # 算法: Partition Equal Subset Sum
-    # 时间复杂度: O(n * sum), n是数组长度，sum是数组总和
-    # 空间复杂度: O(sum), dp数组
-
+    # 分割等和子集 - Python 实现
+    # 时间复杂度: O(n * sum), 空间复杂度: O(sum)
+    # 核心思路: 0-1 背包，能否凑出 total // 2
     def can_partition(nums: list[int]) -> bool:
-        # 计算数组所有元素的总和
         total = sum(nums)
-
-        # 边界条件：总和为奇数，无法平分成两个相等的子集
-        # 因为两个相等的整数相加一定是偶数
+        # 总和为奇数时不可能平分
         if total % 2 != 0:
             return False
-
-        # 目标值：需要找到一个子集，其和等于总和的一半
         target = total // 2
 
-        # dp[i] 表示能否用数组中的某些数凑成和 i
-        # 初始化为 False，表示初始时所有和都不可达
-        dp = [False] * (target + 1)  # 索引 0~target
-
-        # 边界条件：凑成和 0 总是可能的（不选任何数）
+        # dp[i] 表示和 i 是否可达
+        dp: list[bool] = [False] * (target + 1)
+        # 空集可凑出和 0
         dp[0] = True
 
-        # 外层循环：遍历数组中的每个数字
         for num in nums:
-            # 内层循环：倒序遍历从 target 到 num
-            # 倒序原因：0-1背包问题，每个数字只能用一次
-            # 如果正序遍历，会导致同一个数字被重复使用（变成完全背包）
+            # 倒序更新，保证每个数只用一次
             for i in range(target, num - 1, -1):
-                # 状态转移方程：
-                # dp[i] = dp[i] or dp[i - num]
-                # 含义：能否凑成和 i = 原来就能凑成 i 或者 能用当前数字凑成 i-num
                 dp[i] = dp[i] or dp[i - num]
-
-            # 提前退出优化：如果已经能凑成 target，直接返回 True
-            # 不需要继续处理剩余数字
+            # 提前退出：已可达目标
             if dp[target]:
                 return True
 
-        # 遍历完所有数字后，返回是否能凑成 target
         return dp[target]
 
     # 测试用例
-
-    print(can_partition([1, 5, 11, 5])) # True ([1,5,5] 和 [11])
-    print(can_partition([1, 2, 3, 5])) # False
-    print(can_partition([1, 2, 5])) # False
-    print(can_partition([100, 100])) # True
+    print(can_partition([1, 5, 11, 5]))  # True
+    print(can_partition([1, 2, 3, 5]))  # False
+    print(can_partition([1, 2, 5]))  # False
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 分割等和子集 - 0-1背包问题 (动态规划)
-    // 算法: Partition Equal Subset Sum
-    // 时间复杂度: O(n * sum), n是数组长度，sum是数组总和
-    // 空间复杂度: O(sum), dp数组
-
+    // 分割等和子集 - TypeScript 实现
+    // 时间复杂度: O(n * sum), 空间复杂度: O(sum)
+    // 核心思路: 0-1 背包，能否凑出 total / 2
     function canPartition(nums: number[]): boolean {
-        // 计算数组所有元素的总和
-        const total = nums.reduce((a, b) => a + b, 0);
+      const total = nums.reduce((a, b) => a + b, 0);
+      // 总和为奇数时不可能平分
+      if (total % 2 !== 0) {
+        return false;
+      }
+      const target = total / 2;
 
-        // 边界条件：总和为奇数，无法平分成两个相等的子集
-        // 因为两个相等的整数相加一定是偶数
-        if (total % 2 !== 0) {
-            return false;
+      // dp[i] 表示和 i 是否可达
+      const dp: boolean[] = new Array(target + 1).fill(false);
+      // 空集可凑出和 0
+      dp[0] = true;
+
+      for (const num of nums) {
+        // 倒序更新，保证每个数只用一次
+        for (let i = target; i >= num; i--) {
+          dp[i] = dp[i] || dp[i - num];
         }
-
-        // 目标值：需要找到一个子集，其和等于总和的一半
-        const target = total / 2;
-
-        // dp[i] 表示能否用数组中的某些数凑成和 i
-        // 初始化为 false，表示初始时所有和都不可达
-        const dp: boolean[] = new Array(target + 1).fill(false);  // 索引 0~target
-
-        // 边界条件：凑成和 0 总是可能的（不选任何数）
-        dp[0] = true;
-
-        // 外层循环：遍历数组中的每个数字
-        for (const num of nums) {
-            // 内层循环：倒序遍历从 target 到 num
-            // 倒序原因：0-1背包问题，每个数字只能用一次
-            // 如果正序遍历，会导致同一个数字被重复使用（变成完全背包）
-            for (let i = target; i >= num; i--) {
-                // 状态转移方程：
-                // dp[i] = dp[i] || dp[i - num]
-                // 含义：能否凑成和 i = 原来就能凑成 i 或者 能用当前数字凑成 i-num
-                dp[i] = dp[i] || dp[i - num];
-            }
-
-            // 提前退出优化：如果已经能凑成 target，直接返回 true
-            // 不需要继续处理剩余数字
-            if (dp[target]) {
-                return true;
-            }
+        // 提前退出：已可达目标
+        if (dp[target]) {
+          return true;
         }
+      }
 
-        // 遍历完所有数字后，返回是否能凑成 target
-        return dp[target];
-
+      return dp[target];
     }
 
     // 测试用例
     console.log(canPartition([1, 5, 11, 5])); // true
     console.log(canPartition([1, 2, 3, 5])); // false
     console.log(canPartition([1, 2, 5])); // false
-    console.log(canPartition([100, 100])); // true
     ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+两份代码递推完全一致，差异集中在求和与布尔运算的表达上：
+
+<CodeCompare
+  py={`# 求和与奇偶判断
+total = sum(nums)
+if total % 2 != 0:
+    return False`}
+  ts={`// 求和与奇偶判断
+const total = nums.reduce((a, b) => a + b, 0);
+if (total % 2 !== 0) {
+  return false;
+}`}
+/>
+
+| 关注点   | Python                              | TypeScript                                      |
+| -------- | ----------------------------------- | ----------------------------------------------- |
+| 求和     | 内置 `sum(nums)`                    | `nums.reduce((a, b) => a + b, 0)`，需显式初始值 |
+| 整除     | `total // 2` 地板除，结果为整数     | `total / 2`，奇数已提前返回故结果仍为整数       |
+| 布尔运算 | `or`、`and`、`True`、`False`        | `\|\|`、`&&`、`true`、`false`                   |
+| 数组初始化 | `[False] * (target + 1)` 乘法复制 | `new Array(target + 1).fill(false)`             |
+| 倒序遍历 | `range(target, num - 1, -1)`        | `for (let i = target; i >= num; i--)`           |
+| 输出测试 | `print(...)`                        | `console.log(...)`                              |
+
+:::note
+Python 的 `//` 在偶数前提下等价于 TypeScript 的 `/`，但语义不同：前者恒为整数除法，后者为浮点除法。此处因奇数已提前返回，`total / 2` 必为整数；若去掉奇偶守卫，TypeScript 需要额外处理小数下标。
+:::
+
+## 常见错误分析
+
+### 1. 内层正序遍历导致元素复用
+
+```python
+# 错误：正序遍历，同一元素可复用多次
+for i in range(num, target + 1):
+    dp[i] = dp[i] or dp[i - num]
+```
+
+输入 `nums = [2], target = 4` 时，正序会用同一个 `2` 凑出 `4`，返回 `True`，而 0-1 约束下应为 `False`。**改法**：倒序遍历，使 `dp[i - num]` 取自上一轮的结果。
+
+### 2. 忘记 `dp[0] = True`
+
+空集凑出和 `0` 是全部递推的起点。若保持 `False`，任何 `dp[num]` 都无法从 `dp[0]` 转移而来，结果恒为 `False`。可对照完全背包的 `dp[0] = 0` 理解：空状态的计数起点必须显式设定。
+
+### 3. TypeScript 里 `reduce` 缺少初始值
+
+```typescript
+// 错误：空数组时抛异常，且 strict 下类型推导更脆弱
+const total = nums.reduce((a, b) => a + b);
+```
+
+无初始值的 `reduce` 在空数组上抛 `TypeError`。**改法**：如正解传入 `0` 作为初始值。Python 的 `sum([])` 返回 `0`，无需该顾虑，迁移时需要补上初始值心智。
+
 ## 面试变体
 
-1. **最小差值**：分成两个子集，使差值最小
-2. **k个子集**：分成k个子集，使每个子集和相等
-3. **具体子集**：不只判断是否存在，还要返回具体子集
+1. **最小差值划分**：不要求完全平分，而是让两个子集和之差最小。同样计算可达表，结束后从 `target` 向下找第一个可达的 `i`，答案为 `total - 2 * i`。时间 O(n·sum)、空间 O(sum)。
+2. **K 个等和子集**：判断能否分成 `K` 个和相等的子集。状态压缩回溯加剪枝，按降序放置大数并跳过等值空桶。时间指数级，`K = 2` 即为本题。
+3. **背包对照与枚举**：若每种面额可复用则退化为完全背包（详见[零钱兑换](../coin-change/)）；若需返回具体子集成员，可参考[子集](../subsets/) 的枚举与回溯写法并增加和约束。
 
-## 常见错误
+## 面试追问
 
-1. 忘记倒序遍历（0-1背包）
-2. 正序遍历导致重复使用元素（变成完全背包）
-3. 边界条件处理错误
+- 为什么 0-1 背包必须倒序而完全背包必须正序？（倒序读取的是上一轮快照，正序读取的是本轮已更新值，前者防复用，后者允许复用。）
+- `dp` 用位集（bitset）还能优化吗？（`dp` 左移 `num` 位再或运算，时间仍为 O(n·sum/字长)，常数更小，Python 可用整数位运算模拟。）
+- 总和很大（如 10⁹）时该解法还适用吗？（伪多项式算法，`sum` 决定数组长度；总和过大时需换 meet-in-the-middle 或回溯剪枝。）

@@ -9,174 +9,222 @@ description: 找出不含重复字符的最长子串的长度
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给定一个字符串 `s`，请你找出其中不含有重复字符的**最长子串**的长度。
+给定一个字符串 `s`，找出其中不含有重复字符的**最长子串**的长度。子串要求连续，子序列则不要求连续，两者不可混淆。
+
+**示例 1**
+
+```text
+输入：s = "abcabcbb"
+输出：3
+解释：最长无重复子串是 "abc"，长度为 3
+```
+
+**示例 2**
+
+```text
+输入：s = "bbbbb"
+输出：1
+解释：最长无重复子串是 "b"，长度为 1
+```
+
+**约束条件**
+
+- `0 <= s.length <= 5 * 10⁴`
+- `s` 由英文字母、数字、符号和空格组成
+- 返回值为子串长度，而非子串本身
+
+**边界情况**：空字符串返回 `0`；全不重复时返回整个字符串长度；全相同时返回 `1`（非空时）。字符集大小决定哈希表上限，空间复杂度因此记为 `O(min(m, n))`。
+
+## 暴力解与瓶颈
+
+最直观的想法是以每个位置为起点向右扩展，用集合判断重复：
+
+```python
+def longest_brute(s: str) -> int:
+    best = 0
+    for i in range(len(s)):
+        seen = set()
+        for j in range(i, len(s)):
+            if s[j] in seen:
+                break
+            seen.add(s[j])
+            best = max(best, j - i + 1)
+    return best
+```
+
+该解法正确但存在大量重复扫描：起点 `i` 移动一格后，`[i+1, j]` 区间的信息被完全丢弃，内层循环需要重新走一遍，时间复杂度 O(n²)。瓶颈在于**重复字符出现后不知道窗口左边界应该跳到哪里**，只能逐个收缩。优化方向是记住每个字符上次出现的位置，让左边界一次跳到位。
 
 ## 思路分析
 
-滑动窗口 + 哈希表：
+滑动窗口加哈希表维护一个无重复区间 `[left, right]`。遍历右端 `right` 时，若 `s[right]` 在窗口内出现过，将 `left` 直接移到该字符上次位置的下一位；然后更新该字符的位置并刷新最大值。每个字符最多被左右指针各访问一次。
 
-- 使用左右指针维护一个窗口
-- 用哈希表记录字符最近出现的位置
-- 当遇到重复字符时，移动左指针到重复字符的下一个位置
-- 更新最大长度
+以 `s = "abcabcbb"` 的前 5 步为例：
+
+| 步骤 | `right` / 字符 | 窗口内上次位置 | `left` 变化 | 当前窗口 | `max_length` |
+| ---- | -------------- | -------------- | ----------- | -------- | ------------ |
+| 1    | 0 / `a`        | 未出现         | 0           | `a`      | 1            |
+| 2    | 1 / `b`        | 未出现         | 0           | `ab`     | 2            |
+| 3    | 2 / `c`        | 未出现         | 0           | `abc`    | 3            |
+| 4    | 3 / `a`        | 0，在窗口内    | 0 → 1       | `bca`    | 3            |
+| 5    | 4 / `b`        | 1，在窗口内    | 1 → 2       | `cab`    | 3            |
+
+:::tip
+关键细节是左边界只能前进不能后退：`left = max(left, char_index[char] + 1)`。若省略 `>= left` 判断，`left` 可能被窗口之外的旧位置拉回，导致窗口重新包含重复字符。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n)，每个字符最多被访问两次
-- **空间复杂度**：O(min(m, n))，m 是字符集大小
+| 解法           | 时间复杂度      | 空间复杂度    | 说明                         |
+| -------------- | --------------- | ------------- | ---------------------------- |
+| 暴力双循环     | O(n²)           | O(min(m, n))  | 每个起点都要建集合向右扩展   |
+| 滑动窗口+哈希表 | O(n)            | O(min(m, n))  | 左右指针各走一遍，表存字符集 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 无重复字符的最长子串 - 滑动窗口算法
+    # 无重复字符的最长子串 - Python 实现
     # 时间复杂度: O(n), 空间复杂度: O(min(m, n))
-    # m 为字符集大小, n 为字符串长度
-
+    # 核心思路: 滑动窗口 + dict 记录字符上次出现的位置
     def length_of_longest_substring(s: str) -> int:
-        # char_index: 哈希表, 记录每个字符最后一次出现的索引位置
-        char_index = {}
-        # max_length: 记录遇到的最长无重复子串长度, 初始为 0
+        # char_index 存储字符到上次出现下标的映射
+        char_index: dict[str, int] = {}
+        # max_length 记录历史最优窗口长度
         max_length = 0
-        # left: 滑动窗口左边界, 初始指向字符串开头
+        # left 为窗口左边界
         left = 0
 
-        # right: 滑动窗口右边界, 遍历字符串中的每个字符
-        # char: 当前遍历到的字符
+        # right 为窗口右边界，enumerate 同时拿下标和字符
         for right, char in enumerate(s):
-            # 如果字符已在哈希表中, 且其位置在当前窗口内 (>= left)
-            # 说明遇到了重复字符, 需要将左边界移到重复字符的下一位置
+            # 字符在窗口内重复出现时收缩窗口
             if char in char_index and char_index[char] >= left:
-                left = char_index[char] + 1  # 跳过重复字符
+                # 跳到重复字符的下一位，旧窗口外的重复不处理
+                left = char_index[char] + 1
 
-            # 更新字符的最新索引位置 (无论是否重复都要更新)
+            # 更新字符的最新位置，无论是否重复都要更新
             char_index[char] = right
-
-            # 计算当前窗口长度 (right - left + 1), 更新最大长度
+            # right - left + 1 为当前窗口长度
             max_length = max(max_length, right - left + 1)
 
-        # 返回找到的最长无重复子串长度
         return max_length
 
-    # 测试用例 1: "abcabcbb" -> 最长无重复子串为 "abc", 长度为 3
-    print(length_of_longest_substring("abcabcbb")) # 输出: 3
-
-    # 测试用例 2: "bbbbb" -> 最长无重复子串为 "b", 长度为 1
-    print(length_of_longest_substring("bbbbb")) # 输出: 1
-
-    # 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
-    print(length_of_longest_substring("pwwkew")) # 输出: 3
+    # 测试用例
+    print(length_of_longest_substring("abcabcbb"))  # 3
+    print(length_of_longest_substring("bbbbb"))  # 1
+    print(length_of_longest_substring("pwwkew"))  # 3
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 无重复字符的最长子串 - 滑动窗口算法
+    // 无重复字符的最长子串 - TypeScript 实现
     // 时间复杂度: O(n), 空间复杂度: O(min(m, n))
-    // m 为字符集大小, n 为字符串长度
-
+    // 核心思路: 滑动窗口 + Map 记录字符上次出现的位置
     function lengthOfLongestSubstring(s: string): number {
-        // charIndex: Map 记录每个字符最后一次出现的索引位置
-        const charIndex = new Map<string, number>();
-        // maxLength: 记录遇到的最长无重复子串长度, 初始为 0
-        let maxLength = 0;
-        // left: 滑动窗口左边界, 初始指向字符串开头
-        let left = 0;
+      // charIndex 存储字符到上次出现下标的映射
+      const charIndex = new Map<string, number>();
+      // maxLength 记录历史最优窗口长度
+      let maxLength = 0;
+      // left 为窗口左边界
+      let left = 0;
 
-        // right: 滑动窗口右边界, 遍历字符串中的每个字符
-        for (let right = 0; right < s.length; right++) {
-            // 获取当前遍历到的字符
-            const char = s[right];
+      // right 为窗口右边界
+      for (let right = 0; right < s.length; right++) {
+        const char = s[right];
 
-            // 如果字符已在 Map 中, 且其位置在当前窗口内 (>= left)
-            // 说明遇到了重复字符, 需要将左边界移到重复字符的下一位置
-            if (charIndex.has(char) && charIndex.get(char)! >= left) {
-                left = charIndex.get(char)! + 1;  // 跳过重复字符
-            }
-
-            // 更新字符的最新索引位置 (无论是否重复都要更新)
-            charIndex.set(char, right);
-
-            // 计算当前窗口长度 (right - left + 1), 更新最大长度
-            maxLength = Math.max(maxLength, right - left + 1);
+        // 字符在窗口内重复出现时收缩窗口
+        const prev = charIndex.get(char);
+        if (prev !== undefined && prev >= left) {
+          // 跳到重复字符的下一位，旧窗口外的重复不处理
+          left = prev + 1;
         }
 
-        // 返回找到的最长无重复子串长度
-        return maxLength;
+        // 更新字符的最新位置，无论是否重复都要更新
+        charIndex.set(char, right);
+        // right - left + 1 为当前窗口长度
+        maxLength = Math.max(maxLength, right - left + 1);
+      }
+
+      return maxLength;
     }
 
-    // 测试用例 1: "abcabcbb" -> 最长无重复子串为 "abc", 长度为 3
-    console.log(lengthOfLongestSubstring("abcabcbb")); // 输出: 3
-
-    // 测试用例 2: "bbbbb" -> 最长无重复子串为 "b", 长度为 1
-    console.log(lengthOfLongestSubstring("bbbbb")); // 输出: 1
-
-    // 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
-    console.log(lengthOfLongestSubstring("pwwkew")); // 输出: 3
+    // 测试用例
+    console.log(lengthOfLongestSubstring("abcabcbb")); // 3
+    console.log(lengthOfLongestSubstring("bbbbb")); // 1
+    console.log(lengthOfLongestSubstring("pwwkew")); // 3
     ```
 
   </TabItem>
 </Tabs>
 
-## TypeScript 实现
+## Python 与 TypeScript 差异点评
+
+两份代码逻辑完全一致，差异集中在哈希表取值与字符串索引的表达上：
+
+<CodeCompare
+  py={`# 成员检查 + 取值一步完成
+if char in char_index and char_index[char] >= left:
+    left = char_index[char] + 1`}
+  ts={`// get 返回联合类型，先收窄再使用
+const prev = charIndex.get(char);
+if (prev !== undefined && prev >= left) {
+  left = prev + 1;
+}`}
+/>
+
+| 关注点   | Python                              | TypeScript                                              |
+| -------- | ----------------------------------- | ------------------------------------------------------- |
+| 哈希结构 | `dict[str, int]`，字面量即可        | `Map<string, number>`，泛型写清键值类型                 |
+| 成员检查 | `in` 直接判断键是否存在             | `get()` 返回 `number \| undefined`，需与 `undefined` 比较 |
+| 取值方式 | `char_index[char]` 命中即返回值     | `charIndex.get(char)!` 或局部变量收窄后使用             |
+| 字符串索引 | `s[i]` 与 `enumerate(s)` 均可      | `s[right]` 取字符，`s.length` 取长度                    |
+| 最大值   | 内置 `max()`                        | `Math.max()`                                            |
+| 输出测试 | `print(...)`                        | `console.log(...)`                                      |
+
+:::note
+TypeScript 正解用 `prev !== undefined` 收窄代替 `has() + !` 断言，只查一次表且通过 `strict` 检查。`Map.get` 的返回值永远带 `undefined`，收窄要有依据，不建议满屏 `!`。
+:::
+
+## 常见错误分析
+
+### 1. 左指针错误回退
+
+```python
+# 错误：未判断旧位置是否在窗口内
+if char in char_index:
+    left = char_index[char] + 1
+```
+
+输入 `s = "abba"` 时，处理最后一个 `a` 会把 `left` 从 `2` 拉回 `1`，窗口重新包含重复字符。**改法**：加上 `char_index[char] >= left` 条件，或写成 `left = max(left, char_index[char] + 1)`。
+
+### 2. 用集合代替哈希表
+
+集合只能判断"是否重复"，无法得知重复字符的位置，左边界只能逐格移动，复杂度退化。识别信号：需要"上次出现位置"时，优先选择映射结构而非集合。
+
+### 3. TypeScript 里忽略 `get()` 的 `undefined`
 
 ```typescript
-// 无重复字符的最长子串 - 滑动窗口算法
-// 时间复杂度: O(n), 空间复杂度: O(min(m, n))
-// m 为字符集大小, n 为字符串长度
-
-function lengthOfLongestSubstring(s: string): number {
-  // charIndex: Map 记录每个字符最后一次出现的索引位置
-  const charIndex = new Map<string, number>();
-  // maxLength: 记录遇到的最长无重复子串长度, 初始为 0
-  let maxLength = 0;
-  // left: 滑动窗口左边界, 初始指向字符串开头
-  let left = 0;
-
-  // right: 滑动窗口右边界, 遍历字符串中的每个字符
-  for (let right = 0; right < s.length; right++) {
-    // 获取当前遍历到的字符
-    const char = s[right];
-
-    // 如果字符已在 Map 中, 且其位置在当前窗口内 (>= left)
-    // 说明遇到了重复字符, 需要将左边界移到重复字符的下一位置
-    if (charIndex.has(char) && charIndex.get(char)! >= left) {
-      left = charIndex.get(char)! + 1; // 跳过重复字符
-    }
-
-    // 更新字符的最新索引位置 (无论是否重复都要更新)
-    charIndex.set(char, right);
-
-    // 计算当前窗口长度 (right - left + 1), 更新最大长度
-    maxLength = Math.max(maxLength, right - left + 1);
-  }
-
-  // 返回找到的最长无重复子串长度
-  return maxLength;
+// 错误：strict 模式下编译不通过
+if (charIndex.get(char)! >= left) {
+  left = charIndex.get(char)! + 1; // 重复查询，且断言无依据时会掩盖缺席
 }
-
-// 测试用例 1: "abcabcbb" -> 最长无重复子串为 "abc", 长度为 3
-console.log(lengthOfLongestSubstring("abcabcbb")); // 输出: 3
-
-// 测试用例 2: "bbbbb" -> 最长无重复子串为 "b", 长度为 1
-console.log(lengthOfLongestSubstring("bbbbb")); // 输出: 1
-
-// 测试用例 3: "pwwkew" -> 最长无重复子串为 "wke", 长度为 3
-console.log(lengthOfLongestSubstring("pwwkew")); // 输出: 3
 ```
+
+缺席时 `get()` 返回 `undefined`，直接断言存在逻辑错误。**改法**：如正解用局部变量 `prev` 接收一次查询结果，再与 `undefined` 比较完成收窄。Python 没有该问题，缺席检查由 `in` 完成。
 
 ## 面试变体
 
-1. **最长无重复子串**：不只返回长度，还要返回子串本身
-2. **至多k个不同字符**：允许最多 k 个不同字符的最长子串
-3. **所有最长子串**：返回所有最长的无重复子串
+1. **返回子串本身**：除长度外还要返回一个最长无重复子串。记录取得最大值时的 `[left, right]` 区间即可，结束时切片返回。时间 O(n)、空间 O(min(m, n))，注意存在多个最优解时返回任意一个是否可接受。
+2. **至多 K 个不同字符的最长子串**：窗口约束从"无重复"放宽为"不同字符数不超过 K"。哈希表改为记录窗口内字符频次，超限时移动左边界并扣减计数。时间 O(n)、空间 O(K)。
+3. **最小覆盖子串**：反向约束，要求窗口包含目标串全部字符并最小化长度（详见[最小覆盖子串](../minimum-window-substring/)）。同样是滑动窗口，但收缩条件变为"已覆盖"，还需要维护已满足的字符种类数。时间 O(n)、空间 O(m)。
 
-## 常见错误
+## 面试追问
 
-1. 忘记检查 `char_index[char] >= left`，导致左指针错误回退
-2. 使用集合而不是哈希表，无法获取重复字符的位置
-3. 更新最大长度的位置放错，导致结果错误
+- 为什么左边界不需要逐格回退，而可以直接跳到 `上次位置 + 1`？（跳过的字符都与当前字符不同，且窗口内无重复，中间位置不可能产生更长合法窗口。）
+- `char_index[char] >= left` 省掉会怎样？用 `s = "abba"` 说明回退过程。（`left` 被旧位置拉回，窗口重新包含重复字符，结果偏大。）
+- 空间复杂度为什么是 `O(min(m, n))` 而不是 `O(n)`？（表项上限为字符集大小 `m`，同时不超过字符串长度 `n`，取两者较小值。）

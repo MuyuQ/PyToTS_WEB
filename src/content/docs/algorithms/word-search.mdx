@@ -9,208 +9,291 @@ description: 在二维网格中搜索单词
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给定一个 `m x n` 的二维字符网格 `board` 和一个字符串 `word`。如果 `word` 存在于网格中，返回 `true`；否则，返回 `false`。
+给定一个 `m x n` 的二维字符网格 `board` 和一个字符串 `word`。如果 `word` 存在于网格中，返回 `true`；否则返回 `false`。单词必须按照字母顺序，通过水平或竖直相邻的单元格构成，同一个单元格内的字母不允许被重复使用。
 
-单词必须按照字母顺序，通过相邻的单元格内的字母构成，其中**相邻**单元格是那些水平相邻或垂直相邻的单元格。同一个单元格内的字母不允许被重复使用。
+**示例 1**
+
+```text
+输入：board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCCED"
+输出：true
+解释：A(0,0) -> B(0,1) -> C(0,2) -> C(1,2) -> E(2,2) -> D(2,1)
+```
+
+**示例 2**
+
+```text
+输入：board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCB"
+输出：false
+解释：A(0,0) -> B(0,1) -> C(0,2) 之后，下一个 B 需要回到 (0,1)，但该格已使用过。
+```
+
+**约束条件**
+
+- `m == board.length`，`n == board[i].length`
+- `1 <= m, n <= 6`
+- `1 <= word.length <= 15`
+- `board` 和 `word` 只包含大小写英文字母
+
+**边界情况**：空网格直接返回 `false`；`word` 长度为 1 时退化为"网格中是否存在该字符"；`word` 长度超过 `m * n` 时必然返回 `false`（格子不够用，可做前置剪枝）。
+
+## 暴力解与瓶颈
+
+朴素想法是从每个格子出发做 DFS，但不记录哪些格子已在当前路径上用过：
+
+```python
+def exist_brute(board: list[list[str]], word: str) -> bool:
+    m, n = len(board), len(board[0])
+    def dfs(i: int, j: int, k: int) -> bool:
+        if i < 0 or i >= m or j < 0 or j >= n:
+            return False
+        if board[i][j] != word[k]:
+            return False
+        if k == len(word) - 1:
+            return True
+        # 错误：允许走回头路，同一格可重复使用
+        return (dfs(i + 1, j, k + 1) or dfs(i - 1, j, k + 1)
+                or dfs(i, j + 1, k + 1) or dfs(i, j - 1, k + 1))
+    return any(dfs(i, j, 0) for i in range(m) for j in range(n))
+```
+
+该写法不仅指数爆炸（每步永远 4 个方向），答案还是错的：示例 2 的 `"ABCB"` 会走回头路返回 `true`。瓶颈在于**路径状态没有被表达**：搜索不知道"来时的格子不能再踩"。优化方向是**原地标记加回溯**：进入格子先用 `'#'` 占位堵住回头路，四个方向探完再恢复字符。
 
 ## 思路分析
 
-回溯 + DFS：
+从每个单元格出发尝试匹配 `word[0]`，匹配成功则向四个方向递归匹配 `word[k+1]`。进入 `(i, j)` 后先把字符暂存并置为 `'#'`（表示本路径已占用），四个方向只要有一个走通即成功；四个方向都失败则恢复字符，把选择权交还给其他路径。全部起点都失败才返回 `false`。
 
-1. 从每个单元格出发，尝试匹配单词的第一个字符
-2. 如果匹配，向四个方向递归搜索下一个字符
-3. 使用访问标记避免重复使用单元格
-4. 回溯时恢复状态
+以 `word = "ABCCED"` 为例的成功路径：
+
+| 步骤 | 位置 `(i, j)` | 匹配 `word[k]` | 网格变化 |
+| ---- | ------------- | -------------- | -------- |
+| 1 | `(0, 0)` | `A` (`k=0`) | `A` 暂存并置 `'#'` |
+| 2 | `(0, 1)` | `B` (`k=1`) | `B` 暂存并置 `'#'` |
+| 3 | `(0, 2)` | `C` (`k=2`) | `C` 暂存并置 `'#'` |
+| 4 | `(1, 2)` | `C` (`k=3`) | `C` 暂存并置 `'#'` |
+| 5 | `(2, 2)` | `E` (`k=4`) | `E` 暂存并置 `'#'` |
+| 6 | `(2, 1)` | `D` (`k=5`) | `k` 到达末尾，返回 `true` |
+
+:::tip
+关键细节是**终止条件为 `k == len(word) - 1` 而不是 `k == len(word)`**：字符比对在前，`board[i][j] != word[k]` 已经保证下标合法；匹配到最后一个字符即可成功，不需要再前进一步。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(m _ n _ 4^l)，l 是单词长度，每个单元格出发，最多4个方向
-- **空间复杂度**：O(l)，递归栈深度
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| ---- | ---------- | ---------- | ---- |
+| 无标记 DFS | O(m·n·4^l) 且答案错误 | O(l) | 每步永远 4 方向，还允许走回头路 |
+| 回溯 + 原地标记 | O(m·n·3^l) | O(l) | 首步 4 方向，之后来路被 `'#'` 堵住至多 3 方向；空间为递归栈 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 单词搜索 - 回溯 + DFS
-    # 时间复杂度: O(m * n * 4^l), 空间复杂度: O(l)
-    # m, n 为网格行列数, l 为单词长度
+    # 单词搜索 - Python 实现 (回溯 + DFS)
+    # 时间复杂度: O(m*n*3^l), 空间复杂度: O(l)
+    # 核心思路: 原地 '#' 标记占用，回溯时恢复字符
+    def exist(board: list[list[str]], word: str) -> bool:
+        # 空网格或空单词守卫
+        if not board or not board[0] or not word:
+            return False
+        # 前置剪枝：格子总数不够一定拼不出单词
+        if len(word) > len(board) * len(board[0]):
+            return False
 
-    def exist(board: list[list[str]], word: str) -> bool: # 边界情况: 空网格直接返回 False
-    if not board or not board[0]:
-    return False
-
-        # m: 网格行数, n: 网格列数
+        # m: 行数, n: 列数
         m, n = len(board), len(board[0])
 
         def dfs(i: int, j: int, k: int) -> bool:
-            # 从网格位置 (i, j) 开始搜索单词 word[k:] 部分
-            # i, j: 当前网格坐标
-            # k: 当前要匹配的单词字符索引
-
-            # 边界检查: 坐标越界返回 False
+            # 从 (i, j) 出发匹配 word[k:]，k 为当前字符下标
+            # 越界直接失败
             if i < 0 or i >= m or j < 0 or j >= n:
                 return False
-
-            # 字符匹配检查: 当前网格字符与目标字符不匹配
+            # 当前字符不匹配直接失败
             if board[i][j] != word[k]:
                 return False
-
-            # 终止条件: 已匹配到单词最后一个字符 (k 从 0 开始)
+            # 匹配到最后一个字符则成功
             if k == len(word) - 1:
                 return True
 
-            # 标记当前单元格为已访问 (用特殊字符 '#')
-            # 直接修改原网格, 避免使用额外的 visited 数组
+            # 占用当前格：暂存字符并置 '#'
             temp = board[i][j]
             board[i][j] = '#'
 
-            # 向四个方向递归搜索下一个字符 (k+1)
-            # 只要有一个方向成功, 整个搜索就成功 (短路求值)
-            found = (dfs(i + 1, j, k + 1) or  # 向下
-                     dfs(i - 1, j, k + 1) or  # 向上
-                     dfs(i, j + 1, k + 1) or  # 向右
-                     dfs(i, j - 1, k + 1))    # 向左
+            # 四个方向任一走通即成功（短路求值）
+            found = (dfs(i + 1, j, k + 1)
+                     or dfs(i - 1, j, k + 1)
+                     or dfs(i, j + 1, k + 1)
+                     or dfs(i, j - 1, k + 1))
 
-            # 回溯: 恢复单元格原始字符
-            # 这一步至关重要, 否则会影响其他路径的搜索
+            # 回溯：恢复字符，不影响其他路径
             board[i][j] = temp
-
             return found
 
-        # 从网格的每个单元格出发尝试搜索
+        # 每个格子都可作为起点
         for i in range(m):
             for j in range(n):
-                # 如果从 (i, j) 出发能找到完整单词, 返回 True
-                if dfs(i, j, 0):  # k=0 表示从单词第一个字符开始
+                if dfs(i, j, 0):
                     return True
-
-        # 所有起点都尝试过仍未找到, 返回 False
         return False
 
-    # 测试用例: 3x4 网格
-
-    board = [
-    ['A', 'B', 'C', 'E'],
-    ['S', 'F', 'C', 'S'],
-    ['A', 'D', 'E', 'E']
-    ]
-
-    # "ABCCED": A(0,0) -> B(0,1) -> C(0,2) -> C(1,2) -> E(2,2) -> D(2,1)
-
-    print(exist(board, "ABCCED")) # 输出: True
-
-    # "SEE": S(1,3) -> E(2,3) -> E(2,2)
-
-    print(exist(board, "SEE")) # 输出: True
-
-    # "ABCB": A(0,0) -> B(0,1) -> C(0,2) -> B 无法到达 (B(0,1) 已访问过)
-
-    print(exist(board, "ABCB")) # 输出: False
+    # 测试用例：3x4 网格（每行一个字符串列表）
+    board = [['A', 'B', 'C', 'E'], ['S', 'F', 'C', 'S'], ['A', 'D', 'E', 'E']]
+    print(exist([row[:] for row in board], "ABCCED"))  # True
+    print(exist([row[:] for row in board], "SEE"))  # True
+    print(exist([row[:] for row in board], "ABCB"))  # False
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 单词搜索 - 回溯 + DFS
-    // 时间复杂度: O(m _ n _ 4^l), 空间复杂度: O(l)
-    // m, n 为网格行列数, l 为单词长度
-
+    // 单词搜索 - TypeScript 实现 (回溯 + DFS)
+    // 时间复杂度: O(m*n*3^l), 空间复杂度: O(l)
+    // 核心思路: 原地 '#' 标记占用，回溯时恢复字符
     function exist(board: string[][], word: string): boolean {
-    // 边界情况: 空网格直接返回 false
-    if (board.length === 0 || board[0].length === 0) {
-    return false;
-    }
-
-        // m: 网格行数, n: 网格列数
-        const m = board.length;
-        const n = board[0].length;
-
-        function dfs(i: number, j: number, k: number): boolean {
-            // 从网格位置 (i, j) 开始搜索单词 word[k:] 部分
-            // i, j: 当前网格坐标
-            // k: 当前要匹配的单词字符索引
-
-            // 边界检查: 坐标越界返回 false
-            if (i < 0 || i >= m || j < 0 || j >= n) {
-                return false;
-            }
-
-            // 字符匹配检查: 当前网格字符与目标字符不匹配
-            if (board[i][j] !== word[k]) {
-                return false;
-            }
-
-            // 终止条件: 已匹配到单词最后一个字符 (k 从 0 开始)
-            if (k === word.length - 1) {
-                return true;
-            }
-
-            // 标记当前单元格为已访问 (用特殊字符 '#')
-            // 直接修改原网格, 避免使用额外的 visited 数组
-            const temp = board[i][j];
-            board[i][j] = '#';
-
-            // 向四个方向递归搜索下一个字符 (k+1)
-            // 只要有一个方向成功, 整个搜索就成功 (短路求值)
-            const found = dfs(i + 1, j, k + 1) ||  // 向下
-                          dfs(i - 1, j, k + 1) ||  // 向上
-                          dfs(i, j + 1, k + 1) ||  // 向右
-                          dfs(i, j - 1, k + 1);    // 向左
-
-            // 回溯: 恢复单元格原始字符
-            // 这一步至关重要, 否则会影响其他路径的搜索
-            board[i][j] = temp;
-
-            return found;
-        }
-
-        // 从网格的每个单元格出发尝试搜索
-        for (let i = 0; i < m; i++) {
-            for (let j = 0; j < n; j++) {
-                // 如果从 (i, j) 出发能找到完整单词, 返回 true
-                if (dfs(i, j, 0)) {  // k=0 表示从单词第一个字符开始
-                    return true;
-                }
-            }
-        }
-
-        // 所有起点都尝试过仍未找到, 返回 false
+      // 空网格或空单词守卫
+      if (board.length === 0 || board[0].length === 0 || word.length === 0) {
         return false;
+      }
+      // 前置剪枝：格子总数不够一定拼不出单词
+      if (word.length > board.length * board[0].length) {
+        return false;
+      }
 
+      // m: 行数, n: 列数
+      const m = board.length;
+      const n = board[0].length;
+
+      function dfs(i: number, j: number, k: number): boolean {
+        // 从 (i, j) 出发匹配 word[k:]，k 为当前字符下标
+        // 越界直接失败
+        if (i < 0 || i >= m || j < 0 || j >= n) {
+          return false;
+        }
+        // 当前字符不匹配直接失败
+        if (board[i][j] !== word[k]) {
+          return false;
+        }
+        // 匹配到最后一个字符则成功
+        if (k === word.length - 1) {
+          return true;
+        }
+
+        // 占用当前格：暂存字符并置 '#'
+        const temp = board[i][j];
+        board[i][j] = "#";
+
+        // 四个方向任一走通即成功（短路求值）
+        const found =
+          dfs(i + 1, j, k + 1) ||
+          dfs(i - 1, j, k + 1) ||
+          dfs(i, j + 1, k + 1) ||
+          dfs(i, j - 1, k + 1);
+
+        // 回溯：恢复字符，不影响其他路径
+        board[i][j] = temp;
+        return found;
+      }
+
+      // 每个格子都可作为起点
+      for (let i = 0; i < m; i++) {
+        for (let j = 0; j < n; j++) {
+          if (dfs(i, j, 0)) {
+            return true;
+          }
+        }
+      }
+      return false;
     }
 
-    // 测试用例: 3x4 网格
-    const board = [
-    ['A', 'B', 'C', 'E'],
-    ['S', 'F', 'C', 'S'],
-    ['A', 'D', 'E', 'E']
-    ];
-
-    // "ABCCED": A(0,0) -> B(0,1) -> C(0,2) -> C(1,2) -> E(2,2) -> D(2,1)
-    console.log(exist(board, "ABCCED")); // 输出: true
-
-    // "SEE": S(1,3) -> E(2,3) -> E(2,2)
-    console.log(exist(board, "SEE")); // 输出: true
-
-    // "ABCB": A(0,0) -> B(0,1) -> C(0,2) -> B 无法到达 (B(0,1) 已访问过)
-    console.log(exist(board, "ABCB")); // 输出: false
+    // 测试用例：3x4 网格（每行一个字符串数组）
+    const board = [["A", "B", "C", "E"], ["S", "F", "C", "S"], ["A", "D", "E", "E"]];
+    console.log(exist(board.map((row) => [...row]), "ABCCED")); // true
+    console.log(exist(board.map((row) => [...row]), "SEE")); // true
+    console.log(exist(board.map((row) => [...row]), "ABCB")); // false
     ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+回溯三件套（暂存、占位、恢复）两边逐行对应：
+
+<CodeCompare
+  py={`# 暂存 + 占位 + 恢复，同一格绝不重复使用
+temp = board[i][j]
+board[i][j] = '#'
+# ... 四个方向递归 ...
+board[i][j] = temp`}
+  ts={`// 暂存 + 占位 + 恢复，同一格绝不重复使用
+const temp = board[i][j];
+board[i][j] = "#";
+// ... 四个方向递归 ...
+board[i][j] = temp;`}
+/>
+
+| 关注点 | Python | TypeScript |
+| ------ | ------ | ---------- |
+| 占位字符 | `'#'`，题目字符集不含它所以安全 | `"#"`，同理 |
+| 暂存变量 | `temp` 普通赋值即可 | `const temp`，暂存后不再修改 |
+| 短路求值 | `or` 连接四个递归 | `\|\|` 连接四个递归，语义一致 |
+| 守卫顺序 | `not board` 先行，避免取 `board[0]` 越界 | `board.length === 0` 先行，依赖 `\|\|` 短路 |
+| 网格复制 | `[row[:] for row in board]` 深拷贝一行 | `board.map((row) => [...row])`，展开语法等价 |
+| 字符比较 | `!=` | `!==`，杜绝隐式类型转换 |
+
+:::note
+`'#'` 必须是字符集之外的符号：如果网格本身可能包含 `'#'`，占位标记会与真实字符混淆，此时应改用独立的 `visited` 集合。本题字符集为字母，`'#'` 安全。
+:::
+
+## 常见错误分析
+
+### 1. 占用后忘记恢复
+
+```python
+# 错误：找到失败路径后没有恢复字符
+temp = board[i][j]
+board[i][j] = '#'
+found = dfs(i + 1, j, k + 1) or dfs(i - 1, j, k + 1)
+return found  # 漏了 board[i][j] = temp
+```
+
+失败路径留下的 `'#'` 会污染后续起点的搜索，本来存在的单词查不出来。**改法**：递归之后无条件恢复，成功失败都执行，恢复语句紧贴递归写。
+
+### 2. 终止条件写成 `k == len(word)`
+
+```python
+# 错误：下标先越界，比较根本执行不到
+if board[i][j] != word[k]:  # k == len(word) 时 IndexError
+    return False
+if k == len(word):
+    return True
+```
+
+字符比对发生在终止判断之前，`k` 取到 `len(word)` 时 `word[k]` 已经越界抛异常。**改法**：用 `k == len(word) - 1`，含义是"当前字符已是最后一个且匹配成功"。
+
+### 3. TypeScript 里守卫顺序写反
+
+```typescript
+// 错误：board 为空数组时 board[0] 是 undefined，取 .length 直接抛错
+if (board[0].length === 0 || board.length === 0) {
+  return false;
+}
+```
+
+`strict` 空检查的正确姿势是先判长度再取元素，依赖 `||` 短路。正解的顺序（先 `board.length === 0`）保证 `board[0]` 被求值时数组非空。Python 同理：`not board` 必须写在 `not board[0]` 之前。
+
 ## 面试变体
 
-1. **单词搜索 II**：给定多个单词，找出所有存在的单词
-2. **前缀树优化**：使用 Trie 优化多个单词的搜索
-3. **最短路径**：找到构成单词的最短路径
+1. **单词搜索 II（多词搜索）**：一次 DFS 同时匹配成百上千个单词。朴素做法是对每个词跑一遍本算法；正解是把词库建成前缀树，DFS 时沿 Trie 节点走，失配整枝剪掉（Trie 结构详见[实现 Trie](../implement-trie/)）。复杂度从 O(W·m·n·3^l) 降到接近一次网格遍历。
+2. **岛屿计数**：同样是网格 DFS，但不需要回溯（详见[岛屿数量](../number-of-islands/)）。沉没式标记一去不复返，而本题的 `'#'` 是临时占用；对比两者能讲清"标记"与"回溯"的区别。
+3. **全排列**：回溯框架的另一实例（详见[全排列](../permutations/)）。`used` 数组对应本题的 `'#'` 标记，选择、递归、撤销三步结构完全相同，只是状态从二维网格换成一维选择序列。
 
-## 常见错误
+## 面试追问
 
-1. 忘记回溯恢复状态
-2. 边界检查条件写错
-3. 递归终止条件写错（应该是 k == len-1 不是 k == len）
+- 为什么复杂度是 3^l 而不是 4^l？（第一步有 4 个方向，进入第二步后来路格是 `'#'`，字符比对直接失败，实际至多 3 个方向；这是原地标记附带的剪枝效果。）
+- `'#'` 标记和额外 `visited` 数组如何取舍？（标记法空间 O(1) 额外，但破坏输入且要求占位符不在字符集内；`visited` 数组空间 O(m·n)，输入只读，多线程更安全。）
+- 递归最坏深度是多少？（单词长度 l，约束下至多 15，栈安全；若放开约束，考虑迭代加显式栈改写。）

@@ -9,316 +9,348 @@ description: 实现一个 LRU (最近最少使用) 缓存机制
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-请你设计并实现一个 `LRUCache` 类：
+设计并实现一个 `LRUCache` 类：`LRUCache(capacity)` 以正整数容量初始化缓存；`get(key)` 在关键字存在时返回值，否则返回 `-1`；`put(key, value)` 插入或更新键值对，插入导致超容时逐出最久未使用的关键字。`get` 和 `put` 都要求平均 O(1)。
 
-- `LRUCache(int capacity)` 以**正整数**作为容量 `capacity` 初始化 LRU 缓存
-- `int get(int key)` 如果关键字 `key` 存在于缓存中，则返回关键字的值，否则返回 `-1`
-- `void put(int key, int value)` 如果关键字 `key` 已经存在，则变更其数据值 `value`；如果不存在，则向缓存中插入该组 `key-value`。如果插入操作导致关键字数量超过 `capacity`，则应该**逐出**最久未使用的关键字。
+**示例 1**
+
+```text
+输入：["LRUCache", "put", "put", "get", "put", "get", "put", "get", "get", "get"]
+     [[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]
+输出：[null, null, null, 1, null, -1, null, -1, 3, 4]
+解释：put(3, 3) 逐出 key 1；put(4, 4) 逐出 key 2。
+```
+
+**示例 2**
+
+```text
+输入：["LRUCache", "get", "put"]
+     [[1], [1], [1, 10]]
+输出：[null, -1, null]
+解释：空缓存 get 直接返回 -1；容量为 1 时每次 put 都可能触发逐出。
+```
+
+**约束条件**
+
+- `1 <= capacity <= 3000`
+- `0 <= key <= 10⁴`，`0 <= value <= 10⁵`
+- `get`、`put` 调用总数不超过 `2 * 10⁵`
+
+**边界情况**：`get` 不存在的 key 返回 `-1` 且不改变顺序；`put` 已存在的 key 只更新值并移到最前，不触发逐出；连续 `put` 新 key 时每次超容都逐出恰好一个。
+
+## 暴力解与瓶颈
+
+朴素想法是用数组保存键值对并按使用顺序排列，每次 `get`/`put` 都线性查找：
+
+```python
+class LRUCacheBrute:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.items: list[tuple[int, int]] = []  # 越靠前越久未使用
+    def get(self, key: int) -> int:
+        for i, (k, v) in enumerate(self.items):
+            if k == key:
+                self.items.append(self.items.pop(i))  # 移到最后表示最近使用
+                return v
+        return -1
+    def put(self, key: int, value: int) -> None:
+        self.get(key)  # 复用查找顺带移到最后
+        for i, (k, _) in enumerate(self.items):
+            if k == key:
+                self.items[i] = (key, value)
+                return
+        self.items.append((key, value))
+        if len(self.items) > self.capacity:
+            self.items.pop(0)  # 逐出最久未使用
+```
+
+查找、删除、逐出全是 O(n)（`pop(0)` 还要搬移整个数组）。瓶颈在于**查找与顺序维护耦合**：数组既要按 key 找，又要按时间排，一种结构干两件事注定有一件是 O(n)。优化方向是**职责分离**：哈希表负责 O(1) 查找，双向链表负责 O(1) 顺序维护，两者通过节点引用互联。
 
 ## 思路分析
 
-哈希表 + 双向链表：
+哈希表存 `key -> 链表节点`，双向链表按"最近使用在前"排列，另设哨兵头尾节点消灭空表分支。`get` 命中则把节点移到头部并返回值；`put` 分两种情况：key 已存在则更新值并移到头部，key 不存在则新建节点放头部，超容时删除尾部前一个节点（最久未使用）并同步删除哈希表项。
 
-- 哈希表：`key -> 链表节点`，实现 O(1) 查找
-- 双向链表：维护使用顺序，头部是最近使用，尾部是最久未使用
-- `get` 操作：移动到头部
-- `put` 操作：已存在则更新并移动到头部；不存在则新建节点放到头部，超容量则删除尾部
+以 `capacity = 2` 为例（链表从头到尾展示）：
+
+| 操作 | 链表顺序（头 → 尾） | 返回 | 说明 |
+| ---- | ------------------ | ---- | ---- |
+| `put(1, 1)` | `[1]` | — | 新节点放头部 |
+| `put(2, 2)` | `[2, 1]` | — | 新节点放头部 |
+| `get(1)` | `[1, 2]` | `1` | 命中移到头部 |
+| `put(3, 3)` | `[3, 2]` | — | 超容逐出尾部 `1` |
+| `get(2)` | `[2, 3]` | `2` | 命中移到头部 |
+| `put(4, 4)` | `[4, 2]` | — | 超容逐出尾部 `3` |
+
+:::tip
+关键细节是**移到头部永远是"先摘后挂"**：先把节点从原位置摘除（前后直连），再挂到头部。两步顺序不能反，否则原邻居的指针还指着它，链表出现环。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：`get` 和 `put` 都是 O(1)
-- **空间复杂度**：O(capacity)，哈希表和链表
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| ---- | ---------- | ---------- | ---- |
+| 数组线性查找 | `get`/`put` 均为 O(n) | O(capacity) | 查找、搬移、逐出全是线性 |
+| 哈希表 + 双向链表 | `get`/`put` 均为 O(1) | O(capacity) | 查找走哈希表，顺序走链表，节点数上限 capacity |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
+    ```python
+    # LRU 缓存 - Python 实现 (哈希表 + 双向链表)
+    # 时间复杂度: get/put 都是 O(1), 空间复杂度: O(capacity)
+    class DLinkedNode:
+        """双向链表节点：存键值对 + 前后指针"""
+        def __init__(self, key=0, value=0):
+            self.key = key
+            self.value = value
+            self.prev = None
+            self.next = None
 
-```python
-# LRU 缓存 - Python 实现
-# 时间复杂度: get/put 都是 O(1), 空间复杂度: O(capacity)
-# 核心思路: 哈希表 + 双向链表，哈希表实现O(1)查找，双向链表维护使用顺序
+    class LRUCache:
+        """哈希表 O(1) 查找 + 双向链表维护顺序（头部最新）"""
+        def __init__(self, capacity: int):
+            self.cache = {}  # key -> 链表节点
+            self.capacity = capacity
+            self.size = 0
+            # 哨兵头尾 head <-> tail，消灭空表分支
+            self.head = DLinkedNode()
+            self.tail = DLinkedNode()
+            self.head.next = self.tail
+            self.tail.prev = self.head
 
-class DLinkedNode:
-    """双向链表节点"""
-    def __init__(self, key=0, value=0):
-        # 存储键值对
-        self.key = key
-        self.value = value
-        # 前驱和后继指针
-        self.prev = None
-        self.next = None
-
-class LRUCache:
-    """LRU 缓存实现"""
-
-    def __init__(self, capacity: int):
-        # 哈希表：key -> 链表节点，实现O(1)查找
-        self.cache = {}
-        # 缓存容量上限
-        self.capacity = capacity
-        # 当前缓存大小
-        self.size = 0
-
-        # 创建伪头部和伪尾部节点（哨兵节点）
-        # 简化边界处理，避免空链表判断
-        self.head = DLinkedNode()
-        self.tail = DLinkedNode()
-        # 初始化双向链表：head <-> tail
-        self.head.next = self.tail
-        self.tail.prev = self.head
-
-    def get(self, key: int) -> int:
-        """获取值，不存在返回-1"""
-        # 检查key是否在缓存中
-        if key not in self.cache:
-            return -1
-
-        # 获取对应节点
-        node = self.cache[key]
-        # 将节点移动到头部（标记为最近使用）
-        self._moveToHead(node)
-        # 返回节点存储的值
-        return node.value
-
-    def put(self, key: int, value: int) -> None:
-        """插入或更新键值对"""
-        if key not in self.cache:
-            # key不存在，创建新节点
-            node = DLinkedNode(key, value)
-            # 存入哈希表
-            self.cache[key] = node
-            # 添加到链表头部
-            self._addToHead(node)
-            # 缓存大小+1
-            self.size += 1
-
-            # 检查是否超容量
-            if self.size > self.capacity:
-                # 删除尾部节点（最久未使用）
-                removed = self._removeTail()
-                # 从哈希表中删除对应key
-                del self.cache[removed.key]
-                # 缓存大小-1
-                self.size -= 1
-        else:
-            # key已存在，更新值
+        def get(self, key: int) -> int:
+            if key not in self.cache:
+                return -1  # 未命中不改变顺序
             node = self.cache[key]
-            node.value = value
-            # 移动到头部（标记为最近使用）
             self._moveToHead(node)
+            return node.value
 
-    def _addToHead(self, node):
-        """将节点添加到头部（head之后）"""
-        # 设置节点的前驱为head
-        node.prev = self.head
-        # 设置节点的后继为head的下一个节点
-        node.next = self.head.next
-        # 更新原第一个节点的前驱指向新节点
-        self.head.next.prev = node
-        # 更新head的后继指向新节点
-        self.head.next = node
+        def put(self, key: int, value: int) -> None:
+            if key not in self.cache:
+                node = DLinkedNode(key, value)
+                self.cache[key] = node
+                self._addToHead(node)
+                self.size += 1
+                if self.size > self.capacity:  # 超容：摘链表、删表项、减计数
+                    removed = self._removeTail()
+                    del self.cache[removed.key]
+                    self.size -= 1
+            else:  # 已存在：更新值并移到头部
+                node = self.cache[key]
+                node.value = value
+                self._moveToHead(node)
 
-    def _removeNode(self, node):
-        """从链表中删除指定节点"""
-        # 前驱节点的后继指向当前节点的后继
-        node.prev.next = node.next
-        # 后继节点的前驱指向当前节点的前驱
-        node.next.prev = node.prev
+        def _addToHead(self, node):
+            node.prev = self.head
+            node.next = self.head.next
+            self.head.next.prev = node
+            self.head.next = node
 
-    def _moveToHead(self, node):
-        """将节点移动到头部"""
-        # 先从原位置删除
-        self._removeNode(node)
-        # 再添加到头部
-        self._addToHead(node)
+        def _removeNode(self, node):
+            node.prev.next = node.next
+            node.next.prev = node.prev
 
-    def _removeTail(self):
-        """删除并返回尾部节点（tail之前）"""
-        # 获取尾部前一个节点（最久未使用的节点）
-        node = self.tail.prev
-        # 从链表中删除
-        self._removeNode(node)
-        # 返回被删除的节点
-        return node
+        def _moveToHead(self, node):
+            self._removeNode(node)  # 先摘后挂
+            self._addToHead(node)
 
-# 测试用例
-cache = LRUCache(2)
-cache.put(1, 1)
-cache.put(2, 2)
-print(cache.get(1)) # 1
-print(cache.get(2)) # 2
-cache.put(3, 3) # 逐出 key 1
-print(cache.get(1)) # -1
-print(cache.get(3)) # 3
-cache.put(4, 4) # 逐出 key 2
-print(cache.get(2)) # -1
-print(cache.get(3)) # 3
-```
+        def _removeTail(self):
+            node = self.tail.prev  # 最久未使用
+            self._removeNode(node)
+            return node
+
+    # 测试用例
+    cache = LRUCache(2)
+    cache.put(1, 1)
+    cache.put(2, 2)
+    print(cache.get(1))  # 1
+    cache.put(3, 3)  # 逐出 key 1
+    print(cache.get(2))  # -1
+    print(cache.get(3))  # 3
+    cache.put(4, 4)  # 逐出 key 2
+    print(cache.get(1))  # -1
+    print(cache.get(3))  # 3
+    print(cache.get(4))  # 4
+    ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
+    ```typescript
+    // LRU 缓存 - TypeScript 实现 (Map + 双向链表)
+    // 时间复杂度: get/put 都是 O(1), 空间复杂度: O(capacity)
+    class DLinkedNode {
+      key: number;
+      value: number;
+      prev: DLinkedNode | null;
+      next: DLinkedNode | null;
 
-```typescript
-// LRU 缓存 - TypeScript 实现
-// 时间复杂度: get/put 都是 O(1), 空间复杂度: O(capacity)
-// 核心思路: Map + 双向链表，Map实现O(1)查找，双向链表维护使用顺序
-
-/**
- * 双向链表节点
- */
-class DLinkedNode {
-  key: number;
-  value: number;
-  prev: DLinkedNode | null;
-  next: DLinkedNode | null;
-
-  constructor(key: number = 0, value: number = 0) {
-    // 存储键值对
-    this.key = key;
-    this.value = value;
-    // 前驱和后继指针
-    this.prev = null;
-    this.next = null;
-  }
-}
-
-/**
- * LRU 缓存实现
- */
-class LRUCache {
-  // Map: key -> 链表节点，实现O(1)查找
-  private cache: Map<number, DLinkedNode>;
-  // 缓存容量上限
-  private capacity: number;
-  // 当前缓存大小
-  private size: number;
-  // 伪头部和伪尾部节点（哨兵节点）
-  private head: DLinkedNode;
-  private tail: DLinkedNode;
-
-  constructor(capacity: number) {
-    this.cache = new Map();
-    this.capacity = capacity;
-    this.size = 0;
-
-    // 创建伪头部和伪尾部节点
-    // 简化边界处理，避免空链表判断
-    this.head = new DLinkedNode();
-    this.tail = new DLinkedNode();
-    // 初始化双向链表：head <-> tail
-    this.head.next = this.tail;
-    this.tail.prev = this.head;
-  }
-
-  get(key: number): number {
-    // 检查key是否在缓存中
-    const node = this.cache.get(key);
-    if (node === undefined) {
-      return -1;
-    }
-    // 将节点移动到头部（标记为最近使用）
-    this.moveToHead(node);
-    // 返回节点存储的值
-    return node.value;
-  }
-
-  put(key: number, value: number): void {
-    const node = this.cache.get(key);
-    if (node === undefined) {
-      // key不存在，创建新节点
-      const newNode = new DLinkedNode(key, value);
-      // 存入Map
-      this.cache.set(key, newNode);
-      // 添加到链表头部
-      this.addToHead(newNode);
-      // 缓存大小+1
-      this.size++;
-
-      // 检查是否超容量
-      if (this.size > this.capacity) {
-        // 删除尾部节点（最久未使用）
-        const removed = this.removeTail();
-        // 从Map中删除对应key
-        this.cache.delete(removed.key);
-        // 缓存大小-1
-        this.size--;
+      constructor(key: number = 0, value: number = 0) {
+        this.key = key;
+        this.value = value;
+        this.prev = null;
+        this.next = null;
       }
-    } else {
-      // key已存在，更新值
-      node.value = value;
-      // 移动到头部（标记为最近使用）
-      this.moveToHead(node);
     }
-  }
 
-  private addToHead(node: DLinkedNode): void {
-    // 将节点添加到头部（head之后）
-    // 设置节点的前驱为head
-    node.prev = this.head;
-    // 设置节点的后继为head的下一个节点
-    node.next = this.head.next;
-    // 更新原第一个节点的前驱指向新节点
-    this.head.next!.prev = node;
-    // 更新head的后继指向新节点
-    this.head.next = node;
-  }
+    class LRUCache {
+      private cache: Map<number, DLinkedNode>; // key -> 链表节点
+      private capacity: number;
+      private size: number;
+      private head: DLinkedNode; // 哨兵头尾 head <-> tail
+      private tail: DLinkedNode;
 
-  private removeNode(node: DLinkedNode): void {
-    // 从链表中删除指定节点
-    // 前驱节点的后继指向当前节点的后继
-    if (node.prev) node.prev.next = node.next;
-    // 后继节点的前驱指向当前节点的前驱
-    if (node.next) node.next.prev = node.prev;
-  }
+      constructor(capacity: number) {
+        this.cache = new Map();
+        this.capacity = capacity;
+        this.size = 0;
+        // 哨兵头尾 head <-> tail，消灭空表分支
+        this.head = new DLinkedNode();
+        this.tail = new DLinkedNode();
+        this.head.next = this.tail;
+        this.tail.prev = this.head;
+      }
 
-  private moveToHead(node: DLinkedNode): void {
-    // 将节点移动到头部
-    // 先从原位置删除
-    this.removeNode(node);
-    // 再添加到头部
-    this.addToHead(node);
-  }
+      get(key: number): number {
+        const node = this.cache.get(key);
+        if (node === undefined) {
+          return -1; // 未命中不改变顺序
+        }
+        this.moveToHead(node);
+        return node.value;
+      }
 
-  private removeTail(): DLinkedNode {
-    // 删除并返回尾部节点（tail之前）
-    // 获取尾部前一个节点（最久未使用的节点）
-    const node = this.tail.prev!;
-    // 从链表中删除
-    this.removeNode(node);
-    // 返回被删除的节点
-    return node;
-  }
-}
+      put(key: number, value: number): void {
+        const node = this.cache.get(key);
+        if (node === undefined) {
+          const newNode = new DLinkedNode(key, value);
+          this.cache.set(key, newNode);
+          this.addToHead(newNode);
+          this.size++;
+          if (this.size > this.capacity) { // 超容：摘链表、删表项、减计数
+            const removed = this.removeTail();
+            this.cache.delete(removed.key);
+            this.size--;
+          }
+        } else { // 已存在：更新值并移到头部
+          node.value = value;
+          this.moveToHead(node);
+        }
+      }
 
-// 测试用例
-const cache = new LRUCache(2);
-cache.put(1, 1);
-cache.put(2, 2);
-console.log(cache.get(1)); // 1
-console.log(cache.get(2)); // 2
-cache.put(3, 3); // 逐出 key 1
-console.log(cache.get(1)); // -1
-console.log(cache.get(3)); // 3
-cache.put(4, 4); // 逐出 key 2
-console.log(cache.get(2)); // -1
-console.log(cache.get(3)); // 3
-```
+      private addToHead(node: DLinkedNode): void {
+        node.prev = this.head;
+        node.next = this.head.next;
+        this.head.next!.prev = node;
+        this.head.next = node;
+      }
+
+      private removeNode(node: DLinkedNode): void {
+        node.prev!.next = node.next;
+        node.next!.prev = node.prev;
+      }
+
+      private moveToHead(node: DLinkedNode): void {
+        this.removeNode(node); // 先摘后挂
+        this.addToHead(node);
+      }
+
+      private removeTail(): DLinkedNode {
+        const node = this.tail.prev!; // 最久未使用
+        this.removeNode(node);
+        return node;
+      }
+    }
+
+    // 测试用例
+    const cache = new LRUCache(2);
+    cache.put(1, 1);
+    cache.put(2, 2);
+    console.log(cache.get(1)); // 1
+    cache.put(3, 3); // 逐出 key 1
+    console.log(cache.get(2)); // -1
+    console.log(cache.get(3)); // 3
+    cache.put(4, 4); // 逐出 key 2
+    console.log(cache.get(1)); // -1
+    console.log(cache.get(3)); // 3
+    console.log(cache.get(4)); // 4
+    ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+链表操作逐行对应，差异在成员检查与空安全：
+
+<CodeCompare
+  py={`# in 直接判断 key 是否存在
+if key not in self.cache:
+    return -1
+node = self.cache[key]`}
+  ts={`// get 取值后与 undefined 比较，一步完成判存
+const node = this.cache.get(key);
+if (node === undefined) {
+  return -1;
+}`}
+/>
+
+| 关注点 | Python | TypeScript |
+| ------ | ------ | ---------- |
+| 哈希结构 | `dict`，`in` 判存、`del` 删除 | `Map`，`get` + `undefined` 比较、`delete` 删除 |
+| 空值语义 | 取缺席 key 抛 `KeyError`，所以先判后取 | `get` 返回 `DLinkedNode \| undefined`，必须收窄 |
+| 指针可空 | 无静态检查，哨兵保证非空是约定 | `prev`/`next` 标 `\| null`，使用处 `!` 断言 |
+| 私有方法 | 下划线前缀 `_addToHead` 表约定 | `private` 关键字强制约束 |
+| 构造默认值 | `__init__(self, key=0, value=0)` | `constructor(key: number = 0, value: number = 0)` |
+
+:::note
+`!` 断言要有哨兵依据：`addToHead` 里 `this.head.next!` 非空，是因为链表恒为 `head <-> ... <-> tail`，`head.next` 至少是 `tail`。断言写的是"不变量保证"，而不是"应该不会空"。
+:::
+
+## 常见错误分析
+
+### 1. 挂头部时指针更新顺序错误
+
+```python
+# 错误：先改 head.next，再用 head.next.prev 就不是旧第一个节点了
+self.head.next = node
+self.head.next.prev = node  # 此时 head.next 已是 node，等价于 node.prev = node
+```
+
+旧第一个节点的前驱永远指向错误，链表断裂。**改法**：严格按四步来——`node.prev`、`node.next` 先接好，再改旧节点的前驱，最后改 `head.next`。正解的顺序是唯一安全的顺序。
+
+### 2. 逐出只删链表，忘记同步哈希表和 `size`
+
+```python
+# 错误：链表上删了，哈希表里还留着
+if self.size > self.capacity:
+    self._removeTail()
+    self.size -= 1  # 漏了 del self.cache[removed.key]
+```
+
+之后 `get` 那个 key 会拿到游离节点并重新挂回链表，缓存实际超容且顺序错乱。**改法**：逐出三件套缺一不可——摘链表、删表项、减计数。
+
+### 3. TypeScript 里忽略 `Map.get` 的 `undefined`
+
+```typescript
+// 错误：strict 下 number | undefined 不能直接当节点用
+const node = this.cache.get(key);
+this.moveToHead(node); // 类型 'DLinkedNode | undefined' 不能赋值
+```
+
+Python 先 `in` 后取的习惯，对应到 TS 就是先判 `undefined` 再用。另一种写法是 `has()` + `get()!`，但一次 `get` 加比较更简洁，少一次哈希查找。
+
 ## 面试变体
 
-1. **LFU缓存**：最少使用次数的缓存淘汰策略
-2. **时间过期的缓存**：带有过期时间的缓存
-3. **线程安全的LRU**：多线程环境下的LRU实现
+1. **LFU 缓存**：按访问频率逐出而非按时间。需要频率桶（`freq -> 链表`）加最小频率指针，`get`/`put` 仍可做到 O(1)，但 bookkeeping 复杂度显著上升，常作为 LRU 的 follow-up。
+2. **带过期时间的缓存**：每个 key 附带 TTL。`get` 时检查是否过期，过期按未命中处理并惰性删除；也可以用最小堆按过期时间主动清理。复杂度仍是 O(1) 均摊，堆清理为 O(log n)。
+3. **链表基本功**：双向链表的增删是前提，单链表判环是同类手感题（详见[环形链表](../linked-list-cycle/)）。指针题的共同点是画图先行：动手改指针之前，先把四根线的变化画出来。
 
-## 常见错误
+## 面试追问
 
-1. 双向链表指针更新顺序错误
-2. 忘记更新 size
-3. 使用单链表导致删除操作 O(n)
+- 为什么必须用双向链表，单链表行不行？（逐出和移动都需要 O(1) 删除任意节点；单链表删除要找前驱，得从头遍历 O(n)，双向链表靠 `prev` 直接定位。）
+- Python `OrderedDict` / TS `Map` 本身有序，能直接实现 LRU 吗？（能：命中时删除重插移到末尾，超容删首项，`get`/`put` 均摊 O(1)。但面试考察的是"哈希表加链表"的组合设计，手写链表证明理解指针操作。）
+- `capacity` 为 0 或并发访问时要注意什么？（容量 0 意味着每次 `put` 新 key 都立即逐出；`get` 恒为 `-1`。多线程下 `get` 也会改结构（移到头部），读写都要加锁，不能只锁 `put`。）

@@ -9,124 +9,144 @@ description: 判断字符串是否可以被拆分成字典中的单词
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给你一个字符串 `s` 和一个字符串列表 `wordDict` 作为字典。请你判断是否可以利用字典中出现的单词拼接出 `s`。
+给你一个字符串 `s` 和一个字符串列表 `wordDict` 作为字典，判断是否可以利用字典中出现的单词拼接出 `s`。字典单词可重复使用，不要求全部使用。
 
-**注意：**不要求字典中出现的单词全部都使用，并且字典中的单词可以重复使用。
+**示例 1**
+
+```text
+输入：s = "leetcode", wordDict = ["leet", "code"]
+输出：true
+解释："leet" + "code" 恰好拼出原串
+```
+
+**示例 2**
+
+```text
+输入：s = "catsandog", wordDict = ["cats", "dog", "sand", "and", "cat"]
+输出：false
+解释：任何切分都会剩下无法匹配的片段
+```
+
+**约束条件**
+
+- `1 <= s.length <= 300`
+- `1 <= wordDict.length <= 1000`
+- `1 <= wordDict[i].length <= 20`
+- `s` 与字典均由小写英文字母组成
+
+**边界情况**：空串视为可拆分（`dp[0] = True`）；字典为空时非空串恒为 `false`；重复使用合法，故 `"aaaaaaa"` 配 `["aaaa", "aaa"]` 为 `true`。子串长度受字典最大词长限制时可剪枝，本实现为保持清晰未加该优化。
+
+## 暴力解与瓶颈
+
+朴素想法是从每个可达位置尝试全部单词做前缀匹配，递归搜索：
+
+```python
+def word_break_brute(s: str, wordDict: list[str]) -> bool:
+    word_set = set(wordDict)
+    n = len(s)
+    def dfs(i: int) -> bool:
+        if i == n:
+            return True
+        for j in range(i + 1, n + 1):
+            if s[i:j] in word_set and dfs(j):
+                return True
+        return False
+    return dfs(0)
+```
+
+后缀位置会被多条切分路径重复访问，最坏时间指数级。瓶颈在于"位置 `j` 是否可达"没有被记忆化。优化方向是记录每个前缀是否可拆分，每个位置只判定一次。
 
 ## 思路分析
 
-动态规划：
+动态规划。`dp[i]` 表示前 `i` 个字符能否被拆分，`dp[0] = True`。计算 `dp[i]` 时枚举分割点 `j < i`，若 `dp[j]` 为真且 `s[j:i]` 在字典集合中，则 `dp[i]` 为真，找到一个即提前结束内层循环。
 
-- `dp[i]`：前 i 个字符能否被拆分
-- 状态转移：`dp[i] = dp[j] and s[j:i] in wordDict` 对于所有 `0 <= j < i`
-- 初始化：`dp[0] = True`
+以 `s = "leetcode"`、`wordDict = ["leet", "code"]` 为例：
 
-优化：可以用 Trie 或哈希集合加速子串查询
+| `i` | 前缀 | 尝试的分割点 `j` | 命中情况 | `dp[i]` |
+| --- | ---- | ---------------- | -------- | ------- |
+| 1-3 | `l`、`le`、`lee` | 全部 `j` | 无字典词命中 | False |
+| 4 | `leet` | `j = 0`，`dp[0]` 真且 `leet` 在集合中 | 命中 | True |
+| 5-7 | `leetc`、`leetco`、`leetcod` | 全部 `j` | 无命中 | False |
+| 8 | `leetcode` | `j = 4`，`dp[4]` 真且 `code` 在集合中 | 命中 | True |
+
+:::tip
+关键细节是外层按 `i` 递增、内层枚举 `j`，且 `dp[j]` 必须先为真才检查子串。顺序颠倒或缺少 `dp[j]` 守卫会导致用不可达前缀拼出"可达"结论。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n²)，最坏情况需要检查所有子串
-- **空间复杂度**：O(n)，dp数组 + 哈希集合
+| 解法       | 时间复杂度 | 空间复杂度   | 说明                         |
+| ---------- | ---------- | ------------ | ---------------------------- |
+| 递归暴力   | 指数级     | O(n)         | 后缀位置被重复搜索，栈深为 n |
+| 前缀 DP    | O(n²)      | O(n)         | 每个 `i` 扫描全部 `j` 并查集合 |
+| 前缀 DP + 最大词长剪枝 | O(n·L) | O(n) | 内层只回看 `L` 个字符，`L` 为最长词 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 单词拆分 - 动态规划 + 哈希集合
-    # 算法: Word Break
-    # 时间复杂度: O(n²), 最坏情况需要检查所有子串
-    # 空间复杂度: O(n), dp数组 + 哈希集合
-
+    # 单词拆分 - Python 实现
+    # 时间复杂度: O(n^2), 空间复杂度: O(n)
+    # 核心思路: dp[i] 表示前 i 个字符能否被拆分
     def word_break(s: str, wordDict: list[str]) -> bool:
-        # 将字典列表转换为哈希集合，O(1) 时间复杂度查询单词是否存在
-        # 比列表的 O(n) 查询效率高很多
+        # 集合查询平均 O(1)，显著快于列表扫描
         word_set = set(wordDict)
-
-        # 获取目标字符串的长度
         n = len(s)
-
-        # dp[i] 表示前 i 个字符（s[0..i-1]）能否被拆分成字典中的单词
-        # 初始化为 False，表示初始时所有位置都不可达
-        dp = [False] * (n + 1)  # 索引 0~n
-
-        # 边界条件：空字符串可以被拆分（不需要任何单词）
+        # dp 索引 0~n，初始均为不可达
+        dp: list[bool] = [False] * (n + 1)
+        # 空串视为可拆分
         dp[0] = True
 
-        # 外层循环：遍历每个位置 i（1到n）
-        # 计算 dp[i]：前 i 个字符能否被拆分
         for i in range(1, n + 1):
-            # 内层循环：遍历所有可能的分割点 j（0到i-1）
-            # 尝试将 s[0..i-1] 分割成 s[0..j-1] 和 s[j..i-1]
+            # 枚举分割点 j，前缀 j 可达且后缀为字典词则 i 可达
             for j in range(i):
-                # 状态转移条件：
-                # 1. dp[j] 为 True：前 j 个字符可以被拆分
-                # 2. s[j:i] 在字典中：剩余子串是一个有效单词
-                # 两个条件都满足时，前 i 个字符可以被拆分
                 if dp[j] and s[j:i] in word_set:
-                    dp[i] = True  # 标记为可拆分
-                    break  # 提前退出：找到一个有效分割即可，不需要继续检查
+                    dp[i] = True
+                    break
 
-        # 返回 dp[n]：整个字符串能否被拆分
         return dp[n]
 
     # 测试用例
-    print(word_break("leetcode", ["leet", "code"])) # True ("leet"+"code")
-    print(word_break("applepenapple", ["apple", "pen"])) # True ("apple"+"pen"+"apple")
-    print(word_break("catsandog", ["cats", "dog", "sand", "and", "cat"])) # False
-    print(word_break("aaaaaaa", ["aaaa", "aaa"])) # True ("aaaa"+"aaa" 或 "aaa"+"aaaa")
+    print(word_break("leetcode", ["leet", "code"]))  # True
+    print(word_break("catsandog", ["cats", "dog", "sand", "and", "cat"]))  # False
+    print(word_break("aaaaaaa", ["aaaa", "aaa"]))  # True
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 单词拆分 - 动态规划 + 哈希集合
-    // 算法: Word Break
-    // 时间复杂度: O(n²), 最坏情况需要检查所有子串
-    // 空间复杂度: O(n), dp数组 + 哈希集合
-
+    // 单词拆分 - TypeScript 实现
+    // 时间复杂度: O(n^2), 空间复杂度: O(n)
+    // 核心思路: dp[i] 表示前 i 个字符能否被拆分
     function wordBreak(s: string, wordDict: string[]): boolean {
-        // 将字典列表转换为 Set 集合，O(1) 时间复杂度查询单词是否存在
-        // 比数组的 O(n) 查询效率高很多
-        const wordSet = new Set(wordDict);
+      // Set 查询平均 O(1)，显著快于数组扫描
+      const wordSet = new Set(wordDict);
+      const n = s.length;
+      // dp 索引 0~n，初始均为不可达
+      const dp: boolean[] = new Array(n + 1).fill(false);
+      // 空串视为可拆分
+      dp[0] = true;
 
-        // 获取目标字符串的长度
-        const n = s.length;
-
-        // dp[i] 表示前 i 个字符（s[0..i-1]）能否被拆分成字典中的单词
-        // 初始化为 false，表示初始时所有位置都不可达
-        const dp: boolean[] = new Array(n + 1).fill(false);  // 索引 0~n
-
-        // 边界条件：空字符串可以被拆分（不需要任何单词）
-        dp[0] = true;
-
-        // 外层循环：遍历每个位置 i（1到n）
-        // 计算 dp[i]：前 i 个字符能否被拆分
-        for (let i = 1; i <= n; i++) {
-            // 内层循环：遍历所有可能的分割点 j（0到i-1）
-            // 尝试将 s[0..i-1] 分割成 s[0..j-1] 和 s[j..i-1]
-            for (let j = 0; j < i; j++) {
-                // 状态转移条件：
-                // 1. dp[j] 为 true：前 j 个字符可以被拆分
-                // 2. s[j..i-1] 在字典中：剩余子串是一个有效单词
-                // 两个条件都满足时，前 i 个字符可以被拆分
-                if (dp[j] && wordSet.has(s.substring(j, i))) {
-                    dp[i] = true;  // 标记为可拆分
-                    break;  // 提前退出：找到一个有效分割即可，不需要继续检查
-                }
-            }
+      for (let i = 1; i <= n; i++) {
+        // 枚举分割点 j，前缀 j 可达且后缀为字典词则 i 可达
+        for (let j = 0; j < i; j++) {
+          if (dp[j] && wordSet.has(s.substring(j, i))) {
+            dp[i] = true;
+            break;
+          }
         }
+      }
 
-        // 返回 dp[n]：整个字符串能否被拆分
-        return dp[n];
+      return dp[n];
     }
 
     // 测试用例
     console.log(wordBreak("leetcode", ["leet", "code"])); // true
-    console.log(wordBreak("applepenapple", ["apple", "pen"])); // true
     console.log(wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"])); // false
     console.log(wordBreak("aaaaaaa", ["aaaa", "aaa"])); // true
     ```
@@ -134,65 +154,74 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
   </TabItem>
 </Tabs>
 
-## TypeScript 实现
+## Python 与 TypeScript 差异点评
+
+两份代码递推完全一致，差异集中在集合与子串提取的表达上：
+
+<CodeCompare
+  py={`# 集合成员检查与切片
+word_set = set(wordDict)
+if dp[j] and s[j:i] in word_set:
+    dp[i] = True`}
+  ts={`// Set 成员检查与 substring
+const wordSet = new Set(wordDict);
+if (dp[j] && wordSet.has(s.substring(j, i))) {
+  dp[i] = true;
+}`}
+/>
+
+| 关注点   | Python                              | TypeScript                                  |
+| -------- | ----------------------------------- | ------------------------------------------- |
+| 哈希集合 | `set(wordDict)`，`in` 检查成员      | `new Set(wordDict)`，`has()` 检查成员       |
+| 子串提取 | 切片 `s[j:i]`，左闭右开             | `s.substring(j, i)`，语义相同               |
+| 布尔字面 | `True` / `False`                    | `true` / `false`                            |
+| 数组初始化 | `[False] * (n + 1)` 乘法复制      | `new Array(n + 1).fill(false)`              |
+| 参数命名 | `wordDict` 保持与题面一致           | `wordDict` 与 Python 保持一致               |
+| 输出测试 | `print(...)`                        | `console.log(...)`                          |
+
+:::note
+Python 切片越界自动截断，`substring` 越界同样截断，两者在合法 `0 <= j < i <= n` 范围内行为一致。集合查询均为平均 O(1)，这是把 O(n³) 暴力降到 O(n²) 的前提；若误用列表或数组的线性查找，总复杂度会多乘一个字典规模。
+:::
+
+## 常见错误分析
+
+### 1. 忘记初始化 `dp[0]`
+
+```python
+# 错误：dp 全为 False，递推无起点
+dp: list[bool] = [False] * (n + 1)
+for i in range(1, n + 1):
+    ...
+```
+
+`s = "leet"` 在 `j = 0` 处需要 `dp[0]` 为真才能启动。**改法**：显式写 `dp[0] = True`，语义为空串可拆分。
+
+### 2. 子串区间写错
+
+```python
+# 错误：右端少取一个字符
+if dp[j] and s[j:i - 1] in word_set:
+```
+
+`dp[i]` 的后缀应为 `s[j:i]`（长度 `i - j`），写成 `s[j:i-1]` 会漏掉最后一个字符。识别方法：用 `i = 4, j = 0, s = "leet"` 单步代入验证。
+
+### 3. TypeScript 里混淆 `substring` 与 `slice` 的参数语义
 
 ```typescript
-// 单词拆分 - 动态规划 + 哈希集合
-// 算法: Word Break
-// 时间复杂度: O(n²), 最坏情况需要检查所有子串
-// 空间复杂度: O(n), dp数组 + 哈希集合
-
-function wordBreak(s: string, wordDict: string[]): boolean {
-  // 将字典列表转换为 Set 集合，O(1) 时间复杂度查询单词是否存在
-  // 比数组的 O(n) 查询效率高很多
-  const wordSet = new Set(wordDict);
-
-  // 获取目标字符串的长度
-  const n = s.length;
-
-  // dp[i] 表示前 i 个字符（s[0..i-1]）能否被拆分成字典中的单词
-  // 初始化为 false，表示初始时所有位置都不可达
-  const dp: boolean[] = new Array(n + 1).fill(false); // 索引 0~n
-
-  // 边界条件：空字符串可以被拆分（不需要任何单词）
-  dp[0] = true;
-
-  // 外层循环：遍历每个位置 i（1到n）
-  // 计算 dp[i]：前 i 个字符能否被拆分
-  for (let i = 1; i <= n; i++) {
-    // 内层循环：遍历所有可能的分割点 j（0到i-1）
-    // 尝试将 s[0..i-1] 分割成 s[0..j-1] 和 s[j..i-1]
-    for (let j = 0; j < i; j++) {
-      // 状态转移条件：
-      // 1. dp[j] 为 true：前 j 个字符可以被拆分
-      // 2. s[j..i-1] 在字典中：剩余子串是一个有效单词
-      // 两个条件都满足时，前 i 个字符可以被拆分
-      if (dp[j] && wordSet.has(s.substring(j, i))) {
-        dp[i] = true; // 标记为可拆分
-        break; // 提前退出：找到一个有效分割即可，不需要继续检查
-      }
-    }
-  }
-
-  // 返回 dp[n]：整个字符串能否被拆分
-  return dp[n];
-}
-
-// 测试用例
-console.log(wordBreak("leetcode", ["leet", "code"])); // true
-console.log(wordBreak("applepenapple", ["apple", "pen"])); // true
-console.log(wordBreak("catsandog", ["cats", "dog", "sand", "and", "cat"])); // false
-console.log(wordBreak("aaaaaaa", ["aaaa", "aaa"])); // true
+// 错误：substr 的第二参数是长度而非结束索引
+if (dp[j] && wordSet.has(s.substr(j, i))) { ... }
 ```
+
+`substr` 已废弃且语义不同，应使用 `substring(j, i)` 或 `slice(j, i)`。Python 只有切片一种写法，迁移时需确认第二参数为结束索引而非长度。该错误在 `strict` 下不会被编译器拦截，只能靠测试用例暴露。
 
 ## 面试变体
 
-1. **所有拆分方式**：返回所有可能的拆分方式
-2. **最少单词数**：使用最少单词的拆分
-3. **最长单词**：使用最长单词优先的策略
+1. **单词拆分 II（返回全部方案）**：除判定外还要返回所有切分方式。先用本篇 DP 求可达表剪枝，再从末尾 DFS 回溯拼接，避免在不可达分支上浪费搜索。时间与方案数相关，最坏指数级。
+2. **最少单词数**：求拼出 `s` 的最少单词个数。把布尔 `dp` 改为最小个数，转移为 `dp[i] = min(dp[i], dp[j] + 1)`。时间 O(n²)、空间 O(n)。
+3. **字典优化**：单词量大时用前缀树加速匹配（详见[实现 Trie](../implement-trie/)），或按最大词长限制回看窗口；二维网格上的字符串搜索对照可参考[单词搜索](../word-search/)。
 
-## 常见错误
+## 面试追问
 
-1. 忘记初始化 `dp[0] = True`
-2. 子串范围写错（应该是 s[j:i] 不是 s[j:i-1]）
-3. 内层循环可以提前退出但没有退出
+- 为什么内层命中一次即可 `break`？（`dp[i]` 只关心存在性，一个有效分割已足够；计数或枚举变体则不能提前退出。）
+- 最坏 O(n²) 出现在什么输入？如何用最大词长优化到 O(n·L)？（`s = "aaaa...a"` 且字典含大量 `a` 重复词时每次都扫描全部 `j`；内层只回看 `L = max(len(w))` 个字符即可。）
+- 字典含空字符串会有何影响？（空词可无限填充，语义无意义，实现前应过滤空词，否则 `s[j:i]` 为空也命中导致逻辑混乱。）

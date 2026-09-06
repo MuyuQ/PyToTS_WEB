@@ -9,78 +9,82 @@ description: 在有序数组中查找目标值的位置
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给定一个有序数组 `nums` 和目标值 `target`，返回目标值在数组中的索引。如果不存在，返回 -1。
+给定一个升序排列的整数数组 `nums` 和一个整数目标值 `target`，返回 `target` 在数组中的下标。若目标值不存在于数组中，返回 `-1`。
 
-## 思路引导
+**示例 1**
 
-**第一步：理解问题**
+```text
+输入：nums = [-1, 0, 3, 5, 9, 12], target = 9
+输出：4
+解释：nums[4] = 9，返回下标 4
+```
 
-- 输入：有序数组 + 目标值
-- 输出：目标值的索引（或 -1）
-- 关键线索：数组是有序的！
+**示例 2**
 
-**第二步：暴力解法**
-从头到尾遍历，逐个检查是否等于目标值。
+```text
+输入：nums = [-1, 0, 3, 5, 9, 12], target = 2
+输出：-1
+解释：数组中不存在 2，返回 -1
+```
+
+**约束条件**
+
+- `1 <= nums.length <= 10⁴`
+- `-10⁴ <= nums[i], target <= 10⁴`
+- `nums` 严格升序排列，不含重复元素
+
+**边界情况**：空数组直接返回 `-1`；单元素数组只需比较一次；目标值小于首元素或大于尾元素时，循环会自然收敛到空区间并返回 `-1`，无需特殊前置判断。
+
+## 暴力解与瓶颈
+
+最朴素的做法是从头到尾线性扫描：
 
 ```python
-# 暴力解法 O(n)
-for i in range(len(nums)):
-    if nums[i] == target:
-        return i
-return -1
+def linear_search(nums: list[int], target: int) -> int:
+    for i in range(len(nums)):
+        if nums[i] == target:
+            return i
+    return -1
 ```
 
-时间复杂度 O(n)，最坏要检查每个元素。有没有更快的方法？
+该写法完全没有利用"有序"这一前提，瓶颈在于每次只能排除一个元素，时间复杂度 O(n)。当 `n = 10⁶` 时，最坏需要比较一百万次。优化方向是利用有序性实现"每次排除一半"：比较区间中点，根据大小关系丢弃不可能存在解的那一半，将比较次数压缩到对数级别。
 
-**第三步：利用有序特性**
-数组有序意味着什么？看中间元素：
+## 思路分析
 
-- 如果中间值 < 目标值 → 目标一定在右半边（可以扔掉左半边）
-- 如果中间值 > 目标值 → 目标一定在左半边（可以扔掉右半边）
-- 每次排除一半元素！
+维护一个闭区间 `[left, right]` 表示目标值可能存在的范围。初始区间覆盖整个数组。每轮取中点 `mid`，比较 `nums[mid]` 与 `target`：相等则直接返回；中点值偏小则目标只可能在右半区间，令 `left = mid + 1`；中点值偏大则目标只可能在左半区间，令 `right = mid - 1`。区间为空（`left > right`）时说明不存在解。
 
-**第四步：得出算法**
-这就是二分查找：每次将搜索范围缩小一半。
+以 `nums = [-1, 0, 3, 5, 9, 12], target = 9` 为例：
 
-```
-[1, 2, 3, 4, 5, 6, 7, 8, 9]  找 7
-               ↑ 中间值 5
-5 < 7，目标在右边，扔掉左半边
+| 步骤 | `left` | `right` | `mid` | `nums[mid]` | 动作              |
+| ---- | ------ | ------- | ----- | ----------- | ----------------- |
+| 初始 | 0      | 5       | 2     | 3           | 3 < 9，左半可弃   |
+| 1    | 3      | 5       | 4     | 9           | 命中，返回 4      |
 
-        [6, 7, 8, 9]  剩下 4 个
-            ↑ 中间值 7
-7 == 7，找到了！
-```
+再看未命中情形 `target = 2` 的收敛过程：
 
-## 直观理解
+| 步骤 | `left` | `right` | `mid` | `nums[mid]` | 动作            |
+| ---- | ------ | ------- | ----- | ----------- | --------------- |
+| 初始 | 0      | 5       | 2     | 3           | 3 > 2，弃右半   |
+| 1    | 0      | 1       | 0     | -1          | -1 < 2，弃左半  |
+| 2    | 1      | 1       | 1     | 0           | 0 < 2，弃左半   |
+| 3    | 2      | 1       | —     | —           | 区间为空，返 -1 |
 
-二分查找就像玩"猜数字"游戏：
-
-- 我想一个 1-100 的数字，你每次猜一个数
-- 我告诉你"大了"还是"小了"
-- 你怎么猜最快？
-
-笨办法：从 1 开始猜 → 最坏要猜 100 次
-
-聪明的办法：每次猜中间值
-
-- 第一次猜 50，我说"大了"
-- 猜 25，我说"小了"
-- 猜 37，我说"大了"
-- 猜 31...
-- 每次排除一半，最多 7 次就能猜中！
-
-这就是 O(log n) 的威力：100 万个元素，最多查 20 次。
+:::tip
+关键细节是闭区间三件套：循环条件用 `left <= right`、中点用 `left + (right - left) // 2`、收缩用 `mid + 1` / `mid - 1`。三者必须配套，改动其一就要重新论证区间语义，否则极易漏检或死循环。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(log n)，每次将搜索范围减半
-- **空间复杂度**：O(1)，只使用两个指针
+| 解法     | 时间复杂度 | 空间复杂度 | 说明                         |
+| -------- | ---------- | ---------- | ---------------------------- |
+| 线性扫描 | O(n)       | O(1)       | 逐个比较，未利用有序性       |
+| 二分查找 | O(log n)   | O(1)       | 每轮区间减半，仅用两个指针   |
 
-对比暴力 O(n)：100 万个元素，暴力要 100 万次，二分只要 20 次！
+直观对比：`n = 10⁶` 时线性扫描最坏比较一百万次，二分查找最多约 20 次。代价是输入必须有序；若输入无序而先排序，总复杂度由排序主导，不再是 O(log n)。
 
 ## 双语实现
 
@@ -89,35 +93,35 @@ return -1
     ```python
     # 二分查找 - Python 实现
     # 时间复杂度: O(log n), 空间复杂度: O(1)
-    # 前提条件: 数组必须是有序的
+    # 核心思路: 闭区间 [left, right] 每轮减半
     def binary_search(nums: list[int], target: int) -> int:
-        # 初始化左右边界，闭区间 [left, right]
+        # 左右边界构成闭区间，覆盖整个数组
         left, right = 0, len(nums) - 1
-        
-        # 当 left <= right 时，搜索区间非空
-        # 注意: 必须用 <= 而不是 <，否则当 left==right 时会漏掉最后一个元素
+
+        # 区间非空时继续，<= 保证单元素区间仍被检查
         while left <= right:
-            # 计算中间位置: left + (right-left)//2 防止 left+right 溢出
-            # Python 整数不会溢出，但这是通用最佳实践
+            # 中点偏左写法，等价于 (left + right) // 2
+            # 且避免 left + right 在定长整数语言中溢出
             mid = left + (right - left) // 2
-            
-            # 找到目标值，返回索引
+
+            # 命中直接返回下标
             if nums[mid] == target:
                 return mid
-            # 中间值小于目标值，说明目标在右半区间
+            # 中点偏小，目标只可能在右半区间
             elif nums[mid] < target:
-                left = mid + 1   # left 移到 mid+1，排除 mid（已检查过）
-            # 中间值大于目标值，说明目标在左半区间
+                # mid 已检查过，排除在外
+                left = mid + 1
+            # 中点偏大，目标只可能在左半区间
             else:
-                right = mid - 1  # right 移到 mid-1，排除 mid（已检查过）
-        
-        # 搜索区间为空，未找到目标值
+                # mid 已检查过，排除在外
+                right = mid - 1
+
+        # 区间为空，未找到目标值
         return -1
 
     # 测试用例
-
-    print(binary_search([-1, 0, 3, 5, 9, 12], 9)) # 4, nums[4]=9
-    print(binary_search([-1, 0, 3, 5, 9, 12], 2)) # -1, 2 不在数组中
+    print(binary_search([-1, 0, 3, 5, 9, 12], 9))  # 4
+    print(binary_search([-1, 0, 3, 5, 9, 12], 2))  # -1
     ```
 
   </TabItem>
@@ -125,47 +129,122 @@ return -1
     ```typescript
     // 二分查找 - TypeScript 实现
     // 时间复杂度: O(log n), 空间复杂度: O(1)
-    // 前提条件: 数组必须是有序的
+    // 核心思路: 闭区间 [left, right] 每轮减半
     function binarySearch(nums: number[], target: number): number {
-    // 初始化左右边界，闭区间 [left, right]
-    let left = 0;
-    let right = nums.length - 1;
+      // 左右边界构成闭区间，覆盖整个数组
+      let left = 0;
+      let right = nums.length - 1;
 
-        // 当 left <= right 时，搜索区间非空
-        // 注意: 必须用 <= 而不是 <，否则当 left==right 时会漏掉最后一个元素
-        while (left <= right) {
-            // 计算中间位置: left + (right-left)/2 防止 left+right 溢出
-            // Math.floor 向下取整，确保 mid 是整数索引
-            const mid = left + Math.floor((right - left) / 2);
+      // 区间非空时继续，<= 保证单元素区间仍被检查
+      while (left <= right) {
+        // Math.floor 向下取整，保证下标为整数
+        // left + ... 写法避免 left + right 溢出
+        const mid = left + Math.floor((right - left) / 2);
 
-            // 找到目标值，返回索引
-            if (nums[mid] === target) {
-                return mid;
-            }
-            // 中间值小于目标值，说明目标在右半区间
-            else if (nums[mid] < target) {
-                left = mid + 1;   // left 移到 mid+1，排除 mid（已检查过）
-            }
-            // 中间值大于目标值，说明目标在左半区间
-            else {
-                right = mid - 1;  // right 移到 mid-1，排除 mid（已检查过）
-            }
+        // 命中直接返回下标
+        if (nums[mid] === target) {
+          return mid;
+        } else if (nums[mid] < target) {
+          // mid 已检查过，排除在外
+          left = mid + 1;
+        } else {
+          // mid 已检查过，排除在外
+          right = mid - 1;
         }
+      }
 
-        // 搜索区间为空，未找到目标值
-        return -1;
-
+      // 区间为空，未找到目标值
+      return -1;
     }
 
     // 测试用例
-    console.log(binarySearch([-1, 0, 3, 5, 9, 12], 9)); // 4, nums[4]=9
-    console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2)); // -1, 2 不在数组中
+    console.log(binarySearch([-1, 0, 3, 5, 9, 12], 9)); // 4
+    console.log(binarySearch([-1, 0, 3, 5, 9, 12], 2)); // -1
     ```
 
   </TabItem>
 </Tabs>
 
-## 互动练习
+## Python 与 TypeScript 差异点评
+
+两份实现区间语义完全一致，差异集中在整数除法与相等比较上：
+
+<CodeCompare
+  py={`# 中点计算：// 整数除法，结果天然是 int
+mid = left + (right - left) // 2
+if nums[mid] == target:
+    return mid`}
+  ts={`// 中点计算：/ 得浮点数，需 Math.floor 取整
+const mid = left + Math.floor((right - left) / 2);
+if (nums[mid] === target) {
+  return mid;
+}`}
+/>
+
+| 关注点   | Python                              | TypeScript                                      |
+| -------- | ----------------------------------- | ----------------------------------------------- |
+| 整数除法 | `//` 直接得整数下标                 | `/` 得浮点数，必须 `Math.floor` 包裹            |
+| 相等比较 | `==` 比较数值即可                   | 必须 `===`，避免 `==` 的隐式类型转换            |
+| 变量声明 | `left, right = 0, len(nums) - 1` 解包 | `let left` / `let right` 分开声明，可重新赋值  |
+| 中点类型 | 天然 `int`，可直接索引              | `mid` 为 `number`，取整后才能安全索引           |
+| 空数组   | `right = -1`，循环零次返 `-1`       | 同理 `right = -1`，循环零次返 `-1`              |
+| 输出测试 | `print(...)`                        | `console.log(...)`                              |
+
+:::note
+TypeScript 里 `Math.floor` 不可省略：`(right - left) / 2` 在奇数差时产生 `.5`，不取整会导致 `nums[2.5]` 为 `undefined`，比较恒为假，区间收缩停滞。
+:::
+
+## 常见错误分析
+
+### 1. 循环条件写成 `left < right`，漏检单元素区间
+
+```python
+# 错误：区间剩一个元素时直接退出
+while left < right:
+    ...
+```
+
+输入 `nums = [5], target = 5` 时，`left == right == 0`，循环体一次都不执行，直接返回 `-1`。**改法**：闭区间配套条件是 `left <= right`，保证最后一个候选仍被检查。
+
+### 2. 收缩写成 `left = mid` / `right = mid`，导致死循环
+
+```python
+# 错误：mid 已检查过却不排除
+if nums[mid] < target:
+    left = mid
+else:
+    right = mid
+```
+
+当区间剩两个元素且 `mid` 取到左端时，`left` 恒等于 `mid`，区间不再缩小，形成死循环。**改法**：已检查的 `mid` 必须排除，使用 `mid + 1` / `mid - 1`。
+
+### 3. TypeScript 里中点未取整或误用 `==`
+
+```typescript
+// 错误：strict 下逻辑错误，mid 可能是小数
+const mid = (left + right) / 2;
+if (nums[mid] == target) {
+  return mid;
+}
+```
+
+小数下标取值为 `undefined`，`undefined == target` 为假，程序退化为单侧收缩甚至越界。叠加 `==` 的隐式转换，`undefined == null` 等边缘行为更难排查。**改法**：固定写法 `left + Math.floor((right - left) / 2)` 配 `===`，属于可直接复用的模板。
+
+## 面试变体
+
+1. **查找插入位置**：目标不存在时返回其应插入的下标以维持升序。区间逻辑不变，循环结束时 `left` 恰为第一个大于 `target` 的位置，直接返回 `left`。时间 O(log n)、空间 O(1)。
+2. **查找左右边界**：数组含重复元素时，分别求第一个与最后一个等于 `target` 的下标。做法是两次变体二分：命中时不立即返回，而是继续向左（或向右）收缩。单次仍为时间 O(log n)、空间 O(1)，两次相加常数翻倍。
+3. **旋转排序数组查找**：数组在某处旋转后基本有序。思路是先判断哪一半有序，再判断 `target` 是否落在有序半内，决定丢弃哪一半。每次依然丢弃一半，复杂度保持时间 O(log n)、空间 O(1)，但分支条件翻倍，需用干跑表验证。
+4. **求平方根（向下取整）**：求 `x` 的整数平方根。把答案域 `[0, x]` 看成隐式有序数组，对候选值 `mid` 比较 `mid * mid` 与 `x`。时间 O(log x)、空间 O(1)，注意 `mid * mid` 在大整数下可能溢出，需用除法改写比较式。
+
+## 面试追问
+
+- 为什么中点推荐 `left + (right - left) // 2` 而不是 `(left + right) // 2`？（后者在定长整数语言中 `left + right` 可能溢出；Python 虽无此风险，但保持该写法可跨语言复用同一模板。）
+- 闭区间 `[left, right]` 与半开区间 `[left, right)` 的三件套有何不同？（半开区间配套的是 `left < right`、`right = len(nums)`、`right = mid`；要点在于循环条件、初始右界、收缩语句三者语义自洽，混用即错。）
+- 输入规模多大时 O(log n) 相对 O(n) 的差距开始显著？（`n = 10⁶` 时约 20 次对一百万次；追问可引出"有序是有代价的"，若需预排序则总复杂度由排序主导。）
+- 如何证明每次丢弃的一半确实不可能包含解？（依赖数组升序：`nums[mid] < target` 时，`mid` 左侧所有元素都不大于 `nums[mid]`，自然全部小于 `target`，可整体排除；另一侧对称。）
+
+## 巩固练习
 
 ### 练习 1：预测每一步
 
@@ -222,56 +301,3 @@ function binarySearch(nums: number[], target: number): number {
 **错误 2**：`(left + right) / 2` 可能溢出。当 `left` 和 `right` 都很大时，`left + right` 可能超出数字范围。正确写法：`left + Math.floor((right - left) / 2)`
 
 </details>
-
-## 常见错误详解
-
-### 错误 1：mid 计算溢出
-
-```typescript
-// 错误写法 - 大数可能溢出
-const mid = Math.floor((left + right) / 2);
-
-// 正确写法 - 防止溢出
-const mid = left + Math.floor((right - left) / 2);
-```
-
-**为什么？** 当 `left` 和 `right` 都接近 `Number.MAX_SAFE_INTEGER` 时，`left + right` 可能溢出变成负数，导致计算错误。
-
-### 错误 2：循环条件错误
-
-```typescript
-// 错误：会漏掉最后一个元素
-while (left < right)
-
-// 正确：包含 left == right 的情况
-while (left <= right)
-```
-
-**为什么？** 当目标值在数组最后位置时，`left == right`，但 `left < right` 不满足，循环提前退出。
-
-### 错误 3：指针更新错误
-
-```typescript
-// 错误：可能死循环
-left = mid;
-right = mid;
-
-// 正确：排除已检查的元素
-left = mid + 1;
-right = mid - 1;
-```
-
-**为什么？** 如果 `left = mid` 且只剩两个元素，`mid` 永远是左边的那个，`left` 永远不会变，死循环！
-
-## 记忆口诀
-
-- **循环条件**：`<=` 不是 `<`（要检查最后一个）
-- **mid 计算**：`left + (right - left) / 2`（防止溢出）
-- **指针更新**：`mid + 1` 或 `mid - 1`（排除已检查的）
-
-## 面试变体
-
-1. **查找插入位置**：如果不存在，返回应该插入的位置
-2. **查找左右边界**：找到第一个等于目标的位置和最后一个等于目标的位置
-3. **旋转数组查找**：数组在某个位置旋转过，如何查找？
-4. **平方根**：不用 `Math.sqrt`，用二分查找求平方根

@@ -9,121 +9,144 @@ description: 找出数组中最长严格递增子序列的长度
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给你一个整数数组 `nums`，找到其中最长严格递增子序列的长度。
+给你一个整数数组 `nums`，找到其中最长严格递增子序列的长度。子序列允许删除元素但不得改变剩余元素的相对顺序，严格递增要求后一项必须大于前一项。
 
-子序列是由数组派生而来的序列，删除（或不删除）数组中的元素而不改变其余元素的顺序。
+**示例 1**
+
+```text
+输入：nums = [10, 9, 2, 5, 3, 7, 101, 18]
+输出：4
+解释：子序列 [2, 3, 7, 101] 长度为 4
+```
+
+**示例 2**
+
+```text
+输入：nums = [0, 1, 0, 3, 2, 3]
+输出：4
+解释：子序列 [0, 1, 2, 3] 长度为 4
+```
+
+**约束条件**
+
+- `1 <= nums.length <= 2500`
+- `-10⁴ <= nums[i] <= 10⁴`
+
+**边界情况**：空数组返回 `0`；全递减时返回 `1`；存在相等元素时相等不能接续，`[7, 7, 7]` 的答案为 `1` 而非 `3`。注意 `tails` 数组本身不一定是合法子序列，其长度才是答案。
+
+## 暴力解与瓶颈
+
+朴素 DP 以每个位置为结尾向前扫描：
+
+```python
+def lis_brute(nums: list[int]) -> int:
+    if not nums:
+        return 0
+    dp = [1] * len(nums)
+    for i in range(len(nums)):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = max(dp[i], dp[j] + 1)
+    return max(dp)
+```
+
+内层循环为每个 `i` 扫描全部 `j < i`，时间复杂度 O(n²)。当 `n = 2500` 时约 300 万次比较，尚可接受但非最优。瓶颈在于"在前缀中找小于当前值的最优长度"被线性扫描实现。优化方向是用有序结构维护各长度的最小末尾，将线性查找压缩为二分查找。
 
 ## 思路分析
 
-方法一：动态规划 O(n²)
+耐心排序思想。维护 `tails` 数组，`tails[k]` 表示长度为 `k+1` 的递增子序列的最小可能末尾。`tails` 天然递增，因此每个新数 `num` 可用二分找到第一个 `>= num` 的位置 `idx`：若 `idx` 等于长度则追加，否则替换该位置。二分保证严格递增语义，替换操作让同长度的末尾尽可能小。
 
-- `dp[i]`：以第 i 个元素结尾的最长递增子序列长度
-- 状态转移：`dp[i] = max(dp[j] + 1)` 对于所有 `j < i` 且 `nums[j] < nums[i]`
+以 `nums = [10, 9, 2, 5, 3, 7]` 为例：
 
-方法二：二分查找优化 O(n log n)
+| 当前 `num` | 二分位置 | `tails` 变化 | 说明 |
+| ---------- | -------- | ------------ | ---- |
+| 10 | 0 | `[10]` | 空表直接追加 |
+| 9 | 0 | `[9]` | 替换更小的末尾 |
+| 2 | 0 | `[2]` | 替换更小的末尾 |
+| 5 | 1 | `[2, 5]` | 大于全部末尾，长度加一 |
+| 3 | 1 | `[2, 3]` | 长度 2 的末尾从 5 优化为 3 |
+| 7 | 2 | `[2, 3, 7]` | 长度加一，答案为 3 |
 
-- 维护一个数组 `tails`，`tails[i]` 表示长度为 i+1 的递增子序列的最小末尾元素
-- 用二分查找确定每个元素应该放的位置
+:::tip
+关键细节是使用下界（第一个 `>= num`）而非上界。`bisect_left` 把相等元素替换到原位，保证相等不能接续；若误用 `bisect_right`，`[7, 7, 7]` 会被算成长度 3。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n log n)，二分查找优化
-- **空间复杂度**：O(n)，dp数组或tails数组
+| 解法         | 时间复杂度 | 空间复杂度 | 说明                           |
+| ------------ | ---------- | ---------- | ------------------------------ |
+| 前缀 DP      | O(n²)      | O(n)       | 每个位置向前扫描全部前缀       |
+| 二分 + tails | O(n log n) | O(n)       | 每个元素一次二分，表长不超过 n |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 最长递增子序列 - 二分查找优化 (Patience Sorting)
-    # 算法: Longest Increasing Subsequence (LIS)
-    # 时间复杂度: O(n log n), 每个元素二分查找 O(log n)
-    # 空间复杂度: O(n), tails数组最多存储n个元素
+    # 最长递增子序列 - Python 实现
+    # 时间复杂度: O(n log n), 空间复杂度: O(n)
+    # 核心思路: tails[k] 为长度 k+1 的最小可能末尾
     import bisect
 
     def length_of_lis(nums: list[int]) -> int:
-        # tails数组：tails[i] 表示长度为 i+1 的递增子序列的最小末尾元素
-        # 该数组天然有序（递增），可以使用二分查找
-        tails = []  # 初始为空数组
+        # tails 天然递增，可用二分查找定位
+        tails: list[int] = []
 
-        # 遍历原数组中的每个数字
         for num in nums:
-            # bisect_left: 在tails中找到第一个 >= num 的位置索引
-            # 这个位置就是 num 应该插入的地方
+            # bisect_left 找第一个 >= num 的位置
             idx = bisect.bisect_left(tails, num)
-
-            # 如果 idx 等于 tails 长度，说明 num 比所有末尾元素都大
-            # 可以接在最长递增子序列后面，增加子序列长度
             if idx == len(tails):
-                tails.append(num)  # 新增一个更长的递增子序列
+                # 大于全部末尾，子序列长度加一
+                tails.append(num)
             else:
-                # 否则，用 num 替换 tails[idx]
-                # 目的：保持长度为 idx+1 的递增子序列的末尾元素尽可能小
-                # 这样后续有更大机会接上更长的子序列
+                # 替换同长度的末尾，使其尽可能小
                 tails[idx] = num
 
-        # tails 的长度就是最长递增子序列的长度
-        # 注意：tails 本身不一定是最长递增子序列，但长度一定正确
         return len(tails)
 
     # 测试用例
-
-    print(length_of_lis([10, 9, 2, 5, 3, 7, 101, 18])) # 4 ([2,3,7,101] 或 [2,5,7,101] 等)
-    print(length_of_lis([0, 1, 0, 3, 2, 3])) # 4 ([0,1,2,3])
-    print(length_of_lis([7, 7, 7, 7, 7, 7, 7])) # 1 (严格递增，相同元素不能接)
+    print(length_of_lis([10, 9, 2, 5, 3, 7, 101, 18]))  # 4
+    print(length_of_lis([0, 1, 0, 3, 2, 3]))  # 4
+    print(length_of_lis([7, 7, 7, 7, 7, 7, 7]))  # 1
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 最长递增子序列 - 二分查找优化 (Patience Sorting)
-    // 算法: Longest Increasing Subsequence (LIS)
-    // 时间复杂度: O(n log n), 每个元素二分查找 O(log n)
-    // 空间复杂度: O(n), tails数组最多存储n个元素
-
+    // 最长递增子序列 - TypeScript 实现
+    // 时间复杂度: O(n log n), 空间复杂度: O(n)
+    // 核心思路: tails[k] 为长度 k+1 的最小可能末尾
     function lengthOfLIS(nums: number[]): number {
-        // tails数组：tails[i] 表示长度为 i+1 的递增子序列的最小末尾元素
-        // 该数组天然有序（递增），可以使用二分查找
-        const tails: number[] = [];  // 初始为空数组
+      // tails 天然递增，可用二分查找定位
+      const tails: number[] = [];
 
-        // 遍历原数组中的每个数字
-        for (const num of nums) {
-            // 手动实现二分查找：找到第一个 >= num 的位置
-            let left = 0;  // 左边界
-            let right = tails.length;  // 右边界（开区间）
-
-            // 二分查找循环
-            while (left < right) {
-                const mid = Math.floor((left + right) / 2);  // 计算中间位置
-
-                // 如果 tails[mid] < num，说明 num 应该在右半部分
-                if (tails[mid] < num) {
-                    left = mid + 1;  // 收缩左边界
-                } else {
-                    // 否则 num 应该在左半部分（包括 mid）
-                    right = mid;  // 收缩右边界
-                }
-            }
-
-            // 如果 left 等于 tails 长度，说明 num 比所有末尾元素都大
-            // 可以接在最长递增子序列后面，增加子序列长度
-            if (left === tails.length) {
-                tails.push(num);  // 新增一个更长的递增子序列
-            } else {
-                // 否则，用 num 替换 tails[left]
-                // 目的：保持长度为 left+1 的递增子序列的末尾元素尽可能小
-                // 这样后续有更大机会接上更长的子序列
-                tails[left] = num;
-            }
+      for (const num of nums) {
+        // 手写下界二分：找第一个 >= num 的位置
+        let left = 0;
+        let right = tails.length;
+        while (left < right) {
+          const mid = Math.floor((left + right) / 2);
+          if (tails[mid] < num) {
+            left = mid + 1;
+          } else {
+            right = mid;
+          }
         }
 
-        // tails 的长度就是最长递增子序列的长度
-        // 注意：tails 本身不一定是最长递增子序列，但长度一定正确
-        return tails.length;
+        if (left === tails.length) {
+          // 大于全部末尾，子序列长度加一
+          tails.push(num);
+        } else {
+          // 替换同长度的末尾，使其尽可能小
+          tails[left] = num;
+        }
+      }
 
+      return tails.length;
     }
 
     // 测试用例
@@ -135,14 +158,85 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+两份代码算法一致，差异集中在二分查找的标准库支持上：
+
+<CodeCompare
+  py={`# 标准库直接求下界位置
+import bisect
+idx = bisect.bisect_left(tails, num)`}
+  ts={`// 手写左闭右开二分求下界位置
+let left = 0;
+let right = tails.length;
+while (left < right) {
+  const mid = Math.floor((left + right) / 2);
+  if (tails[mid] < num) {
+    left = mid + 1;
+  } else {
+    right = mid;
+  }
+}`}
+/>
+
+| 关注点   | Python                                         | TypeScript                                      |
+| -------- | ---------------------------------------------- | ----------------------------------------------- |
+| 二分实现 | `bisect.bisect_left` 一行求下界                | 无内置下界函数，需手写左闭右开二分              |
+| 相等语义 | `bisect_left` 对应严格递增，`right` 对应非递减 | `tails[mid] < num` 收缩左界即等价于 `left` 语义 |
+| 数组操作 | `append` 追加，`tails[idx] = num` 替换         | `push` 追加，`tails[left] = num` 替换           |
+| 类型注解 | `list[int]`                                    | `number[]`                                      |
+| 循环写法 | `for num in nums` 直接取值                     | `for (const num of nums)` 直接取值              |
+| 输出测试 | `print(...)`                                   | `console.log(...)`                              |
+
+:::note
+TypeScript 二分必须保持"左闭右开 + `mid` 向下取整 + 收缩不漏解"三件套。`tails[mid]` 在 `strict` 下若开启越界检查，`mid` 恒小于 `tails.length`，访问安全；不要为此滥用非空断言。
+:::
+
+## 常见错误分析
+
+### 1. 用 `bisect_right` 处理相等元素
+
+```python
+# 错误：相等元素会被接续
+idx = bisect.bisect_right(tails, num)
+```
+
+输入 `[7, 7, 7]` 会得到长度 `3`，违反严格递增。**改法**：使用 `bisect_left`，TypeScript 手写二分时条件保持 `tails[mid] < num` 左移，否则右缩。
+
+### 2. 误把 `tails` 当作答案子序列返回
+
+```python
+# 错误：tails 不一定是原数组的子序列
+return tails
+```
+
+`tails` 只是各长度的最小末尾拼盘，替换操作可能破坏原始顺序。只能返回 `len(tails)`；若需具体子序列，应另用前驱指针回溯 O(n²) DP。
+
+### 3. TypeScript 二分边界写错
+
+```typescript
+// 错误：闭区间写法配错收缩条件会导致死循环或越界
+let right = tails.length - 1;
+while (left <= right) {
+  const mid = Math.floor((left + right) / 2);
+  if (tails[mid] < num) {
+    left = mid; // 未 +1，可能停滞
+  } else {
+    right = mid - 1;
+  }
+}
+```
+
+左闭右开是心智负担最小的模板：`right = tails.length`、`while (left < right)`、`left = mid + 1 / right = mid`。模板一旦选定不应中途混用。
+
 ## 面试变体
 
-1. **具体子序列**：不只返回长度，还要返回具体子序列
-2. **最长递减子序列**：找最长递减子序列
-3. **摆动序列**：找最长摆动子序列（交替增减）
+1. **返回具体子序列**：除长度外还要恢复一条最长递增子序列。需回退到 O(n²) DP 并记录每个位置的前驱，结束后从最优结尾回溯。时间 O(n²)、空间 O(n)。
+2. **非递减版本**：允许相等接续。Python 改用 `bisect_right`，TypeScript 把二分条件改为 `tails[mid] <= num` 时左移。时间仍为 O(n log n)。
+3. **二维偏序**：信封嵌套等问题先按一维排序、另一维求 LIS。排序后退化为本问题，但第一维相等时第二维需降序排列以避免同组内接续。时间 O(n log n)。序列类 DP 的另一典型可参考[最长公共子序列](../longest-common-subsequence/)。
 
-## 常见错误
+## 面试追问
 
-1. 使用 `bisect_right` 而不是 `bisect_left`
-2. 忘记处理相等元素（严格递增 vs 非递减）
-3. 二分查找边界条件写错
+- 为什么 `tails` 一定递增？替换操作会破坏有序性吗？（替换的是下界位置，新值小于原值且仍大于前一项，有序性保持。）
+- `tails` 的长度为什么等于答案？（追加只发生在可接续时，替换不改变长度，长度恰好记录历史最长。）
+- O(n²) DP 还能求什么而二分法求不了？（前驱回溯恢复具体子序列、计数不同最优解个数等，二分法丢失了位置信息。）
