@@ -44,8 +44,8 @@ if (isAlgorithm) {
     getAlgorithmNeighbours(route),
     getSimilarAlgorithms(route),
   ]);
-  prev = (neighbours.prev as PaginationLink) ?? undefined;
-  next = (neighbours.next as PaginationLink) ?? undefined;
+  prev = neighbours.prev;
+  next = neighbours.next;
   prevLabel = "上一题";
   nextLabel = "下一题";
   peers = similar;
@@ -53,8 +53,8 @@ if (isAlgorithm) {
   const neighbours = await getLessonNeighbours(route);
   // 只在路径内确实找到邻居时覆盖，避免把普通页面的默认分页清空
   if (neighbours.prev || neighbours.next) {
-    prev = (neighbours.prev as PaginationLink) ?? undefined;
-    next = (neighbours.next as PaginationLink) ?? undefined;
+    prev = neighbours.prev;
+    next = neighbours.next;
     prevLabel = "上一课";
     nextLabel = "下一课";
   }

@@ -10,6 +10,7 @@
 
 import { getCollection, type CollectionEntry } from "astro:content";
 import { neighbourLesson, parseLessonRoute, DIFFICULTY_ORDER, type TrackId } from "./curriculum";
+import { docRoute } from "./doc-id";
 
 export interface Neighbour {
   href: string;
@@ -20,8 +21,7 @@ const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 
 /** entry.id → 站内路由（与 Starlight 生成的路由一致） */
 function routeFromId(id: string): string {
-  const slug = id.replace(/\.(mdx|md)$/, "").replace(/(^|\/)index$/, "");
-  return `/${slug}/`;
+  return docRoute(id);
 }
 
 function withBase(route: string): string {
@@ -98,7 +98,7 @@ function algorithmEntries(): Promise<AlgorithmEntry[]> {
       )
       .sort((a, b) => {
         const rank = (entry: CollectionEntry<"docs">) => {
-          const index = DIFFICULTY_ORDER.indexOf(entry.data.difficulty as never);
+          const index = DIFFICULTY_ORDER.findIndex((d) => d === entry.data.difficulty);
           return index === -1 ? DIFFICULTY_ORDER.length : index;
         };
         return rank(a) - rank(b) || a.data.title.localeCompare(b.data.title, "zh-Hans-CN");

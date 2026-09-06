@@ -76,15 +76,29 @@ describe("quiz data contract", () => {
     }
   });
 
-  it("预测题选项遵循【预期:…】编码协议（quiz-ui 据此解析加粗预测输出）", () => {
+  it("预测题选项用结构化 expected 字段（渲染器按字段渲染，不再解析文本协议）", () => {
     for (const id of quizIds()) {
       for (const question of QUIZZES[id]) {
         if (question.questionType !== "prediction") continue;
         for (const option of question.options) {
           expect(
-            option.text.includes("【预期:"),
-            `测验 ${id} 预测题选项缺「【预期:」标记：${option.text.slice(0, 24)}…`
+            typeof option.expected === "string" && option.expected.length > 0,
+            `测验 ${id} 预测题选项缺 expected 字段：${option.text.slice(0, 24)}…`
           ).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("普通题选项不得携带 expected 字段（预测协议只允许存在于预测题）", () => {
+    for (const id of quizIds()) {
+      for (const question of QUIZZES[id]) {
+        if (question.questionType === "prediction") continue;
+        for (const option of question.options) {
+          expect(
+            option.expected,
+            `测验 ${id} 普通题选项混入 expected 字段：${option.text.slice(0, 24)}…`
+          ).toBeUndefined();
         }
       }
     }

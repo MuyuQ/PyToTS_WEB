@@ -61,7 +61,9 @@ export default defineConfig({
           },
         },
         {
-          // 主题底色提前落地，避免首帧白闪。颜色取自 tokens.css 的语义令牌。
+          // 主题底色提前落地，避免首帧白闪。必须内联（首帧前执行）。
+          // DARK/LIGHT 是 tokens.css 的 --surface-page 字面值快照——tokens.css
+          // 改底色时这里必须同步（404 页走构建期抽取，没有这个维护点）。
           tag: "script",
           attrs: { "is:inline": true },
           content: `

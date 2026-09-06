@@ -80,8 +80,9 @@ description: 简短描述（50字内）
 8. `## 面试变体` - 每条含思路 + 复杂度变化，相关站内题用相对链接互链（相对页面 URL，如 `../3sum/`）
 9. `## 面试追问` - 2-4 个追问及答案要点
 
-标题禁 emoji；内链用相对路径；短小相邻双语对照（≤20 行）用 `CodeCompare`
-（`import CodeCompare from '../../../components/CodeCompare.astro'`）；
+标题禁 emoji；内链用相对路径；短小相邻双语对照（≤20 行、单行 ≤48 字符，超限由
+`npm run lint:content` 强制）用 `CodeCompare`
+（`import CodeCompare from "../../../components/CodeCompare.astro"`）；
 所有代码必须本地运行通过（Python 用 `python3`，TS 用
 `npx tsc --strict --target es2020 --module commonjs --types node` + `node`）。
 

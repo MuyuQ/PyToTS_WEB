@@ -156,14 +156,17 @@ def coin_change_brute(coins: list[int], amount: int) -> int:
 
 两份代码递推结构完全一致，差异集中在"无穷大"与数组初始化的表达上：
 
-<CodeCompare
-  py={`# 无穷大初始化与收尾判断
+```python
+# 无穷大初始化与收尾判断
 dp: list[float] = [float('inf')] * (amount + 1)
-return -1 if dp[amount] == float('inf') else int(dp[amount])`}
-  ts={`// Infinity 初始化与收尾判断
+return -1 if dp[amount] == float('inf') else int(dp[amount])
+```
+
+```typescript
+// Infinity 初始化与收尾判断
 const dp: number[] = new Array(amount + 1).fill(Infinity);
-return dp[amount] === Infinity ? -1 : dp[amount];`}
-/>
+return dp[amount] === Infinity ? -1 : dp[amount];
+```
 
 | 关注点     | Python                                  | TypeScript                                  |
 | ---------- | --------------------------------------- | ------------------------------------------- |

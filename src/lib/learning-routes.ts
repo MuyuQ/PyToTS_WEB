@@ -6,6 +6,7 @@
  */
 import { getCollection } from "astro:content";
 import { allLessonRoutes } from "./curriculum";
+import { docRoute } from "./doc-id";
 
 export interface LearningRoute {
   /** 不带 base 的站内路由，如 /paths/foundation/variables/ */
@@ -16,8 +17,7 @@ export interface LearningRoute {
 
 /** entry.id 保留扩展名（paths/foundation/variables.mdx），归一为路由 */
 export function routeOfId(id: string): string {
-  const slug = id.replace(/\.(mdx|md)$/, "").replace(/(^|\/)index$/, "");
-  return slug ? `/${slug}/` : "/";
+  return docRoute(id);
 }
 
 /**

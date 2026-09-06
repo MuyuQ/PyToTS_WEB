@@ -1,7 +1,13 @@
 export interface QuizOption {
+  /**
+   * 普通题：选项全文。
+   * 预测题：输出的文字说明（与 expected 搭配渲染为「预测输出: X - 说明」）。
+   */
   text: string;
   correct: boolean;
   explanation: string;
+  /** 预测题专用：预期输出值。存在时 quiz-ui 渲染为强调输出，替代旧「【预期:x】y」文本协议 */
+  expected?: string;
 }
 
 export interface QuizQuestion {
