@@ -1,5 +1,11 @@
 /// <reference path="../.astro/types.d.ts" />
 
+declare module "virtual:starlight/user-config" {
+  import type { StarlightConfig } from "@astrojs/starlight/types";
+  const config: StarlightConfig;
+  export default config;
+}
+
 declare module "virtual:starlight/components/SiteTitle" {
   import type { AstroComponentFactory } from "astro/runtime/server";
   const SiteTitle: AstroComponentFactory;

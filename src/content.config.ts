@@ -1,4 +1,5 @@
 import { defineCollection } from "astro:content";
+import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { docsSchema } from "@astrojs/starlight/schema";
 
@@ -18,37 +19,37 @@ const learningMetadataSchema = z
   .superRefine((value, ctx) => {
     if (value.kind === "lesson") {
       if (!value.level) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "lesson requires level" });
+        ctx.addIssue({ code: "custom", message: "lesson requires level" });
       }
       if (!value.topic) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "lesson requires topic" });
+        ctx.addIssue({ code: "custom", message: "lesson requires topic" });
       }
       if (!value.difficulty) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "lesson requires difficulty" });
+        ctx.addIssue({ code: "custom", message: "lesson requires difficulty" });
       }
       if (!value.prerequisites) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "lesson requires prerequisites" });
+        ctx.addIssue({ code: "custom", message: "lesson requires prerequisites" });
       }
       if (!value.python_tags) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "lesson requires python_tags" });
+        ctx.addIssue({ code: "custom", message: "lesson requires python_tags" });
       }
       if (!value.ts_tags) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "lesson requires ts_tags" });
+        ctx.addIssue({ code: "custom", message: "lesson requires ts_tags" });
       }
     }
 
     if (value.kind === "algorithm") {
       if (!value.difficulty) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "algorithm requires difficulty" });
+        ctx.addIssue({ code: "custom", message: "algorithm requires difficulty" });
       }
       if (!value.tags) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: "algorithm requires tags" });
+        ctx.addIssue({ code: "custom", message: "algorithm requires tags" });
       }
     }
   });
 
 const docs = defineCollection({
-  type: "content",
+  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs" }),
   schema: docsSchema({
     extend: learningMetadataSchema,
   }),

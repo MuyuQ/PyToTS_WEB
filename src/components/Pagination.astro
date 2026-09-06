@@ -7,6 +7,7 @@
  *   算法 → 难度递进顺序（见 lib/neighbours.ts）
  * 其余页面回落到 Starlight 默认（侧边栏顺序）。
  */
+import type { StarlightRouteData } from "@astrojs/starlight/route-data";
 import {
   getLessonNeighbours,
   getAlgorithmNeighbours,
@@ -19,22 +20,16 @@ interface PaginationLink {
   label: string;
 }
 
-interface Props {
-  dir: "ltr" | "rtl";
-  pagination: {
-    prev: PaginationLink | undefined;
-    next: PaginationLink | undefined;
-  };
-}
-
-const { dir, pagination } = Astro.props as Props;
-const { prev: defaultPrev, next: defaultNext } = pagination;
+// Starlight 0.32+：覆盖组件从 Astro.locals.starlightRoute 取路由数据（props 已废弃）
+const { dir, pagination } = Astro.locals.starlightRoute as StarlightRouteData;
+const { prev: defaultPrev, next: defaultNext } = pagination ?? {};
 
 const route = stripBase(Astro.url.pathname);
 const isAlgorithm = route.startsWith("/algorithms/") && route !== "/algorithms/";
 
-let prev = defaultPrev;
-let next = defaultNext;
+// 显式收窄为本组件实际使用的字段（starlight 的 SidebarLink 结构更宽）
+let prev: PaginationLink | undefined = defaultPrev;
+let next: PaginationLink | undefined = defaultNext;
 let prevLabel = "上一页";
 let nextLabel = "下一页";
 let peers: { href: string; label: string }[] = [];
