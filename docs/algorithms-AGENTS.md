@@ -68,15 +68,22 @@ description: 简短描述（50字内）
 ---
 ```
 
-## REQUIRED SECTIONS
+## REQUIRED SECTIONS（加厚模板，以 two-sum.mdx 为范本）
 
-1. `## 问题描述` - LeetCode 风格描述
-2. `## 思路分析` - 算法思路
-3. `## 复杂度分析` - 时间/空间复杂度
-4. `## Python 实现` - 完整代码
-5. `## TypeScript 实现` - 完整代码
-6. `## 面试变体` - 常见追问
-7. `## 常见错误` - 易错点
+1. `## 问题描述` - LeetCode 风格描述 + 2 个示例 I/O + 约束条件列表 + 边界情况段
+2. `## 暴力解与瓶颈` - 朴素解法短代码 + 瓶颈分析 + 优化方向（一句话）
+3. `## 思路分析` - 最优解算法思路 + 干跑表（主示例逐步走查）+ `:::tip` 点关键细节
+4. `## 复杂度分析` - 暴力 vs 最优对照表（时间/空间/说明）
+5. `## 双语实现` - Tabs（`syncKey="language"`）完整 Python/TypeScript 实现 + 测试用例
+6. `## Python 与 TypeScript 差异点评` - `CodeCompare` 短对照 + 差异表（数据结构/API/类型/遍历/输出）
+7. `## 常见错误分析` - 每个错误配错误代码 + 为什么错 + 改法（含 TS strict 专属坑）
+8. `## 面试变体` - 每条含思路 + 复杂度变化，相关站内题用相对链接互链（相对页面 URL，如 `../3sum/`）
+9. `## 面试追问` - 2-4 个追问及答案要点
+
+标题禁 emoji；内链用相对路径；短小相邻双语对照（≤20 行）用 `CodeCompare`
+（`import CodeCompare from '../../../components/CodeCompare.astro'`）；
+所有代码必须本地运行通过（Python 用 `python3`，TS 用
+`npx tsc --strict --target es2020 --module commonjs --types node` + `node`）。
 
 ## CODE STYLE
 
