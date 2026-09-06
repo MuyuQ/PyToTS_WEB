@@ -656,6 +656,17 @@ declare module "string-utils" {
 
 </details>
 
+## 自测清单
+
+- [ ] 能为无类型 JS 库编写 `.d.ts` 声明文件并用 `declare module` 导出
+- [ ] 能配置 `tsconfig.json` 核心选项并解释 `target`/`module`/`moduleResolution` 作用
+- [ ] 能用 `declare module` 扩展第三方库类型（如 Express Request）
+- [ ] 能解释声明合并机制并避免同名属性类型冲突
+- [ ] 能设置 `baseUrl`/`paths` 路径别名并配合打包工具解析
+- [ ] 能用 `typeRoots`/`types` 控制类型声明查找优先级
+- [ ] 能排查声明文件不生效、路径别名运行时错误、lib 缺失等常见问题
+- [ ] 能区分 `strict: true` 与手动开启各子选项的差异
+
 ## 面试追问
 
 1. **`.d.ts` 文件会被编译到输出目录吗？**
