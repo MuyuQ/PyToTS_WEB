@@ -9,261 +9,215 @@ description: 生成数组的所有子集，回溯与位运算两种解法
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给定一个整数数组 `nums`，数组中的元素**互不相同**。返回该数组所有可能的子集（幂集）。
+给定一个整数数组 `nums`，数组中的元素**互不相同**。返回该数组所有可能的子集（幂集）。解集不能包含重复子集，可以按任意顺序返回。
 
-**要求**：解集不能包含重复的子集，可以按任意顺序返回。
+**示例 1**
 
-**示例**：
+```text
+输入：nums = [1, 2, 3]
+输出：[[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]
+解释：3 个元素共 2^3 = 8 个子集。
+```
 
-- 输入：`nums = [1, 2, 3]`
-- 输出：`[[], [1], [2], [1, 2], [3], [1, 3], [2, 3], [1, 2, 3]]`
+**示例 2**
+
+```text
+输入：nums = [0]
+输出：[[], [0]]
+解释：单元素数组只有空集和自身。
+```
+
+**约束条件**
+
+- `1 <= nums.length <= 10`
+- `-10 <= nums[i] <= 10`
+- `nums` 中所有元素互不相同
+
+**边界情况**：单元素数组只有两个子集；`n = 10` 时子集总数为 1024，输出规模本身决定了复杂度下界；空集永远是合法子集之一，结果初始化不能遗漏。
+
+## 暴力解与瓶颈
+
+朴素想法是按长度分层枚举：对 `k = 0..n` 分别求所有 C(n, k) 组合再合并：
+
+```python
+from itertools import combinations
+
+def subsets_brute(nums: list[int]) -> list[list[int]]:
+    result: list[list[int]] = []
+    for k in range(len(nums) + 1):
+        for combo in combinations(nums, k):
+            result.append(list(combo))
+    return result
+```
+
+该写法依赖库函数，面试中通常不被接受，且分层枚举割裂了决策过程：每一层重复切分数组，构造开销大。瓶颈在于**没有复用已选前缀**，每次组合都从头构造。优化方向是回溯：沿着"选或不选"的决策树一次下探，用 `path` 复用前缀，每个递归节点直接收集为答案。
 
 ## 思路分析
 
-### 方法一：回溯
+最优解采用回溯。`backtrack(start, path)` 表示从下标 `start` 开始考虑，`path` 为当前已选元素。每个递归状态都是合法子集，先收集再向后扩展，保证不重不漏。
 
-子集问题本质是在每个元素前做**选择**：选或不选。回溯法通过递归遍历决策树：
+以 `nums = [1, 2]` 为例：
 
-1. 从第一个元素开始，依次考虑每个位置
-2. 对于当前位置，有两种选择：加入子集 或 不加入
-3. 递归处理下一个位置
-4. 当遍历完所有元素时，收集当前路径作为一个子集
+| 步骤 | 调用状态          | 收集结果 | 说明                     |
+| ---- | ----------------- | -------- | ------------------------ |
+| 1    | `start=0, path=[]`  | `[]`     | 空集先收集               |
+| 2    | 选 1，`path=[1]`    | `[1]`    | 从 1 出发继续扩展        |
+| 3    | 选 2，`path=[1,2]`  | `[1, 2]` | 到达末尾，回溯           |
+| 4    | 回溯后 `path=[1]`   | —        | 1 的分支结束             |
+| 5    | 选 2，`path=[2]`    | `[2]`    | 外层循环的第二个分支     |
 
-关键点：子集问题不需要终止条件判断，每个递归状态都是一个有效子集。
-
-### 方法二：迭代
-
-从空集开始，依次考虑每个元素：
-
-1. 初始时结果集只包含空集 `[[]]`
-2. 对于每个新元素，将现有所有子集复制一份，并加入该元素
-3. 将新子集合并到结果集中
-
-例如 `[1, 2]`：
-
-- 初始：`[[]]`
-- 加入 1：`[[], [1]]`
-- 加入 2：`[[], [1], [2], [1, 2]]`
-
-### 方法三：位运算
-
-n 个元素的子集数恰为 2^n，可以用 n 位二进制数表示：
-
-- 第 i 位为 1 表示选择 nums[i]
-- 第 i 位为 0 表示不选择
-
-遍历 0 到 2^n - 1，每个数字对应一个子集。
+:::tip
+关键细节有两处：收集时用 `path[:]` 拷贝，否则后续 `pop` 会污染已保存答案；递归传 `i + 1` 而非 `i`，保证每个元素只考虑一次且不走回头路。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n × 2^n)，共 2^n 个子集，每个子集平均 O(n) 时间构造
-- **空间复杂度**：O(n)，递归栈深度或临时数组长度（不计结果集）
+| 解法         | 时间复杂度   | 空间复杂度 | 说明                           |
+| ------------ | ------------ | ---------- | ------------------------------ |
+| 分层组合枚举 | O(n × 2ⁿ)    | O(n)       | 依赖库，重复构造组合           |
+| 回溯         | O(n × 2ⁿ)    | O(n)       | 决策树共 2ⁿ 节点，每节点拷贝 O(n) |
+| 迭代增量扩展 | O(n × 2ⁿ)    | O(n)       | 从 `[[]]` 出发逐元素翻倍       |
+| 位掩码枚举   | O(n × 2ⁿ)    | O(n)       | 掩码位表示选否，常数较小       |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 子集 (幂集) - 三种实现方法
-    # 时间复杂度: O(n × 2^n), 空间复杂度: O(n)
-    # n 为数组长度, 共 2^n 个子集
+    # 子集 - Python 实现（回溯）
+    # 时间复杂度: O(n x 2^n), 空间复杂度: O(n)
+    # 核心思路: 每个递归状态即一个子集，先收集再扩展
+    def subsets(nums: list[int]) -> list[list[int]]:
+        result: list[list[int]] = []
+        n = len(nums)
 
-    from typing import List
+        def backtrack(start: int, path: list[int]) -> None:
+            # 每个状态都是合法子集，先拷贝收集
+            result.append(path[:])
 
-    # === 方法一: 回溯法 ===
-
-    def subsets_backtrack(nums: List[int]) -> List[List[int]]: # result: 存储所有子集
-    result = [] # n: 数组长度
-    n = len(nums)
-
-        def backtrack(start: int, path: List[int]) -> None:
-            # start: 当前考虑的起始位置 (避免重复选择)
-            # path: 当前已选择的元素
-            # 每个递归状态都是一个有效子集, 立即收集
-            result.append(path[:])  # 注意: 必须拷贝, 否则后续 pop 会影响已保存的结果
-
-            # 从 start 开始遍历剩余元素
+            # 从 start 向后选择，避免重复与回头
             for i in range(start, n):
-                # 选择: 将 nums[i] 加入子集
+                # 选择 nums[i]
                 path.append(nums[i])
-                # 递归: 从 i+1 开始继续选择 (不能回头, 避免重复)
+                # 从 i + 1 继续
                 backtrack(i + 1, path)
-                # 撤销: 移除最后加入的元素 (回溯)
+                # 撤销选择
                 path.pop()
 
-        # 从位置 0、空路径开始回溯
         backtrack(0, [])
         return result
 
-    # === 方法二: 迭代法 ===
-
-    def subsets_iterative(nums: List[int]) -> List[List[int]]: # result: 初始只包含空集
-    result = [[]]
-
-        # 依次考虑每个元素
-        for num in nums:
-            # 对每个现有子集, 添加当前元素生成新子集
-            new_subsets = []
-            for subset in result:
-                # 拷贝原子集并添加当前元素
-                new_subsets.append(subset + [num])
-            # 将新生成的子集合并到结果中
-            result.extend(new_subsets)
-
-        return result
-
-    # === 方法三: 位运算法 ===
-
-    def subsets_bitmask(nums: List[int]) -> List[List[int]]: # n: 数组长度
-    n = len(nums) # result: 存储所有子集
-    result = []
-
-        # 遍历所有可能的掩码: 0 到 2^n - 1
-        # 每个掩码的二进制位表示对应元素是否被选中
-        for mask in range(1 << n):  # 1 << n 等于 2^n
-            subset = []
-            # 检查掩码的每一位
-            for i in range(n):
-                # 如果第 i 位为 1, 说明选择 nums[i]
-                # mask & (1 << i): 将 1 左移 i 位后与 mask 做按位与
-                if mask & (1 << i):
-                    subset.append(nums[i])
-            # 将生成的子集加入结果
-            result.append(subset)
-
-        return result
-
     # 测试用例
-
-    nums = [1, 2, 3]
-
-    # 三种方法都应输出 8 个子集 (2^3 = 8)
-
-    print("回溯法:", subsets_backtrack(nums))
-    print("迭代法:", subsets_iterative(nums))
-    print("位运算:", subsets_bitmask(nums))
-
-    # 验证结果数量
-
-    print(f"子集总数: {len(subsets_backtrack(nums))}") # 输出: 8 = 2^3
+    print(subsets([1, 2, 3]))  # 8 个子集
+    print(subsets([0]))  # [[], [0]]
+    print(len(subsets([1, 2, 3])))  # 8 = 2^3
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 子集 (幂集) - 三种实现方法
-    // 时间复杂度: O(n × 2^n), 空间复杂度: O(n)
-    // n 为数组长度, 共 2^n 个子集
+    // 子集 - TypeScript 实现（回溯）
+    // 时间复杂度: O(n x 2^n), 空间复杂度: O(n)
+    // 核心思路: 每个递归状态即一个子集，先收集再扩展
+    function subsets(nums: number[]): number[][] {
+      const result: number[][] = [];
+      const n = nums.length;
 
-    // === 方法一: 回溯法 ===
-    function subsetsBacktrack(nums: number[]): number[][] {
-    // result: 存储所有子集
-    const result: number[][] = [];
-    // n: 数组长度
-    const n = nums.length;
+      function backtrack(start: number, path: number[]): void {
+        // 每个状态都是合法子集，先拷贝收集
+        result.push([...path]);
 
-        function backtrack(start: number, path: number[]): void {
-            // start: 当前考虑的起始位置 (避免重复选择)
-            // path: 当前已选择的元素
-            // 每个递归状态都是一个有效子集, 立即收集
-            result.push([...path]); // 注意: 必须拷贝, 否则后续 pop 会影响已保存的结果
-
-            // 从 start 开始遍历剩余元素
-            for (let i = start; i < n; i++) {
-                // 选择: 将 nums[i] 加入子集
-                path.push(nums[i]);
-                // 递归: 从 i+1 开始继续选择 (不能回头, 避免重复)
-                backtrack(i + 1, path);
-                // 撤销: 移除最后加入的元素 (回溯)
-                path.pop();
-            }
+        // 从 start 向后选择，避免重复与回头
+        for (let i = start; i < n; i++) {
+          // 选择 nums[i]
+          path.push(nums[i]);
+          // 从 i + 1 继续
+          backtrack(i + 1, path);
+          // 撤销选择
+          path.pop();
         }
+      }
 
-        // 从位置 0、空路径开始回溯
-        backtrack(0, []);
-        return result;
-
-    }
-
-    // === 方法二: 迭代法 ===
-    function subsetsIterative(nums: number[]): number[][] {
-    // result: 初始只包含空集
-    const result: number[][] = [[]];
-
-        // 依次考虑每个元素
-        for (const num of nums) {
-            // 对每个现有子集, 添加当前元素生成新子集
-            const newSubsets: number[][] = [];
-            for (const subset of result) {
-                // 拷贝原子集并添加当前元素
-                newSubsets.push([...subset, num]);
-            }
-            // 将新生成的子集合并到结果中
-            result.push(...newSubsets);
-        }
-
-        return result;
-
-    }
-
-    // === 方法三: 位运算法 ===
-    function subsetsBitmask(nums: number[]): number[][] {
-    // n: 数组长度
-    const n = nums.length;
-    // result: 存储所有子集
-    const result: number[][] = [];
-
-        // 遍历所有可能的掩码: 0 到 2^n - 1
-        // 每个掩码的二进制位表示对应元素是否被选中
-        for (let mask = 0; mask < 1 << n; mask++) {
-            // 1 << n 等于 2^n
-            const subset: number[] = [];
-            // 检查掩码的每一位
-            for (let i = 0; i < n; i++) {
-                // 如果第 i 位为 1, 说明选择 nums[i]
-                // mask & (1 << i): 将 1 左移 i 位后与 mask 做按位与
-                if (mask & (1 << i)) {
-                    subset.push(nums[i]);
-                }
-            }
-            // 将生成的子集加入结果
-            result.push(subset);
-        }
-
-        return result;
-
+      backtrack(0, []);
+      return result;
     }
 
     // 测试用例
-    const nums = [1, 2, 3];
-
-    // 三种方法都应输出 8 个子集 (2^3 = 8)
-    console.log("回溯法:", subsetsBacktrack(nums));
-    console.log("迭代法:", subsetsIterative(nums));
-    console.log("位运算:", subsetsBitmask(nums));
-
-    // 验证结果数量
-    console.log(\`子集总数: \${subsetsBacktrack(nums).length}\`); // 输出: 8 = 2^3
+    console.log(subsets([1, 2, 3])); // 8 个子集
+    console.log(subsets([0])); // [[], [0]]
+    console.log(subsets([1, 2, 3]).length); // 8 = 2^3
     ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+回溯框架逐行对应，差异在拷贝与类型写法上：
+
+<CodeCompare
+  py={`# 拷贝收集，避免引用污染
+result.append(path[:])`}
+  ts={`// 拷贝收集，避免引用污染
+result.push([...path]);`}
+/>
+
+| 关注点   | Python                          | TypeScript                              |
+| -------- | ------------------------------- | --------------------------------------- |
+| 结果类型 | `list[list[int]]`               | `number[][]`，泛型嵌套写法              |
+| 拷贝收集 | `path[:]` 切片拷贝              | `[...path]` 展开拷贝，心智一致          |
+| 追加元素 | `path.append(nums[i])`          | `path.push(nums[i])`                    |
+| 撤销选择 | `path.pop()`                    | `path.pop()`，同名同语义                |
+| 嵌套函数 | 闭包直接修改外层 `result`       | 闭包直接修改外层 `result`，行为一致     |
+| 变量声明 | `result = []`，类型靠注解       | `const result: number[][] = []`         |
+| 输出测试 | `print(...)`                    | `console.log(...)`                      |
+
+:::note
+两种语言的数组都是引用类型，不拷贝就会出现"结果全是空数组"的经典 bug。切片与展开只是语法不同，目的都是快照当前路径。
+:::
+
+## 常见错误分析
+
+### 1. 收集引用而非快照
+
+```python
+# 错误：保存的是引用，后续 pop 会清空已存答案
+result.append(path)
+```
+
+所有条目指向同一个列表对象，最终全为空。**改法**：`result.append(path[:])`，对应 TS 的 `result.push([...path])`。
+
+### 2. 起始位置传错导致重复选择
+
+```python
+# 错误：从 i 而不是 i + 1 继续，同一元素可重复选
+backtrack(i, path)
+```
+
+输入 `[1, 2]` 会产生 `[1, 1]` 等非法子集。**改法**：递归传 `i + 1`，保证下标单调递增。
+
+### 3. TypeScript 里结果类型写成 `any[]`
+
+```typescript
+// 错误：失去类型检查，strict 形同虚设
+const result: any[] = [];
+```
+
+后续 `push` 任何形状都不会报错。**改法**：明确写 `number[][]`，让编译器拦截 `push(num)` 这类少一层的错误。Python 侧对应约束是注解写全 `list[list[int]]`。
+
 ## 面试变体
 
-1. **子集 II**：数组包含重复元素，返回不重复的子集（需要先排序，跳过重复元素）
-2. **组合**：从 n 个数中选 k 个的组合（在子集基础上限制长度）
-3. **排列**：全排列（交换法或标记法）
-4. **字母大小写全排列**：字符串中字母可变大写或小写
-5. **递增子序列**：找出所有递增子序列
+1. **子集 II（含重复元素）**：先排序，同一层跳过 `nums[i] === nums[i - 1]` 且 `i > start` 的元素。时间仍 O(n × 2ⁿ)、空间 O(n)，排序增加 O(n log n) 预处理。
+2. **组合（k 个数之和）**：在回溯上加长度限制 `path.length === k` 才收集，并用剩余元素剪枝。时间 O(C(n, k) × k)、空间 O(k)。
+3. **全排列**：子集关心"选哪些"，排列关心"什么顺序"（详见[全排列](../permutations/)）。排列需 `used` 数组标记，时间 O(n × n!)、空间 O(n)，复杂度量级完全不同。
 
-## 常见错误
+## 面试追问
 
-1. **忘记拷贝**：`result.append(path)` 而不是 `result.append(path[:])`，导致结果全为空
-2. **起始位置错误**：`backtrack(i, path)` 而不是 `backtrack(i + 1, path)`，导致重复选择
-3. **位运算优先级**：`mask & 1 << i` 应写成 `mask & (1 << i)`
-4. **迭代法数组引用**：直接修改正在遍历的数组，应使用临时数组收集新子集
-5. **重复元素未处理**：子集 II 中忘记排序和跳过重复元素
+- 为什么子集总数是 2ⁿ？（每个元素独立地选或不选，乘法原理得到 2ⁿ，答案要点是决策树每层翻倍。）
+- 为何无需显式终止条件？（每个节点都是答案，循环自然耗尽即回溯到底，无需长度判断。）
+- 位掩码与回溯如何选择？（n 较小时掩码简洁，n 较大或需剪枝时回溯更灵活。）
+- 含重复元素时去重条件为何是 `i > start`？（只跳过同层重复，保留跨层合法选择，避免误删。）

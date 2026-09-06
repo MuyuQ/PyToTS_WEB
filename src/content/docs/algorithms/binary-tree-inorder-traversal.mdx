@@ -9,97 +9,132 @@ description: 二叉树中序遍历的递归与迭代实现
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给定一个二叉树的根节点 `root`，返回它的**中序**遍历结果。
+给定一个二叉树的根节点 `root`，返回它的**中序**遍历结果。中序遍历顺序为**左 -> 根 -> 右**。
 
-中序遍历顺序：**左 -> 根 -> 右**
+**示例 1**
+
+```text
+输入：root = [1, null, 2, 3]
+输出：[1, 3, 2]
+解释：树形为 1 右连 2，2 左连 3，中序先访问 1，再进入右子树得到 3、2。
+```
+
+**示例 2**
+
+```text
+输入：root = []
+输出：[]
+解释：空树没有节点，直接返回空数组。
+```
+
+**约束条件**
+
+- 树中节点数目范围是 `[0, 100]`
+- `-100 <= Node.val <= 100`
+- 输入以层序数组形式给出，`null` 表示缺失子节点
+
+**边界情况**：空树返回空数组；单节点树返回单个值；退化成链表的树（全部只有左孩子或右孩子）依然适用同一套逻辑，递归深度此时达到 O(n)，迭代版本行为一致。
+
+## 暴力解与瓶颈
+
+最直观的写法是递归，逻辑与定义一一对应：
+
+```python
+def inorder_brute(root):
+    result = []
+    def dfs(node):
+        if not node:
+            return
+        dfs(node.left)
+        result.append(node.val)
+        dfs(node.right)
+    dfs(root)
+    return result
+```
+
+这份代码本身已经是 O(n)，称其为"暴力"是因为它把一切交给调用栈：每次递归调用都有函数开销，链式退化树会导致递归深度达到 n，在 Python 中容易触及默认递归上限。瓶颈不在时间，而在**调用栈空间与可控性**。优化方向是**显式栈模拟递归**：自己维护 `stack` 与 `current` 指针，把隐式调用栈变成可观察的数据结构，为后续 O(1) 空间 Morris 遍历打基础。
 
 ## 思路分析
 
-### 方法一：递归
+最优解采用显式栈迭代：先一路向左把节点压栈，栈顶即当前最小节点；弹出访问后转向右子树，重复该过程。每个节点恰好入栈出栈一次。
 
-- 递归遍历左子树
-- 访问根节点
-- 递归遍历右子树
+以 `root = [1, null, 2, 3]` 为例（1 右连 2，2 左连 3）：
 
-### 方法二：迭代（栈）
+| 步骤 | `current` | 栈内容    | 动作             | `result`  |
+| ---- | --------- | --------- | ---------------- | --------- |
+| 1    | 1         | `[]`      | 1 入栈，左移     | `[]`      |
+| 2    | null      | `[1]`     | 弹 1，访问 1     | `[1]`     |
+| 3    | 2         | `[]`      | 2 入栈，左移     | `[1]`     |
+| 4    | 3         | `[2]`     | 3 入栈，左移     | `[1]`     |
+| 5    | null      | `[2, 3]`  | 弹 3，访问 3     | `[1, 3]`  |
+| 6    | null      | `[2]`     | 弹 2，访问 2     | `[1, 3, 2]` |
 
-- 使用栈模拟递归过程
-- 一直向左走，将所有左节点入栈
-- 出栈访问节点，然后处理右子树
+:::tip
+关键细节是循环条件 `while current or stack`：`current` 负责向下走，`stack` 负责回溯。只写一边会提前退出；弹出后必须转向 `current.right`，否则右子树被跳过。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n)，每个节点访问一次
-- **空间复杂度**：O(n)，递归栈或显式栈
+| 解法     | 时间复杂度 | 空间复杂度 | 说明                             |
+| -------- | ---------- | ---------- | -------------------------------- |
+| 递归基准 | O(n)       | O(n)       | 代码最短，依赖调用栈，最坏退化 O(n) |
+| 显式栈迭代 | O(n)     | O(n)       | 每个节点入栈出栈一次，栈深度最坏 O(n) |
+| Morris   | O(n)       | O(1)       | 利用空闲指针，需临时改树再恢复   |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
+    # 二叉树中序遍历 - Python 实现
+    # 时间复杂度: O(n), 空间复杂度: O(n)
+    # 核心思路: 递归对应定义，迭代用显式栈模拟
     from typing import Optional, List
 
     class TreeNode:
-        """二叉树节点"""
+        # 二叉树节点，val/left/right 与 TS 保持一致
         def __init__(self, val=0, left=None, right=None):
             self.val = val
             self.left = left
             self.right = right
 
-    def inorder_traversal_recursive(root: Optional[TreeNode]) -> List[int]:
-        """
-        中序遍历 - 递归实现
-
-        Args:
-            root: 二叉树根节点
-
-        Returns:
-            中序遍历结果
-        """
-        result = []
+    def inorder_recursive(root: Optional[TreeNode]) -> List[int]:
+        # 递归版本：左 -> 根 -> 右
+        result: List[int] = []
 
         def dfs(node: Optional[TreeNode]) -> None:
+            # 空节点是递归出口
             if not node:
                 return
-            dfs(node.left)           # 左
-            result.append(node.val)  # 根
-            dfs(node.right)          # 右
+            dfs(node.left)
+            result.append(node.val)
+            dfs(node.right)
 
         dfs(root)
         return result
 
-    def inorder_traversal_iterative(root: Optional[TreeNode]) -> List[int]:
-        """
-        中序遍历 - 迭代实现（栈）
-
-        Args:
-            root: 二叉树根节点
-
-        Returns:
-            中序遍历结果
-        """
-        result = []
-        stack = []
+    def inorder_iterative(root: Optional[TreeNode]) -> List[int]:
+        # 迭代版本：显式栈模拟递归
+        result: List[int] = []
+        stack: List[TreeNode] = []
         current = root
 
+        # current 负责下探，stack 负责回溯
         while current or stack:
-            # 一直向左走
+            # 一路向左，全部入栈
             while current:
                 stack.append(current)
                 current = current.left
-
-            # 出栈访问
+            # 弹出访问，转向右子树
             current = stack.pop()
             result.append(current.val)
-
-            # 转向右子树
             current = current.right
 
         return result
-
 
     # 测试用例
     #     1
@@ -112,74 +147,65 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
     root.right = TreeNode(3)
     root.left.left = TreeNode(4)
     root.left.right = TreeNode(5)
-
-    print(inorder_traversal_recursive(root))   # [4, 2, 5, 1, 3]
-    print(inorder_traversal_iterative(root))   # [4, 2, 5, 1, 3]
+    print(inorder_recursive(root))  # [4, 2, 5, 1, 3]
+    print(inorder_iterative(root))  # [4, 2, 5, 1, 3]
+    print(inorder_recursive(None))  # []
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    /**
-     * 二叉树节点
-     */
+    // 二叉树中序遍历 - TypeScript 实现
+    // 时间复杂度: O(n), 空间复杂度: O(n)
+    // 核心思路: 递归对应定义，迭代用显式栈模拟
     class TreeNode {
-        val: number;
-        left: TreeNode | null;
-        right: TreeNode | null;
+      val: number;
+      left: TreeNode | null;
+      right: TreeNode | null;
 
-        constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
-            this.val = val ?? 0;
-            this.left = left ?? null;
-            this.right = right ?? null;
-        }
+      constructor(val?: number, left?: TreeNode | null, right?: TreeNode | null) {
+        this.val = val ?? 0;
+        this.left = left ?? null;
+        this.right = right ?? null;
+      }
     }
 
-    /**
-     * 中序遍历 - 递归实现
-     * @param root 二叉树根节点
-     * @returns 中序遍历结果
-     */
-    function inorderTraversalRecursive(root: TreeNode | null): number[] {
-        const result: number[] = [];
+    function inorderRecursive(root: TreeNode | null): number[] {
+      // 递归版本：左 -> 根 -> 右
+      const result: number[] = [];
 
-        function dfs(node: TreeNode | null): void {
-            if (!node) return;
-            dfs(node.left);           // 左
-            result.push(node.val);    // 根
-            dfs(node.right);          // 右
-        }
+      function dfs(node: TreeNode | null): void {
+        // 空节点是递归出口
+        if (!node) return;
+        dfs(node.left);
+        result.push(node.val);
+        dfs(node.right);
+      }
 
-        dfs(root);
-        return result;
+      dfs(root);
+      return result;
     }
 
-    /**
-     * 中序遍历 - 迭代实现（栈）
-     * @param root 二叉树根节点
-     * @returns 中序遍历结果
-     */
-    function inorderTraversalIterative(root: TreeNode | null): number[] {
-        const result: number[] = [];
-        const stack: TreeNode[] = [];
-        let current: TreeNode | null = root;
+    function inorderIterative(root: TreeNode | null): number[] {
+      // 迭代版本：显式栈模拟递归
+      const result: number[] = [];
+      const stack: TreeNode[] = [];
+      let current: TreeNode | null = root;
 
-        while (current || stack.length > 0) {
-            // 一直向左走
-            while (current) {
-                stack.push(current);
-                current = current.left;
-            }
-
-            // 出栈访问
-            current = stack.pop()!;
-            result.push(current.val);
-
-            // 转向右子树
-            current = current.right;
+      // current 负责下探，stack 负责回溯
+      while (current || stack.length > 0) {
+        // 一路向左，全部入栈
+        while (current) {
+          stack.push(current);
+          current = current.left;
         }
+        // 弹出访问，转向右子树
+        current = stack.pop()!;
+        result.push(current.val);
+        current = current.right;
+      }
 
-        return result;
+      return result;
     }
 
     // 测试用例
@@ -188,30 +214,85 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
     //   2   3
     //  / \
     // 4   5
-    const root = new TreeNode(1);
-    root.left = new TreeNode(2);
-    root.right = new TreeNode(3);
-    root.left.left = new TreeNode(4);
-    root.left.right = new TreeNode(5);
-
-    console.log(inorderTraversalRecursive(root));   // [4, 2, 5, 1, 3]
-    console.log(inorderTraversalIterative(root));   // [4, 2, 5, 1, 3]
+    const root = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+    console.log(inorderRecursive(root)); // [4, 2, 5, 1, 3]
+    console.log(inorderIterative(root)); // [4, 2, 5, 1, 3]
+    console.log(inorderRecursive(null)); // []
     ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+两份代码结构完全一致，差异集中在空值表达与集合 API 上：
+
+<CodeCompare
+  py={`# 判空：None 即假值
+if not node:
+    return`}
+  ts={`// 判空：null 即假值
+if (!node) return;`}
+/>
+
+| 关注点   | Python                              | TypeScript                                      |
+| -------- | ----------------------------------- | ----------------------------------------------- |
+| 节点类型 | `Optional[TreeNode]`                | `TreeNode \| null`，语义一一对应                |
+| 空值判断 | `if not node`                       | `if (!node)`，写法几乎一致                     |
+| 结果收集 | `result.append(node.val)`           | `result.push(node.val)`，方法名不同             |
+| 显式栈   | `stack: List[TreeNode]`，`pop()`    | `stack: TreeNode[]`，`pop()` 返回可空需断言     |
+| 弹栈断言 | `pop()` 空栈抛异常，无类型负担      | `pop()` 返回 `TreeNode \| undefined`，用 `!` 断言 |
+| 可选构造 | `__init__` 默认参数                 | 构造器 `??` 合并默认值                          |
+| 输出测试 | `print(...)`                        | `console.log(...)`                              |
+
+:::note
+`stack.pop()!` 的 `!` 有依据：循环条件保证进入弹出分支时栈非空。strict 模式下 `pop()` 类型带 `undefined`，不断言则编译不通过。
+:::
+
+## 常见错误分析
+
+### 1. 递归遗漏空节点出口
+
+```python
+# 错误：缺少出口，None 会继续下探
+def dfs(node):
+    dfs(node.left)  # node 为 None 时直接崩溃
+```
+
+访问 `None.left` 会抛 `AttributeError`。**改法**：函数首行保留 `if not node: return`，所有递归共用同一出口。
+
+### 2. 迭代循环条件少写一半
+
+```python
+# 错误：只看 current，左链走完就退出
+while current:
+    while current:
+        stack.append(current)
+        current = current.left
+```
+
+左子树处理完后 `current` 为 `None`，即使栈中还有节点也会直接退出，右子树丢失。**改法**：条件写全 `while current or stack`，对应 TS 的 `while (current || stack.length > 0)`。
+
+### 3. TypeScript 里忽略 `pop()` 的 `undefined`
+
+```typescript
+// 错误：strict 下编译不通过
+const node = stack.pop();
+result.push(node.val); // node 可能是 undefined
+```
+
+`Array.pop()` 返回 `T | undefined`。**改法**：循环已保证非空时用 `stack.pop()!`，或者先判空再使用。Python 无此负担，空栈 `pop()` 直接抛异常，属于运行时错误而非编译期检查。
+
 ## 面试变体
 
-1. **Morris遍历**：O(1)空间复杂度的中序遍历，利用空闲指针
-2. **前序/后序遍历**：改变访问顺序即可
-3. **第K小的元素**：结合中序遍历（BST中序是有序的）
-4. **验证BST**：中序遍历应该产生有序序列
-5. **二叉搜索树迭代器**：用栈实现惰性遍历
+1. **前序与后序遍历**：把访问语句分别移到两次递归之前或之后即可，迭代版需调整入栈顺序。后序迭代最易错，常借助双栈或逆序技巧。时间 O(n)、空间 O(n)，复杂度不变。
+2. **二叉搜索树第 K 小元素**：BST 中序结果有序，遍历到第 K 个即停，无需存全量数组，时间 O(h + k)、空间 O(h)。中序提前终止是关键优化。
+3. **验证二叉搜索树**：中序应严格递增（详见[验证二叉搜索树](../validate-bst/)）。递归中序 + 上一个值比较即可，时间 O(n)、空间 O(n)，迭代版可做到边遍历边校验。
+4. **Morris 中序遍历**：利用叶子空闲指针建立临时回路，空间降到 O(1)，时间仍 O(n)。代价是需要恢复树结构，面试时说清适用场景即可。
 
-## 常见错误
+## 面试追问
 
-1. 递归时忘记处理空节点
-2. 迭代时栈的弹出顺序错误
-3. 混淆前序、中序、后序的访问时机
-4. Morris遍历时修改了树的结构忘记恢复
+- 为什么 BST 的中序遍历有序？（左子树全小于根，右子树全大于根，中序恰好按从小到大访问，答案要点落在 BST 定义与遍历顺序的对应关系。）
+- 递归最坏空间何时达到 O(n)？（链式退化树，每层调用栈都不释放；平衡树则为 O(log n)。）
+- 迭代版为何弹出后必须转向右孩子？（栈只保存了回溯路径，右子树尚未访问，不转向则右子树整体丢失。）
+- Morris 如何做到 O(1) 空间？（复用空右指针指向前驱，遍历完再断开恢复，用时间换空间。）

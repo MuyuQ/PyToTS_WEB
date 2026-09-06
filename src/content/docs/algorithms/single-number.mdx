@@ -9,57 +9,80 @@ description: 给定非空数组，除一个元素外其余均出现两次，找�
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
-## 问题描述 (LeetCode 136)
+## 问题描述
 
-给定一个非空整数数组 `nums`，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现一次的元素。
+给定一个非空整数数组 `nums`，除了某个元素只出现一次以外，其余每个元素均出现两次。找出那个只出现一次的元素。要求线性时间复杂度，且不使用额外空间。
 
-**要求**：线性时间复杂度，不使用额外空间。
+**示例 1**
 
-**示例**：
-
+```text
+输入：nums = [2, 2, 1]
+输出：1
+解释：2 出现两次相互抵消，只剩 1。
 ```
-输入: nums = [2, 2, 1]
-输出: 1
 
-输入: nums = [4, 1, 2, 1, 2]
-输出: 4
+**示例 2**
 
-输入: nums = [1]
-输出: 1
+```text
+输入：nums = [4, 1, 2, 1, 2]
+输出：4
+解释：1 和 2 各出现两次抵消，只剩 4。
 ```
+
+**约束条件**
+
+- `1 <= nums.length <= 3 * 10⁴`
+- `-3 * 10⁴ <= nums[i] <= 3 * 10⁴`
+- 除答案外每个元素恰好出现两次
+- 题目保证恰好存在一个只出现一次的元素
+
+**边界情况**：数组长度为 1 时答案即该元素；答案为 0 或负数时依然成立，因为异或与符号无关；大规模输入下仍只需常数额外空间。
+
+## 暴力解与瓶颈
+
+朴素想法是用哈希表计数：
+
+```python
+def single_number_brute(nums: list[int]) -> int:
+    count: dict[int, int] = {}
+    for num in nums:
+        count[num] = count.get(num, 0) + 1
+    for num, freq in count.items():
+        if freq == 1:
+            return num
+    return -1
+```
+
+逻辑直白，但存了 n 个键，空间 O(n)，不满足题目要求。排序后扫描可把空间降下来，时间却升到 O(n log n)。瓶颈在于**计数结构保存了不需要的频率信息**，而题目只关心"出现奇偶性"。优化方向是寻找一种满足 `a ^ a = 0`、`a ^ 0 = a` 的运算，把抵消过程压缩到单个变量中。
 
 ## 思路分析
 
-### 核心思路：异或运算 (XOR)
+最优解对全数组做异或。异或满足交换律与结合律，出现两次的数无论位置如何都会配对成 0，最后剩下只出现一次的数。
 
-异或运算有以下关键性质：
+以 `nums = [4, 1, 2, 1, 2]` 为例：
 
-1. **任何数和 0 异或，结果仍然是原来的数**：`a ^ 0 = a`
-2. **任何数和自身异或，结果是 0**：`a ^ a = 0`
-3. **异或运算满足交换律和结合律**：`a ^ b ^ a = (a ^ a) ^ b = 0 ^ b = b`
+| 步骤 | `num` | 运算过程        | `result` |
+| ---- | ----- | --------------- | -------- |
+| 初始 | —     | `result = 0`    | `0`      |
+| 1    | 4     | `0 ^ 4`         | `4`      |
+| 2    | 1     | `4 ^ 1`         | `5`      |
+| 3    | 2     | `5 ^ 2`         | `7`      |
+| 4    | 1     | `7 ^ 1 = 4 ^ 2` | `6`      |
+| 5    | 2     | `6 ^ 2`         | `4`      |
 
-基于这些性质，对数组所有元素进行异或运算：
-
-- 出现两次的元素会相互抵消变成 0
-- 最终结果就是只出现一次的那个元素
-
-### 为什么这行得通？
-
-```
-数组: [4, 1, 2, 1, 2]
-
-异或过程:
-4 ^ 1 ^ 2 ^ 1 ^ 2
-= 4 ^ (1 ^ 1) ^ (2 ^ 2)    // 交换律、结合律
-= 4 ^ 0 ^ 0                 // 相同数异或为 0
-= 4                         // 任何数与 0 异或为自身
-```
+:::tip
+关键细节是 `result` 初始化为 0：0 是异或的单位元，`a ^ 0 = a`，因此初始值不会污染答案。顺序不影响结果，这正是交换律与结合律的直接应用。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n)，只需遍历一次数组
-- **空间复杂度**：O(1)，只使用一个变量存储结果
+| 解法       | 时间复杂度 | 空间复杂度 | 说明                       |
+| ---------- | ---------- | ---------- | -------------------------- |
+| 哈希表计数 | O(n)       | O(n)       | 两次遍历，直观但空间超标   |
+| 排序后扫描 | O(n log n) | O(1)       | 相邻比较，需修改或复制数组 |
+| 异或一次遍历 | O(n)     | O(1)       | 单变量累积，满足题目双重要求 |
 
 ## 双语实现
 
@@ -68,35 +91,24 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
     ```python
     # 只出现一次的数字 - Python 实现
     # 时间复杂度: O(n), 空间复杂度: O(1)
-    # 核心思路: 利用异或运算(XOR)的性质
-    # 性质1: a ^ 0 = a (任何数与0异或等于自身)
-    # 性质2: a ^ a = 0 (任何数与自身异或等于0)
-    # 性质3: 异或满足交换律和结合律，所以顺序不影响结果
+    # 核心思路: 全数组异或，成对元素抵消为 0
     def single_number(nums: list[int]) -> int:
-        # 初始化为0，因为0是异或的单位元
-        # 任何数 ^ 0 = 任何数，不会影响结果
+        # result 初始化为 0，0 是异或单位元
         result = 0
-        
-        # 遍历数组，对所有元素进行异或
-        # 出现两次的数会相互抵消(a ^ a = 0)
-        # 最终只剩下出现一次的那个数
+
+        # 遍历一次，累积异或
         for num in nums:
-            result ^= num  # ^= 是异或赋值运算符
-        
-        # 循环结束后，result 就是只出现一次的元素
+            # ^= 为异或赋值，a ^ a = 0
+            result ^= num
+
+        # 循环结束即为只出现一次的元素
         return result
 
     # 测试用例
-
-    print(single_number([2, 2, 1])) # 1: 2^2=0, 0^1=1
-    print(single_number([4, 1, 2, 1, 2])) # 4: 4^1^2^1^2 = 4^(1^1)^(2^2) = 4^0^0 = 4
-    print(single_number([1])) # 1: 只有一个元素
-
-    # 验证异或性质
-
-    print(5 ^ 5) # 0: 相同数异或为0
-    print(5 ^ 0) # 5: 与0异或保持不变
-    print(3 ^ 4 ^ 3) # 4: 交换律 3^3^4 = 0^4 = 4
+    print(single_number([2, 2, 1]))  # 1
+    print(single_number([4, 1, 2, 1, 2]))  # 4
+    print(single_number([1]))  # 1
+    print(single_number([-1, -1, -2]))  # -2
     ```
 
   </TabItem>
@@ -104,160 +116,100 @@ import { Tabs, TabItem } from "@astrojs/starlight/components";
     ```typescript
     // 只出现一次的数字 - TypeScript 实现
     // 时间复杂度: O(n), 空间复杂度: O(1)
-    // 核心思路: 利用异或运算(XOR)的性质
-    // 性质1: a ^ 0 = a (任何数与0异或等于自身)
-    // 性质2: a ^ a = 0 (任何数与自身异或等于0)
-    // 性质3: 异或满足交换律和结合律，所以顺序不影响结果
+    // 核心思路: 全数组异或，成对元素抵消为 0
     function singleNumber(nums: number[]): number {
-    // 初始化为0，因为0是异或的单位元
-    // 任何数 ^ 0 = 任何数，不会影响结果
-    let result = 0;
+      // result 初始化为 0，0 是异或单位元
+      let result = 0;
 
-        // 遍历数组，对所有元素进行异或
-        // for...of 直接遍历元素值，不需要索引
-        // 出现两次的数会相互抵消(a ^ a = 0)
-        // 最终只剩下出现一次的那个数
-        for (const num of nums) {
-            result ^= num; // ^= 是异或赋值运算符
-        }
+      // 遍历一次，累积异或
+      for (const num of nums) {
+        // ^= 为异或赋值，a ^ a = 0
+        result ^= num;
+      }
 
-        // 循环结束后，result 就是只出现一次的元素
-        return result;
-
+      // 循环结束即为只出现一次的元素
+      return result;
     }
 
     // 测试用例
-    console.log(singleNumber([2, 2, 1])); // 1: 2^2=0, 0^1=1
-    console.log(singleNumber([4, 1, 2, 1, 2])); // 4: 4^1^2^1^2 = 4^(1^1)^(2^2) = 4^0^0 = 4
-    console.log(singleNumber([1])); // 1: 只有一个元素
-
-    // 验证异或性质
-    console.log(5 ^ 5); // 0: 相同数异或为0
-    console.log(5 ^ 0); // 5: 与0异或保持不变
-    console.log(3 ^ 4 ^ 3); // 4: 交换律 3^3^4 = 0^4 = 4
+    console.log(singleNumber([2, 2, 1])); // 1
+    console.log(singleNumber([4, 1, 2, 1, 2])); // 4
+    console.log(singleNumber([1])); // 1
+    console.log(singleNumber([-1, -1, -2])); // -2
     ```
 
   </TabItem>
 </Tabs>
 
-## 面试变体
+## Python 与 TypeScript 差异点评
 
-### 变体 1：出现三次的数字 (LeetCode 137)
+逻辑逐行对应，差异在类型系统与整数语义上：
 
-除一个元素出现一次外，其余元素均出现三次，找出那个只出现一次的元素。
+<CodeCompare
+  py={`# 遍历元素，无需声明类型
+for num in nums:
+    result ^= num`}
+  ts={`// for...of 遍历元素，需 let 声明
+for (const num of nums) {
+  result ^= num;
+}`}
+/>
 
-```typescript
-function singleNumberII(nums: number[]): number {
-  // 统计每一位 1 出现的次数
-  // 如果某位 1 的次数不是 3 的倍数，说明结果在该位为 1
-  let result = 0;
+| 关注点   | Python                          | TypeScript                                   |
+| -------- | ------------------------------- | -------------------------------------------- |
+| 遍历写法 | `for num in nums`               | `for (const num of nums)`，心智完全对应      |
+| 变量声明 | `result = 0`，动态类型          | `let result = 0`，需区分 `let` 与 `const`    |
+| 整数语义 | 无限精度，位运算不截断          | 位运算按 32 位有符号整数执行，超范围会截断   |
+| 负数异或 | 数学意义上的无限位补码          | 32 位补码，结果在 32 位内一致                |
+| 类型注解 | `list[int]`，运行时不检查       | `number[]` + 返回值 `: number`，编译期检查   |
+| 输出测试 | `print(...)`                    | `console.log(...)`                           |
 
-  for (let i = 0; i < 32; i++) {
-    let sum = 0;
-    for (const num of nums) {
-      sum += (num >> i) & 1; // 统计第 i 位有多少个 1
-    }
-    if (sum % 3 !== 0) {
-      result |= 1 << i; // 设置结果的第 i 位为 1
-    }
-  }
+:::note
+题目数值范围在 32 位内，两种语言结果一致。若输入超出 32 位，TypeScript 位运算会先做 `ToInt32` 转换，而 Python 保持精确，此时不可直接迁移该解法。
+:::
 
-  return result;
-}
-```
+## 常见错误分析
 
-### 变体 2：两个只出现一次的数字 (LeetCode 260)
-
-数组中有两个元素只出现一次，其余元素均出现两次，找出这两个元素。
-
-```typescript
-function singleNumberIII(nums: number[]): number[] {
-  // 第一次异或得到两个数的异或结果
-  let xor = 0;
-  for (const num of nums) {
-    xor ^= num;
-  }
-
-  // 找到最右边的 1 位（两个数在这一位不同）
-  const rightmostBit = xor & -xor;
-
-  // 根据这一位将数组分成两组，分别异或
-  let a = 0,
-    b = 0;
-  for (const num of nums) {
-    if (num & rightmostBit) {
-      a ^= num;
-    } else {
-      b ^= num;
-    }
-  }
-
-  return [a, b];
-}
-```
-
-### 变体 3：使用 Set 实现（空间 O(n)）
+### 1. 用哈希表交差，空间不达标
 
 ```python
-def single_number_set(nums: list[int]) -> int:
-    """
-    使用集合的实现方式（不满足 O(1) 空间要求）
-    但更容易理解思路
-    """
-    seen = set()
-
-    for num in nums:
-        if num in seen:
-            seen.remove(num)  # 第二次出现，移除
-        else:
-            seen.add(num)      # 第一次出现，添加
-
-    # 集合中只剩下一个元素
-    return seen.pop()
+# 能过但不符合要求：空间 O(n)
+count = {}
+for num in nums:
+    count[num] = count.get(num, 0) + 1
 ```
 
-## 常见错误
+题目明确要求 O(1) 空间。**改法**：看到"两次抵消、一次保留"优先想到异或，而非计数。
 
-1. **不理解异或性质**：直接使用哈希表统计，虽然正确但空间复杂度为 O(n)
+### 2. 初始化与循环范围配合错误
+
+```python
+# 错误：从 nums[0] 开始却遍历全数组，首元素被异或两次
+result = nums[0]
+for num in nums:
+    result ^= num
+```
+
+`nums[0] ^ nums[0] = 0` 会把首元素消掉。**改法**：要么 `result = 0` 遍历全部，要么 `result = nums[0]` 从下标 1 开始，前后保持一致。
+
+### 3. TypeScript 里误用 `Map.get` 计数且忘记判空
 
 ```typescript
-// 不推荐：空间复杂度 O(n)
-function singleNumberHash(nums: number[]): number {
-  const count = new Map<number, number>();
-  for (const num of nums) {
-    count.set(num, (count.get(num) ?? 0) + 1);
-  }
-  for (const [num, freq] of count) {
-    if (freq === 1) return num;
-  }
-  return -1;
-}
+// 错误：strict 下 get 可能返回 undefined
+count.set(num, count.get(num) + 1);
 ```
 
-2. **初始化值错误**：将 `result` 初始化为数组第一个元素而非 0
+`Map.get` 返回 `number | undefined`，直接相加得到 `NaN` 或编译报错。**改法**：使用 `(count.get(num) ?? 0) + 1`。正解的异或版本完全避开 `Map`，也就避开了这类 strict 坑。
 
-```typescript
-// 可以工作，但逻辑不够清晰
-// 正确做法：初始化为 0，利用 a ^ 0 = a 的性质
-let result = nums[0]; // 不推荐
-for (let i = 1; i < nums.length; i++) {
-  // 需要从索引 1 开始
-  result ^= nums[i];
-}
-```
+## 面试变体
 
-3. **使用减法或除法**：误以为可以用数学运算解决，但会导致溢出或精度问题
+1. **其余出现三次，找出现一次的数**：异或不再适用，改为统计 32 个位上 1 的次数，次数不是 3 倍数的位即答案位。时间 O(32n) 即 O(n)、空间 O(1)。位统计算法在[计数比特](../counting-bits/)中有同类思想，可对照练习。
+2. **有两个数只出现一次**：先全数组异或得到 `xor = a ^ b`，取最低位的 1 将数组分成两组，每组退化为本题，时间 O(n)、空间 O(1)。
+3. **用集合对消**：遍历中见过则删除、没见过则加入，最后集合剩一个元素。时间 O(n)、空间 O(n)，适合讲清思路但不满足进阶要求，常作为过渡解法。
 
-4. **忽略边界条件**：忘记处理数组只有一个元素的情况（此时异或方法仍然正确）
+## 面试追问
 
-## Python 与 TypeScript 的差异
-
-| 特性     | Python               | TypeScript                          |
-| -------- | -------------------- | ----------------------------------- | ---- |
-| 整数类型 | 无限精度             | 64 位浮点数（位运算时转 32 位整数） |
-| 位运算符 | `^` `&` `            | ` `~` `<<` `>>`                     | 相同 |
-| 右移行为 | 算术右移（保留符号） | 算术右移                            |
-| 循环语法 | `for num in nums`    | `for (const num of nums)`           |
-| 变量声明 | 动态类型             | 需要 `let`/`const` 声明类型         |
-
-**注意**：TypeScript 中的位运算会将操作数转换为 32 位有符号整数，对于超出此范围的数值需要特别注意。
+- 为什么异或顺序不影响结果？（交换律与结合律保证配对与位置无关，答案要点是把数组重排为 `a ^ a ^ b ^ b ^ x` 的形式。）
+- `result` 为何初始化为 0 而不是第一个元素？（0 是单位元，代码更短且无需处理空数组分支。）
+- Python 与 TypeScript 做大数异或有何差异？（Python 无限精度，TS 按 32 位截断，超范围输入行为不同。）
+- 该解法能否推广到"出现三次"？（不能，`a ^ a ^ a = a` 无法抵消，需要按位计数。）

@@ -9,241 +9,257 @@ description: 计算信号从源节点到达所有节点的最短时间（Dijkstr
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-有 `n` 个网络节点，标记为 `1` 到 `n`。
+有 `n` 个网络节点，标记为 `1` 到 `n`。给定列表 `times`，其中 `times[i] = [u, v, w]` 表示从节点 `u` 到节点 `v` 的有向边权重为 `w`。给定起始节点 `k`，求信号从 `k` 出发到达所有节点的最短时间的最大值。若有节点不可达，返回 `-1`。
 
-给定列表 `times`，其中 `times[i] = (u, v, w)` 表示从节点 `u` 到节点 `v` 的信号传输时间为 `w`。
+**示例 1**
 
-给定起始节点 `k`，求从节点 `k` 发出信号后，所有节点都收到信号所需的最短时间。如果无法让所有节点都收到信号，返回 `-1`。
+```text
+输入：times = [[2, 1, 1], [2, 3, 1], [3, 4, 1]], n = 4, k = 2
+输出：2
+解释：2->1 距离 1，2->3 距离 1，2->3->4 距离 2，最大值为 2。
+```
+
+**示例 2**
+
+```text
+输入：times = [[1, 2, 1]], n = 2, k = 2
+输出：-1
+解释：节点 2 无法到达节点 1，存在不可达节点。
+```
+
+**约束条件**
+
+- `1 <= k <= n <= 100`
+- `1 <= times.length <= 6000`
+- `times[i].length == 3`，`1 <= u, v <= n`，`1 <= w <= 100`
+- 边为有向边，不保证连通，无负权边
+- 可能存在重边，取最短者为准
+
+**边界情况**：`n == 1` 时无需传播直接返回 `0`；含重边时邻接表保留多条边，松弛时自然取小；不可达节点使答案为 `-1`，必须在最后统一检查。
+
+## 暴力解与瓶颈
+
+朴素解法是对每个目标节点单独跑一次 Bellman-Ford 风格松弛，或用 Floyd 求全源最短路再取源行：
+
+```python
+def network_delay_brute(times, n, k) -> int:
+    dist = [float("inf")] * (n + 1)
+    dist[k] = 0
+    for _ in range(n - 1):
+        updated = False
+        for u, v, w in times:
+            if dist[u] + w < dist[v]:
+                dist[v] = dist[u] + w
+                updated = True
+        if not updated:
+            break
+    max_dist = max(dist[1:])
+    return -1 if max_dist == float("inf") else int(max_dist)
+```
+
+它是对的，但每次迭代都扫描全部边，时间 O(n * E)，且没有利用非负权带来的贪心性质。瓶颈在于无差别松弛，优化方向是按距离从小到大确定节点，用最小堆每次取出尚未确定的最近节点定案。
 
 ## 思路分析
 
-Dijkstra 最短路径算法：
+最优解是 Dijkstra：维护距离数组 `dist` 与最小堆 `pq`，堆顶始终是当前距离最小的未定案节点。弹出后若已访问则跳过，否则定案并松弛其出边。
 
-1. **构建邻接表**：将边列表转换为图结构
-2. **初始化距离数组**：源节点距离为 0，其他为无穷大
-3. **优先队列**：使用最小堆，每次取出距离最小的节点
-4. **松弛操作**：如果通过当前节点到达邻居的距离更短，更新距离
-5. **结果判断**：所有节点的最大距离即为答案
+以示例 1 的 `times = [[2, 1, 1], [2, 3, 1], [3, 4, 1]]`、`k = 2` 为例：
 
-核心思想：
+| 步骤 | 弹出 `(d, node)` | 定案 | 松弛更新 |
+| ---- | ---------------- | ---- | -------- |
+| 1 | `(0, 2)` | `dist[2] = 0` | `dist[1] = 1`，`dist[3] = 1` 入堆 |
+| 2 | `(1, 1)` | `dist[1] = 1` | `1` 无出边 |
+| 3 | `(1, 3)` | `dist[3] = 1` | `dist[4] = 2` 入堆 |
+| 4 | `(2, 4)` | `dist[4] = 2` | 无出边，最大值为 `2` |
 
-- 贪心策略：每次选择当前距离最小的未访问节点
-- 优先队列保证高效获取最小值
-- 不能处理负权边（需要 Bellman-Ford）
+非负权保证先弹出者即最短，不会再被后续路径改进。
+
+:::tip
+关键细节是堆中重复节点需要 `visited` 跳过：同一节点可能因多条路径多次入堆，只有首次弹出才是定案，后续弹出直接丢弃，否则会重复松弛。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(E log V)，每条边最多入堆一次，堆操作 O(log V)
-- **空间复杂度**：O(V + E)，邻接表和距离数组
+| 解法 | 时间复杂度 | 空间复杂度 | 说明 |
+| ---- | ---------- | ---------- | ---- |
+| Bellman-Ford 式暴力解 | O(n * E) | O(V + E) | 每轮全量扫描边，无贪心定案 |
+| Dijkstra 最优解 | O(E log V) | O(V + E) | 每条边至多入堆一次，堆操作 O(log V) |
+| Floyd 全源 | O(V^3) | O(V^2) | 只需单源时严重过剩 |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
+    ```python
+    # 网络延迟时间 - Python 实现（Dijkstra + 最小堆）
+    # 时间复杂度: O(E log V), 空间复杂度: O(V + E)
+    # 核心思路: 每次取出最近未定案节点，松弛其出边
+    import heapq
+    from typing import List
 
-```python
-# 网络延迟时间 - Python 实现 (Dijkstra)
-# 时间复杂度: O(E log V), 空间复杂度: O(V+E)
-# 核心思路: Dijkstra最短路径算法，用最小堆优化
-import heapq
-from typing import List, Tuple
+    def network_delay_time(times: List[List[int]], n: int, k: int) -> int:
+        # 建邻接表，节点编号 1..n
+        graph: List[List[tuple]] = [[] for _ in range(n + 1)]
+        for u, v, w in times:
+            graph[u].append((v, w))
+        # 距离数组，初值无穷
+        dist = [float("inf")] * (n + 1)
+        dist[k] = 0
+        # 最小堆存 (距离, 节点)
+        pq: list[tuple] = [(0, k)]
+        visited: set[int] = set()
+        while pq:
+            d, node = heapq.heappop(pq)
+            # 重复入堆的旧条目直接跳过
+            if node in visited:
+                continue
+            visited.add(node)
+            # 松弛出边
+            for neighbor, weight in graph[node]:
+                new_dist = d + weight
+                if new_dist < dist[neighbor]:
+                    dist[neighbor] = new_dist
+                    heapq.heappush(pq, (new_dist, neighbor))
+        max_dist = max(dist[1:])
+        return -1 if max_dist == float("inf") else int(max_dist)
 
-def network_delay_time(times: List[List[int]], n: int, k: int) -> int:
-    # 构建邻接表，节点编号从1到n，所以大小为n+1
-    # graph[u] 存储 [(v, w), ...] 表示从u到v的传输时间为w
-    graph = [[] for _ in range(n + 1)]
-    for u, v, w in times:
-        graph[u].append((v, w))
-
-    # 距离数组，初始化为无穷大
-    # dist[i] 表示从源节点k到节点i的最短距离
-    dist = [float('inf')] * (n + 1)
-    # 源节点到自身的距离为0
-    dist[k] = 0
-
-    # 优先队列（最小堆），存储(距离, 节点)
-    # 堆顶始终是距离源节点最近的未处理节点
-    pq = [(0, k)]
-
-    # 已确定最短路径的节点集合
-    visited = set()
-
-    # Dijkstra主循环
-    while pq:
-        # 取出距离最小的节点
-        d, node = heapq.heappop(pq)
-
-        # 如果节点已访问过，跳过（避免处理堆中的重复节点）
-        if node in visited:
-            continue
-        # 标记为已访问
-        visited.add(node)
-
-        # 松弛操作：遍历当前节点的所有邻居
-        for neighbor, weight in graph[node]:
-            # 计算通过当前节点到达邻居的新距离
-            new_dist = d + weight
-            # 如果新距离比已知距离更短，更新距离并加入堆
-            if new_dist < dist[neighbor]:
-                dist[neighbor] = new_dist
-                heapq.heappush(pq, (new_dist, neighbor))
-
-    # 找出从源节点到所有节点的最大距离
-    # 忽略索引0（节点编号从1开始）
-    max_dist = max(dist[1:])
-    # 如果最大距离仍是无穷大，说明有节点无法到达，返回-1
-    return -1 if max_dist == float('inf') else int(max_dist)
-
-# 测试用例
-times1 = [[2, 1, 1], [2, 3, 1], [3, 4, 1]]
-print(network_delay_time(times1, 4, 2)) # 2
-
-times2 = [[1, 2, 1]]
-print(network_delay_time(times2, 2, 2)) # -1（节点2无法到达节点1）
-
-times3 = [[1, 2, 1], [2, 3, 2], [1, 3, 4]]
-print(network_delay_time(times3, 3, 1)) # 3
-```
+    # 测试用例
+    print(network_delay_time([[2, 1, 1], [2, 3, 1], [3, 4, 1]], 4, 2))  # 2
+    print(network_delay_time([[1, 2, 1]], 2, 2))  # -1
+    print(network_delay_time([[1, 2, 1], [2, 3, 2], [1, 3, 4]], 3, 1))  # 3
+    ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
-
-```typescript
-// 网络延迟时间 - TypeScript 实现 (Dijkstra)
-// 时间复杂度: O(E log V), 空间复杂度: O(V+E)
-// 核心思路: Dijkstra最短路径算法，用数组排序模拟最小堆
-function networkDelayTime(times: number[][], n: number, k: number): number {
-  // 构建邻接表，节点编号从1到n
-  // graph.get(u) 返回 [[v, w], ...] 表示从u到v的传输时间为w
-  const graph: Map<number, [number, number][]> = new Map();
-  for (let i = 1; i <= n; i++) {
-    graph.set(i, []);
-  }
-  for (const [u, v, w] of times) {
-    graph.get(u)!.push([v, w]);
-  }
-
-  // 距离数组，初始化为无穷大
-  // dist[i] 表示从源节点k到节点i的最短距离
-  const dist: number[] = new Array(n + 1).fill(Infinity);
-  // 源节点到自身的距离为0
-  dist[k] = 0;
-
-  // 优先队列实现：用数组+排序模拟最小堆
-  // 元素：[距离, 节点]
-  const pq: [number, number][] = [[0, k]];
-
-  // 模拟堆的push操作：插入后按距离排序
-  const heapPush = (item: [number, number]): void => {
-    pq.push(item);
-    pq.sort((a, b) => a[0] - b[0]);
-  };
-
-  // 模拟堆的pop操作：取出第一个（最小距离）元素
-  const heapPop = (): [number, number] | undefined => {
-    return pq.shift();
-  };
-
-  // 已确定最短路径的节点集合
-  const visited: Set<number> = new Set();
-
-  // Dijkstra主循环
-  while (pq.length > 0) {
-    // 取出距离最小的节点
-    const item = heapPop();
-    if (!item) break;
-
-    const [d, node] = item;
-
-    // 如果节点已访问过，跳过
-    if (visited.has(node)) continue;
-    // 标记为已访问
-    visited.add(node);
-
-    // 松弛操作：遍历当前节点的所有邻居
-    const neighbors = graph.get(node) || [];
-    for (const [neighbor, weight] of neighbors) {
-      // 计算通过当前节点到达邻居的新距离
-      const newDist = d + weight;
-      // 如果新距离比已知距离更短，更新距离并加入堆
-      if (newDist < dist[neighbor]) {
-        dist[neighbor] = newDist;
-        heapPush([newDist, neighbor]);
+    ```typescript
+    // 网络延迟时间 - TypeScript 实现（Dijkstra + 最小堆模拟）
+    // 时间复杂度: O(E log V), 空间复杂度: O(V + E)
+    // 核心思路: 每次取出最近未定案节点，松弛其出边
+    function networkDelayTime(times: number[][], n: number, k: number): number {
+      // 建邻接表，节点编号 1..n
+      const graph: Map<number, Array<[number, number]>> = new Map();
+      for (let i = 1; i <= n; i++) {
+        graph.set(i, []);
       }
+      for (const [u, v, w] of times) {
+        graph.get(u)!.push([v, w]);
+      }
+      // 距离数组，初值无穷
+      const dist: number[] = new Array(n + 1).fill(Infinity);
+      dist[k] = 0;
+      // 最小堆用数组加排序模拟，存 [距离, 节点]
+      const pq: Array<[number, number]> = [[0, k]];
+      const heapPush = (item: [number, number]): void => {
+        pq.push(item);
+        pq.sort((a, b) => a[0] - b[0]);
+      };
+      const visited: Set<number> = new Set();
+      while (pq.length > 0) {
+        const [d, node] = pq.shift()!;
+        // 重复入堆的旧条目直接跳过
+        if (visited.has(node)) continue;
+        visited.add(node);
+        // 松弛出边
+        const neighbors = graph.get(node) ?? [];
+        for (const [neighbor, weight] of neighbors) {
+          const newDist = d + weight;
+          if (newDist < dist[neighbor]) {
+            dist[neighbor] = newDist;
+            heapPush([newDist, neighbor]);
+          }
+        }
+      }
+      let maxDist = 0;
+      for (let i = 1; i <= n; i++) {
+        if (dist[i] === Infinity) return -1;
+        maxDist = Math.max(maxDist, dist[i]);
+      }
+      return maxDist;
     }
-  }
 
-  // 找出从源节点到所有节点的最大距离
-  let maxDist = 0;
-  for (let i = 1; i <= n; i++) {
-    // 如果有节点无法到达，直接返回-1
-    if (dist[i] === Infinity) {
-      return -1;
-    }
-    maxDist = Math.max(maxDist, dist[i]);
-  }
-
-  // 返回最大距离（所有节点都收到信号的最短时间）
-  return maxDist;
-}
-
-// 测试用例
-const times1 = [
-  [2, 1, 1],
-  [2, 3, 1],
-  [3, 4, 1],
-];
-console.log(networkDelayTime(times1, 4, 2)); // 2
-
-const times2 = [[1, 2, 1]];
-console.log(networkDelayTime(times2, 2, 2)); // -1
-
-const times3 = [
-  [1, 2, 1],
-  [2, 3, 2],
-  [1, 3, 4],
-];
-console.log(networkDelayTime(times3, 3, 1)); // 3
-```
+    // 测试用例
+    console.log(networkDelayTime([[2, 1, 1], [2, 3, 1], [3, 4, 1]], 4, 2)); // 2
+    console.log(networkDelayTime([[1, 2, 1]], 2, 2)); // -1
+    console.log(networkDelayTime([[1, 2, 1], [2, 3, 2], [1, 3, 4]], 3, 1)); // 3
+    ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+主循环逐行对应，差异在堆与无穷的表达上：
+
+<CodeCompare
+  py={`# 最小堆弹出与跳过旧条目
+d, node = heapq.heappop(pq)
+if node in visited:
+    continue
+visited.add(node)`}
+  ts={`// 最小堆弹出与跳过旧条目
+const [d, node] = pq.shift()!;
+if (visited.has(node)) continue;
+visited.add(node);`}
+/>
+
+| 关注点 | Python | TypeScript |
+| ------ | ------ | ---------- |
+| 邻接表 | `list` 套 `list`，下标即节点号 | `Map<number, [number, number][]>`，需预置空数组 |
+| 最小堆 | `heapq` 标准库，`heappush`/`heappop` | 数组加 `sort` 模拟，`push` 后排序、`shift` 取最小 |
+| 无穷 | `float("inf")` | `Infinity` |
+| 空值断言 | 下标访问缺席键抛异常，需预建表 | `graph.get(u)!` 断言存在，读取用 `?? []` 兜底 |
+| 集合判重 | `set`，`in` 检查 | `Set`，`has` 检查 |
+| 命名风格 | `network_delay_time`、`new_dist` 蛇形 | `networkDelayTime`、`newDist` 驼峰 |
+
+:::note
+TypeScript 用数组排序模拟堆只是为了零依赖可运行，时间常数大于二叉堆。生产代码应换成二叉堆实现；`pq.shift()!` 的 `!` 成立前提是 `while (pq.length > 0)` 守卫，不能省略。
+:::
+
+## 常见错误分析
+
+### 1. 节点编号错一位
+
+```python
+# 错误：按 0..n-1 建表，题目节点从 1 开始
+graph = [[] for _ in range(n)]
+```
+
+`graph[u]` 会整体偏移，`n` 号节点越界。**改法**：建 `n + 1` 长度并忽略下标 0，TypeScript 侧用 `Map` 预置 `1..n` 同样避免偏移。
+
+### 2. 忘记跳过堆中旧条目
+
+```python
+# 错误：同一节点多次松弛
+d, node = heapq.heappop(pq)
+visited.add(node)
+```
+
+没有 `if node in visited: continue`，旧距离条目会重复扩展出边。**改法**：弹出后先判重，定案过的节点直接跳过。
+
+### 3. TypeScript 里忽略 `Map.get` 的 `undefined`
+
+```typescript
+// 错误：strict 模式下编译不通过
+graph.get(u).push([v, w]); // Object is possibly undefined
+```
+
+`Map.get` 返回可能为 `undefined`。**改法**：建表阶段写 `graph.get(u)!` 断言，或读取时写 `graph.get(node) ?? []`。Python 对应坑是用字典邻接表时缺席键抛 `KeyError`，需要预建或用 `defaultdict`。
+
 ## 面试变体
 
-1. **返回最短路径**：记录前驱节点，重构从源到任意节点的路径
-2. **多个源节点**：多源最短路径，使用虚拟源节点或 Floyd-Warshall
-3. **负权边**：使用 Bellman-Ford 或 SPFA 算法
-4. **K 短路径**：A\* 算法或 Yen's algorithm
-5. **动态边权**：根据时间变化的边权，需要修改松弛条件
+1. **返回具体路径**：额外存前驱数组，定案时记录来源（详见[克隆图](../clone-graph/)的遍历记录思想）。时间不变，空间多 O(V)。
+2. **多源最短路**：多个起点同时入堆，相当于加虚拟源点，时间 O(E log V)，适合腐烂橘子式扩散（详见[腐烂的橘子](../rotting-oranges/)）。
+3. **课程表判环对照**：同为图问题但考察拓扑而非最短路（详见[课程表](../course-schedule/)）。体会 BFS/DFS 与 Dijkstra 的适用边界。
+4. **负权边**：改用 Bellman-Ford，时间 O(n * E)，能检测负环，Dijkstra 在此场景不再正确。
+5. **K 短路**：A* 或 Yen 算法枚举多条候选，时间显著上升，只在被追问时展开。
 
-## 常见错误
+## 面试追问
 
-1. **节点编号问题**：题目节点从 1 开始，数组索引从 0 开始，需要调整
-2. **堆中重复节点**：同一节点可能多次入堆，需要 visited 集合
-3. **返回值类型**：Python 用 `float('inf')`，TypeScript 用 `Infinity`
-4. **优先队列方向**：Dijkstra 需要最小堆，Prim 最小生成树也是最小堆
-5. **忘记检查不可达**：最后要判断是否有节点距离仍为无穷大
-
-## 扩展：为什么 Dijkstra 不能处理负权边？
-
-Dijkstra 基于贪心策略，一旦确定某节点的最短距离就不会再更新。但负权边可能导致后续找到更短的路径。
-
-```
-    A --(2)--> B
-    |         |
-   (1)      (-3)
-    |         |
-    v         v
-    C --(1)--> D
-
-从 A 出发：
-- Dijkstra 先处理 A->B(2)，标记 B 的距离为 2
-- 然后处理 A->C(1)，C 的距离为 1
-- 但实际上 A->C->D->B 的距离是 1+1+(-3)=-1，比 2 更短！
-```
-
-负权边场景应使用 Bellman-Ford 算法。
+- 为什么 Dijkstra 不能处理负权边？（贪心定案假设后续路径只会更长，负权可能让已定案节点被改进。）
+- 为什么堆中会有重复节点？（同一节点经不同路径多次松弛入堆，只有首次弹出距离最小，后续均为旧条目。）
+- 稀疏图与稠密图如何选实现？（稀疏用邻接表加堆，稠密可用邻接矩阵加 O(V^2) 版本省掉堆常数。）
+- `n == 1` 时答案为什么是 `0`？（无需传播，最大距离即源到自身距离 `0`，不可达检查不应误判。）

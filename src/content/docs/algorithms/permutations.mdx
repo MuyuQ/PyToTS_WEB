@@ -9,325 +9,228 @@ description: 生成数组的所有全排列，回溯法经典应用
 ---
 
 import { Tabs, TabItem } from "@astrojs/starlight/components";
+import CodeCompare from "../../../components/CodeCompare.astro";
 
 ## 问题描述
 
-给定一个**不含重复数字**的数组 `nums`，返回其所有可能的全排列。
+给定一个**不含重复数字**的数组 `nums`，返回其所有可能的全排列。可以按任意顺序返回答案。
 
-**要求**：可以按任意顺序返回答案。
+**示例 1**
 
-**示例**：
+```text
+输入：nums = [1, 2, 3]
+输出：[[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]
+解释：3 个元素共 3! = 6 个排列。
+```
 
-- 输入：`nums = [1, 2, 3]`
-- 输出：`[[1, 2, 3], [1, 3, 2], [2, 1, 3], [2, 3, 1], [3, 1, 2], [3, 2, 1]]`
+**示例 2**
+
+```text
+输入：nums = [0, 1]
+输出：[[0, 1], [1, 0]]
+解释：2 个元素共 2 种顺序。
+```
+
+**约束条件**
+
+- `1 <= nums.length <= 6`
+- `-10 <= nums[i] <= 10`
+- `nums` 中所有整数互不相同
+
+**边界情况**：单元素数组只有一种排列；`n = 6` 时输出 720 个排列，输出规模主导运行时间；输入无重复是本题前提，含重复版本需额外去重。
+
+## 暴力解与瓶颈
+
+朴素想法是调用标准库：
+
+```python
+from itertools import permutations
+
+def permute_brute(nums: list[int]) -> list[list[int]]:
+    return [list(p) for p in permutations(nums)]
+```
+
+一行出答案，但面试考察的是回溯过程，调库等于跳过考察点。该写法也无法灵活扩展到去重、剪枝与提前终止。瓶颈在于**黑盒枚举不可控**，无法表达"已使用集合"这一核心状态。优化方向是标记法回溯：用 `used` 数组记录每个下标是否已选，`path` 记录当前顺序，到达长度 n 即收集。
 
 ## 思路分析
 
-### 方法一：回溯（交换法）
+最优解采用标记法。外层遍历所有下标，跳过已用元素；选中后标记并入路径，递归下一层；返回时撤销标记，恢复现场。
 
-全排列问题可以看作：在每个位置上选择一个未使用的元素。
+以 `nums = [1, 2]` 为例：
 
-1. 从第一个位置开始，依次将每个元素放到当前位置
-2. 交换当前位置元素与目标元素
-3. 递归处理下一个位置
-4. 回溯时交换回来（恢复现场）
+| 步骤 | 选择 | `path` | `used`      | 说明             |
+| ---- | ---- | ------ | ----------- | ---------------- |
+| 1    | 选 1 | `[1]`  | `[T, F]`    | 进入下一层       |
+| 2    | 选 2 | `[1, 2]` | `[T, T]`  | 长度达标，收集   |
+| 3    | 撤销 2 | `[1]` | `[T, F]`   | 回溯，尝试同层其他 |
+| 4    | 撤销 1 | `[]` | `[F, F]`    | 回到顶层         |
+| 5    | 选 2 | `[2]`  | `[F, T]`    | 第二个分支       |
+| 6    | 选 1 | `[2, 1]` | `[T, T]`  | 收集第二个排列   |
 
-关键点：通过交换保证每个元素只使用一次。
-
-### 方法二：回溯（标记法）
-
-使用一个 `used` 数组标记已使用的元素：
-
-1. 遍历所有元素，选择未使用的元素加入当前路径
-2. 标记该元素为已使用
-3. 递归处理下一位置
-4. 回溯时取消标记，移除元素
-
-### 方法三：迭代法（字典序）
-
-利用下一个排列的性质：
-
-1. 将数组排序作为初始排列
-2. 不断生成下一个排列，直到无法生成为止
+:::tip
+关键细节是撤销必须成对出现：`path.pop()` 与 `used[i] = False` 缺一不可。收集时用 `path[:]` 快照，否则后续回溯会改写已存答案。
+:::
 
 ## 复杂度分析
 
-- **时间复杂度**：O(n × n!)，共 n! 个排列，每个排列需要 O(n) 时间拷贝
-- **空间复杂度**：O(n)，递归栈深度（不计结果集）
+| 解法       | 时间复杂度 | 空间复杂度 | 说明                         |
+| ---------- | ---------- | ---------- | ---------------------------- |
+| 标准库枚举 | O(n × n!)  | O(n)       | 正确但不可扩展，面试不接受   |
+| 标记法回溯 | O(n × n!)  | O(n)       | n! 个叶子，每条路径拷贝 O(n) |
+| 交换法回溯 | O(n × n!)  | O(n)       | 原地交换，省掉 `used` 数组   |
 
 ## 双语实现
 
 <Tabs syncKey="language">
   <TabItem label="Python" icon="seti:python">
     ```python
-    # 全排列 - 三种回溯实现
-    # 时间复杂度: O(n × n!), 空间复杂度: O(n)
-    # n 为数组长度, 共 n! 个排列
+    # 全排列 - Python 实现（标记法回溯）
+    # 时间复杂度: O(n x n!), 空间复杂度: O(n)
+    # 核心思路: used 标记已选下标，path 记录当前顺序
+    def permute(nums: list[int]) -> list[list[int]]:
+        result: list[list[int]] = []
+        n = len(nums)
+        used = [False] * n
 
-    from typing import List
-
-    # === 方法一: 交换法回溯 ===
-
-    def permute_swap(nums: List[int]) -> List[List[int]]: # result: 存储所有排列结果
-    result = [] # n: 数组长度
-    n = len(nums)
-
-        def backtrack(first: int) -> None:
-            # first: 当前要确定元素的位置
-            # 所有位置都已确定, 找到一个完整排列
-            if first == n:
-                result.append(nums[:])  # 注意: 必须拷贝, 否则后续修改会影响已保存的结果
-                return
-
-            # 尝试将 [first, n) 范围内的每个元素放到 first 位置
-            for i in range(first, n):
-                # 交换: 将 nums[i] 放到 first 位置
-                nums[first], nums[i] = nums[i], nums[first]
-                # 递归: 处理下一个位置 first+1
-                backtrack(first + 1)
-                # 撤销交换 (回溯): 恢复数组原状态, 以便尝试下一个 i
-                nums[first], nums[i] = nums[i], nums[first]
-
-        # 从位置 0 开始回溯
-        backtrack(0)
-        return result
-
-    # === 方法二: 标记法回溯 ===
-
-    def permute_used(nums: List[int]) -> List[List[int]]: # result: 存储所有排列结果
-    result = [] # n: 数组长度
-    n = len(nums) # used: 布尔数组, 标记每个索引位置的元素是否已被使用
-    used = [False] \* n
-
-        def backtrack(path: List[int]) -> None:
-            # path: 当前已选择的元素序列
-            # 所有元素都已选择, 找到一个完整排列
+        def backtrack(path: list[int]) -> None:
+            # 长度达标即找到一个完整排列
             if len(path) == n:
-                result.append(path[:])  # 注意: 必须拷贝
+                result.append(path[:])
                 return
 
-            # 遍历所有元素, 选择未使用的
+            # 遍历全部下标，跳过已用元素
             for i in range(n):
                 if used[i]:
-                    continue  # 跳过已使用的元素
-
-                # 选择: 标记为已使用, 加入路径
+                    continue
+                # 选择并标记
                 used[i] = True
                 path.append(nums[i])
-                # 递归: 继续选择下一个元素
+                # 递归下一层
                 backtrack(path)
-                # 撤销: 从路径移除, 取消标记 (回溯)
+                # 撤销选择与标记
                 path.pop()
                 used[i] = False
 
-        # 从空路径开始回溯
         backtrack([])
         return result
 
-    # === 方法三: 迭代法 (字典序) ===
-
-    def permute_iterative(nums: List[int]) -> List[List[int]]:
-    def next_permutation(arr: List[int]) -> bool: # 生成字典序的下一个排列, 原地修改数组 # 返回 True 表示存在下一个排列, False 表示已是最大排列
-    n = len(arr) # 步骤 1: 从右向左找第一个升序对 (arr[i] < arr[i+1])
-    i = n - 2
-    while i >= 0 and arr[i] >= arr[i + 1]:
-    i -= 1
-
-            # 如果没找到升序对, 说明已是降序 (最大排列)
-            if i < 0:
-                return False
-
-            # 步骤 2: 从右向左找第一个大于 arr[i] 的元素
-            j = n - 1
-            while arr[j] <= arr[i]:
-                j -= 1
-
-            # 步骤 3: 交换 arr[i] 和 arr[j]
-            arr[i], arr[j] = arr[j], arr[i]
-            # 步骤 4: 反转 i+1 到末尾的部分, 使其变为升序 (最小)
-            arr[i + 1:] = arr[i + 1:][::-1]
-            return True
-
-        # result: 存储所有排列结果
-        result = []
-        # 从最小排列 (升序) 开始
-        nums = sorted(nums)
-        result.append(nums[:])  # 保存初始排列
-
-        # 不断生成下一个排列, 直到无法生成
-        while next_permutation(nums):
-            result.append(nums[:])  # 保存每个排列的拷贝
-
-        return result
-
     # 测试用例
-
-    nums = [1, 2, 3]
-
-    # 三种方法都应输出 6 个排列 (3! = 6)
-
-    print("交换法:", permute_swap(nums))
-    print("标记法:", permute_used(nums))
-    print("迭代法:", permute_iterative(nums))
-
-    # 验证结果数量
-
-    print(f"排列总数: {len(permute_swap(nums))}") # 输出: 6 = 3!
+    print(permute([1, 2, 3]))  # 6 个排列
+    print(permute([0, 1]))  # [[0, 1], [1, 0]]
+    print(len(permute([1, 2, 3])))  # 6 = 3!
     ```
 
   </TabItem>
   <TabItem label="TypeScript" icon="seti:typescript">
     ```typescript
-    // 全排列 - 三种回溯实现
-    // 时间复杂度: O(n × n!), 空间复杂度: O(n)
-    // n 为数组长度, 共 n! 个排列
+    // 全排列 - TypeScript 实现（标记法回溯）
+    // 时间复杂度: O(n x n!), 空间复杂度: O(n)
+    // 核心思路: used 标记已选下标，path 记录当前顺序
+    function permute(nums: number[]): number[][] {
+      const result: number[][] = [];
+      const n = nums.length;
+      const used: boolean[] = new Array(n).fill(false);
 
-    // === 方法一: 交换法回溯 ===
-    function permuteSwap(nums: number[]): number[][] {
-    // result: 存储所有排列结果
-    const result: number[][] = [];
-    // n: 数组长度
-    const n = nums.length;
-
-        function backtrack(first: number): void {
-            // first: 当前要确定元素的位置
-            // 所有位置都已确定, 找到一个完整排列
-            if (first === n) {
-                result.push([...nums]); // 注意: 必须拷贝, 否则后续修改会影响已保存的结果
-                return;
-            }
-
-            // 尝试将 [first, n) 范围内的每个元素放到 first 位置
-            for (let i = first; i < n; i++) {
-                // 交换: 将 nums[i] 放到 first 位置
-                [nums[first], nums[i]] = [nums[i], nums[first]];
-                // 递归: 处理下一个位置 first+1
-                backtrack(first + 1);
-                // 撤销交换 (回溯): 恢复数组原状态, 以便尝试下一个 i
-                [nums[first], nums[i]] = [nums[i], nums[first]];
-            }
+      function backtrack(path: number[]): void {
+        // 长度达标即找到一个完整排列
+        if (path.length === n) {
+          result.push([...path]);
+          return;
         }
 
-        // 从位置 0 开始回溯
-        backtrack(0);
-        return result;
-
-    }
-
-    // === 方法二: 标记法回溯 ===
-    function permuteUsed(nums: number[]): number[][] {
-    // result: 存储所有排列结果
-    const result: number[][] = [];
-    // n: 数组长度
-    const n = nums.length;
-    // used: 布尔数组, 标记每个索引位置的元素是否已被使用
-    const used = new Array(n).fill(false);
-
-        function backtrack(path: number[]): void {
-            // path: 当前已选择的元素序列
-            // 所有元素都已选择, 找到一个完整排列
-            if (path.length === n) {
-                result.push([...path]); // 注意: 必须拷贝
-                return;
-            }
-
-            // 遍历所有元素, 选择未使用的
-            for (let i = 0; i < n; i++) {
-                if (used[i]) continue; // 跳过已使用的元素
-
-                // 选择: 标记为已使用, 加入路径
-                used[i] = true;
-                path.push(nums[i]);
-                // 递归: 继续选择下一个元素
-                backtrack(path);
-                // 撤销: 从路径移除, 取消标记 (回溯)
-                path.pop();
-                used[i] = false;
-            }
+        // 遍历全部下标，跳过已用元素
+        for (let i = 0; i < n; i++) {
+          if (used[i]) continue;
+          // 选择并标记
+          used[i] = true;
+          path.push(nums[i]);
+          // 递归下一层
+          backtrack(path);
+          // 撤销选择与标记
+          path.pop();
+          used[i] = false;
         }
+      }
 
-        // 从空路径开始回溯
-        backtrack([]);
-        return result;
-
-    }
-
-    // === 方法三: 迭代法 (字典序) ===
-    function permuteIterative(nums: number[]): number[][] {
-    function nextPermutation(arr: number[]): boolean {
-    // 生成字典序的下一个排列, 原地修改数组
-    // 返回 true 表示存在下一个排列, false 表示已是最大排列
-    const n = arr.length;
-    // 步骤 1: 从右向左找第一个升序对 (arr[i] < arr[i+1])
-    let i = n - 2;
-    while (i >= 0 && arr[i] >= arr[i + 1]) {
-    i--;
-    }
-
-            // 如果没找到升序对, 说明已是降序 (最大排列)
-            if (i < 0) return false;
-
-            // 步骤 2: 从右向左找第一个大于 arr[i] 的元素
-            let j = n - 1;
-            while (arr[j] <= arr[i]) {
-                j--;
-            }
-
-            // 步骤 3: 交换 arr[i] 和 arr[j]
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-            // 步骤 4: 反转 i+1 到末尾的部分, 使其变为升序 (最小)
-            let left = i + 1;
-            let right = n - 1;
-            while (left < right) {
-                [arr[left], arr[right]] = [arr[right], arr[left]];
-                left++;
-                right--;
-            }
-            return true;
-        }
-
-        // result: 存储所有排列结果
-        const result: number[][] = [];
-        // 从最小排列 (升序) 开始
-        const sorted = [...nums].sort((a, b) => a - b);
-        result.push([...sorted]); // 保存初始排列
-
-        // 不断生成下一个排列, 直到无法生成
-        while (nextPermutation(sorted)) {
-            result.push([...sorted]); // 保存每个排列的拷贝
-        }
-
-        return result;
-
+      backtrack([]);
+      return result;
     }
 
     // 测试用例
-    const nums = [1, 2, 3];
-
-    // 三种方法都应输出 6 个排列 (3! = 6)
-    console.log("交换法:", permuteSwap(nums));
-    console.log("标记法:", permuteUsed(nums));
-    console.log("迭代法:", permuteIterative(nums));
-
-    // 验证结果数量
-    console.log(\`排列总数: \${permuteSwap(nums).length}\`); // 输出: 6 = 3!
+    console.log(permute([1, 2, 3])); // 6 个排列
+    console.log(permute([0, 1])); // [[0, 1], [1, 0]]
+    console.log(permute([1, 2, 3]).length); // 6 = 3!
     ```
 
   </TabItem>
 </Tabs>
 
+## Python 与 TypeScript 差异点评
+
+回溯骨架完全一致，差异在布尔数组初始化与拷贝语法上：
+
+<CodeCompare
+  py={`# 布尔标记数组，乘法初始化
+used = [False] * n`}
+  ts={`// 布尔标记数组，fill 初始化
+const used: boolean[] = new Array(n).fill(false);`}
+/>
+
+| 关注点   | Python                    | TypeScript                              |
+| -------- | ------------------------- | --------------------------------------- |
+| 标记数组 | `[False] * n`             | `new Array(n).fill(false)`，需写元素类型 |
+| 结果拷贝 | `path[:]`                 | `[...path]`，语义一致                  |
+| 入路径   | `path.append(nums[i])`    | `path.push(nums[i])`                    |
+| 出路径   | `path.pop()`              | `path.pop()`，同名                      |
+| 布尔值   | `True` / `False` 首字母大写 | `true` / `false` 全小写               |
+| 跳过已用 | `if used[i]: continue`    | `if (used[i]) continue;`                |
+| 输出测试 | `print(...)`              | `console.log(...)`                      |
+
+:::note
+`new Array(n).fill(false)` 必须写清 `boolean[]`，否则推断为 `any[]`，strict 检查形同虚设。Python 的乘法初始化简洁，但对可变对象同样适用，需注意引用共享陷阱。
+:::
+
+## 常见错误分析
+
+### 1. 收集引用而非快照
+
+```python
+# 错误：后续 pop 会改写已收集的排列
+result.append(path)
+```
+
+6 个条目最终全为空列表。**改法**：`result.append(path[:])`，对应 TS 的 `result.push([...path])`。
+
+### 2. 撤销时只弹出路径，忘记恢复标记
+
+```python
+# 错误：used 永久为 True，后续分支无元素可选
+path.append(nums[i])
+backtrack(path)
+path.pop()
+# 缺少 used[i] = False
+```
+
+首个分支后所有元素被标记已用，答案只有一个。**改法**：`pop` 与 `used[i] = False` 必须成对出现，回溯即恢复现场。
+
+### 3. TypeScript 里索引类型与空值处理不当
+
+```typescript
+// 错误：开启 noUncheckedIndexedAccess 时编译不通过
+path.push(nums[i]); // nums[i] 可能是 undefined
+```
+
+默认 `strict` 不含该选项故可编译，但严格工程配置下会报错。**改法**：用非空断言 `nums[i]!` 或先取局部变量判空。Python 无编译期检查，越界只在运行时抛 `IndexError`，循环边界 `range(n)` 本身即是保障。
+
 ## 面试变体
 
-1. **全排列 II**：数组包含重复元素，返回不重复的排列（需要排序 + 跳过重复）
-2. **第 k 个排列**：直接计算第 k 个排列，不生成全部
-3. **下一个排列**：LeetCode 31，原地修改得到下一个排列
-4. **排列序列**：给定 n 和 k，返回第 k 个排列
-5. **字符串排列**：输入为字符串的全排列
+1. **全排列 II（含重复数字）**：先排序，同层跳过重复值（`i > 0 && nums[i] === nums[i-1] && !used[i-1]`），时间仍 O(n × n!)、空间 O(n)，去重判断是主要追问点。
+2. **下一个排列**：从右找首个升序对，交换后再反转后缀，原地 O(n) 时间、O(1) 空间，是字典序迭代的核心子过程。
+3. **子集与组合**：同样是回溯，但子集每个节点即答案（详见[子集](../subsets/)）。排列关心顺序故需 `used`，子集关心组合故用 `start`，时间分别为 O(n × n!) 与 O(n × 2ⁿ)。
 
-## 常见错误
+## 面试追问
 
-1. **忘记拷贝**：`result.append(path)` 而不是 `result.append(path[:])`，导致结果全为空
-2. **交换法范围错误**：`for i in range(first + 1, n)` 漏掉了 first 本身
-3. **标记法忘记重置**：递归后忘记 `used[i] = False`
-4. **重复元素未处理**：全排列 II 中忘记排序和跳过重复元素
-5. **迭代法反转范围错误**：`arr[i + 1:]` 反转时索引计算错误
+- 为什么时间是 O(n × n!) 而非 O(n!)？（叶子 n! 个，每个收集拷贝长度 n，答案要点是输出本身的规模。）
+- 标记法与交换法如何取舍？（标记法思路直白，交换法省空间但会改动输入顺序。）
+- 含重复数字时为何要先排序？（让相等元素相邻，同层重复才能被一次跳过。）
+- `used` 恢复若遗漏会发生什么？（状态泄漏到兄弟分支，后续分支可选集合错误，答案缺失。）
