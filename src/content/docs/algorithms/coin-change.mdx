@@ -65,14 +65,14 @@ def coin_change_brute(coins: list[int], amount: int) -> int:
 
 以 `coins = [1, 2, 5], amount = 6` 为例（只列关键转移）：
 
-| 金额 `i` | 候选转移 | 取值过程 | `dp[i]` |
-| -------- | -------- | -------- | ------- |
-| 0 | — | 初始状态 | 0 |
-| 1 | `dp[0]+1` | min(inf, 1) | 1 |
-| 2 | `dp[1]+1`, `dp[0]+1` | min(2, 1) | 1 |
-| 3 | `dp[2]+1`, `dp[1]+1` | min(2, 2) | 2 |
-| 5 | `dp[4]+1`, `dp[3]+1`, `dp[0]+1` | min(3, 3, 1) | 1 |
-| 6 | `dp[5]+1`, `dp[4]+1`, `dp[1]+1` | min(2, 4, 2) | 2 |
+| 金额 `i` | 候选转移                        | 取值过程     | `dp[i]` |
+| -------- | ------------------------------- | ------------ | ------- |
+| 0        | —                               | 初始状态     | 0       |
+| 1        | `dp[0]+1`                       | min(inf, 1)  | 1       |
+| 2        | `dp[1]+1`, `dp[0]+1`            | min(2, 1)    | 1       |
+| 3        | `dp[2]+1`, `dp[1]+1`            | min(2, 2)    | 2       |
+| 5        | `dp[4]+1`, `dp[3]+1`, `dp[0]+1` | min(3, 3, 1) | 1       |
+| 6        | `dp[5]+1`, `dp[4]+1`, `dp[1]+1` | min(2, 4, 2) | 2       |
 
 :::tip
 关键细节是内外循环的含义：外层按金额递增，保证 `dp[i - coin]` 在计算 `dp[i]` 时已经是最优值；内层遍历全部面额，对应"最后一枚硬币有多种选择"。本题为完全背包，按金额外循环、硬币内循环可复用同一面额多次。
@@ -80,10 +80,10 @@ def coin_change_brute(coins: list[int], amount: int) -> int:
 
 ## 复杂度分析
 
-| 解法       | 时间复杂度      | 空间复杂度 | 说明                       |
-| ---------- | --------------- | ---------- | -------------------------- |
-| 递归暴力   | 指数级          | O(amount)  | 子问题重复计算，栈深度为金额 |
-| 动态规划   | O(amount * n)   | O(amount)  | 每个金额尝试全部 n 种面额  |
+| 解法     | 时间复杂度     | 空间复杂度 | 说明                         |
+| -------- | -------------- | ---------- | ---------------------------- |
+| 递归暴力 | 指数级         | O(amount)  | 子问题重复计算，栈深度为金额 |
+| 动态规划 | O(amount \* n) | O(amount)  | 每个金额尝试全部 n 种面额    |
 
 ## 双语实现
 
@@ -156,23 +156,26 @@ def coin_change_brute(coins: list[int], amount: int) -> int:
 
 两份代码递推结构完全一致，差异集中在"无穷大"与数组初始化的表达上：
 
-<CodeCompare
-  py={`# 无穷大初始化与收尾判断
+```python
+# 无穷大初始化与收尾判断
 dp: list[float] = [float('inf')] * (amount + 1)
-return -1 if dp[amount] == float('inf') else int(dp[amount])`}
-  ts={`// Infinity 初始化与收尾判断
-const dp: number[] = new Array(amount + 1).fill(Infinity);
-return dp[amount] === Infinity ? -1 : dp[amount];`}
-/>
+return -1 if dp[amount] == float('inf') else int(dp[amount])
+```
 
-| 关注点     | Python                                  | TypeScript                                  |
-| ---------- | --------------------------------------- | ------------------------------------------- |
-| 无穷大     | `float('inf')`，需与同值比较            | `Infinity`，用 `===` 比较                   |
-| 数组初始化 | `[float('inf')] * (amount + 1)` 乘法复制 | `new Array(amount + 1).fill(Infinity)`      |
-| 取最小值   | 内置 `min(a, b)`                        | `Math.min(a, b)`                            |
-| 类型注解   | `list[int]`，运行时不检查               | `number[]`，编译期检查越界与类型            |
-| 分支返回   | 三元表达式 `x if cond else y`           | 三元表达式 `cond ? x : y`                   |
-| 输出测试   | `print(...)`                            | `console.log(...)`                          |
+```typescript
+// Infinity 初始化与收尾判断
+const dp: number[] = new Array(amount + 1).fill(Infinity);
+return dp[amount] === Infinity ? -1 : dp[amount];
+```
+
+| 关注点     | Python                                   | TypeScript                             |
+| ---------- | ---------------------------------------- | -------------------------------------- |
+| 无穷大     | `float('inf')`，需与同值比较             | `Infinity`，用 `===` 比较              |
+| 数组初始化 | `[float('inf')] * (amount + 1)` 乘法复制 | `new Array(amount + 1).fill(Infinity)` |
+| 取最小值   | 内置 `min(a, b)`                         | `Math.min(a, b)`                       |
+| 类型注解   | `list[int]`，运行时不检查                | `number[]`，编译期检查越界与类型       |
+| 分支返回   | 三元表达式 `x if cond else y`            | 三元表达式 `cond ? x : y`              |
+| 输出测试   | `print(...)`                             | `console.log(...)`                     |
 
 :::note
 Python 的 `dp` 混入 `float` 无穷大后类型变为 `list[float]`，返回前用 `int()` 收窄为整数。TypeScript 全程 `number` 即可表示 `Infinity`，无需类型转换，但要注意 `Infinity + 1` 仍为 `Infinity`，不会污染最小值比较。
@@ -206,12 +209,12 @@ const dp: number[] = new Array(amount + 1).fill(Number.MAX_VALUE);
 
 ## 面试变体
 
-1. **零钱兑换 II（组合数）**：求凑成金额的组合数而非最少个数。递推改为计数，外层必须遍历硬币、内层遍历金额，避免把顺序不同的同种组合重复计数。时间 O(amount * n)、空间 O(amount)。
-2. **输出具体方案**：除最少个数外还要返回硬币明细。增加 `choice[i]` 记录每个金额的最优最后一枚面额，结束后从 `amount` 回溯。时间 O(amount * n)、空间 O(amount)，回溯部分 O(amount)。
+1. **零钱兑换 II（组合数）**：求凑成金额的组合数而非最少个数。递推改为计数，外层必须遍历硬币、内层遍历金额，避免把顺序不同的同种组合重复计数。时间 O(amount \* n)、空间 O(amount)。
+2. **输出具体方案**：除最少个数外还要返回硬币明细。增加 `choice[i]` 记录每个金额的最优最后一枚面额，结束后从 `amount` 回溯。时间 O(amount \* n)、空间 O(amount)，回溯部分 O(amount)。
 3. **0-1 背包对照**：若每种面额只能用一次，问题退化为子集和判定（详见[分割等和子集](../partition-equal-subset-sum/)）。此时内层金额必须倒序遍历，防止同一物品被复用。DP 入门对照可参考[爬楼梯](../climbing-stairs/) 的线性递推写法。
 
 ## 面试追问
 
 - 为什么外层金额递增、内层遍历硬币就能允许同一面额复用？（计算 `dp[i]` 时 `dp[i - coin]` 可能是本轮已更新的值，天然包含复用语义。）
 - 若把循环交换为外层硬币、内层金额，结果还正确吗？对最少数有何影响？（仍正确，只是转移顺序变化；但计数类问题会改变组合与排列语义，需要区分。）
-- `amount` 很大而 `coins` 包含 `1` 时，空间还能优化吗？（最少数递推依赖任意靠前位置，无法压缩到 O(1)；BFS 按层扩展也需 O(amount)  visited 数组。）
+- `amount` 很大而 `coins` 包含 `1` 时，空间还能优化吗？（最少数递推依赖任意靠前位置，无法压缩到 O(1)；BFS 按层扩展也需 O(amount) visited 数组。）

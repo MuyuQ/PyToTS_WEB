@@ -12,7 +12,7 @@ sidebar:
   order: 5
 ---
 
-import CodeCompare from '../../../../components/CodeCompare.astro';
+import CodeCompare from "../../../../components/CodeCompare.astro";
 
 ## 场景与问题
 
@@ -113,30 +113,33 @@ class Person:
 
 短对照：函数计时装饰器核心结构。
 
-<CodeCompare
-  py={`def timer(func):
+```python
+def timer(func):
     def wrapper(*args, **kwargs):
         start = time.time()
         result = func(*args, **kwargs)
         print(f"{func.__name__} took {time.time()-start:.2f}s")
         return result
-    return wrapper`}
-  ts={`function timer(target, key, descriptor) {
+    return wrapper
+```
+
+```typescript
+function timer(target, key, descriptor) {
   const original = descriptor.value;
-  descriptor.value = function(...args) {
+  descriptor.value = function (...args) {
     const start = performance.now();
     const result = original.apply(this, args);
-    console.log(\`\${key} took \${performance.now()-start}ms\`);
+    console.log(`${key} took ${performance.now() - start}ms`);
     return result;
   };
   return descriptor;
-}`}
-/>
+}
+```
 
 短对照：带参数的重试装饰器工厂。
 
-<CodeCompare
-  py={`def retry(max_attempts=3):
+```python
+def retry(max_attempts=3):
     def decorator(func):
         @functools.wraps(func)
         def wrapper(*args, **kwargs):
@@ -146,41 +149,52 @@ class Person:
                 except Exception:
                     if attempt == max_attempts - 1: raise
             return wrapper
-    return decorator`}
-  ts={`function retry(maxAttempts = 3) {
-  return function(target, key, descriptor) {
+    return decorator
+```
+
+```typescript
+function retry(maxAttempts = 3) {
+  return function (target, key, descriptor) {
     const original = descriptor.value;
-    descriptor.value = async function(...args) {
+    descriptor.value = async function (...args) {
       for (let i = 0; i < maxAttempts; i++) {
-        try { return await original.apply(this, args); }
-        catch (e) { if (i === maxAttempts-1) throw e; }
+        try {
+          return await original.apply(this, args);
+        } catch (e) {
+          if (i === maxAttempts - 1) throw e;
+        }
       }
     };
     return descriptor;
   };
-}`}
-/>
+}
+```
 
 短对照：类装饰器实现单例模式。
 
-<CodeCompare
-  py={`def singleton(cls):
+```python
+def singleton(cls):
     instances = {}
     def get_instance(*args, **kwargs):
         if cls not in instances:
             instances[cls] = cls(*args, **kwargs)
         return instances[cls]
-    return get_instance`}
-  ts={`function singleton<T extends new(...args:any[])=>{}(ctor: T) {
-  let instance: any;
+    return get_instance
+```
+
+```typescript
+function singleton<T extends new (...args: any[]) => {}>(ctor: T) {
+  let instance: InstanceType<T> | undefined;
   return class extends ctor {
     constructor(...args: any[]) {
       if (instance) return instance;
-      super(...args); instance = this;
+      super(...args);
+      // 派生类实例与基类实例类型结构兼容，TS 无法自动推导，需显式断言
+      instance = this as InstanceType<T>;
     }
   };
-}`}
-/>
+}
+```
 
 ## TypeScript 等价写法
 
@@ -190,7 +204,7 @@ class Person:
 // "emitDecoratorMetadata": true
 
 // 方法装饰器
-function timer(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+function timer(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
   const originalMethod = descriptor.value;
 
   descriptor.value = function (...args: any[]) {
@@ -215,7 +229,7 @@ class Example {
 
 // 装饰器工厂（带参数）
 function retry(maxAttempts: number = 3) {
-  return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  return function (target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
 
     descriptor.value = async function (...args: any[]) {
@@ -247,7 +261,7 @@ class ApiClient {
 
 // 类装饰器
 function singleton<T extends new (...args: any[]) => {}>(constructor: T) {
-  let instance: any;
+  let instance: InstanceType<T> | undefined;
 
   return class extends constructor {
     constructor(...args: any[]) {
@@ -255,7 +269,8 @@ function singleton<T extends new (...args: any[]) => {}>(constructor: T) {
         return instance;
       }
       super(...args);
-      instance = this;
+      // 派生类实例与基类实例类型结构兼容，TS 无法自动推导，需显式断言
+      instance = this as InstanceType<T>;
     }
   };
 }
@@ -265,8 +280,10 @@ class Database {
   connection: string = "Connected";
 }
 
-// 属性装饰器
-function readonly(target: any, propertyKey: string) {
+// 属性装饰器：给静态配置字段加只读保护。
+// 装饰器在类定义时就执行：静态字段先初始化、后冻结，顺序正好；
+// 实例字段的初始化发生在实例化时（装饰之后），直接冻结会抛 TypeError。
+function readonly(target: Object, propertyKey: string) {
   Object.defineProperty(target, propertyKey, {
     writable: false,
   });
@@ -274,47 +291,61 @@ function readonly(target: any, propertyKey: string) {
 
 class Config {
   @readonly
-  apiUrl: string = "https://api.example.com";
+  static apiUrl: string = "https://api.example.com";
+}
+
+// 读取正常；重新赋值会抛 TypeError
+console.log(Config.apiUrl);
+```
+
+短对照：属性装饰器实现只读的静态配置字段。
+
+```python
+# Python 靠 @property 实现只读
+class Config:
+    @property
+    def api_url(self): return "https://api.example.com"
+```
+
+```typescript
+function readonly(target: Object, key: string) {
+  Object.defineProperty(target, key, { writable: false });
+}
+class Config {
+  @readonly static apiUrl = "https://api.example.com";
 }
 ```
 
-短对照：属性装饰器实现只读字段。
-
-<CodeCompare
-  py={`# Python 靠 @property 实现只读
-class Config:
-    @property
-    def api_url(self): return "https://api.example.com"`}
-  ts={`function readonly(target, key) {
-  Object.defineProperty(target, key, { writable: false });
-}
-class Config { @readonly apiUrl = "https://api.example.com"; }`}
-/>
-
 短对照：类型安全的备忘录装饰器。
 
-<CodeCompare
-  py={`# Python 需手动管理缓存字典
+```python
+# Python 需手动管理缓存字典
 def memoize(func):
     cache = {}
     def wrapper(*args):
         if args in cache: return cache[args]
         cache[args] = func(*args)
         return cache[args]
-    return wrapper`}
-  ts={`function memoize<T extends (...args:any[])=>any>(
-  target, key, descriptor: TypedPropertyDescriptor<T>
+    return wrapper
+```
+
+```typescript
+function memoize<T extends (...args: any[]) => any>(
+  target: Object,
+  key: string,
+  descriptor: TypedPropertyDescriptor<T>
 ) {
   const cache = new Map<string, ReturnType<T>>();
-  descriptor.value = function(...args: Parameters<T>) {
+  descriptor.value = function (...args: Parameters<T>) {
     const k = JSON.stringify(args);
     if (cache.has(k)) return cache.get(k)!;
     const r = descriptor.value!.apply(this, args);
-    cache.set(k, r); return r;
+    cache.set(k, r);
+    return r;
   } as T;
   return descriptor;
-}`}
-/>
+}
+```
 
 ## 差异与常见陷阱
 
@@ -360,7 +391,7 @@ function required(target: Object, propertyKey: string | symbol, parameterIndex: 
 }
 
 // 方法装饰器读取元数据
-function validate(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+function validate(target: Object, propertyKey: string, descriptor: PropertyDescriptor) {
   const method = descriptor.value;
 
   descriptor.value = function (...args: any[]) {
@@ -415,7 +446,7 @@ function required(target: Object, key: string | symbol, index: number) {
 ```typescript
 // 使用泛型让装饰器更类型安全
 function memoize<T extends (...args: any[]) => any>(
-  target: any,
+  target: Object,
   propertyKey: string,
   descriptor: TypedPropertyDescriptor<T>
 ) {
@@ -454,23 +485,28 @@ class Calculator {
 
 ```typescript
 // ❌ 错误：descriptor.value 类型变为 any，调用方失去类型提示
-function badMemoize(target, key, descriptor) {
+function badMemoize(target: Object, key: string, descriptor: PropertyDescriptor) {
   const original = descriptor.value;
-  descriptor.value = function(...args: any[]) { return original.apply(this, args); };
+  descriptor.value = function (...args: any[]) {
+    return original.apply(this, args);
+  };
   return descriptor;
 }
 
 // ✅ 正确：泛型约束保留参数与返回类型
 function goodMemoize<T extends (...args: any[]) => any>(
-  target: any, key: string, descriptor: TypedPropertyDescriptor<T>
+  target: Object,
+  key: string,
+  descriptor: TypedPropertyDescriptor<T>
 ) {
   const original = descriptor.value!;
   const cache = new Map<string, ReturnType<T>>();
-  descriptor.value = function(...args: Parameters<T>): ReturnType<T> {
+  descriptor.value = function (...args: Parameters<T>): ReturnType<T> {
     const k = JSON.stringify(args);
     if (cache.has(k)) return cache.get(k)!;
     const r = original.apply(this, args);
-    cache.set(k, r); return r;
+    cache.set(k, r);
+    return r;
   } as T;
   return descriptor;
 }
@@ -538,7 +574,7 @@ def expensive_calculation(n: int) -> int:
 ```typescript
 function cacheResult(maxSize: number = 128) {
   return function <T extends (...args: any[]) => any>(
-    target: any,
+    target: Object,
     propertyKey: string,
     descriptor: TypedPropertyDescriptor<T>
   ) {

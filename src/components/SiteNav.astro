@@ -104,7 +104,13 @@ function isActive(item: NavItem): boolean {
       scrollbar-width: none;
       -webkit-overflow-scrolling: touch;
       scroll-snap-type: x proximity;
-      mask-image: linear-gradient(to right, transparent 0, #000 0.5rem, #000 calc(100% - 1rem), transparent 100%);
+      mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 0.5rem,
+        #000 calc(100% - 1rem),
+        transparent 100%
+      );
     }
 
     .site-nav::-webkit-scrollbar {

@@ -1,18 +1,10 @@
 ---
-import SidebarProgress from './SidebarProgress.astro';
+import type { StarlightRouteData } from "@astrojs/starlight/route-data";
+import SidebarProgress from "./SidebarProgress.astro";
 
-interface Props {
-  entry?: {
-    data?: {
-      banner?: {
-        content: string;
-      };
-    };
-  };
-}
-
-const { entry } = Astro.props as Props;
-const banner = entry?.data?.banner;
+// Starlight 0.32+：覆盖组件从 Astro.locals.starlightRoute 取路由数据
+const { entry } = Astro.locals.starlightRoute as StarlightRouteData;
+const banner = entry?.data?.banner as { content: string } | undefined;
 ---
 
 {banner && <div class="sl-banner" set:html={banner.content} />}

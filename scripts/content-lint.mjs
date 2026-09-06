@@ -3,6 +3,7 @@
  * 1. 标题中不允许出现 emoji（标题体系保持专业、目录可扫视）
  * 2. 不允许根相对内部链接（子路径部署下会 404，必须使用相对链接）
  * 3. frontmatter 必填字段（与 src/content/config.ts 的 lesson/algorithm 约束对齐）
+ * 4. CodeCompare 只用于短代码对（≤20 行、单行 ≤48 字符），超限改上下排列
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative, sep } from "node:path";
@@ -12,6 +13,9 @@ const DOCS = join(process.cwd(), "src", "content", "docs");
 const EMOJI =
   // eslint-disable-next-line no-misleading-character-class -- emoji 匹配需要这些码位范围
   /[\p{Extended_Pictographic}\u{1F3FB}-\u{1F3FF}\u{FE0F}\u{2B00}-\u{2BFF}]/u;
+
+export const CODE_COMPARE_MAX_LINES = 20;
+export const CODE_COMPARE_MAX_LINE_LENGTH = 48;
 
 // 与 config.ts superRefine 对齐：kind 决定必填字段
 const REQUIRED_BY_KIND = {
@@ -31,6 +35,56 @@ function parseFrontmatter(text) {
   const kindMatch = text.slice(3, end).match(/^kind\s*:\s*['"]?(\w+)/m);
   if (kindMatch) data.kind = kindMatch[1];
   return data;
+}
+
+/** 解析 CodeCompare 属性里的模板字面量（处理 \` 与 \${ 转义） */
+function templateLiteralContent(block, attrStart) {
+  const backtick = block.indexOf("`", attrStart);
+  if (backtick === -1) return null;
+  let out = "";
+  let i = backtick + 1;
+  while (i < block.length) {
+    const ch = block[i];
+    if (ch === "\\") {
+      const next = block[i + 1];
+      if (next === "`" || next === "$" || next === "\\") out += next;
+      else out += ch + (next ?? "");
+      i += 2;
+      continue;
+    }
+    if (ch === "`") return out;
+    out += ch;
+    i += 1;
+  }
+  return out;
+}
+
+/** CodeCompare 只用于短代码对；超限的对照改上下排列的普通代码块 */
+function lintCodeCompare(rel, text, issues) {
+  const blockRe = /<CodeCompare\s*\n[\s\S]*?\n\s*\/>/g;
+  let match;
+  while ((match = blockRe.exec(text)) !== null) {
+    const block = match[0];
+    for (const name of ["py", "ts"]) {
+      const attr = new RegExp(`\\b${name}=\\{`).exec(block);
+      if (!attr) continue;
+      const content = templateLiteralContent(block, attr.index + attr[0].length - 1);
+      if (content === null) continue;
+      const lines = content.replace(/^\n+|\n+$/g, "").split("\n");
+      const maxLen = Math.max(...lines.map((l) => l.length), 0);
+      const lineNo = text.slice(0, match.index).split("\n").length;
+      if (lines.length > CODE_COMPARE_MAX_LINES) {
+        issues.push(
+          `${rel}:${lineNo} CodeCompare 超过 ${CODE_COMPARE_MAX_LINES} 行（${lines.length} 行），请改为上下排列的代码块`
+        );
+      }
+      if (maxLen > CODE_COMPARE_MAX_LINE_LENGTH) {
+        issues.push(
+          `${rel}:${lineNo} CodeCompare [${name}] 单行 ${maxLen} 字符，超过 ${CODE_COMPARE_MAX_LINE_LENGTH}，请改为上下排列的代码块`
+        );
+      }
+    }
+  }
 }
 
 /**
@@ -59,6 +113,7 @@ export function lintLines(rel, text) {
       issues.push(`${rel}:1 frontmatter 缺少必填字段: ${field}（kind=${frontmatter.kind}）`);
     }
   }
+  lintCodeCompare(rel, text, issues);
   return issues;
 }
 

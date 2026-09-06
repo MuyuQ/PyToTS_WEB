@@ -11,6 +11,7 @@ description: 掌握 Python 和 TypeScript 的条件与循环语法差异
 sidebar:
   order: 3
 ---
+
 ## 为什么这个很重要
 
 你在 Python 里写了多年的 `elif`，转到 TypeScript 后顺手敲了：
@@ -30,6 +31,7 @@ if (score >= 90) {
 控制流是编程的基础，但 Python 和 TypeScript 的"风格"差异很大。Python 像是走简约路线的北欧设计，TypeScript 更像功能齐全的瑞士军刀。理解这些差异，能让你少踩很多坑。
 
 ---
+
 ## 核心概念
 
 **if-else 链** 就像高速公路的 **分岔路口**：每个路口做一个决定，走哪条路取决于你的目的地（条件）。
@@ -39,6 +41,7 @@ if (score >= 90) {
 **for 循环** 就像 **跑步机**：设定好圈数（循环次数），一圈圈跑，跑完停机。Python 的 `for x in list` 是"自动计数"模式，TypeScript 则可以手动控制速度和步幅。
 
 ---
+
 ## 代码对比
 
 ### Python 回顾
@@ -133,6 +136,7 @@ const squares: number[] = numbers.map((x) => x * x);
 ```
 
 ---
+
 ## 语法速查表
 
 | 特性     | Python                       | TypeScript                   |
@@ -145,6 +149,7 @@ const squares: number[] = numbers.map((x) => x * x);
 | 遍历索引 | `for i, x in enumerate(arr)` | `arr.forEach((x, i) => ...)` |
 
 ---
+
 ## 常见陷阱
 
 ### 1. `elif` vs `else if`
@@ -240,6 +245,7 @@ console.log(JSON.stringify(a) === JSON.stringify(b)); // true
 ```
 
 ---
+
 ## 开发者对话
 
 🐍 **Python 开发者**："TypeScript 为什么这么多花括号？缩进不是更简洁吗？"
@@ -270,6 +276,7 @@ day_name = day_names.get(1, "Unknown")
 🦀 **TS 开发者**："确实容易混淆。记住：`in` 拿的是键（索引），`of` 拿的是值。如果你习惯 Python 的 `for x in list`，那就用 `for...of`。"
 
 ---
+
 ## 试试看
 
 ### 练习 1：预测输出
@@ -307,6 +314,7 @@ console.log(result);
 </details>
 
 ---
+
 ### 练习 2：找错误
 
 下面的代码有问题吗？
@@ -352,6 +360,7 @@ for (const i in scores) {
 </details>
 
 ---
+
 ### 练习 3：代码翻译
 
 将以下 Python 代码转换为 TypeScript：
@@ -401,7 +410,8 @@ console.log(oddNumbers);
 </details>
 
 ---
-## 面试实战
+
+## 面试追问
 
 1. **什么时候用 `switch` 比 `if-else` 更好？**
 
@@ -417,4 +427,5 @@ console.log(oddNumbers);
    - TypeScript 5.0+ 可以用 `switch (true)` 配合模式匹配
 
 ---
+
 **下一步：** [数据结构](../data-structures/)

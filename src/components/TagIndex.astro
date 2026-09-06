@@ -2,27 +2,26 @@
 /**
  * 标签索引：从内容集合聚合 python_tags / ts_tags / 算法 tags，构建时生成，永远与内容一致。
  */
-import { getCollection } from 'astro:content';
+import { getCollection } from "astro:content";
+import { docSlug } from "../lib/doc-id";
 
 interface TagGroup {
   label: string;
   items: { tag: string; pages: { title: string; href: string }[] }[];
 }
 
-const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
-// entry.id 保留扩展名（如 paths/migration/types.mdx），归一为路由 slug；index 页指向其目录
-const slugFor = (id: string) => id.replace(/\.(mdx|md)$/, '').replace(/(^|\/)index$/, '');
+const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const hrefFor = (id: string) => {
-  const slug = slugFor(id);
+  const slug = docSlug(id);
   return slug ? `${base}/${slug}/` : `${base}/`;
 };
 
-const docs = await getCollection('docs');
+const docs = await getCollection("docs");
 
 const groups: TagGroup[] = [
-  { label: 'Python 侧标签', key: 'python_tags' },
-  { label: 'TypeScript 侧标签', key: 'ts_tags' },
-  { label: '算法标签', key: 'tags' },
+  { label: "Python 侧标签", key: "python_tags" },
+  { label: "TypeScript 侧标签", key: "ts_tags" },
+  { label: "算法标签", key: "tags" },
 ].map(({ label, key }) => {
   const map = new Map<string, { title: string; href: string }[]>();
   for (const entry of docs) {

@@ -194,6 +194,7 @@ Already configured in `lighthouserc.json`:
 ### Email Alerts
 
 Configure in monitoring tools:
+
 - UptimeRobot: admin@example.com
 - Sentry: team@example.com
 - Checkly: devops@example.com

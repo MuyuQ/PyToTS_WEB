@@ -58,14 +58,14 @@ def permute_brute(nums: list[int]) -> list[list[int]]:
 
 以 `nums = [1, 2]` 为例：
 
-| 步骤 | 选择 | `path` | `used`      | 说明             |
-| ---- | ---- | ------ | ----------- | ---------------- |
-| 1    | 选 1 | `[1]`  | `[T, F]`    | 进入下一层       |
-| 2    | 选 2 | `[1, 2]` | `[T, T]`  | 长度达标，收集   |
-| 3    | 撤销 2 | `[1]` | `[T, F]`   | 回溯，尝试同层其他 |
-| 4    | 撤销 1 | `[]` | `[F, F]`    | 回到顶层         |
-| 5    | 选 2 | `[2]`  | `[F, T]`    | 第二个分支       |
-| 6    | 选 1 | `[2, 1]` | `[T, T]`  | 收集第二个排列   |
+| 步骤 | 选择   | `path`   | `used`   | 说明               |
+| ---- | ------ | -------- | -------- | ------------------ |
+| 1    | 选 1   | `[1]`    | `[T, F]` | 进入下一层         |
+| 2    | 选 2   | `[1, 2]` | `[T, T]` | 长度达标，收集     |
+| 3    | 撤销 2 | `[1]`    | `[T, F]` | 回溯，尝试同层其他 |
+| 4    | 撤销 1 | `[]`     | `[F, F]` | 回到顶层           |
+| 5    | 选 2   | `[2]`    | `[F, T]` | 第二个分支         |
+| 6    | 选 1   | `[2, 1]` | `[T, T]` | 收集第二个排列     |
 
 :::tip
 关键细节是撤销必须成对出现：`path.pop()` 与 `used[i] = False` 缺一不可。收集时用 `path[:]` 快照，否则后续回溯会改写已存答案。
@@ -169,22 +169,25 @@ def permute_brute(nums: list[int]) -> list[list[int]]:
 
 回溯骨架完全一致，差异在布尔数组初始化与拷贝语法上：
 
-<CodeCompare
-  py={`# 布尔标记数组，乘法初始化
-used = [False] * n`}
-  ts={`// 布尔标记数组，fill 初始化
-const used: boolean[] = new Array(n).fill(false);`}
-/>
+```python
+# 布尔标记数组，乘法初始化
+used = [False] * n
+```
 
-| 关注点   | Python                    | TypeScript                              |
-| -------- | ------------------------- | --------------------------------------- |
-| 标记数组 | `[False] * n`             | `new Array(n).fill(false)`，需写元素类型 |
-| 结果拷贝 | `path[:]`                 | `[...path]`，语义一致                  |
-| 入路径   | `path.append(nums[i])`    | `path.push(nums[i])`                    |
-| 出路径   | `path.pop()`              | `path.pop()`，同名                      |
-| 布尔值   | `True` / `False` 首字母大写 | `true` / `false` 全小写               |
-| 跳过已用 | `if used[i]: continue`    | `if (used[i]) continue;`                |
-| 输出测试 | `print(...)`              | `console.log(...)`                      |
+```typescript
+// 布尔标记数组，fill 初始化
+const used: boolean[] = new Array(n).fill(false);
+```
+
+| 关注点   | Python                      | TypeScript                               |
+| -------- | --------------------------- | ---------------------------------------- |
+| 标记数组 | `[False] * n`               | `new Array(n).fill(false)`，需写元素类型 |
+| 结果拷贝 | `path[:]`                   | `[...path]`，语义一致                    |
+| 入路径   | `path.append(nums[i])`      | `path.push(nums[i])`                     |
+| 出路径   | `path.pop()`                | `path.pop()`，同名                       |
+| 布尔值   | `True` / `False` 首字母大写 | `true` / `false` 全小写                  |
+| 跳过已用 | `if used[i]: continue`      | `if (used[i]) continue;`                 |
+| 输出测试 | `print(...)`                | `console.log(...)`                       |
 
 :::note
 `new Array(n).fill(false)` 必须写清 `boolean[]`，否则推断为 `any[]`，strict 检查形同虚设。Python 的乘法初始化简洁，但对可变对象同样适用，需注意引用共享陷阱。

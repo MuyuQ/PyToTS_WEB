@@ -11,6 +11,7 @@ description: 理解 Python 和 TypeScript 枚举与常量定义的差异
 sidebar:
   order: 6
 ---
+
 ## 为什么这个很重要
 
 在 Python 里定义常量，习惯用全大写变量：
@@ -478,7 +479,7 @@ console.log(getPrimaryColor());
 
 ```javascript
 function getPrimaryColor() {
-  return "#ff0000" /* Colors.Red */;
+  return "#ff0000"; /* Colors.Red */
 }
 
 console.log(getPrimaryColor());
@@ -618,7 +619,7 @@ sendRequest(HttpMethod.GET, "https://api.example.com");
 | 计算成员     | 支持        | 支持            | 不适用     |
 | 跨模块兼容   | 无问题      | const enum 有坑 | 无问题     |
 
-## 面试实战
+## 面试追问
 
 ### 基础问题
 

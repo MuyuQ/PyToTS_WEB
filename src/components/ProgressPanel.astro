@@ -16,7 +16,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const algorithms = await getCollection(
   "docs",
   (entry: CollectionEntry<"docs">) =>
-    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm",
+    entry.id.startsWith("algorithms/") && entry.data.kind === "algorithm"
 );
 
 const algorithmRoutes = algorithms.map((entry) => {
@@ -69,7 +69,7 @@ const tracks = TRACK_ORDER.map((id) => ({
             {track.label}路径
           </a>
           <span class="track-progress__bar">
-            <span class="track-progress__fill" data-track-fill style="width:0%"></span>
+            <span class="track-progress__fill" data-track-fill style="width:0%" />
           </span>
           <span class="track-progress__num" data-track-num>
             0/{track.total}
@@ -97,125 +97,86 @@ const tracks = TRACK_ORDER.map((id) => ({
 
   <details class="danger-zone">
     <summary>清除本地数据</summary>
-    <p>
-      学习进度与收藏只保存在这台设备的浏览器里，不会上传。清除后无法恢复。
-    </p>
+    <p>学习进度与收藏只保存在这台设备的浏览器里，不会上传。清除后无法恢复。</p>
     <button type="button" class="btn btn--sm" data-reset-step="idle">清除进度与收藏</button>
   </details>
 </section>
 
-<script is:inline>
-  // is:inline：脚本内为浏览器原生 JS，不经 TS 检查。
-  // 课程与算法路由在构建时写入 data-*，脚本只从 DOM 读取：
-  // 无需 define:vars，也无需从 script 地址反推子路径 base。
-  var panel = document.querySelector("[data-progress-panel]");
-  var base = (panel && panel.dataset.base) || "";
-  var tracks = JSON.parse((panel && panel.dataset.tracks) || "[]");
-  var algorithmRoutes = JSON.parse((panel && panel.dataset.algorithms) || "[]");
+<script>
+  import { getProgress, clearProgress, normPath } from "../lib/progress-store";
 
-  var KEY = "ts-py-learning-progress";
-
-  function read() {
-    try {
-      var raw = localStorage.getItem(KEY);
-      if (!raw) return empty();
-      var parsed = JSON.parse(raw);
-      return {
-        lessons: Array.isArray(parsed.lessons) ? parsed.lessons : [],
-        quizzes: Array.isArray(parsed.quizzes) ? parsed.quizzes : [],
-        bookmarks: Array.isArray(parsed.bookmarks) ? parsed.bookmarks : [],
-        lastVisited: parsed.lastVisited || "",
-      };
-    } catch (e) {
-      return empty();
-    }
-  }
-
-  function empty() {
-    return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
-  }
-
-  function norm(path) {
-    return String(path || "").replace(/\/$/, "");
-  }
+  /**
+   * 课程与算法路由在构建时写入 data-*，脚本只从 DOM 读取：
+   * 无需从 script 地址反推子路径 base，module script 也不经手构建期变量。
+   */
+  const panel = document.querySelector<HTMLElement>("[data-progress-panel]");
+  const base = panel?.dataset.base || "";
+  const tracks: { routes: string[] }[] = JSON.parse(panel?.dataset.tracks || "[]");
+  const algorithmRoutes: string[] = JSON.parse(panel?.dataset.algorithms || "[]");
 
   // 收藏存的是不带 base 的规范路径（与 SidebarProgress 匹配口径一致），
   // 渲染成链接时必须补回子路径前缀，否则 /PyToTS_WEB/ 部署下点击会 404
-  function withBase(path) {
-    var p = String(path || "");
-    if (!base || p === base || p.indexOf(base + "/") === 0) return p;
-    return base + p;
+  function withBase(path: string): string {
+    if (!base || path === base || path.startsWith(base + "/")) return path;
+    return base + path;
   }
 
-  function completedSet() {
-    return new Set(
-      read().lessons.map(function (item) {
-        return norm(item.path);
-      }),
-    );
+  function completedSet(): Set<string> {
+    return new Set(getProgress().lessons.map((item) => normPath(item.path)));
   }
 
-  function paintStats(done) {
-    var root = document.querySelector("[data-progress-panel]");
+  function paintStats(done: Set<string>): void {
+    const root = document.querySelector<HTMLElement>("[data-progress-panel]");
     if (!root) return;
 
-    var algorithmKeys = new Set(algorithmRoutes.map(norm));
-    var lessonsDone = 0;
-    var algorithmsDone = 0;
-    done.forEach(function (path) {
+    const algorithmKeys = new Set(algorithmRoutes.map(normPath));
+    let lessonsDone = 0;
+    let algorithmsDone = 0;
+    done.forEach((path) => {
       if (algorithmKeys.has(path)) algorithmsDone += 1;
       else lessonsDone += 1;
     });
 
-    var progress = read();
-    var quizzes = progress.quizzes.length;
-    var avg = quizzes
-      ? Math.round(
-          progress.quizzes.reduce(function (sum, q) {
-            return sum + (q.percentage || 0);
-          }, 0) / quizzes,
-        )
+    const progress = getProgress();
+    const quizzes = progress.quizzes.length;
+    const avg = quizzes
+      ? Math.round(progress.quizzes.reduce((sum, q) => sum + (q.percentage || 0), 0) / quizzes)
       : null;
+
+    const set = (name: string, value: string) => {
+      const el = root.querySelector(`[data-stat="${name}"]`);
+      if (el) el.textContent = value;
+    };
 
     set("lessons", String(lessonsDone));
     set("algorithms", String(algorithmsDone));
     set("quizzes", String(quizzes));
     set("score", avg === null ? "—" : avg + "%");
-
-    function set(name, value) {
-      var el = root.querySelector('[data-stat="' + name + '"]');
-      if (el) el.textContent = value;
-    }
   }
 
-  function paintTracks(done) {
-    var root = document.querySelector("[data-track-progress]");
+  function paintTracks(done: Set<string>): void {
+    const root = document.querySelector("[data-track-progress]");
     if (!root) return;
 
-    var groups = tracks.map(function (track) {
-      return { routes: track.routes, fill: null, num: null };
-    });
-    groups.push({ routes: algorithmRoutes, fill: null, num: null });
+    const groups = [...tracks.map((track) => track.routes), algorithmRoutes];
 
-    var fills = root.querySelectorAll("[data-track-fill]");
-    var nums = root.querySelectorAll("[data-track-num]");
+    const fills = root.querySelectorAll<HTMLElement>("[data-track-fill]");
+    const nums = root.querySelectorAll<HTMLElement>("[data-track-num]");
 
-    groups.forEach(function (group, i) {
-      var hit = group.routes.filter(function (route) {
-        return done.has(norm(route));
-      }).length;
-      var pct = group.routes.length ? Math.round((hit / group.routes.length) * 100) : 0;
+    groups.forEach((routes, i) => {
+      const hit = routes.filter((route) => done.has(normPath(route))).length;
+      const pct = routes.length ? Math.round((hit / routes.length) * 100) : 0;
       if (fills[i]) fills[i].style.width = pct + "%";
-      if (nums[i]) nums[i].textContent = hit + "/" + group.routes.length;
+      if (nums[i]) nums[i].textContent = hit + "/" + routes.length;
     });
   }
 
-  function paintBookmarks() {
-    var grid = document.querySelector("[data-bookmarks-grid]");
-    var emptyEl = document.querySelector("[data-bookmarks-empty]");
+  function paintBookmarks(): void {
+    const grid = document.querySelector("[data-bookmarks-grid]");
+    const emptyEl = document.querySelector<HTMLElement>("[data-bookmarks-empty]");
     if (!grid) return;
 
-    var marks = read().bookmarks;
+    const marks = getProgress().bookmarks;
     grid.innerHTML = "";
 
     if (!marks.length) {
@@ -224,32 +185,32 @@ const tracks = TRACK_ORDER.map((id) => ({
     }
     if (emptyEl) emptyEl.hidden = true;
 
-    var completed = completedSet();
+    const completed = completedSet();
 
-    marks.forEach(function (path) {
-      var title = norm(path).split("/").filter(Boolean).pop() || path;
-      var done = completed.has(norm(path));
+    marks.forEach((path) => {
+      const title = normPath(path).split("/").filter(Boolean).pop() || path;
+      const done = completed.has(normPath(path));
 
-      var card = document.createElement("a");
+      const card = document.createElement("a");
       card.className = "bookmark-card";
       card.href = withBase(path);
 
-      var head = document.createElement("div");
+      const head = document.createElement("div");
       head.className = "bookmark-header";
 
-      var heading = document.createElement("span");
+      const heading = document.createElement("span");
       heading.className = "bookmark-title";
       heading.textContent = decodeURIComponent(title);
       head.appendChild(heading);
 
       if (done) {
-        var badge = document.createElement("span");
+        const badge = document.createElement("span");
         badge.className = "completed-badge";
         badge.textContent = "已完成";
         head.appendChild(badge);
       }
 
-      var sub = document.createElement("span");
+      const sub = document.createElement("span");
       sub.className = "bookmark-path";
       sub.textContent = path;
 
@@ -259,30 +220,30 @@ const tracks = TRACK_ORDER.map((id) => ({
     });
   }
 
-  function paint() {
-    var done = completedSet();
+  function paint(): void {
+    const done = completedSet();
     paintStats(done);
     paintTracks(done);
     paintBookmarks();
   }
 
   // 清除数据：两段式确认，避免误触导致不可逆丢失
-  var resetBtn = document.querySelector("[data-reset-step]");
+  const resetBtn = document.querySelector<HTMLButtonElement>("[data-reset-step]");
   if (resetBtn) {
-    var timer = null;
-    resetBtn.addEventListener("click", function () {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    resetBtn.addEventListener("click", () => {
       if (resetBtn.dataset.resetStep === "idle") {
         resetBtn.dataset.resetStep = "confirm";
         resetBtn.textContent = "再点一次，确认清除";
-        timer = setTimeout(function () {
+        timer = setTimeout(() => {
           resetBtn.dataset.resetStep = "idle";
           resetBtn.textContent = "清除进度与收藏";
         }, 4000);
         return;
       }
 
-      clearTimeout(timer);
-      localStorage.removeItem(KEY);
+      if (timer) clearTimeout(timer);
+      clearProgress();
       resetBtn.dataset.resetStep = "idle";
       resetBtn.textContent = "清除进度与收藏";
       paint();
@@ -290,12 +251,13 @@ const tracks = TRACK_ORDER.map((id) => ({
     });
   }
 
-  function schedule() {
+  function schedule(): void {
     setTimeout(paint, 50);
   }
 
   schedule();
   window.addEventListener("progress-updated", schedule);
+  // Starlight 0.28 是 MPA 全页加载，astro:page-load 当前不会触发；保留监听以便未来升级视图过渡
   document.addEventListener("astro:page-load", schedule);
 </script>
 

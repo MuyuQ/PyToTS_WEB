@@ -54,7 +54,7 @@ const total = rows.reduce((sum, row) => sum + row.lessons, 0);
         <span class="path-row__aside">
           <span class="path-row__progress" data-row-progress aria-hidden="true">
             <span class="path-row__bar">
-              <span class="path-row__fill" style="width:0%"></span>
+              <span class="path-row__fill" style="width:0%" />
             </span>
             <span class="path-row__num" data-row-num>
               0/{row.lessons}
@@ -70,18 +70,10 @@ const total = rows.reduce((sum, row) => sum + row.lessons, 0);
 </div>
 
 <script>
-  const KEY = "ts-py-learning-progress";
+  import { getProgress, normPath } from "../lib/progress-store";
 
   function completedSet(): Set<string> {
-    try {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return new Set();
-      const parsed = JSON.parse(raw);
-      const list = Array.isArray(parsed?.lessons) ? parsed.lessons : [];
-      return new Set(list.map((item: { path?: string }) => String(item?.path ?? "").replace(/\/$/, "")));
-    } catch {
-      return new Set();
-    }
+    return new Set(getProgress().lessons.map((item) => normPath(item.path)));
   }
 
   function paint() {

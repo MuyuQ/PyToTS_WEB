@@ -52,8 +52,8 @@ describe("书签功能", () => {
 
     const panel = readFileSync("src/components/ProgressPanel.astro", "utf8");
     expect(panel).toMatch(/id="bookmarks-container"/);
-    // 与 progress-store 共用同一份存储键，收藏数据才能互通
-    expect(panel).toMatch(/ts-py-learning-progress/);
+    // 存储键收敛在 progress-store 一处；面板必须经它读写，收藏数据才能互通
+    expect(panel).toMatch(/from "\.\.\/lib\/progress-store"/);
   });
 
   it("进度面板用构建期 BASE_URL 生成链接，不依赖运行时从 script 推导", () => {

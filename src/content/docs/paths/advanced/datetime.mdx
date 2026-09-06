@@ -12,7 +12,7 @@ sidebar:
   order: 7
 ---
 
-import CodeCompare from '../../../../components/CodeCompare.astro';
+import CodeCompare from "../../../../components/CodeCompare.astro";
 
 ## 场景与问题
 
@@ -107,12 +107,15 @@ new_year = now.replace(year=2025)
 
 短对照：日期加减与差值。
 
-<CodeCompare
-  py={`tomorrow = now + timedelta(days=1)
-remaining = deadline - now  # timedelta`}
-  ts={`const tomorrow = new Date(now.getTime() + 864e5);
-const remaining = deadline.getTime() - now.getTime(); // ms`}
-/>
+```python
+tomorrow = now + timedelta(days=1)
+remaining = deadline - now  # timedelta
+```
+
+```typescript
+const tomorrow = new Date(now.getTime() + 864e5);
+const remaining = deadline.getTime() - now.getTime(); // ms
+```
 
 ### 格式化输出
 
@@ -131,10 +134,13 @@ iso_format = now.isoformat()  # 2024-03-15T14:30:00
 
 短对照：ISO 格式化。
 
-<CodeCompare
-  py={`iso = now.isoformat()  # 2024-03-15T14:30:00`}
-  ts={`const iso = now.toISOString(); // 2024-03-15T06:30:00.000Z`}
-/>
+```python
+iso = now.isoformat()  # 2024-03-15T14:30:00
+```
+
+```typescript
+const iso = now.toISOString(); // 2024-03-15T06:30:00.000Z
+```
 
 ### 时区处理
 
@@ -246,10 +252,13 @@ now.toTimeString(); // 14:30:00 GMT+0800
 
 短对照：本地化格式化。
 
-<CodeCompare
-  py={`local = now.strftime("%Y/%m/%d")  # 手动格式`}
-  ts={`const local = now.toLocaleDateString("zh-CN"); // 自动本地化`}
-/>
+```python
+local = now.strftime("%Y/%m/%d")  # 手动格式
+```
+
+```typescript
+const local = now.toLocaleDateString("zh-CN"); // 自动本地化
+```
 
 ### 时区处理
 
@@ -733,4 +742,5 @@ function getWorkdaysInMonthWithDateFns(year: number, month: number): Date[] {
    ```
 
 ---
+
 [下一课：装饰器模式](../decorators/) | [返回学习路径首页](../../)

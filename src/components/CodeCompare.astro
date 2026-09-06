@@ -20,11 +20,7 @@ const { py, ts, caption, pyTitle = "Python", tsTitle = "TypeScript" } = Astro.pr
 ---
 
 <figure class="code-compare">
-  {
-    caption && (
-      <figcaption class="code-compare__caption" set:html={caption} />
-    )
-  }
+  {caption && <figcaption class="code-compare__caption" set:html={caption} />}
   <div class="code-compare__grid">
     <div class="code-compare__pane code-compare__pane--py">
       <div class="code-compare__header">
