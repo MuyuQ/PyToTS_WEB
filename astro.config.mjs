@@ -157,14 +157,7 @@ export default defineConfig({
         },
         {
           label: "关于",
-          items: [
-            { label: "关于与贡献", link: "/about/" },
-            {
-              label: "English（未完成）",
-              collapsed: true,
-              items: [{ autogenerate: { directory: "en" } }],
-            },
-          ],
+          items: [{ label: "关于与贡献", link: "/about/" }],
         },
       ],
     }),
