@@ -32,8 +32,11 @@ export class QuizManager {
   private questions: QuizQuestion[];
   private state: QuizState;
 
-  constructor(questions: QuizQuestion[]) {
-    this.questions = questions;
+  constructor(
+    private readonly sourceQuestions: readonly QuizQuestion[],
+    private readonly random: () => number = Math.random
+  ) {
+    this.questions = this.prepareQuestions();
     this.state = {
       currentQuestion: 0,
       selectedOption: null,
@@ -43,13 +46,27 @@ export class QuizManager {
     };
   }
 
+  /** 每次作答独立洗牌；选项、答案与解析一起移动，不修改共享题库。 */
+  private prepareQuestions(): QuizQuestion[] {
+    return this.sourceQuestions.map((question) => {
+      const options = [...question.options];
+      for (let i = options.length - 1; i > 0; i--) {
+        const j = Math.floor(this.random() * (i + 1));
+        [options[i], options[j]] = [options[j], options[i]];
+      }
+      return { ...question, options };
+    });
+  }
+
   selectOption(index: number) {
-    if (this.state.showExplanation) return;
+    if (this.state.showExplanation || this.state.completed) return;
+    if (!Number.isInteger(index) || !this.getCurrentQuestion()?.options[index]) return;
     this.state.selectedOption = index;
   }
 
   submitAnswer() {
-    if (this.state.selectedOption === null) return;
+    if (this.state.selectedOption === null || this.state.showExplanation || this.state.completed)
+      return;
 
     const currentQ = this.questions[this.state.currentQuestion];
     const isCorrect = currentQ.options[this.state.selectedOption].correct;
@@ -59,6 +76,7 @@ export class QuizManager {
   }
 
   nextQuestion() {
+    if (!this.state.showExplanation || this.state.completed) return;
     if (this.state.currentQuestion < this.questions.length - 1) {
       this.state.currentQuestion++;
       this.state.selectedOption = null;
@@ -69,6 +87,7 @@ export class QuizManager {
   }
 
   reset() {
+    this.questions = this.prepareQuestions();
     this.state = {
       currentQuestion: 0,
       selectedOption: null,
