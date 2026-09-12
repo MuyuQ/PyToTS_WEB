@@ -69,7 +69,7 @@ describe("QuizManager（src/lib/quiz-manager.ts 状态机）", () => {
     quiz.submitAnswer();
     expect(quiz.getState().showExplanation).toBe(false);
 
-    const correctIdx = QUESTIONS[0].options.findIndex((o) => o.correct);
+    const correctIdx = quiz.getCurrentQuestion().options.findIndex((o) => o.correct);
     quiz.selectOption(correctIdx);
     quiz.submitAnswer();
     expect(quiz.getState().showExplanation).toBe(true);
@@ -181,7 +181,10 @@ describe("initQuizContainers（src/lib/quiz-ui.ts 渲染与交互）", () => {
     expect(explanation.getAttribute("role")).toBeNull();
 
     // 正确答案要能被屏幕阅读器读到
-    const correctBtn = btns[QUESTIONS[0].options.findIndex((o) => o.correct)];
+    const correctText = QUESTIONS[0].options.find((o) => o.correct)!.text;
+    const correctBtn = btns.find(
+      (btn) => btn.querySelector(".option-text")?.textContent === correctText
+    )!;
     expect(correctBtn.classList.contains("correct")).toBe(true);
     expect(correctBtn.getAttribute("aria-label")).toContain("正确答案");
   });
@@ -234,8 +237,35 @@ describe("initQuizContainers（src/lib/quiz-ui.ts 渲染与交互）", () => {
   it("重复初始化不叠加渲染（astro:page-load 复跑安全）", () => {
     const container = mountContainer("variables");
     initQuizContainers();
+    options(container)[1].click();
+    actionBtn(container).click();
+    actionBtn(container).click();
+    const order = options(container).map((btn) => btn.textContent);
     initQuizContainers();
     expect(options(container)).toHaveLength(QUESTIONS[0].options.length);
+    expect(container.querySelector(".quiz-progress")?.textContent).toBe("问题 2 / 5");
+    expect(options(container).map((btn) => btn.textContent)).toEqual(order);
+  });
+
+  it.each([" ", "Enter"])("%s 选择后保留焦点、选项顺序和判分", (key) => {
+    const container = mountContainer("variables");
+    initQuizContainers();
+    const correct = QUESTIONS[0].options.find((option) => option.correct)!;
+    const index = options(container).findIndex(
+      (btn) => btn.querySelector(".option-text")?.textContent === correct.text
+    );
+    const order = options(container).map((btn) => btn.textContent);
+    options(container)[index].focus();
+    options(container)[index].dispatchEvent(
+      new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true })
+    );
+    expect(document.activeElement).toBe(options(container)[index]);
+    expect(options(container)[index].getAttribute("aria-checked")).toBe("true");
+    expect(options(container).map((btn) => btn.textContent)).toEqual(order);
+    actionBtn(container).click();
+    expect(options(container).map((btn) => btn.textContent)).toEqual(order);
+    expect(container.querySelector(".explanation-content")?.textContent).toBe(correct.explanation);
+    expect(container.querySelector(".quiz-explanation")?.classList.contains("correct")).toBe(true);
   });
 
   it("预测题：渲染代码片段与「预测输出: X - 说明」结构化文案", () => {

@@ -2,6 +2,8 @@ import { QuizManager, type QuizOption } from "./quiz-manager";
 import { questionsFor } from "../data/quizzes";
 import { saveQuizResult } from "./progress-store";
 
+const initializedContainers = new WeakSet<Element>();
+
 /**
  * 测验的客户端交互（渲染 / 判分 / 结果）
  *
@@ -15,6 +17,7 @@ export function initQuizContainers(root: ParentNode = document): void {
   const containers = root.querySelectorAll(".quiz-container[data-quiz-id]");
 
   containers.forEach((container) => {
+    if (initializedContainers.has(container)) return;
     const quizId = container.getAttribute("data-quiz-id");
     if (!quizId) return;
 
@@ -25,6 +28,7 @@ export function initQuizContainers(root: ParentNode = document): void {
 
     const quiz = new QuizManager(questions);
     initializeQuizUI(container as HTMLElement, quiz);
+    initializedContainers.add(container);
   });
 }
 
@@ -94,6 +98,16 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
     });
   }
 
+  function focusOption(index: number): void {
+    optionsEl.querySelectorAll<HTMLButtonElement>(".quiz-option")[index]?.focus();
+  }
+
+  function selectOption(index: number): void {
+    quiz.selectOption(index);
+    render();
+    focusOption(index);
+  }
+
   function handleOptionKeydown(e: KeyboardEvent, index: number) {
     if (quiz.getState().showExplanation) return;
 
@@ -103,17 +117,14 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
     else if (e.key === "ArrowUp" || e.key === "ArrowLeft") target = (index - 1 + count) % count;
     else if (e.key === " " || e.key === "Enter") {
       e.preventDefault();
-      quiz.selectOption(index);
-      render();
+      selectOption(index);
       return;
     } else {
       return;
     }
 
     e.preventDefault();
-    quiz.selectOption(target);
-    render();
-    optionsEl.querySelectorAll<HTMLButtonElement>(".quiz-option")[target]?.focus();
+    selectOption(target);
   }
 
   function buildOptionButton(
@@ -167,8 +178,7 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
 
     btn.addEventListener("click", () => {
       if (quiz.getState().showExplanation) return;
-      quiz.selectOption(index);
-      render();
+      selectOption(index);
     });
 
     btn.addEventListener("keydown", (e) => handleOptionKeydown(e, index));
@@ -247,7 +257,7 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
         render();
         // 自动聚焦到新问题的当前 tab stop（未选时为首项）
         const tabStop = optionsEl.querySelector<HTMLButtonElement>('.quiz-option[tabindex="0"]');
-        if (tabStop && !quiz.getState().showExplanation) {
+        if (tabStop && !quiz.getState().completed && !quiz.getState().showExplanation) {
           tabStop.focus();
         }
       };
@@ -350,6 +360,8 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
       <button class="quiz-restart-btn">重新测验</button>
     `;
     resultEl.style.display = "block";
+    resultEl.tabIndex = -1;
+    resultEl.focus();
 
     const restartBtn = resultEl.querySelector(".quiz-restart-btn") as HTMLButtonElement;
     restartBtn.onclick = () => {
@@ -359,6 +371,7 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
       progressEl.style.display = "block";
       actionBtn.style.display = "block";
       render();
+      focusOption(0);
     };
   }
 
