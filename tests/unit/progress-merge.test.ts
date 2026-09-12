@@ -13,6 +13,7 @@ function makeProgress(overrides: Partial<LearningProgress> = {}): LearningProgre
   return {
     lessons: [],
     quizzes: [],
+    quizAttempts: [],
     bookmarks: [],
     lastVisited: "",
     ...overrides,

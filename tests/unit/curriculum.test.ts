@@ -36,6 +36,20 @@ describe("curriculum 单一数据源", () => {
     expect(trackLessonCount("foundation")).toBe(5);
   });
 
+  it("所有进度路由与课时数一致，准备入口只用于分页", () => {
+    for (const track of TRACK_ORDER) {
+      expect(trackRoutes(track)).toHaveLength(trackLessonCount(track));
+      expect(trackRoutes(track)).not.toContain(`/paths/${track}/`);
+    }
+    expect(trackRoutes("preparation")).toEqual([
+      "/paths/preparation/typescript-intro/",
+      "/paths/preparation/setup/",
+    ]);
+    expect(neighbourLesson("preparation", "typescript-intro", -1)?.route).toBe(
+      "/paths/preparation/"
+    );
+  });
+
   it("isTrack 只认已知路径", () => {
     expect(isTrack("foundation")).toBe(true);
     expect(isTrack("nope")).toBe(false);
