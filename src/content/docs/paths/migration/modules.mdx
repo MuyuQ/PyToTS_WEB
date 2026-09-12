@@ -213,17 +213,17 @@ import { User } from "./types"; // ❌ 报错：没有导出 User
 
 ## 语法速查表
 
-| 操作         | Python                 | TypeScript                            |
-| ------------ | ---------------------- | ------------------------------------- |
-| 导入整个模块 | `import os`            | `import * as os from 'os'`            |
-| 导入特定内容 | `from os import path`  | `import { path } from 'os'`           |
-| 起别名       | `import numpy as np`   | `import * as np from 'numpy'`         |
-| 默认导入     | ❌ 不支持              | `import User from './user'`           |
-| 类型导入     | ❌ 不适用              | `import type { User } from './types'` |
-| 相对路径     | `from . import module` | `import { x } from './module'`        |
-| 包管理器     | pip                    | npm / yarn / pnpm                     |
-| 依赖文件     | requirements.txt       | package.json                          |
-| 锁文件       | Pipfile.lock           | package-lock.json                     |
+| 操作         | Python                     | TypeScript                            |
+| ------------ | -------------------------- | ------------------------------------- |
+| 导入整个模块 | `import os`                | `import * as os from 'os'`            |
+| 导入特定内容 | `from os.path import join` | `import { join } from 'node:path'`    |
+| 起别名       | `import numpy as np`       | `import * as np from 'numpy'`         |
+| 默认导入     | ❌ 不支持                  | `import User from './user'`           |
+| 类型导入     | ❌ 不适用                  | `import type { User } from './types'` |
+| 相对路径     | `from . import module`     | `import { x } from './module'`        |
+| 包管理器     | pip                        | npm / yarn / pnpm                     |
+| 依赖文件     | requirements.txt           | package.json                          |
+| 锁文件       | Pipfile.lock               | package-lock.json                     |
 
 ## 开发者对话
 

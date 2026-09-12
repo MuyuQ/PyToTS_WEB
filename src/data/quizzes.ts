@@ -54,7 +54,11 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
     {
       question: "Python 的 `Union[int, str]` 在 TypeScript 中如何写？",
       options: [
-        { text: "int | str", correct: true, explanation: "TypeScript 使用 | 表示联合类型" },
+        {
+          text: "number | string",
+          correct: true,
+          explanation: "使用 | 联合 number 与 string；TypeScript 没有内置 int 或 str 类型",
+        },
         { text: "Union[int, str]", correct: false, explanation: "这是 Python 的写法" },
         { text: "int || str", correct: false, explanation: "语法错误" },
         {
@@ -223,7 +227,7 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "TypeScript 中 `await` 只能在什么函数中使用？",
+      question: "在函数体内直接使用 await，该函数需要怎样声明？",
       options: [
         { text: "async 函数", correct: true, explanation: "await 只能在 async 函数或模块顶层使用" },
         { text: "任何函数", correct: false, explanation: "普通函数中不能直接使用 await" },
@@ -244,7 +248,11 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
           explanation: "Promise.all 等待所有 Promise 完成",
         },
         { text: "Promise.race(tasks)", correct: false, explanation: "race 返回最快完成的那个" },
-        { text: "await tasks", correct: false, explanation: "不能 await 数组" },
+        {
+          text: "await tasks",
+          correct: false,
+          explanation: "await 普通数组会返回数组本身，不会等待其中的 Promise",
+        },
         { text: "async.all(tasks)", correct: false, explanation: "async 没有 all 方法" },
       ],
     },
@@ -265,14 +273,14 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       question: "在 TypeScript 中，如何处理 Promise 的错误？",
       options: [
         {
-          text: "try/catch 包裹 await",
+          text: "try/catch 包裹 await，或调用 Promise 的 .catch()",
           correct: true,
-          explanation: "使用 try/catch 捕获 await 抛出的错误",
+          explanation: "两种方式都能处理 Promise 拒绝；try/catch 中必须 await 才能捕获后续拒绝",
         },
         {
-          text: "catch 方法链",
+          text: "只用 try/catch 包裹 Promise 的创建，不 await",
           correct: false,
-          explanation: "虽然可以，但 async/await 更推荐用 try/catch",
+          explanation: "同步 try/catch 不会捕获 Promise 后续的异步拒绝",
         },
         { text: "if/else 判断", correct: false, explanation: "不能用 if/else 处理异步错误" },
         { text: "switch 语句", correct: false, explanation: "不能用 switch 处理异步错误" },
@@ -348,30 +356,29 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question:
-        "【预测输出】Python 和 TypeScript 分别输出什么值？（每次 print/log 的列表按元素简写）",
+      question: "【预测输出】Python 和 TypeScript 两次调用分别输出多大的列表长度？",
       questionType: "prediction",
       codeSnippets: {
         python:
-          "def add(item, bucket=[]):\n    bucket.append(item)\n    return bucket\n\nprint(add(1))\nprint(add(2))",
+          "def add(item, bucket=[]):\n    bucket.append(item)\n    return bucket\n\nprint(len(add(1)))\nprint(len(add(2)))",
         typescript:
-          "function add(item: number, bucket: number[] = []): number[] {\n  bucket.push(item);\n  return bucket;\n}\n\nconsole.log(add(1));\nconsole.log(add(2));",
+          "function add(item: number, bucket: number[] = []): number[] {\n  bucket.push(item);\n  return bucket;\n}\n\nconsole.log(add(1).length);\nconsole.log(add(2).length);",
       },
       options: [
         {
-          expected: "1, 2 在两种语言中",
+          expected: "Python: 1, 2; TypeScript: 1, 2",
           text: "Python: 1, 2; TypeScript: 1, 2",
           correct: false,
           explanation: "Python的默认参数在多次调用间共享，而TS不会",
         },
         {
-          expected: "1, 1 和 1, 2 分别为Python和TS",
+          expected: "Python: 1, 1; TypeScript: 1, 2",
           text: "Python: 1, 1; TypeScript: 1, 2",
           correct: false,
           explanation: "Python默认参数在函数定义阶段创建一次，导致行为不同",
         },
         {
-          expected: "1, 2 和 1, 1 分别为Python和TS",
+          expected: "Python: 1, 2; TypeScript: 1, 1",
           text: "Python: 1, 2; TypeScript: 1, 1",
           correct: true,
           explanation: "Python: 默认列表被持续修改；TS: 每次调用生成新空数组",
@@ -481,7 +488,7 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "TypeScript 的 switch 语句中，每个 case 后需要？",
+      question: "switch 的 case 执行后，若未 return 或 throw，通常用什么阻止继续执行后续 case？",
       options: [
         { text: "break 语句", correct: true, explanation: "缺少 break 会发生穿透（fall-through）" },
         {
@@ -797,10 +804,18 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "Python 的 from os import path 对应 TypeScript 的？",
+      question: "Python 的 from os.path import join 对应 Node.js 的哪种命名导入？",
       options: [
-        { text: "import { path } from 'os'", correct: true, explanation: "命名导入使用花括号" },
-        { text: "import path from 'os'", correct: false, explanation: "默认导入语法" },
+        {
+          text: "import { join } from 'node:path'",
+          correct: true,
+          explanation: "路径拼接函数由 node:path 模块导出；Node.js 的 os 模块不导出 path",
+        },
+        {
+          text: "import { join } from 'node:os'",
+          correct: false,
+          explanation: "node:os 不导出 join，路径操作属于 node:path",
+        },
         { text: "import os.path", correct: false, explanation: "语法错误" },
         { text: "from 'os' import path", correct: false, explanation: "Python 语法顺序" },
       ],
@@ -870,12 +885,14 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "TypeScript 的 catch (e) 中 e 的类型是？",
+      question:
+        "TypeScript 开启 strict 且未覆盖 useUnknownInCatchVariables 时，catch (e) 中 e 的类型是？",
       options: [
         {
           text: "unknown",
           correct: true,
-          explanation: "TypeScript 4.4+ 默认 catch 参数为 unknown",
+          explanation:
+            "strict 默认启用 useUnknownInCatchVariables，需先收窄 unknown 才能访问错误属性",
         },
         { text: "Error", correct: false, explanation: "需要类型断言或类型守卫" },
         { text: "any", correct: false, explanation: "不推荐使用 any，默认是 unknown" },
@@ -892,20 +909,26 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "Python 的 obj.get('key', default) 对应 TypeScript 的？",
+      question:
+        "对普通对象，仅当自有属性 key 不存在时返回 fallback，并保留 null、undefined、0，应使用？",
       options: [
         {
-          text: "obj.key ?? default",
+          text: "Object.hasOwn(obj, 'key') ? obj.key : fallback",
           correct: true,
-          explanation: "使用 nullish coalescing 处理 null/undefined",
+          explanation:
+            "先检查自有属性是否存在，和 Python dict.get 一样保留已存在的空值；?? 会替换 null 和 undefined",
         },
         {
-          text: "obj['key'] || default",
+          text: "obj.key || fallback",
           correct: false,
           explanation: "|| 会处理 falsy 值，可能不符合预期",
         },
-        { text: "obj.get('key', default)", correct: false, explanation: "普通对象没有 get 方法" },
-        { text: "obj.key ? obj.key : default", correct: false, explanation: "冗长，推荐使用 ??" },
+        { text: "obj.get('key', fallback)", correct: false, explanation: "普通对象没有 get 方法" },
+        {
+          text: "obj.key ?? fallback",
+          correct: false,
+          explanation: "?? 会替换已存在的 null 和 undefined，无法区分缺失与空值",
+        },
       ],
     },
   ],
@@ -968,7 +991,7 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "TypeScript 的 const enum 有什么特点？",
+      question: "使用 tsc 且未开启 preserveConstEnums 时，const enum 有什么特点？",
       options: [
         {
           text: "编译时内联，不生成运行时代码",
@@ -1220,9 +1243,10 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       question: "interface 和 type 的主要区别？",
       options: [
         {
-          text: "interface 可以被扩展和实现",
+          text: "interface 支持同名声明合并，type 别名不能同名重声明",
           correct: true,
-          explanation: "type 更灵活但不能被 implements",
+          explanation:
+            "对象形状的 type 别名同样可以被类 implements；声明合并是 interface 的一项区别",
         },
         { text: "type 功能更强大", correct: false, explanation: "各有优劣" },
         { text: "没有区别", correct: false, explanation: "有语义和功能差异" },
@@ -1272,16 +1296,21 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
   // Advanced: 装饰器
   decorators: [
     {
-      question: "TypeScript 装饰器默认是？",
+      question: "TypeScript 5+ 中，experimentalDecorators: true 选择的是哪种装饰器模式？",
       options: [
         {
-          text: "实验性功能，需要显式启用",
+          text: "旧版实验性装饰器模式",
           correct: true,
-          explanation: "tsconfig.json 设置 experimentalDecorators: true",
+          explanation:
+            "TypeScript 5+ 默认支持新版装饰器；experimentalDecorators 启用旧版语义，两种模式的签名和元数据支持不同",
         },
-        { text: "默认启用", correct: false, explanation: "需要配置启用" },
-        { text: "不支持", correct: false, explanation: "支持但需要配置" },
-        { text: "只在类中支持", correct: false, explanation: "支持多种装饰器" },
+        {
+          text: "新版装饰器模式",
+          correct: false,
+          explanation: "新版模式不需要启用 experimentalDecorators",
+        },
+        { text: "禁用所有装饰器", correct: false, explanation: "该选项用于启用旧版模式" },
+        { text: "仅启用类装饰器", correct: false, explanation: "旧版模式也支持成员和参数装饰器" },
       ],
     },
     {
@@ -1298,7 +1327,7 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "TypeScript 装饰器可以应用于？",
+      question: "启用 experimentalDecorators 的旧版 TypeScript 装饰器可以应用于？",
       options: [
         { text: "类、方法、属性、参数", correct: true, explanation: "支持多种装饰器类型" },
         { text: "只有类", correct: false, explanation: "不仅限于类" },
@@ -1307,7 +1336,7 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "方法装饰器接收的参数不包括？",
+      question: "旧版 TypeScript 方法装饰器接收的参数不包括？",
       options: [
         { text: "函数返回值", correct: true, explanation: "装饰器接收 target, key, descriptor" },
         { text: "目标对象", correct: false, explanation: "第一个参数是目标对象" },
@@ -1316,7 +1345,7 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "Python 装饰器与 TypeScript 装饰器的主要区别？",
+      question: "Python 函数装饰器与旧版 TypeScript 方法装饰器的典型实现区别是？",
       options: [
         {
           text: "Python 装饰器是函数包装，TS 装饰器修改描述符",
@@ -1492,9 +1521,15 @@ export const QUIZZES: Record<string, QuizQuestion[]> = {
       ],
     },
     {
-      question: "Python 的 __dirname 对应 Node.js 的？",
+      question:
+        "Python 用 Path(__file__).resolve().parent 获取脚本目录，Node.js CommonJS 中对应什么？",
       options: [
-        { text: "__dirname（两者相同）", correct: true, explanation: "Node.js 也使用 __dirname" },
+        {
+          text: "__dirname",
+          correct: true,
+          explanation:
+            "__dirname 是 CommonJS 模块目录；Python 没有内置 __dirname，ESM 需使用 import.meta 或 fileURLToPath",
+        },
         { text: "os.cwd()", correct: false, explanation: "Python 是 os.getcwd()" },
         { text: "process.cwd()", correct: false, explanation: "process.cwd() 是当前工作目录" },
         { text: "path.dirname()", correct: false, explanation: "path.dirname 需要参数" },

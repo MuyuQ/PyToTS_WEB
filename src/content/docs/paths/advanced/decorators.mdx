@@ -16,7 +16,13 @@ import CodeCompare from "../../../../components/CodeCompare.astro";
 
 ## 场景与问题
 
-装饰器允许在不修改原始代码的情况下增强功能。Python 和 TypeScript 都支持装饰器，但实现和用法有差异。TypeScript 的装饰器是实验性特性，需要启用编译器选项。
+装饰器允许在不修改原始代码的情况下增强功能。Python 和 TypeScript 都支持装饰器，但实现和用法有差异。
+
+:::note[两种 TypeScript 装饰器模式]
+TypeScript 5+ 默认支持新版装饰器，不需要启用 `experimentalDecorators`。本课的 `target / key / descriptor` 示例使用旧版实验性模式，需设置 `experimentalDecorators: true`。新版模式使用被装饰的值与上下文对象，不支持参数装饰器，也不兼容 `emitDecoratorMetadata`。元数据选项仅在需要旧版反射元数据时启用。
+
+参见 [TypeScript 官方模式说明](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html#differences-with-experimental-legacy-decorators)。
+:::
 
 **学完能做什么**
 
@@ -63,7 +69,7 @@ def retry(max_attempts: int = 3):
                     if attempt == max_attempts - 1:
                         raise
                     print(f"Attempt {attempt + 1} failed, retrying...")
-            return wrapper
+        return wrapper
     return decorator
 
 @retry(max_attempts=5)
@@ -148,7 +154,7 @@ def retry(max_attempts=3):
                     return func(*args, **kwargs)
                 except Exception:
                     if attempt == max_attempts - 1: raise
-            return wrapper
+        return wrapper
     return decorator
 ```
 
@@ -199,8 +205,9 @@ function singleton<T extends new (...args: any[]) => {}>(ctor: T) {
 ## TypeScript 等价写法
 
 ```typescript
-// 启用装饰器需要在 tsconfig.json 中设置：
+// 本节使用旧版装饰器，需要在 tsconfig.json 中设置：
 // "experimentalDecorators": true
+// 仅需要反射元数据时再启用：
 // "emitDecoratorMetadata": true
 
 // 方法装饰器
@@ -514,14 +521,14 @@ function goodMemoize<T extends (...args: any[]) => any>(
 
 ## 优势对比
 
-| 特性       | Python            | TypeScript         |
-| ---------- | ----------------- | ------------------ |
-| 语法       | `@decorator`      | `@decorator`       |
-| 类型安全   | 运行时            | 编译时             |
-| 装饰器类型 | 函数/类/方法/属性 | 类/方法/属性/参数  |
-| 元数据     | 手动管理          | `reflect-metadata` |
-| 状态       | 正式特性          | 实验性特性         |
-| 性能       | 运行时开销        | 编译后无开销       |
+| 特性       | Python            | TypeScript           |
+| ---------- | ----------------- | -------------------- |
+| 语法       | `@decorator`      | `@decorator`         |
+| 类型安全   | 运行时            | 编译时               |
+| 装饰器类型 | 函数/类/方法/属性 | 类/方法/属性/参数    |
+| 元数据     | 手动管理          | `reflect-metadata`   |
+| 模式       | 函数或类转换      | 新版与旧版实验性模式 |
+| 性能       | 取决于包装逻辑    | 取决于生成的包装逻辑 |
 
 ## 自测清单
 
@@ -616,8 +623,8 @@ class Calculator {
 
 ## 面试追问
 
-1. **TypeScript 装饰器为什么是实验性的？**
-   - 答：ECMAScript 装饰器提案还在发展中，TypeScript 的实现可能与最终标准不兼容。
+1. **TypeScript 新版装饰器与旧版实验性模式有什么区别？**
+   - 答：TypeScript 5+ 默认支持新版装饰器；`experimentalDecorators` 选择旧版模式。两者的签名和生成代码不同，新版不支持参数装饰器及 `emitDecoratorMetadata`，迁移时需要检查依赖与装饰器实现。
 
 2. **装饰器和继承的区别？**
    - 答：装饰器在不修改原类的情况下增强功能，继承创建新类。装饰器更灵活但增加复杂性。
