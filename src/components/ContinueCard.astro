@@ -62,7 +62,12 @@ const total = totalLessonCount();
       link.href = `${base}${last.route}`;
       if (meta) meta.textContent = last.kind === "algorithm" ? "算法题" : "课程";
       if (hint) {
-        const done = progress.lessons.length;
+        const knownRoutes = new Set(routes.map((route) => route.route.replace(/\/$/, "")));
+        const done = new Set(
+          progress.lessons
+            .map((lesson) => lesson.path.replace(/\/$/, ""))
+            .filter((path) => knownRoutes.has(path))
+        ).size;
         hint.textContent =
           done > 0 ? `已完成 ${done} 项，接着往下走。` : "上次看到这里，接着往下走。";
       }

@@ -96,9 +96,11 @@ export function lessonRoute(track: TrackId, slug: string): string {
   return slug === "index" ? `/paths/${track}/` : `/paths/${track}/${slug}/`;
 }
 
-/** 某条路径的全部课程路由，按教学顺序 */
+/** 某条路径的正式课程路由，按教学顺序；入口页仅参与分页，不计进度。 */
 export function trackRoutes(track: TrackId): string[] {
-  return CURRICULUM[track].map((slug) => lessonRoute(track, slug));
+  return CURRICULUM[track]
+    .filter((slug) => slug !== "index")
+    .map((slug) => lessonRoute(track, slug));
 }
 
 /** 全部课程路由（不含算法题），按 准备 → 基础 → 迁移 → 进阶 */
@@ -108,7 +110,7 @@ export function allLessonRoutes(): string[] {
 
 /** 每条路径的课程数（index 入口页不计入课时） */
 export function trackLessonCount(track: TrackId): number {
-  return CURRICULUM[track].filter((slug) => slug !== "index").length;
+  return trackRoutes(track).length;
 }
 
 export function totalLessonCount(): number {

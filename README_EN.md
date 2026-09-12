@@ -13,7 +13,7 @@ The site content is currently in Simplified Chinese. “Bilingual” refers to c
 - **Structured curriculum**: 22 lessons across Preparation, Foundation, Migration, and Advanced tracks, with exercises and interview follow-ups.
 - **Code comparison**: Short examples use `CodeCompare` for side-by-side display and stack on narrow screens. Complete algorithm implementations use Python / TypeScript tabs.
 - **Algorithm practice**: 36 classic problems with brute-force baselines, optimizations, dry runs, complexity analysis, implementations, common mistakes, and interview variants. Filter by difficulty or search titles and tags.
-- **Interactive quizzes**: 104 questions in 21 groups covering Foundation, Migration, and Advanced lessons, plus output-prediction questions. Includes explanations, saved scores, and retries.
+- **Interactive quizzes**: 104 questions in 21 groups covering Foundation, Migration, and Advanced lessons, plus output-prediction questions. Options are shuffled for each attempt, with explanations, score history, and retries.
 - **Learning records**: Resume the last lesson or algorithm from the homepage, track completion, bookmark content, and review quiz scores.
 - **Reference tools**: A comparison handbook, cheat sheet, tag and difficulty indexes, Pagefind full-text search, light and dark themes, and responsive layouts.
 
@@ -38,6 +38,7 @@ Start with Preparation and follow the tracks in order, or jump to Migration or A
 
 - Node.js 22.12+ within the 22.x release line, matching CI, or Node.js 24.x.
 - npm 9.6.5+. Dependencies are locked in `package-lock.json`.
+- Python 3.10+ is required for executable content regression tests. Tests use `python` on Windows and `python3` elsewhere; set `PYTHON` to override the interpreter path.
 
 ### Local Development
 

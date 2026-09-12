@@ -2,6 +2,7 @@
  * 学习进度存储系统
  * 使用 localStorage 存储用户的学习进度
  */
+import { allLessonRoutes } from "./curriculum";
 
 export interface LessonProgress {
   path: string;
@@ -21,6 +22,8 @@ export interface QuizResult {
 export interface LearningProgress {
   lessons: LessonProgress[];
   quizzes: QuizResult[];
+  /** 每次完成的作答记录；旧数据以保留的最近成绩作为历史起点。 */
+  quizAttempts: QuizResult[];
   bookmarks: string[];
   lastVisited: string;
 }
@@ -33,10 +36,54 @@ export function normPath(path: string): string {
 }
 
 /** localStorage 是外部输入（手改/旧版本/损坏都可能），读取时校验形状而不是盲目 cast */
-function isLearningProgress(value: unknown): value is LearningProgress {
+function isLessonProgress(value: unknown): value is LessonProgress {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
-  return Array.isArray(v.lessons) && Array.isArray(v.quizzes) && Array.isArray(v.bookmarks);
+  return (
+    typeof v.path === "string" &&
+    typeof v.title === "string" &&
+    typeof v.completedAt === "string" &&
+    (v.type === "lesson" || v.type === "algorithm" || v.type === "quiz")
+  );
+}
+
+function isQuizResult(value: unknown): value is QuizResult {
+  if (typeof value !== "object" || value === null) return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.quizId === "string" &&
+    typeof v.completedAt === "string" &&
+    typeof v.score === "number" &&
+    Number.isInteger(v.score) &&
+    v.score >= 0 &&
+    typeof v.total === "number" &&
+    Number.isInteger(v.total) &&
+    v.total > 0 &&
+    v.score <= v.total &&
+    typeof v.percentage === "number" &&
+    Number.isFinite(v.percentage)
+  );
+}
+
+function parseProgress(value: unknown): LearningProgress | null {
+  if (typeof value !== "object" || value === null) return null;
+  const v = value as Record<string, unknown>;
+  if (!Array.isArray(v.lessons) || !Array.isArray(v.quizzes) || !Array.isArray(v.bookmarks))
+    return null;
+  const quizzes = v.quizzes.filter(isQuizResult);
+  return {
+    lessons: v.lessons.filter(isLessonProgress),
+    quizzes,
+    quizAttempts: Array.isArray(v.quizAttempts)
+      ? v.quizAttempts.filter(isQuizResult)
+      : [...quizzes],
+    bookmarks: v.bookmarks.filter((path): path is string => typeof path === "string"),
+    lastVisited: typeof v.lastVisited === "string" ? v.lastVisited : "",
+  };
+}
+
+function emptyProgress(): LearningProgress {
+  return { lessons: [], quizzes: [], quizAttempts: [], bookmarks: [], lastVisited: "" };
 }
 
 /**
@@ -44,20 +91,21 @@ function isLearningProgress(value: unknown): value is LearningProgress {
  */
 export function getProgress(): LearningProgress {
   if (typeof window === "undefined") {
-    return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
+    return emptyProgress();
   }
 
   try {
     const data = localStorage.getItem(STORAGE_KEY);
     if (data) {
       const parsed: unknown = JSON.parse(data);
-      if (isLearningProgress(parsed)) return parsed;
+      const progress = parseProgress(parsed);
+      if (progress) return progress;
     }
   } catch (e) {
     console.error("Failed to load progress:", e);
   }
 
-  return { lessons: [], quizzes: [], bookmarks: [], lastVisited: "" };
+  return emptyProgress();
 }
 
 /**
@@ -127,6 +175,14 @@ export function isCompleted(path: string): boolean {
  * 保存测验结果
  */
 export function saveQuizResult(quizId: string, score: number, total: number): void {
+  if (
+    !Number.isInteger(score) ||
+    !Number.isInteger(total) ||
+    total <= 0 ||
+    score < 0 ||
+    score > total
+  )
+    return;
   const progress = getProgress();
   const percentage = Math.round((score / total) * 100);
 
@@ -145,6 +201,7 @@ export function saveQuizResult(quizId: string, score: number, total: number): vo
   } else {
     progress.quizzes.push(result);
   }
+  progress.quizAttempts.push(result);
 
   setProgress(progress);
 }
@@ -207,8 +264,14 @@ export function updateLastVisited(path: string): void {
  */
 export function calculateOverallProgress(totalLessons: number): number {
   const progress = getProgress();
-  if (totalLessons === 0) return 0;
-  return Math.round((progress.lessons.length / totalLessons) * 100);
+  if (totalLessons <= 0) return 0;
+  const lessonPaths = new Set(allLessonRoutes().map(normPath));
+  const completed = new Set(
+    progress.lessons
+      .filter((item) => lessonPaths.has(normPath(item.path)))
+      .map((item) => normPath(item.path))
+  );
+  return Math.min(100, Math.round((completed.size / totalLessons) * 100));
 }
 
 /**
@@ -222,11 +285,18 @@ export function getCompletionStats(): {
 } {
   const progress = getProgress();
 
-  const totalCompleted = progress.lessons.length;
-  const quizzesTaken = progress.quizzes.length;
+  const lessonPaths = new Set(allLessonRoutes().map(normPath));
+  const totalCompleted = new Set(
+    progress.lessons
+      .filter((item) => item.type === "algorithm" || lessonPaths.has(normPath(item.path)))
+      .map((item) => normPath(item.path))
+  ).size;
+  const quizzesTaken = progress.quizAttempts.length;
   const averageScore =
-    quizzesTaken > 0
-      ? Math.round(progress.quizzes.reduce((sum, q) => sum + q.percentage, 0) / quizzesTaken)
+    progress.quizzes.length > 0
+      ? Math.round(
+          progress.quizzes.reduce((sum, q) => sum + q.percentage, 0) / progress.quizzes.length
+        )
       : 0;
   const bookmarksCount = progress.bookmarks.length;
 

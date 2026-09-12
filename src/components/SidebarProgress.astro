@@ -8,7 +8,7 @@
  * 两者序列化后注入客户端脚本，内容变动自动跟随。
  */
 import { getCollection, type CollectionEntry } from "astro:content";
-import { TRACK_ORDER, TRACKS, trackRoutes, CURRICULUM, lessonRoute } from "../lib/curriculum";
+import { TRACK_ORDER, TRACKS, trackRoutes } from "../lib/curriculum";
 
 const algorithms = await getCollection(
   "docs",
@@ -24,10 +24,7 @@ const algorithmRoutes = algorithms.map((entry) => {
 /** { 准备: [...], 基础: [...], ..., 算法: [...] } —— 分组进度用。
  *  口径与首页一致：只计课时，不含路径入口页。 */
 const groups: Record<string, string[]> = Object.fromEntries(
-  TRACK_ORDER.map((track) => [
-    TRACKS[track].label,
-    CURRICULUM[track].filter((slug) => slug !== "index").map((slug) => lessonRoute(track, slug)),
-  ])
+  TRACK_ORDER.map((track) => [TRACKS[track].label, trackRoutes(track)])
 );
 groups["算法"] = algorithmRoutes;
 
