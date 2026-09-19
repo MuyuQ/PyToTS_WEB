@@ -1,78 +1,36 @@
 /* ==========================================================================
-   首页（splash）
-   Starlight 的 Hero 是组件级 scoped 样式，特异性较高，
-   这里用 :root[data-has-hero] 前缀保证覆盖生效。
+   首页（splash）· 2026-09-20 现代化重设计
+   Hero 版式自带于 overrides/Hero.astro；这里负责：
+   放宽 splash 容器、渐变强调文字、章节节奏与内容排版收口。
    ========================================================================== */
 
-:root[data-has-hero] .hero {
-  display: block;
-  padding-block: clamp(2.5rem, 1.5rem + 5vw, 5rem) clamp(1.5rem, 1rem + 2vw, 2.5rem);
+/* splash 内容容器放宽到站点容器宽度：hero 两栏与组件网格需要展开空间。
+   ContentPanel 的 .sl-container 用 --sl-content-width 做上限（scoped 样式
+   照样读祖先变量），改这一个变量即可，无需 hack 定位。 */
+:root[data-has-hero] .main-frame {
+  --sl-content-width: min(var(--container-max), 100%);
 }
 
-:root[data-has-hero] .hero .stack,
-:root[data-has-hero] .hero .copy {
-  align-items: flex-start;
-  text-align: start;
-  gap: var(--space-4);
+/* hero 存在时，PageTitle 渲染的页面标题与 hero 的 h1 重复，隐藏 */
+[data-has-hero] .sl-page-title {
+  display: none;
 }
 
-:root[data-has-hero] .hero h1[data-page-title] {
-  max-width: 22ch;
-  font-family: var(--font-display);
-  font-size: var(--text-4xl);
-  font-weight: var(--weight-bold);
-  line-height: 1.08;
-  letter-spacing: -0.025em;
-  color: var(--text-strong);
-  text-wrap: balance;
+/* hero 标题里的渐变强调文字。
+   frontmatter 的 hero.title 经 set:html 注入，拿不到 scoped 属性，只能全局定义 */
+.hero-grad {
+  font-style: normal;
+  background: var(--grad-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
-/* 中文标题不做负字距 */
-:root[data-has-hero] .hero h1[data-page-title]:lang(zh),
-:root[data-has-hero] .hero h1[data-page-title]:lang(zh-CN) {
-  letter-spacing: var(--tracking-cjk);
-  max-width: 18ch;
-}
-
-:root[data-has-hero] .hero .tagline {
-  max-width: 46ch;
-  font-size: var(--text-lg);
-  line-height: var(--leading-snug);
-  color: var(--text-muted);
-  text-wrap: pretty;
-}
-
-/* ---------- 首页内容容器 ---------- */
-
-[data-has-hero] .sl-markdown-content {
-  max-width: var(--container-max);
-  margin-inline: auto;
-}
-
-/* 首屏下方的 CTA 行：按钮 + 一句规模说明 */
-.home-cta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-4);
-}
-
-.home-cta .btn {
-  flex-shrink: 0;
-}
-
-.home-cta__note {
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  color: var(--text-faint);
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---------- 首页章节节奏 ---------- */
+/* ---------- 章节节奏 ---------- */
 
 [data-has-hero] .sl-markdown-content > h2 {
   margin-top: var(--section-gap);
+  margin-bottom: var(--space-4);
   padding-bottom: var(--space-3);
   font-size: var(--text-2xl);
 }
@@ -86,23 +44,10 @@
   max-width: 56ch;
 }
 
-/* 首屏与"怎么用这个站"的列表，用更松的行距 */
-[data-has-hero] .sl-markdown-content ol {
-  max-width: 60ch;
-}
+/* ---------- 窄屏微调 ---------- */
 
-[data-has-hero] .sl-markdown-content ol li {
-  margin-bottom: var(--space-3);
-  padding-inline-start: var(--space-1);
-}
-
-[data-has-hero] .sl-markdown-content ol li::marker {
-  font-family: var(--font-display);
-  font-weight: var(--weight-semibold);
-  color: var(--accent);
-}
-
-/* 首页不需要页面标题（hero 已经承担） */
-[data-has-hero] .sl-page-title {
-  display: none;
+@media (max-width: 40rem) {
+  [data-has-hero] .sl-markdown-content > h2 {
+    font-size: var(--text-xl);
+  }
 }

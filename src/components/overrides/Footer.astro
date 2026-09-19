@@ -1,0 +1,198 @@
+---
+/**
+ * 站点页脚覆盖（Starlight 官方可覆盖组件）
+ *
+ * 2026-09-20 现代化重设计：默认页脚只有"最后更新 + 上一课/下一课"，
+ * 这里在其下补一条完整的站点页脚——品牌区、三列站内导航、许可行。
+ * 文档页的分页/编辑链接行为保持不变（仍走项目自定义的 Pagination）。
+ */
+import EditLink from "virtual:starlight/components/EditLink";
+import LastUpdated from "virtual:starlight/components/LastUpdated";
+import Pagination from "virtual:starlight/components/Pagination";
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const year = new Date().getFullYear();
+const repo = "https://github.com/MuyuQ/PyToTS_WEB";
+
+const groups = [
+  {
+    title: "学习",
+    links: [
+      { label: "课程路径", href: `${base}/paths/` },
+      { label: "算法题库", href: `${base}/algorithms/` },
+      { label: "编程测验", href: `${base}/practice/quiz/` },
+    ],
+  },
+  {
+    title: "参考",
+    links: [
+      { label: "对照手册", href: `${base}/handbook/` },
+      { label: "标签索引", href: `${base}/tags/` },
+      { label: "难度索引", href: `${base}/difficulty/` },
+    ],
+  },
+  {
+    title: "站点",
+    links: [
+      { label: "进度与收藏", href: `${base}/bookmarks/` },
+      { label: "关于与贡献", href: `${base}/about/` },
+      { label: "GitHub 仓库", href: repo },
+    ],
+  },
+];
+---
+
+<footer class="site-footer">
+  <div class="site-footer__meta">
+    <EditLink />
+    <LastUpdated />
+  </div>
+  <Pagination />
+
+  <div class="site-footer__bar">
+    <div class="site-footer__brand">
+      <span class="site-footer__logo">PyToTS</span>
+      <p class="site-footer__pitch">
+        面向 Python 开发者的 TypeScript 学习平台。不重新入门，只学不一样的地方。
+      </p>
+    </div>
+    <nav class="site-footer__cols" aria-label="页脚导航">
+      {
+        groups.map((group) => (
+          <div class="site-footer__col">
+            <h3 class="site-footer__col-title">{group.title}</h3>
+            <ul class="site-footer__list">
+              {group.links.map((link) => (
+                <li>
+                  <a
+                    class="site-footer__link"
+                    href={link.href}
+                    aria-label={
+                      link.href.startsWith("http") ? `${link.label}（外部链接）` : undefined
+                    }
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </nav>
+  </div>
+
+  <p class="site-footer__legal">
+    © {year} MuyuQ · 内容遵循
+    <a href={`${repo}/blob/main/LICENSE`}>MIT 许可</a> · 基于
+    <a href="https://github.com/withastro/starlight">Starlight</a> 构建
+  </p>
+</footer>
+
+<style>
+  .site-footer__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-8);
+    margin-top: var(--space-12);
+    font-size: var(--text-sm);
+    color: var(--text-faint);
+  }
+
+  /* ---------- 站点页脚 ---------- */
+
+  .site-footer__bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-8);
+    margin-top: var(--space-12);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  @media (min-width: 52rem) {
+    .site-footer__bar {
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr);
+    }
+  }
+
+  .site-footer__brand {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .site-footer__logo {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-tight);
+    color: var(--text-strong);
+  }
+
+  .site-footer__pitch {
+    margin: 0;
+    max-width: 34ch;
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    color: var(--text-muted);
+  }
+
+  .site-footer__cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+    gap: var(--space-6);
+  }
+
+  .site-footer__col-title {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .site-footer__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out-quart);
+  }
+
+  .site-footer__link:hover {
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .site-footer__legal {
+    margin: var(--space-8) 0 0;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--border-subtle);
+    font-size: var(--text-xs);
+    color: var(--text-faint);
+  }
+
+  .site-footer__legal a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .site-footer__legal a:hover {
+    color: var(--accent);
+  }
+</style>

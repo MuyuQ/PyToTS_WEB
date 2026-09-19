@@ -9,7 +9,7 @@
  * 页面本身不写死任何数量。
  */
 import { getCollection, type CollectionEntry } from "astro:content";
-import { TRACK_ORDER, TRACKS, trackRoutes, trackLessonCount } from "../lib/curriculum";
+import { TRACK_ORDER, TRACKS, trackLessonCount, lessonRoute, CURRICULUM } from "../lib/curriculum";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -27,7 +27,8 @@ const algorithmRoutes = algorithms.map((entry) => {
 const tracks = TRACK_ORDER.map((id) => ({
   id,
   label: TRACKS[id].label,
-  routes: trackRoutes(id),
+  // 进度分母与课时数同口径：只计课时，不含路径入口页（与 SidebarProgress 一致）
+  routes: CURRICULUM[id].filter((slug) => slug !== "index").map((slug) => lessonRoute(id, slug)),
   total: trackLessonCount(id),
   href: `${base}/paths/${id}/`,
 }));
@@ -95,6 +96,23 @@ const tracks = TRACK_ORDER.map((id) => ({
     <div class="bookmarks-grid" data-bookmarks-grid></div>
   </div>
 
+  <h3 class="progress-panel__heading">备份与恢复</h3>
+
+  <div class="backup-row">
+    <p class="backup-note">
+      进度只保存在当前设备的浏览器里。导出一份备份文件，换设备或清除缓存后可导入恢复；
+      导入会与现有进度合并，两边都不会丢失。
+    </p>
+    <div class="backup-actions">
+      <button type="button" class="btn btn--sm" data-export>导出进度</button>
+      <label class="btn btn--sm backup-import">
+        导入进度
+        <input type="file" accept="application/json,.json" data-import hidden />
+      </label>
+    </div>
+    <p class="backup-status" data-import-status role="status" aria-live="polite"></p>
+  </div>
+
   <details class="danger-zone">
     <summary>清除本地数据</summary>
     <p>学习进度与收藏只保存在这台设备的浏览器里，不会上传。清除后无法恢复。</p>
@@ -103,7 +121,14 @@ const tracks = TRACK_ORDER.map((id) => ({
 </section>
 
 <script>
-  import { getProgress, clearProgress, normPath } from "../lib/progress-store";
+  import {
+    getProgress,
+    setProgress,
+    clearProgress,
+    mergeLearningProgress,
+    parseProgressBlob,
+    normPath,
+  } from "../lib/progress-store";
 
   /**
    * 课程与算法路由在构建时写入 data-*，脚本只从 DOM 读取：
@@ -226,6 +251,46 @@ const tracks = TRACK_ORDER.map((id) => ({
     paintTracks(done);
     paintBookmarks();
   }
+
+  // ---------- 备份与恢复：导出 JSON / 导入合并 ----------
+  const statusEl = document.querySelector<HTMLElement>("[data-import-status]");
+  function setStatus(message: string): void {
+    if (statusEl) statusEl.textContent = message;
+  }
+
+  const exportBtn = document.querySelector<HTMLButtonElement>("[data-export]");
+  exportBtn?.addEventListener("click", () => {
+    const progress = getProgress();
+    const blob = new Blob([JSON.stringify(progress, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `pytots-progress-${new Date().toISOString().slice(0, 10)}.json`;
+    anchor.click();
+    URL.revokeObjectURL(url);
+    setStatus(`已导出 ${progress.lessons.length} 项进度与 ${progress.bookmarks.length} 条收藏。`);
+  });
+
+  const importInput = document.querySelector<HTMLInputElement>("[data-import]");
+  importInput?.addEventListener("change", async () => {
+    const file = importInput.files?.[0];
+    if (!file) return;
+    try {
+      const incoming = parseProgressBlob(await file.text());
+      if (!incoming) {
+        setStatus("导入失败：文件不是有效的进度备份。");
+        return;
+      }
+      const merged = mergeLearningProgress(getProgress(), incoming);
+      setProgress(merged);
+      setStatus(
+        `导入成功：当前共 ${merged.lessons.length} 项进度、${merged.bookmarks.length} 条收藏。`
+      );
+      importInput.value = "";
+    } catch {
+      setStatus("导入失败：文件无法读取。");
+    }
+  });
 
   // 清除数据：两段式确认，避免误触导致不可逆丢失
   const resetBtn = document.querySelector<HTMLButtonElement>("[data-reset-step]");
@@ -358,6 +423,40 @@ const tracks = TRACK_ORDER.map((id) => ({
     font-variant-numeric: tabular-nums;
     color: var(--text-faint);
     text-align: end;
+  }
+
+  .backup-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--surface-raised);
+  }
+
+  .backup-note {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    color: var(--text-muted);
+  }
+
+  .backup-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .backup-import {
+    cursor: pointer;
+  }
+
+  .backup-status {
+    margin: 0;
+    min-height: 1em;
+    font-size: var(--text-xs);
+    color: var(--accent-ink);
   }
 
   .danger-zone {

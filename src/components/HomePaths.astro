@@ -8,7 +8,7 @@
  *
  * 版式刻意不用四张同构卡片：课程是有顺序的，就该长得像一份课表。
  */
-import { TRACK_ORDER, TRACKS, trackLessonCount, trackRoutes } from "../lib/curriculum";
+import { TRACK_ORDER, TRACKS, trackLessonCount, lessonRoute, CURRICULUM } from "../lib/curriculum";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -29,7 +29,8 @@ const rows: TrackRow[] = TRACK_ORDER.map((id, i) => ({
   pitch: TRACKS[id].pitch,
   lessons: trackLessonCount(id),
   href: `${base}/paths/${id}/`,
-  routes: trackRoutes(id),
+  // 进度分母与课时数同口径：只计课时，不含路径入口页（与 SidebarProgress 一致）
+  routes: CURRICULUM[id].filter((slug) => slug !== "index").map((slug) => lessonRoute(id, slug)),
 }));
 
 const total = rows.reduce((sum, row) => sum + row.lessons, 0);

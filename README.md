@@ -9,8 +9,10 @@
 - **双语对照学习**：Python 与 TypeScript 代码并列展示，直观对比语法差异
 - **系统学习路径**：从基础语法到高级类型，循序渐进
 - **算法实战**：36 道 LeetCode 经典题目的双语实现
-- **交互测验**：200+ 练习题，即时反馈
+- **交互测验**：104 道选择题（覆盖全部 22 课），即时反馈与成绩记录
 - **面试准备**：每课配套面试追问，实战导向
+- **类型化搜索**：按内容类型（课程/题解/手册）过滤与分组的站内搜索
+- **本地进度**：完成标记、收藏、测验成绩，支持导出/导入备份跨设备迁移
 
 ## 学习路径
 
@@ -61,6 +63,8 @@ src/
 ├── components/                      # UI 组件
 │   ├── SiteNav.astro                # 顶层导航（课程/题库/手册/测验/我的）
 │   ├── Header.astro                 # 顶栏（标题 + 导航 + 搜索 + 主题）
+│   ├── ContinueCard.astro           # 首页「继续学习」卡片（读上次位置）
+│   ├── VisitRecorder.astro          # 隐形挂载点：每页记录 lastVisited
 │   ├── HomePaths.astro              # 路径清单（课表式，含每条进度条）
 │   ├── HomeRoutes.astro             # 三条支线入口（题库/手册/测验）
 │   ├── ProgressPanel.astro          # 进度与收藏面板
@@ -73,9 +77,14 @@ src/
 │   ├── DifficultyIndex.astro        # 难度索引
 │   ├── TagIndex.astro               # 标签索引
 │   ├── BookmarkToggle.astro         # 收藏开关
-│   ├── QuizContainer.astro          # 测验容器
-│   ├── Banner.astro                 # 横幅（挂载侧边栏进度）
-│   └── overrides/PageTitle.astro    # 标题元数据徽章
+│   ├── HomeHowTo.astro              # 首页使用步骤卡
+│   ├── QuizContainer.astro          # 测验容器（题库在 data/quizzes.ts）
+│   ├── Banner.astro                 # 横幅（挂载侧边栏进度 + 搜索类型标记）
+│   └── overrides/                   # Starlight 官方覆盖组件
+│       ├── PageTitle.astro          # 标题元数据徽章
+│       ├── Hero.astro               # 着陆页 hero（光晕背景/渐变标题/统计/代码对照）
+│       ├── Footer.astro             # 站点页脚（品牌区/导航列/许可行）
+│       └── Search.astro             # 搜索模态（按内容类型分组/过滤）
 ├── content/docs/                    # 内容 (MDX)
 │   ├── paths/                       # 四条学习路径，共 22 课
 │   │   ├── preparation/             # 准备路径 2 课
@@ -88,20 +97,25 @@ src/
 │   ├── tags/ difficulty/            # 分类索引
 │   ├── bookmarks/                   # 进度与收藏
 │   └── about/                       # 关于与贡献
+├── data/quizzes.ts                  # 测验题库（104 题）
 ├── lib/
 │   ├── curriculum.ts                # 课程结构单一数据源（顺序、路径、课时）
 │   ├── neighbours.ts                # 上一项/下一项计算
-│   ├── progress-store.ts            # localStorage 进度与收藏
-│   └── quiz-manager.ts              # 测验逻辑
+│   ├── progress-store.ts            # localStorage 进度与收藏（含导出/导入合并）
+│   ├── quiz-manager.ts              # 测验状态机
+│   ├── quiz-ui.ts                   # 测验 DOM 渲染与交互
+│   ├── learning-routes.ts           # 路由→标题映射（继续学习卡片共用）
+│   └── doc-id.ts                    # entry.id 归一化
 ├── pages/404.astro                  # 独立 404 页
 └── styles/
-    ├── tokens.css                   # 设计令牌（原始/语义/Starlight 桥接/兼容别名）
+    ├── tokens.css                   # 设计令牌（原始/语义明暗/Starlight 桥接，OKLCH）
     ├── base.css                     # 排版骨架、焦点可见、动效降级
     ├── layout.css                   # 内容排版、侧边栏、目录、响应式
     ├── components.css               # 卡片、按钮、徽章、表格、分页、进度
     ├── code.css                     # 代码块与双语对照
     ├── tabs-custom.css              # 标签页
-    └── home.css                     # 首页
+    ├── home.css                     # 首页（splash 版式与章节节奏）
+    └── quiz.css                     # 测验容器（QuizContainer 按需引入）
 ```
 
 ### 两条维护约定
@@ -168,4 +182,4 @@ src/
 
 ---
 
-_最后更新: 2026-09-04_
+_最后更新: 2026-09-20_

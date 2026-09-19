@@ -11,6 +11,40 @@ test("search and taxonomy pages load", async ({ page }) => {
   await expect(page.getByRole("button", { name: /搜索/i })).toBeVisible();
 });
 
+test("search modal groups results by content type and supports type filters", async ({ page }) => {
+  await page.goto("./");
+
+  await page.locator("site-search button[data-open-modal]").click();
+  const dialog = page.locator("site-search dialog");
+  await expect(dialog).toBeVisible();
+
+  const input = page.locator("site-search [data-search-input]");
+  await input.fill("类型");
+  const status = page.locator("[data-search-status]");
+  await expect(status).not.toContainText("搜索中", { timeout: 10_000 });
+
+  // "全部"视图：结果按内容类型分组
+  const groupLabels = page.locator(".search-group__label");
+  await expect(groupLabels.first()).toBeVisible();
+  const labels = (await groupLabels.allTextContents()).filter(Boolean);
+  expect(labels.length).toBeGreaterThan(0);
+  expect(labels).toContain("课程");
+
+  // 切到「题解」过滤片：只剩算法题解的扁平列表
+  await page.locator('site-search [data-chip="题解"]').click();
+  await expect(status).toContainText(/结果/, { timeout: 10_000 });
+  await expect(page.locator(".search-group__label")).toHaveCount(0);
+  await expect(page.locator(".search-result").first()).toBeVisible();
+  // 过滤片徽标计数来自 Pagefind filter（Banner 注入的类型标记）
+  await expect(page.locator('site-search [data-chip-count="题解"]')).toHaveText("36", {
+    timeout: 10_000,
+  });
+
+  // Esc 关闭模态
+  await input.press("Escape");
+  await expect(dialog).not.toBeVisible();
+});
+
 test("algorithm index difficulty filter keeps only matching rows", async ({ page }) => {
   await page.goto("algorithms/");
 

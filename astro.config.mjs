@@ -99,6 +99,9 @@ export default defineConfig({
         Pagination: "./src/components/Pagination.astro",
         Header: "./src/components/Header.astro",
         PageTitle: "./src/components/overrides/PageTitle.astro",
+        Hero: "./src/components/overrides/Hero.astro",
+        Footer: "./src/components/overrides/Footer.astro",
+        Search: "./src/components/overrides/Search.astro",
       },
       /* 侧边栏按「用户任务」而不是「内容类型」分组：
          课程（按顺序学）→ 实战（练）→ 参考（查）→ 我的（进度）→ 关于

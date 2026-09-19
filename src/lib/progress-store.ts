@@ -40,6 +40,50 @@ function isLearningProgress(value: unknown): value is LearningProgress {
 }
 
 /**
+ * 合并两份进度（导出/导入的备份恢复）：
+ * 课程与测验按 path/quizId 去重，completedAt 更新的一方胜出；收藏取并集。
+ */
+export function mergeLearningProgress(
+  current: LearningProgress,
+  incoming: LearningProgress
+): LearningProgress {
+  const lessons = new Map(current.lessons.map((l) => [normPath(l.path), l]));
+  for (const lesson of incoming.lessons) {
+    const key = normPath(lesson.path);
+    const existing = lessons.get(key);
+    if (!existing || existing.completedAt < lesson.completedAt) {
+      lessons.set(key, { ...lesson, path: key });
+    }
+  }
+
+  const quizzes = new Map(current.quizzes.map((q) => [q.quizId, q]));
+  for (const quiz of incoming.quizzes) {
+    const existing = quizzes.get(quiz.quizId);
+    if (!existing || existing.completedAt < quiz.completedAt) {
+      quizzes.set(quiz.quizId, quiz);
+    }
+  }
+
+  return {
+    lessons: [...lessons.values()],
+    quizzes: [...quizzes.values()],
+    bookmarks: [...new Set([...current.bookmarks, ...incoming.bookmarks])],
+    // 当前设备已有学习记录时不覆盖"继续学习"的落点
+    lastVisited: current.lastVisited || incoming.lastVisited,
+  };
+}
+
+/** 解析导入文件文本：形状不合格返回 null，调用方据此提示而不是盲目写入 */
+export function parseProgressBlob(text: string): LearningProgress | null {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    return isLearningProgress(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * 获取当前进度
  */
 export function getProgress(): LearningProgress {
