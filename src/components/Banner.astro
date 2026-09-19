@@ -1,17 +1,56 @@
 ---
 import type { StarlightRouteData } from "@astrojs/starlight/route-data";
 import SidebarProgress from "./SidebarProgress.astro";
+import { docSlug } from "../lib/doc-id";
 
 // Starlight 0.32+：覆盖组件从 Astro.locals.starlightRoute 取路由数据
 const { entry } = Astro.locals.starlightRoute as StarlightRouteData;
 const banner = entry?.data?.banner as { content: string } | undefined;
+
+/**
+ * 内容类型标记：供 Pagefind 搜索按类型过滤/分组（见 overrides/Search.astro）。
+ * 不能用 display:none —— Pagefind 会跳过不可见元素，filter 一并失效；
+ * 这里用 sr-only（有布局、视觉隐藏）+ 零权重：类型词可被 Pagefind 读取，
+ * 但不会影响全文搜索的相关性排名。
+ */
+const slug = docSlug(entry?.id ?? ""); // 首页 → ""，practice/index → "practice"
+const pageType =
+  !slug || slug === "index"
+    ? "首页"
+    : slug.startsWith("paths/")
+      ? "课程"
+      : slug.startsWith("algorithms/")
+        ? "题解"
+        : slug.startsWith("handbook/")
+          ? "手册"
+          : slug === "practice" || slug.startsWith("practice/")
+            ? "练习"
+            : "参考";
 ---
 
 {banner && <div class="sl-banner" set:html={banner.content} />}
 
 <SidebarProgress />
 
+<span
+  class="pagefind-filter"
+  data-pagefind-filter="type"
+  data-pagefind-weight="0"
+  aria-hidden="true">{pageType}</span
+>
+
 <style>
+  .pagefind-filter {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
   .sl-banner {
     --__sl-banner-text: var(--surface-page);
     padding: var(--space-2) var(--space-4);

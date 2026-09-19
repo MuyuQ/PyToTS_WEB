@@ -182,12 +182,20 @@
   background: var(--accent);
   border-color: var(--accent);
   color: var(--neutral-0);
+  box-shadow: var(--shadow-glow);
 }
 
 .btn--primary:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
   color: var(--neutral-0);
+}
+
+.btn--lg {
+  min-height: 3.125rem;
+  padding: var(--space-3) var(--space-8);
+  font-size: var(--text-md);
+  border-radius: var(--radius-lg);
 }
 
 [data-theme="dark"] .btn--primary {

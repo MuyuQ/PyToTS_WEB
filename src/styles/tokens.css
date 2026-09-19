@@ -62,6 +62,25 @@
   --danger-ink: oklch(54% 0.19 25);
   --danger-wash: oklch(96% 0.03 25);
 
+  /* 渐变与光效：品牌靛蓝 → 紫罗兰 → 天青，只用于强调文字/主按钮/着陆页光晕，
+     不进正文排版——大面积渐变会破坏双语对照的信息优先级 */
+  --grad-brand: linear-gradient(
+    118deg,
+    oklch(58% 0.19 268) 0%,
+    oklch(55% 0.2 296) 52%,
+    oklch(62% 0.14 226) 100%
+  );
+  --grad-brand-soft: linear-gradient(
+    118deg,
+    oklch(95% 0.035 268),
+    oklch(94% 0.04 296),
+    oklch(95% 0.03 226)
+  );
+  --glow-a: oklch(72% 0.14 268);
+  --glow-b: oklch(74% 0.13 300);
+  --glow-c: oklch(80% 0.1 226);
+  --shadow-glow: 0 1px 2px oklch(54% 0.158 270 / 0.3), 0 8px 24px -10px oklch(54% 0.158 270 / 0.5);
+
   /* ---------- 字体 ---------- */
 
   /* 中文不依赖 webfont：显式声明 CJK 回退栈，保证字形与字重正确 */
@@ -192,6 +211,8 @@
   --danger: var(--danger-ink);
   --danger-quiet: var(--danger-wash);
 
+  --surface-glass: oklch(100% 0.002 268 / 0.68);
+
   --weight-body: 400;
 }
 
@@ -235,6 +256,20 @@
   --warning-quiet: oklch(30% 0.06 68);
   --danger: oklch(72% 0.15 25);
   --danger-quiet: oklch(30% 0.07 25);
+
+  --surface-glass: oklch(18% 0.014 268 / 0.62);
+
+  /* 暗底渐变提亮一档，保证渐变文字在深色上有足够对比 */
+  --grad-brand: linear-gradient(
+    118deg,
+    oklch(70% 0.16 268) 0%,
+    oklch(68% 0.17 296) 52%,
+    oklch(76% 0.12 226) 100%
+  );
+  --glow-a: oklch(42% 0.13 268);
+  --glow-b: oklch(44% 0.13 300);
+  --glow-c: oklch(48% 0.1 226);
+  --shadow-glow: 0 1px 2px oklch(60% 0.15 270 / 0.25), 0 10px 32px -12px oklch(60% 0.15 270 / 0.45);
 
   /* 暗底上正文适当减重，避免"发光"感 */
   --weight-body: 350;

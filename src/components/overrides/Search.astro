@@ -1,0 +1,652 @@
+---
+/**
+ * 搜索覆盖（Starlight 官方可覆盖组件）
+ *
+ * 2026-09-20：替代 @pagefind/default-ui 的扁平结果列表——基于 Pagefind JS API
+ * 自建结果渲染，支持按内容类型（课程/题解/手册/练习/参考）过滤，"全部"视图下
+ * 结果按类型分组展示。类型过滤值由 Banner 覆盖注入的 data-pagefind-filter 提供。
+ *
+ * 行为契约与默认实现保持一致：Ctrl/Cmd+K 开关、Esc 关闭、点击遮罩关闭、
+ * dev 模式提示无索引。站点为单语言（zh-CN），文案直接内置。
+ */
+---
+
+<site-search>
+  <button data-open-modal disabled aria-label="搜索" aria-keyshortcuts="Control+K" type="button">
+    <svg
+      class="search-icon"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <circle cx="11" cy="11" r="7"></circle>
+      <path d="m20 20-3.5-3.5"></path>
+    </svg>
+    <span class="search-open-label" aria-hidden="true">搜索</span>
+    <kbd class="search-open-kbd" style="display: none;">
+      <kbd>Ctrl</kbd><kbd>K</kbd>
+    </kbd>
+  </button>
+
+  <dialog class="search-dialog" aria-label="搜索">
+    <div class="search-frame">
+      <button type="button" data-close-modal class="search-cancel">取消</button>
+
+      <div class="search-box">
+        <svg
+          class="search-box__icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="m20 20-3.5-3.5"></path>
+        </svg>
+        <input
+          data-search-input
+          type="search"
+          enterkeyhint="search"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder="搜索课程、题解与手册…"
+          aria-label="搜索关键词"
+        />
+      </div>
+
+      <div class="search-chips" data-search-chips role="group" aria-label="按内容类型过滤">
+        {
+          ["全部", "课程", "题解", "手册", "练习", "参考"].map((type) => (
+            <button
+              type="button"
+              class="search-chip"
+              data-chip={type}
+              aria-pressed={type === "全部" ? "true" : "false"}
+            >
+              {type}
+              <span class="search-chip__count" data-chip-count={type} aria-hidden="true" />
+            </button>
+          ))
+        }
+      </div>
+
+      <p class="search-status" data-search-status role="status" aria-live="polite"></p>
+      <div class="search-results" data-search-results></div>
+    </div>
+  </dialog>
+</site-search>
+
+{/* 快捷键平台修正：Apple 设备显示 ⌘。必须内联，避免短暂显示无效快捷键。 */}
+<script is:inline>
+  (() => {
+    const openBtn = document.querySelector("site-search button[data-open-modal]");
+    const shortcut = openBtn?.querySelector(".search-open-kbd");
+    if (!openBtn || !(shortcut instanceof HTMLElement)) return;
+    const platformKey = shortcut.querySelector("kbd");
+    if (platformKey && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform)) {
+      platformKey.textContent = "⌘";
+      openBtn.setAttribute("aria-keyshortcuts", "Meta+K");
+    }
+    shortcut.style.display = "";
+  })();
+</script>
+
+<script>
+  // ---------- Pagefind 运行时最小类型（页面无 any 约定） ----------
+  interface PagefindResultData {
+    url: string;
+    meta: { title?: string };
+    excerpt: string;
+    filters: Record<string, string[]>;
+  }
+  interface PagefindResult {
+    data: () => Promise<PagefindResultData>;
+  }
+  interface PagefindSearchResponse {
+    results: PagefindResult[];
+  }
+  interface PagefindInstance {
+    options(options: Record<string, unknown>): Promise<void>;
+    search(term: string, options?: Record<string, unknown>): Promise<PagefindSearchResponse | null>;
+    filters(): Promise<Record<string, Record<string, number>>>;
+  }
+
+  // 与 Banner.astro 注入的 pageType 对齐；"首页"只有一个页面，不设过滤片
+  const GROUP_ORDER = ["课程", "题解", "手册", "练习", "参考"];
+  const MAX_RESULTS = 20;
+
+  class SiteSearch extends HTMLElement {
+    private pagefind: PagefindInstance | null = null;
+    private activeChip = "全部";
+    private searchToken = 0;
+    private dialog!: HTMLDialogElement;
+    private input!: HTMLInputElement;
+    private status!: HTMLElement;
+    private resultsRoot!: HTMLElement;
+    private chipsRoot!: HTMLElement;
+    private debounced = 0;
+
+    connectedCallback() {
+      const openBtn = this.querySelector<HTMLButtonElement>("button[data-open-modal]");
+      const closeBtn = this.querySelector<HTMLButtonElement>("button[data-close-modal]");
+      this.dialog = this.querySelector("dialog")!;
+      this.input = this.querySelector<HTMLInputElement>("[data-search-input]")!;
+      this.status = this.querySelector<HTMLElement>("[data-search-status]")!;
+      this.resultsRoot = this.querySelector<HTMLElement>("[data-search-results]")!;
+      this.chipsRoot = this.querySelector<HTMLElement>("[data-search-chips]")!;
+
+      openBtn?.addEventListener("click", () => this.open());
+      closeBtn?.addEventListener("click", () => this.dialog.close());
+      if (openBtn) openBtn.disabled = false;
+
+      this.dialog.addEventListener("close", () => {
+        document.body.removeAttribute("data-search-modal-open");
+      });
+      // Esc 必须显式处理：<input type="search"> 会先消费 Esc 清空输入，
+      // dialog 的原生取消行为拿不到事件，模态就关不掉
+      this.dialog.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") this.dialog.close();
+      });
+      this.dialog.addEventListener("click", (event) => {
+        const target = event.target as Node | null;
+        if (target && !this.dialog.querySelector(".search-frame")?.contains(target)) {
+          this.dialog.close();
+        }
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+          if (this.dialog.open) this.dialog.close();
+          else this.open();
+          e.preventDefault();
+        }
+      });
+
+      this.input.addEventListener("input", () => {
+        window.clearTimeout(this.debounced);
+        this.debounced = window.setTimeout(() => void this.runSearch(), 150);
+      });
+      this.input.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          this.resultsRoot.querySelector<HTMLElement>(".search-result a")?.focus();
+        }
+      });
+      this.resultsRoot.addEventListener("keydown", (e) => {
+        const links = [...this.resultsRoot.querySelectorAll<HTMLAnchorElement>(".search-result a")];
+        const index = links.indexOf(document.activeElement as HTMLAnchorElement);
+        if (index < 0) return;
+        if (e.key === "ArrowDown" && index < links.length - 1) {
+          e.preventDefault();
+          links[index + 1]?.focus();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          if (index === 0) this.input.focus();
+          else links[index - 1]?.focus();
+        }
+      });
+
+      this.chipsRoot.addEventListener("click", (e) => {
+        const chip = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-chip]");
+        if (!chip) return;
+        this.activeChip = chip.dataset.chip ?? "全部";
+        this.chipsRoot.querySelectorAll("[data-chip]").forEach((el) => {
+          el.setAttribute("aria-pressed", String(el === chip));
+        });
+        void this.runSearch();
+      });
+
+      // 索引只在构建后存在：空闲时预取，首次打开即秒回
+      const onIdle = window.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 1));
+      onIdle(() => {
+        void this.loadPagefind().then((pf) => {
+          if (pf) void this.loadFilterCounts(pf);
+        });
+      });
+    }
+
+    private async loadPagefind(): Promise<PagefindInstance | null> {
+      if (this.pagefind) return this.pagefind;
+      if (import.meta.env.DEV) return null;
+      try {
+        const base = import.meta.env.BASE_URL;
+        const mod = (await import(/* @vite-ignore */ `${base}pagefind/pagefind.js`)) as {
+          options: PagefindInstance["options"];
+          search: PagefindInstance["search"];
+          filters: PagefindInstance["filters"];
+        };
+        await mod.options({ baseUrl: base });
+        this.pagefind = mod as PagefindInstance;
+        return this.pagefind;
+      } catch {
+        return null;
+      }
+    }
+
+    private async loadFilterCounts(pf: PagefindInstance): Promise<void> {
+      try {
+        const available = await pf.filters();
+        const counts = available?.type ?? {};
+        this.chipsRoot.querySelectorAll<HTMLElement>("[data-chip-count]").forEach((el) => {
+          const count = counts[el.dataset.chipCount ?? ""];
+          el.textContent = count === undefined ? "" : String(count);
+        });
+      } catch {
+        /* 计数失败不阻塞搜索 */
+      }
+    }
+
+    private open(): void {
+      this.dialog.showModal();
+      document.body.setAttribute("data-search-modal-open", "");
+      this.input.focus();
+    }
+
+    private async runSearch(): Promise<void> {
+      const term = this.input.value.trim();
+      const token = ++this.searchToken;
+
+      if (!term) {
+        this.resultsRoot.replaceChildren();
+        this.status.textContent = "输入关键词，按内容类型查找课程、题解与手册。";
+        return;
+      }
+
+      const pf = await this.loadPagefind();
+      if (!pf) {
+        this.status.textContent = "搜索索引在构建后生成，开发模式下不可用。";
+        return;
+      }
+
+      this.status.textContent = "搜索中…";
+      this.resultsRoot.replaceChildren();
+
+      let response: PagefindSearchResponse | null = null;
+      try {
+        response = await pf.search(
+          term,
+          this.activeChip === "全部" ? {} : { filters: { type: [this.activeChip] } }
+        );
+      } catch {
+        this.status.textContent = "搜索出错，请稍后重试。";
+        return;
+      }
+      if (token !== this.searchToken) return; // 已有更新的搜索，丢弃过期结果
+
+      const datas = (
+        await Promise.all((response?.results ?? []).slice(0, MAX_RESULTS).map((r) => r.data()))
+      ).filter((d): d is PagefindResultData => Boolean(d));
+      if (token !== this.searchToken) return;
+
+      if (!datas.length) {
+        this.status.textContent = `没有匹配「${term}」的内容，试试更短的关键词。`;
+        return;
+      }
+
+      this.status.textContent = `找到 ${datas.length} 条结果`;
+      this.resultsRoot.replaceChildren(
+        this.activeChip === "全部" ? this.renderGrouped(datas) : this.renderFlat(datas)
+      );
+    }
+
+    private makeResult(data: PagefindResultData): HTMLLIElement {
+      const li = document.createElement("li");
+      li.className = "search-result";
+      const link = document.createElement("a");
+      link.href = data.url;
+      const title = document.createElement("span");
+      title.className = "search-result__title";
+      title.textContent = data.meta.title || data.url;
+      const excerpt = document.createElement("span");
+      excerpt.className = "search-result__excerpt";
+      // 摘要来自本站自建的搜索索引（内含 <mark> 高亮），与默认 UI 的注入方式一致
+      excerpt.innerHTML = data.excerpt;
+      link.append(title, excerpt);
+      li.append(link);
+      return li;
+    }
+
+    private renderFlat(datas: PagefindResultData[]): HTMLElement {
+      const list = document.createElement("ul");
+      list.className = "search-list";
+      datas.forEach((d) => list.append(this.makeResult(d)));
+      return list;
+    }
+
+    private renderGrouped(datas: PagefindResultData[]): DocumentFragment {
+      const fragment = document.createDocumentFragment();
+      for (const group of GROUP_ORDER) {
+        const items = datas.filter((d) => d.filters?.type?.includes(group));
+        if (!items.length) continue;
+        const section = document.createElement("section");
+        section.className = "search-group";
+        const heading = document.createElement("h3");
+        heading.className = "search-group__label";
+        heading.textContent = group;
+        const list = document.createElement("ul");
+        list.className = "search-list";
+        items.forEach((d) => list.append(this.makeResult(d)));
+        section.append(heading, list);
+        fragment.append(section);
+      }
+      const ungrouped = datas.filter((d) => !d.filters?.type?.some((t) => GROUP_ORDER.includes(t)));
+      if (ungrouped.length) {
+        const list = document.createElement("ul");
+        list.className = "search-list";
+        ungrouped.forEach((d) => list.append(this.makeResult(d)));
+        fragment.append(list);
+      }
+      return fragment;
+    }
+  }
+
+  customElements.define("site-search", SiteSearch);
+</script>
+
+<style>
+  site-search {
+    display: contents;
+  }
+
+  /* ---------- 顶栏触发按钮（与原 Starlight 默认视觉对齐） ---------- */
+
+  button[data-open-modal] {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: var(--text-lg);
+    cursor: pointer;
+  }
+
+  .search-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  @media (min-width: 50rem) {
+    button[data-open-modal] {
+      width: 100%;
+      max-width: 22rem;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding-inline: 0.75rem 0.5rem;
+      background: var(--surface-raised);
+      color: var(--text-muted);
+      font-size: var(--text-sm);
+    }
+
+    button[data-open-modal]:hover {
+      border-color: var(--border-strong);
+      color: var(--text-strong);
+    }
+
+    .search-open-kbd {
+      margin-inline-start: auto;
+    }
+  }
+
+  .search-open-kbd {
+    gap: 0.25em;
+  }
+
+  kbd {
+    padding-inline: 0.375rem;
+    border-radius: var(--radius-xs);
+    background: var(--surface-sunken);
+    border: 1px solid var(--border-subtle);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-muted);
+  }
+
+  .search-open-kbd,
+  .search-open-kbd kbd {
+    display: flex;
+  }
+
+  /* ---------- 模态 ---------- */
+
+  .search-dialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--border-subtle);
+    background: var(--surface-raised);
+    color: var(--text-default);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .search-dialog[open] {
+    display: flex;
+  }
+
+  .search-dialog::backdrop {
+    background: oklch(20% 0.02 268 / 0.4);
+    backdrop-filter: blur(0.25rem);
+  }
+
+  .search-frame {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: var(--space-3);
+    overflow: auto;
+    padding: var(--space-4);
+  }
+
+  .search-cancel {
+    position: absolute;
+    top: var(--space-4);
+    right: var(--space-4);
+    z-index: 1;
+    padding: 0.25rem 0.75rem;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    cursor: pointer;
+  }
+
+  @media (min-width: 50rem) {
+    .search-dialog {
+      width: 90%;
+      max-width: 42rem;
+      height: max-content;
+      min-height: 16rem;
+      max-height: calc(100% - 8rem);
+      margin: 4rem auto auto;
+      border-radius: var(--radius-xl);
+    }
+
+    .search-frame {
+      padding: var(--space-6);
+    }
+
+    .search-cancel {
+      display: none;
+    }
+  }
+
+  /* ---------- 输入框与过滤片 ---------- */
+
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    background: var(--surface-page);
+    transition: border-color var(--duration-fast) var(--ease-out-quart);
+  }
+
+  .search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-ring);
+  }
+
+  .search-box__icon {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex-shrink: 0;
+    color: var(--text-faint);
+  }
+
+  .search-box input {
+    flex: 1;
+    min-width: 0;
+    height: 3rem;
+    border: 0;
+    background: transparent;
+    color: var(--text-strong);
+    font-size: var(--text-md);
+    font-family: inherit;
+  }
+
+  .search-box input:focus {
+    outline: none;
+  }
+
+  .search-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .search-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    min-height: 2rem;
+    padding: 0 var(--space-3);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-pill);
+    background: var(--surface-page);
+    color: var(--text-muted);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition:
+      border-color var(--duration-fast) var(--ease-out-quart),
+      background-color var(--duration-fast) var(--ease-out-quart),
+      color var(--duration-fast) var(--ease-out-quart);
+  }
+
+  .search-chip:hover {
+    border-color: var(--accent-border);
+    color: var(--accent-ink);
+  }
+
+  .search-chip[aria-pressed="true"] {
+    border-color: var(--accent-border);
+    background: var(--accent-quiet);
+    color: var(--accent-ink);
+    font-weight: var(--weight-semibold);
+  }
+
+  .search-chip__count {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .search-chip[aria-pressed="true"] .search-chip__count {
+    color: var(--accent-ink);
+  }
+
+  .search-status {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--text-faint);
+  }
+
+  /* ---------- 结果 ---------- */
+
+  .search-results:not(:empty) {
+    margin-top: var(--space-1);
+  }
+
+  .search-group + .search-group {
+    margin-top: var(--space-5);
+  }
+
+  .search-group__label {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-display);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .search-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .search-result a {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition:
+      background-color var(--duration-fast) var(--ease-out-quart),
+      border-color var(--duration-fast) var(--ease-out-quart);
+  }
+
+  .search-result a:hover,
+  .search-result a:focus-visible {
+    border-color: var(--accent-border);
+    background: var(--accent-quiet);
+    text-decoration: none;
+  }
+
+  .search-result__title {
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--text-strong);
+  }
+
+  .search-result__excerpt {
+    font-size: var(--text-xs);
+    line-height: var(--leading-snug);
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+
+  .search-result__excerpt mark {
+    padding: 0 0.1em;
+    border-radius: var(--radius-xs);
+    background: var(--accent-quiet);
+    color: var(--accent-ink);
+    font-weight: var(--weight-semibold);
+  }
+
+  [data-search-modal-open] {
+    overflow: hidden;
+  }
+</style>

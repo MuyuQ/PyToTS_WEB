@@ -5,6 +5,11 @@
 **Goal:** 将现有 Astro + Starlight 学习站点 UI 重新设计为 Duolingo+GitHub 混合风格，包含三栏布局、自动主题切换、增强双语代码块和进度追踪系统。
 
 > **Status: Partial implementation** — RightSidebar was created, but ThemeToggle, theme-detector.ts, responsive.css, accessibility.css were never implemented. Some other components (DualCodeBlock, Header, Banner, Pagination) use existing Starlight defaults.
+>
+> **状态（2026-09-20）：已被取代。** 本方案的目标已由 docs/plans/2026-09-04-site-ia-and-visual-refactor.md
+> 以更贴近 Starlight 架构的方式实现（tokens.css 三层令牌 + 官方组件覆盖）。未实现的 ThemeToggle /
+> responsive.css / accessibility.css 不再计划补做：主题切换用 Starlight 原生 ThemeSelect，
+> 响应式与可访问性由 tokens/base/layout 的全局样式与 axe/e2e 测试承担。保留本文仅作历史记录。
 
 **Architecture:** 保持 Starlight 架构不变，通过覆盖组件和 CSS 变量实现新设计。新增右侧栏组件，增强现有代码块和测验组件，实现主题自动检测。
 

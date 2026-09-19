@@ -4,6 +4,10 @@
 **Status:** Approved  
 **Owner:** Project Team
 
+> **2026-09-20 现状注记：** MVP 全部落地。文中规划的 DiffInsight/AlgoWalkthrough/QuizCard/PathNavigator
+> 组件分别被 CodeCompare、九段式算法题解模板、QuizContainer + data/quizzes.ts、HomePaths 等取代；
+> 「术语词典」与「迷你项目改写路径」两条内容线未启动，仍属可选项。
+
 ## 1) Product Goal
 
 Build a modern learning website for Python users who want to learn TypeScript.

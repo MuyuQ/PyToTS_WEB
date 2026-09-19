@@ -4,58 +4,20 @@ description: 面向 Python 开发者的 TypeScript 学习平台：双语对照�
 kind: page
 template: splash
 hero:
-  title: 不重新入门，只学不一样的地方
+  title: 不重新入门，<br />只学<em class="hero-grad">不一样的地方</em>
   tagline: 把你已经会的 Python，逐条映射到 TypeScript。同一个概念，两种写法，差异一眼可见。
 ---
 
-import CodeCompare from "../../components/CodeCompare.astro";
+import ContinueCard from "../../components/ContinueCard.astro";
 import HomePaths from "../../components/HomePaths.astro";
 import HomeRoutes from "../../components/HomeRoutes.astro";
-import ContinueCard from "../../components/ContinueCard.astro";
-import { learningRoutes } from "../../lib/learning-routes";
-import { totalLessonCount } from "../../lib/curriculum";
-
-export const allRoutes = await learningRoutes();
-export const lessonTotal = totalLessonCount();
-export const algoTotal = allRoutes.filter((r) => r.kind === "algorithm").length;
-
-<div class="home-cta">
-  <a class="btn btn--primary" href={import.meta.env.BASE_URL + "paths/"}>
-    从第一条路径开始
-  </a>
-  <a class="btn" href={import.meta.env.BASE_URL + "algorithms/"}>
-    直接刷题
-  </a>
-  <span class="home-cta__note">
-    {lessonTotal} 节课 · {algoTotal} 道算法题 · 全部双语对照
-  </span>
-</div>
+import HomeHowTo from "../../components/HomeHowTo.astro";
 
 <ContinueCard />
 
-## 双语对照是这一站的核心
-
-不是"用 TypeScript 再写一遍教程"，而是把每个差异点摆在一起让你看。类型注解在 Python 里是建议，在 TypeScript 里是规则：
-
-```python
-def process_user(user: dict) -> str:
-    return user["name"]  # 类型注解只是"建议"
-
-process_user({"age": 25}) # 运行时才报 KeyError
-```
-
-```typescript
-function processUser(user: { name: string }): string {
-  return user.name;
-}
-
-processUser({ age: 25 });
-// ~~~~~ 编译期直接报错，根本跑不起来
-```
-
 ## 四条路径，按顺序走
 
-课程的顺序是按教学法排的，不是字母序。每节课都保持 Python 在前、TypeScript 在后的对照节奏。
+课程的顺序按教学法排定，不是字母序。每节课都保持 Python 在前、TypeScript 在后的对照节奏。
 
 <HomePaths />
 
@@ -65,7 +27,4 @@ processUser({ age: 25 });
 
 ## 怎么用这个站
 
-1. **顺着路径学**：准备 → 基础 → 迁移 → 进阶，课时短，适合通勤和工位间隙。
-2. **卡住就查手册**：遇到"这个语法 TypeScript 里怎么写"，直接翻对照表，不用回头读课程。
-3. **学完立刻验证**：每节课末尾有练习与面试追问，全部路径走完后做一遍编程测验。
-4. **面试前刷题库**：36 道题按难度分级，每题都有双语实现、复杂度分析和常见变体。
+<HomeHowTo />

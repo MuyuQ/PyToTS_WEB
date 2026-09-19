@@ -1,0 +1,158 @@
+---
+/**
+ * 首页 · 使用步骤卡
+ *
+ * 旧版是普通有序列表，四步挤在正文排版里；重设计后改为
+ * 编号步骤卡，每步带具体出口链接。链接全部构建期生成，不写死路径。
+ */
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+
+const steps = [
+  {
+    title: "顺着路径学",
+    desc: "准备 → 基础 → 迁移 → 进阶，课时短，适合通勤和工位间隙。",
+    href: `${base}/paths/`,
+    linkText: "查看课表",
+  },
+  {
+    title: "卡住就查手册",
+    desc: "遇到「这个语法 TypeScript 里怎么写」，直接翻对照表，不用回头读课程。",
+    href: `${base}/handbook/`,
+    linkText: "打开手册",
+  },
+  {
+    title: "学完立刻验证",
+    desc: "每节课末尾有练习与面试追问，全部路径走完后做一遍编程测验。",
+    href: `${base}/practice/quiz/`,
+    linkText: "进入测验",
+  },
+  {
+    title: "面试前刷题库",
+    desc: "题库按难度分级，每题都有双语实现、复杂度分析和常见面试变体。",
+    href: `${base}/algorithms/`,
+    linkText: "浏览题库",
+  },
+];
+---
+
+<ol class="howto">
+  {
+    steps.map((step, i) => (
+      <li class="howto__card">
+        <span class="howto__num" aria-hidden="true">
+          {String(i + 1).padStart(2, "0")}
+        </span>
+        <div class="howto__body">
+          <h3 class="howto__title">{step.title}</h3>
+          <p class="howto__desc">{step.desc}</p>
+          <a class="howto__link" href={step.href}>
+            {step.linkText}
+            <span class="howto__arrow" aria-hidden="true">
+              →
+            </span>
+          </a>
+        </div>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .howto {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    margin: var(--space-6) 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 42rem) {
+    .howto {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .howto__card {
+    display: flex;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    background: var(--surface-raised);
+    transition:
+      border-color var(--duration-base) var(--ease-out-quart),
+      transform var(--duration-base) var(--ease-out-quart);
+  }
+
+  .howto__card:hover {
+    border-color: var(--accent-border);
+    transform: translateY(-2px);
+  }
+
+  .howto__num {
+    flex-shrink: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.4;
+    color: var(--accent);
+  }
+
+  .howto__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    min-width: 0;
+  }
+
+  .howto__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-cjk);
+    color: var(--text-strong);
+  }
+
+  .howto__desc {
+    margin: 0;
+    font-size: var(--text-sm);
+    line-height: var(--leading-snug);
+    color: var(--text-muted);
+  }
+
+  .howto__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    margin-top: var(--space-1);
+    min-height: 2rem;
+    font-size: var(--text-sm);
+    font-weight: var(--weight-semibold);
+    color: var(--accent);
+    text-decoration: none;
+  }
+
+  .howto__link:hover {
+    color: var(--accent-hover);
+    text-decoration: none;
+  }
+
+  .howto__arrow {
+    font-family: var(--font-mono);
+    transition: transform var(--duration-fast) var(--ease-out-quart);
+  }
+
+  .howto__link:hover .howto__arrow {
+    transform: translateX(0.25em);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .howto__card,
+    .howto__arrow {
+      transition: none;
+    }
+  }
+</style>

@@ -35,3 +35,21 @@ declare module "virtual:starlight/components/SocialIcons" {
   const SocialIcons: AstroComponentFactory;
   export default SocialIcons;
 }
+
+declare module "virtual:starlight/components/EditLink" {
+  import type { AstroComponentFactory } from "astro/runtime/server";
+  const EditLink: AstroComponentFactory;
+  export default EditLink;
+}
+
+declare module "virtual:starlight/components/LastUpdated" {
+  import type { AstroComponentFactory } from "astro/runtime/server";
+  const LastUpdated: AstroComponentFactory;
+  export default LastUpdated;
+}
+
+declare module "virtual:starlight/components/Pagination" {
+  import type { AstroComponentFactory } from "astro/runtime/server";
+  const Pagination: AstroComponentFactory;
+  export default Pagination;
+}

@@ -374,6 +374,7 @@ Primitives  →  Semantics  →  Starlight 桥接
 ## 5. 后续可扩展方向
 
 > 2026-09-05 更新：第 1、2、3、4、5、6、8 项已完成，见下方标注。
+> 2026-09-20 更新：第 7 项（英文版）已按"移除"路线执行（提交 80a4bb2）；§5.2 中期四项（9–12）已全部落地，落法见下方标注。
 
 ### 5.1 短期（结构已就位，接入成本低）
 
@@ -386,9 +387,9 @@ Primitives  →  Semantics  →  Starlight 桥接
 7. **英文版**：要么正式翻译（需要重做代码对照，不只是文案），要么移除 `/en/` 目录——现状是有内容但标注不可用
 8. ✅ **内容覆盖率校验**（2026-09-05）：`quiz-coverage.test.ts` 重写为数据驱动——课程 slug → quizId 约定派生，双向校验（缺测验 / 孤儿 quizId / 拼错 id）；`quiz-data.test.ts` 守护题库数据契约（4 选项恰 1 正确、预测题必带代码）
 
-### 5.2 中期
+### 5.2 中期（2026-09-20 全部落地）
 
-9. **搜索增强**：Pagefind 已在用，可按内容类型（课程/算法/手册）分组展示结果
-10. **进度云端同步**：当前纯 localStorage，跨设备不可用。接口边界已清晰（`progress-store.ts`），替换存储层即可
-11. **增量内容校验**：把 `curriculum.ts` 与实际内容目录做一致性检查，防止 slug 写错却静默失效
-12. **设计令牌导出**：当前令牌只服务于本站，可抽出为独立包，供后续项目复用
+9. ✅ **搜索增强**（2026-09-20）：Banner 覆盖组件给每页注入 `data-pagefind-filter="type"` 类型标记（课程/题解/手册/练习/参考），覆盖 `Search` 组件自建搜索模态——"全部"视图按类型分组展示，类型过滤片带实时计数。e2e 守护（search-and-filter.spec.ts）
+10. ✅ **进度跨设备迁移**（2026-09-20）：本站是无后端的纯静态站，"云端同步"需要引入账号体系与服务器，超出项目边界；按同等用户价值落地为**进度导出/导入**——`progress-store.ts` 新增 `mergeLearningProgress`（按 path/quizId 去重、新者胜、收藏并集）与 `parseProgressBlob`，「我的」页提供导出 JSON 与导入合并，单测守护（progress-merge.test.ts）。真正的云端同步留待有后端决策时替换存储层
+11. ✅ **内容一致性校验**（2026-09-20）：`tests/unit/curriculum-consistency.test.ts` 双向核对 curriculum 与 `src/content/docs/paths/*` 实际文件（slug 拼错/文件改名即红），并守护"每条路径必有 index.mdx 入口"
+12. ✅ **设计令牌导出**（2026-09-20）：按"发布机器可读快照"落地而非抽独立 npm 包（当前令牌量级撑不起包的维护成本）——`scripts/export-tokens.mjs` 由 `prebuild` 把 tokens.css 解析为 `public/design-tokens.json`（primitives/light/dark/starlight 四层，构建产物不入库），`tokens-export.test.ts` 守护解析契约
