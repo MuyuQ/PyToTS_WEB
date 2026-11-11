@@ -2,6 +2,9 @@
   "name": "typescript-python-web",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": "^22.22.3 || ^24.16.0 || >=26.3.0"
+  },
   "scripts": {
     "dev": "astro dev",
     "prebuild": "node scripts/export-tokens.mjs",
@@ -16,6 +19,7 @@
     "test:a11y": "vitest run tests/a11y/",
     "test:e2e": "playwright test",
     "linkcheck": "node scripts/link-check.mjs",
+    "generate:og": "node scripts/generate-og.mjs",
     "check": "npm run lint && npm run lint:content && npm run format && npm run typecheck && npm run build && npm run test:coverage && npm run linkcheck",
     "lighthouse": "npx --yes @lhci/cli autorun --config=lighthouserc.json",
     "lint:content": "node scripts/content-lint.mjs"
@@ -24,15 +28,13 @@
     "@astrojs/starlight": "^0.42.7",
     "astro": "^7.4.2",
     "sharp": "^0.35.5",
-    "zod": "4.5.4"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.12",
-    "@eslint/js": "^9.0.0",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
-    "@testing-library/dom": "^10.4.2",
     "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/user-event": "^14.6.8",
     "@types/jsdom": "^30.0.0",
     "@vitest/coverage-v8": "^5.0.5",
     "axe-core": "^4.14.0",
@@ -41,9 +43,8 @@
     "jsdom": "^30.0.1",
     "prettier": "^3.9.10",
     "prettier-plugin-astro": "^0.14.1",
-    "typescript": "^5.0.0",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.72.0",
-    "vitest": "^5.0.0",
-    "vitest-axe": "^0.1.0"
+    "vitest": "^5.0.0"
   }
 }
