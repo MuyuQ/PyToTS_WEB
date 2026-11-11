@@ -31,6 +31,15 @@ describe("content-lint", () => {
     expect(issues.some((m) => m.includes("tags"))).toBe(true);
   });
 
+  it("单行写法的 CodeCompare 超长也应报错", () => {
+    const longTs = "const value: number = 12345; // 这一行注释刻意超过四十八个字符的上限";
+    const issues = lintLines(
+      "a.mdx",
+      `---\ntitle: t\nkind: page\n---\n<CodeCompare py={\`x = 1\`} ts={\`${longTs}\`} />\n`
+    );
+    expect(issues.some((m) => m.includes("CodeCompare"))).toBe(true);
+  });
+
   it("规范内容应零报错", () => {
     const issues = lintLines(
       "a.mdx",

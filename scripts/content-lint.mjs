@@ -2,7 +2,7 @@
  * 内容规范检查（纳入 npm run check）：
  * 1. 标题中不允许出现 emoji（标题体系保持专业、目录可扫视）
  * 2. 不允许根相对内部链接（子路径部署下会 404，必须使用相对链接）
- * 3. frontmatter 必填字段（与 src/content/config.ts 的 lesson/algorithm 约束对齐）
+ * 3. frontmatter 必填字段（与 src/content.config.ts 的 lesson/algorithm 约束对齐）
  * 4. CodeCompare 只用于短代码对（≤20 行、单行 ≤48 字符），超限改上下排列
  */
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -61,27 +61,33 @@ function templateLiteralContent(block, attrStart) {
 
 /** CodeCompare 只用于短代码对；超限的对照改上下排列的普通代码块 */
 function lintCodeCompare(rel, text, issues) {
+  // 多行属性写法：结束标记须在行首缩进处（避免模板字符串内部的 /> 提前截断匹配）
   const blockRe = /<CodeCompare\s*\n[\s\S]*?\n\s*\/>/g;
-  let match;
-  while ((match = blockRe.exec(text)) !== null) {
-    const block = match[0];
-    for (const name of ["py", "ts"]) {
-      const attr = new RegExp(`\\b${name}=\\{`).exec(block);
-      if (!attr) continue;
-      const content = templateLiteralContent(block, attr.index + attr[0].length - 1);
-      if (content === null) continue;
-      const lines = content.replace(/^\n+|\n+$/g, "").split("\n");
-      const maxLen = Math.max(...lines.map((l) => l.length), 0);
-      const lineNo = text.slice(0, match.index).split("\n").length;
-      if (lines.length > CODE_COMPARE_MAX_LINES) {
-        issues.push(
-          `${rel}:${lineNo} CodeCompare 超过 ${CODE_COMPARE_MAX_LINES} 行（${lines.length} 行），请改为上下排列的代码块`
-        );
-      }
-      if (maxLen > CODE_COMPARE_MAX_LINE_LENGTH) {
-        issues.push(
-          `${rel}:${lineNo} CodeCompare [${name}] 单行 ${maxLen} 字符，超过 ${CODE_COMPARE_MAX_LINE_LENGTH}，请改为上下排列的代码块`
-        );
+  // 单行属性写法：此前漏检，现纳入同一套行数/行长约束
+  const inlineRe = /<CodeCompare\s+[^\n]*\/>/g;
+  for (const re of [blockRe, inlineRe]) {
+    re.lastIndex = 0;
+    let match;
+    while ((match = re.exec(text)) !== null) {
+      const block = match[0];
+      for (const name of ["py", "ts"]) {
+        const attr = new RegExp(`\\b${name}=\\{`).exec(block);
+        if (!attr) continue;
+        const content = templateLiteralContent(block, attr.index + attr[0].length - 1);
+        if (content === null) continue;
+        const lines = content.replace(/^\n+|\n+$/g, "").split("\n");
+        const maxLen = Math.max(...lines.map((l) => l.length), 0);
+        const lineNo = text.slice(0, match.index).split("\n").length;
+        if (lines.length > CODE_COMPARE_MAX_LINES) {
+          issues.push(
+            `${rel}:${lineNo} CodeCompare 超过 ${CODE_COMPARE_MAX_LINES} 行（${lines.length} 行），请改为上下排列的代码块`
+          );
+        }
+        if (maxLen > CODE_COMPARE_MAX_LINE_LENGTH) {
+          issues.push(
+            `${rel}:${lineNo} CodeCompare [${name}] 单行 ${maxLen} 字符，超过 ${CODE_COMPARE_MAX_LINE_LENGTH}，请改为上下排列的代码块`
+          );
+        }
       }
     }
   }

@@ -5,7 +5,7 @@
  * slug 拼错或文件改名会让分页/测验/进度静默失效。这里双向核对——
  * curriculum 里有的课程必须有对应文件，目录里的课程必须登记在 curriculum 中。
  */
-import { readdirSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { CURRICULUM, TRACK_ORDER, TRACKS } from "../../src/lib/curriculum";
@@ -17,6 +17,27 @@ function trackFiles(track: string): string[] {
   return readdirSync(join(docsRoot, "paths", track))
     .filter((name) => name.endsWith(".mdx") || name.endsWith(".md"))
     .map((name) => name.replace(/\.(mdx|md)$/, ""));
+}
+
+/** 全部正课 slug（不含路径入口页），prerequisites 引用的 id 都必须是其中之一 */
+const allLessonSlugs = new Set(
+  TRACK_ORDER.flatMap((track) => CURRICULUM[track]).filter((slug) => slug !== "index")
+);
+
+/** 从 frontmatter 提取 prerequisites 数组；无该行返回 [] */
+function prerequisitesOf(track: string, slug: string): string[] {
+  const source = readFileSync(join(docsRoot, "paths", track, `${slug}.mdx`), "utf8");
+  const frontmatter = source.split("---")[1] ?? "";
+  const line = frontmatter.split("\n").find((l) => l.startsWith("prerequisites:"));
+  const inner = (line ?? "")
+    .slice("prerequisites:".length)
+    .trim()
+    .replace(/^\[/, "")
+    .replace(/\]$/, "");
+  return inner
+    .split(",")
+    .map((item) => item.trim().replace(/"/g, ""))
+    .filter(Boolean);
 }
 
 describe("curriculum 与内容目录一致性", () => {
@@ -50,5 +71,20 @@ describe("curriculum 与内容目录一致性", () => {
       const slugs = CURRICULUM[track];
       expect(new Set(slugs).size, `${track} 存在重复 slug`).toBe(slugs.length);
     }
+  });
+
+  it("prerequisites 只引用存在的课程 slug（无悬空 id）", () => {
+    const dangling: string[] = [];
+    for (const track of TRACK_ORDER) {
+      for (const slug of CURRICULUM[track]) {
+        if (slug === "index") continue;
+        for (const prerequisite of prerequisitesOf(track, slug)) {
+          if (!allLessonSlugs.has(prerequisite)) {
+            dangling.push(`${track}/${slug}: "${prerequisite}"`);
+          }
+        }
+      }
+    }
+    expect(dangling, `prerequisites 引用了不存在的课程：${dangling.join("; ")}`).toEqual([]);
   });
 });

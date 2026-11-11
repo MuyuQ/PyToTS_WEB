@@ -1,7 +1,7 @@
 import { defineCollection } from "astro:content";
-import { glob } from "astro/loaders";
 import { z } from "astro/zod";
-import { docsSchema } from "@astrojs/starlight/schema";
+import { docsLoader, i18nLoader } from "@astrojs/starlight/loaders";
+import { docsSchema, i18nSchema } from "@astrojs/starlight/schema";
 
 const learningMetadataSchema = z
   .object({
@@ -49,10 +49,18 @@ const learningMetadataSchema = z
   });
 
 const docs = defineCollection({
-  loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/docs" }),
+  // docsLoader 是 Starlight 官方 loader：忽略 `_` 前缀文件、支持更多扩展名
+  loader: docsLoader(),
   schema: docsSchema({
     extend: learningMetadataSchema,
   }),
 });
 
-export const collections = { docs };
+// Starlight 启动时会读取 i18n 集合做 UI 翻译回退；本站单语言（root locale），
+// 定义空集合只为消除构建时 "The collection i18n does not exist or is empty" 警告。
+const i18n = defineCollection({
+  loader: i18nLoader(),
+  schema: i18nSchema(),
+});
+
+export const collections = { docs, i18n };
