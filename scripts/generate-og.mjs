@@ -1,6 +1,6 @@
 /**
  * 生成社交分享 OG 图（1200×630）：深色底 + 双语对照版式。
- * 产物提交到 public/og.png；改动文案或配色后重新运行本脚本。
+ * 产物提交到 public/og.png；改动文案或配色后运行 npm run generate:og 重生成。
  * 注意：依赖本机字体（Segoe UI / Microsoft YaHei / Consolas），CI Linux
  * 缺中文字体时渲染会回退、产物不一致——OG 图以仓库内提交版本为准，
  * 不要在 CI 里重新生成后直接覆盖提交。
