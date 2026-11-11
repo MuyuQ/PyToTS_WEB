@@ -343,7 +343,7 @@ function initializeQuizUI(container: HTMLElement, quiz: QuizManager) {
     actionBtn.style.display = "none";
     explanationEl.style.display = "none";
 
-    let message = "";
+    let message: string;
     if (percentage >= 80) {
       message = "太棒了！你对 Python 到 TypeScript 的迁移掌握得很好！";
     } else if (percentage >= 60) {

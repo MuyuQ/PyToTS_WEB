@@ -8,7 +8,13 @@ import { join, relative, sep } from "node:path";
 
 const ROOT = process.cwd();
 const DIST = join(ROOT, "dist");
-const BASE = "/PyToTS_WEB";
+// base 从 astro.config.mjs 解析，保持单一事实来源（此前是手写副本，改 base 会漏改这里）
+const configSource = readFileSync(join(ROOT, "astro.config.mjs"), "utf8");
+const BASE = (configSource.match(/^\s*base:\s*"([^"]+)"/m)?.[1] ?? "/").replace(/\/+$/, "");
+if (!BASE) {
+  console.error("无法从 astro.config.mjs 解析 base，请检查配置文件");
+  process.exit(1);
+}
 
 const files = [];
 (function walk(dir) {

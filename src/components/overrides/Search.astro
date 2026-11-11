@@ -266,7 +266,7 @@
       this.status.textContent = "搜索中…";
       this.resultsRoot.replaceChildren();
 
-      let response: PagefindSearchResponse | null = null;
+      let response: PagefindSearchResponse | null;
       try {
         response = await pf.search(
           term,
