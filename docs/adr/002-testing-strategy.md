@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 
-**Date:** 2024-03-05
+**Date:** 2026-03-13
 
 **Deciders:** @maintainer
 
@@ -46,7 +46,7 @@ We will use a multi-layered testing approach:
 
 ### Neutral
 
-- Requires Node.js 20+ for best compatibility
+- Requires Node.js 22+（当前基线，CI 与 README 一致）
 
 ## Alternatives Considered
 

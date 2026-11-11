@@ -6,7 +6,7 @@ This guide covers the deployment process for [PyToTS](https://muyuq.github.io/Py
 
 ## Prerequisites
 
-- Node.js 20+
+- Node.js 22+（22.22.3 或更高；与 CI 和 `package.json` 的 `engines` 一致）
 - npm
 - GitHub repository access
 

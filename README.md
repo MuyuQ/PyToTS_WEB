@@ -196,13 +196,13 @@ src/
 
 ## 技术栈与部署
 
-| 用途               | 技术                                                              |
-| ------------------ | ----------------------------------------------------------------- |
-| 静态站点与文档主题 | Astro 7、Starlight 0.42                                           |
-| 内容与交互         | MDX、TypeScript、Astro 组件、浏览器原生 API                       |
-| 搜索               | Pagefind，随静态构建生成索引                                      |
-| 测试与质量         | Vitest 5、Testing Library、axe-core、Playwright、ESLint、Prettier |
-| 托管               | GitHub Pages + GitHub Actions                                     |
+| 用途               | 技术                                                                        |
+| ------------------ | --------------------------------------------------------------------------- |
+| 静态站点与文档主题 | Astro 7、Starlight 0.42                                                     |
+| 内容与交互         | MDX、TypeScript、Astro 组件、浏览器原生 API                                 |
+| 搜索               | Pagefind，随静态构建生成索引                                                |
+| 测试与质量         | Vitest 5、@testing-library/jest-dom、axe-core、Playwright、ESLint、Prettier |
+| 托管               | GitHub Pages + GitHub Actions                                               |
 
 精确依赖版本见 [`package-lock.json`](./package-lock.json)。
 

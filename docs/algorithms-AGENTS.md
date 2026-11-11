@@ -17,7 +17,7 @@ algorithms/
 ├── climbing-stairs.mdx                          # Easy:   DP
 ├── reverse-linked-list.mdx                      # Easy:   链表
 ├── linked-list-cycle.mdx                        # Easy:   双指针
-├── maximum-subarray.mdx                         # Easy:   DP (Kadane)
+├── maximum-subarray.mdx                         # Medium: DP (Kadane)
 ├── counting-bits.mdx                            # Easy:   位运算+DP
 ├── binary-tree-inorder-traversal.mdx            # Easy:   二叉树（迭代遍历）
 ├── single-number.mdx                            # Easy:   位运算
@@ -102,24 +102,32 @@ description: 简短描述（50字内）
 
 ## DIFFICULTY DISTRIBUTION
 
-- **Easy**: 10 题 (基础数据结构、位运算、二叉树遍历)
-- **Medium**: 22 题 (主流面试难度)
-- **Hard**: 4 题 (高级技巧：分治/优先队列、滑动窗口、双堆、编辑距离)
+按 36 篇 frontmatter 实测（2026-11-12 校对）：
+
+- **Easy**: 9 题 (基础数据结构、位运算、二叉树遍历)
+- **Medium**: 24 题 (主流面试难度)
+- **Hard**: 3 题 (高级技巧：双堆、滑动窗口、分治)
 
 ## TOPIC COVERAGE
 
-| 主题              | 题目数 |
-| ----------------- | ------ |
-| 数组/双指针       | 6      |
-| 动态规划          | 9      |
-| 链表              | 2      |
-| 字符串/滑动窗口   | 3      |
-| 图/BFS/DFS/最短路 | 5      |
-| 设计/数据结构     | 3      |
-| 回溯/排列组合     | 3      |
-| 位运算            | 2      |
-| 二叉树            | 2      |
-| 前缀树            | 1      |
+按 frontmatter `tags` 字段实测统计（一题可带多标签）：
+
+| 标签                | 题目数 |
+| ------------------- | ------ |
+| array               | 14     |
+| dynamic-programming | 11     |
+| hash-table          | 7      |
+| string              | 7      |
+| dfs                 | 6      |
+| two-pointers        | 4      |
+| graph               | 4      |
+| bfs                 | 4      |
+| linked-list         | 4      |
+| bit-manipulation    | 3      |
+| heap                | 3      |
+| design              | 3      |
+| backtracking        | 3      |
+| 其余 18 个标签      | 各 1–2 |
 
 ## NOTES
 

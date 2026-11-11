@@ -68,7 +68,7 @@ Get-Content astro.config.mjs | Select-String -Pattern "(autogenerate|label)"
 Verify frontmatter does not have `draft: true`:
 
 ```bash
-Select-String -Pattern "draft:" src/content/docs/*/*.mdx
+Get-ChildItem -Recurse src/content/docs -Include *.mdx | Select-String -Pattern "draft:"
 ```
 
 ## Test Failures
@@ -103,7 +103,7 @@ npm run linkcheck
 ### Node Version
 
 ```bash
-node --version  # Should be 20+
+node --version  # Should be 22+ (22.22.3+ or 24.16.0+)
 ```
 
 ### npm Issues

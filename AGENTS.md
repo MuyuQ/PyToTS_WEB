@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-07-04
-**Commit:** 5fd5a4a
+**Generated:** 2026-11-12
+**Commit:** 8fa0eda
 **Branch:** main
 
 ## OVERVIEW
@@ -23,26 +23,28 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 │   │   │   └── advanced/    # 进阶 8 课
 │   │   ├── handbook/        # 速查手册
 │   │   └── practice/        # 练习测验
-│   ├── lib/                 # 工具库
+│   ├── data/                # 测验题库 (quizzes.ts)
+│   ├── lib/                 # 工具库 (课程结构、进度存储、测验状态机)
 │   ├── pages/               # 自定义页面
 │   └── styles/              # 全局样式
 ├── tests/
 │   ├── unit/                # 单元测试
+│   ├── a11y/                # 基于构建产物的可访问性测试
 │   └── e2e/                 # Playwright E2E
-├── scripts/                 # 构建脚本
+├── scripts/                 # 构建与检查脚本
 └── docs/plans/              # 设计文档
 ```
 
 ## WHERE TO LOOK
 
-| 任务         | 位置                                 | 说明                                                        |
-| ------------ | ------------------------------------ | ----------------------------------------------------------- |
-| 新增算法题   | `src/content/docs/algorithms/`       | 见 [docs/algorithms-AGENTS.md](./docs/algorithms-AGENTS.md) |
-| 修改课程内容 | `src/content/docs/paths/*/`          | 每课独立 MDX                                                |
-| 组件开发     | `src/components/`                    | Astro 组件                                                  |
-| 添加测验题目 | `src/components/QuizContainer.astro` | 内置题库                                                    |
-| 样式调整     | `src/styles/` + Starlight 主题       |
-| 构建问题     | `astro.config.mjs`                   | 站点配置                                                    |
+| 任务         | 位置                           | 说明                                                        |
+| ------------ | ------------------------------ | ----------------------------------------------------------- |
+| 新增算法题   | `src/content/docs/algorithms/` | 见 [docs/algorithms-AGENTS.md](./docs/algorithms-AGENTS.md) |
+| 修改课程内容 | `src/content/docs/paths/*/`    | 每课独立 MDX                                                |
+| 组件开发     | `src/components/`              | Astro 组件                                                  |
+| 添加测验题目 | `src/data/quizzes.ts`          | 题库数据源，组 id 见下方「测验题目」                        |
+| 样式调整     | `src/styles/` + Starlight 主题 |
+| 构建问题     | `astro.config.mjs`             | 站点配置                                                    |
 
 ## CONVENTIONS
 
@@ -63,8 +65,8 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 
 ### 测验题目
 
-- 存储于 `QuizContainer.astro` 的 `quizData` 对象
-- 每题：question + 4 options (含 correct flag + explanation)
+- 存储于 `src/data/quizzes.ts` 的 `QUIZZES` 对象（按组 id 组织）；新增测验组还需在 `src/content/docs/practice/quiz/index.mdx` 引用
+- 每题：question + 4 options (含 correct flag + explanation)；预测题使用 `questionType: "prediction"`
 
 ## ANTI-PATTERNS (THIS PROJECT)
 
@@ -80,13 +82,14 @@ Python to TypeScript 双语学习站点。基于 Astro + Starlight 构建的静�
 # 开发
 npm run dev -- --host 127.0.0.1
 
-# 质量检查 (lint + lint:content + typecheck + build + test + linkcheck)
-# 注意 test 在 build 之后：a11y 测试需要新鲜的 dist 产物
+# 质量检查 (lint + lint:content + format + typecheck + build + test:coverage + linkcheck)
+# 注意 test:coverage 在 build 之后：a11y 测试需要新鲜的 dist 产物
 npm run check
 
 # 测试
-npm run test        # 单元测试
-npm run test:e2e    # Playwright
+npm run test            # 单元测试（不含覆盖率）
+npm run test:a11y       # 可访问性测试（需要先 build）
+npm run test:e2e        # Playwright
 
 # 构建
 npm run build       # 静态站点

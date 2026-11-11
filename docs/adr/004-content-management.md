@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 
-**Date:** 2024-03-10
+**Date:** 2026-03-13
 
 **Deciders:** @maintainer
 
@@ -55,8 +55,12 @@ Content structure:
 
 ## Content Schema
 
+> 以下为决策落地时的原始 schema；当前实际约束已扩展（`kind`/`level`/`topic`/
+> `difficulty: easy|medium|hard`/`prerequisites`/`python_tags`/`ts_tags` 等，
+> 定义在 `src/content.config.ts`，由 Astro 7 content layer 的 `docsLoader()` 加载）。
+
 ```typescript
-// src/content/config.ts
+// src/content.config.ts（决策时的原始版本：src/content/config.ts）
 import { defineCollection, z } from "astro:content";
 
 const docsCollection = defineCollection({

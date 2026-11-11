@@ -167,13 +167,13 @@ These cover the problem statement, brute-force bottlenecks, analysis with a dry 
 
 ## Tech Stack and Deployment
 
-| Purpose                             | Technology                                                        |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| Static site and documentation theme | Astro 7, Starlight 0.42                                           |
-| Content and interaction             | MDX, TypeScript, Astro components, native browser APIs            |
-| Search                              | Pagefind indexes generated during the static build                |
-| Testing and quality                 | Vitest 5, Testing Library, axe-core, Playwright, ESLint, Prettier |
-| Hosting                             | GitHub Pages and GitHub Actions                                   |
+| Purpose                             | Technology                                                                  |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| Static site and documentation theme | Astro 7, Starlight 0.42                                                     |
+| Content and interaction             | MDX, TypeScript, Astro components, native browser APIs                      |
+| Search                              | Pagefind indexes generated during the static build                          |
+| Testing and quality                 | Vitest 5, @testing-library/jest-dom, axe-core, Playwright, ESLint, Prettier |
+| Hosting                             | GitHub Pages and GitHub Actions                                             |
 
 See [`package-lock.json`](./package-lock.json) for exact dependency versions.
 
@@ -193,4 +193,12 @@ Issues and pull requests are welcome for lessons, algorithm solutions, and site 
 
 ## License
 
-The repository does not currently include a `LICENSE` file.
+[MIT](./LICENSE)
+
+---
+
+If this project helps you, a Star is appreciated!
+
+---
+
+_Last updated: 2026-11-12_
