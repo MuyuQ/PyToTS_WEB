@@ -10,6 +10,11 @@ on:
 permissions:
   contents: read
 
+# 同一 ref 的连续推送只跑最新一次，取消进行中的旧运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   e2e:
     runs-on: ubuntu-latest

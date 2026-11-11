@@ -3,15 +3,47 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+# 防止两次快速 push 的部署竞态；PR 上允许取消旧运行
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
-  deploy:
+  quality-check:
+    # PR 门禁：完整质量链（lint/format/typecheck/build/单测/链接检查），
+    # 坏改动在合并前拦截，而不是靠部署流水线兜底
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run quality checks and build
+        run: npm run check
+
+  deploy:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -19,8 +51,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v7
@@ -40,7 +70,7 @@ jobs:
         uses: actions/configure-pages@v6
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: "./dist"
 
