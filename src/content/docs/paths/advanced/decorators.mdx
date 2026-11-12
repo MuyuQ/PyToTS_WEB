@@ -519,6 +519,12 @@ function goodMemoize<T extends (...args: any[]) => any>(
 }
 ```
 
+:::note[泛型约束里的 any 是例外]
+
+`T extends (...args: any[]) => any` 里的 `any` 不是「关闭类型检查」，而是 TypeScript 内置工具类型（`Parameters<T>`、`ReturnType<T>`）同款的函数签名占位：它只表示「任意参数列表」，实际参数与返回值仍由 `Parameters<T>` / `ReturnType<T>` 精确保留。换成 `unknown[]` 会因函数参数逆变，让 `(a: number) => number` 无法满足约束（TS2344）。本站示例禁用 `any`，这一处是类型层面的必要例外。
+
+:::
+
 ## 优势对比
 
 | 特性       | Python            | TypeScript           |
