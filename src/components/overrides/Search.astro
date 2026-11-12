@@ -103,6 +103,8 @@
     meta: { title?: string };
     excerpt: string;
     filters: Record<string, string[]>;
+    /** 小节级命中；url 可能是完整地址，也可能只是 #anchor */
+    sub_results?: { url: string; title: string; excerpt?: string }[];
   }
   interface PagefindResult {
     data: () => Promise<PagefindResultData>;
@@ -308,6 +310,32 @@
       excerpt.innerHTML = data.excerpt;
       link.append(title, excerpt);
       li.append(link);
+
+      // 结果里若有小节级命中，给出直达该小节的链接（默认 UI 的 showSubResults 未复刻）
+      const subs = (data.sub_results ?? []).filter((sub) => sub.title && sub.url).slice(0, 3);
+      if (subs.length) {
+        const subList = document.createElement("ul");
+        subList.className = "search-result__subs";
+        for (const sub of subs) {
+          const item = document.createElement("li");
+          const subLink = document.createElement("a");
+          subLink.href = sub.url.startsWith("#") ? `${data.url}${sub.url}` : sub.url;
+          const subTitle = document.createElement("span");
+          subTitle.className = "search-result__sub-title";
+          subTitle.textContent = sub.title;
+          subLink.append(subTitle);
+          if (sub.excerpt) {
+            const subExcerpt = document.createElement("span");
+            subExcerpt.className = "search-result__sub-excerpt";
+            // 与页面级摘要同源：本站自建索引里的 <mark> 高亮
+            subExcerpt.innerHTML = sub.excerpt;
+            subLink.append(subExcerpt);
+          }
+          item.append(subLink);
+          subList.append(item);
+        }
+        li.append(subList);
+      }
       return li;
     }
 
@@ -671,6 +699,38 @@
     background: var(--lang-py-wash);
     color: var(--text-strong);
     font-weight: var(--weight-semibold);
+  }
+
+  .search-result__subs {
+    margin: 0 0 var(--space-2) var(--space-4);
+    padding-left: var(--space-3);
+    border-left: 1px solid var(--border-subtle);
+    list-style: none;
+  }
+
+  .search-result__subs a {
+    display: block;
+    padding: var(--space-1) var(--space-2);
+    box-shadow: none;
+    text-decoration: none;
+  }
+
+  .search-result__subs a:hover,
+  .search-result__subs a:focus-visible {
+    background: var(--surface-raised);
+    box-shadow: inset 2px 0 0 var(--lang-py);
+  }
+
+  .search-result__sub-title {
+    font-size: var(--text-xs);
+    color: var(--text-strong);
+  }
+
+  .search-result__sub-excerpt {
+    display: block;
+    font-size: var(--text-xs);
+    line-height: var(--leading-snug);
+    color: var(--text-muted);
   }
 
   [data-search-modal-open] {
