@@ -387,6 +387,8 @@ const emails = new Set<string>(["alice@example.com", "bob@example.com", "alice@e
 console.log(emails); // Set {2} {"alice@example.com", "bob@example.com"}
 ```
 
+**为什么这么写**：Python 的 `list[dict]` 在 TS 里要先给对象形状起名字，所以定义 `interface User`，再写成 `User[]`，数组里每个元素都会按这个形状校验。`Set` 的去重发生在构造时，重复字面量会被自动丢弃；`filter` 返回新数组、不改动 `users`，这一点和 Python 的列表推导式一致。
+
 </details>
 
 ---
@@ -402,6 +404,14 @@ console.log(emails); // Set {2} {"alice@example.com", "bob@example.com"}
 | 动态数据 | `dict` 一把梭  | 需要区分 Object/Map |
 
 ---
+
+## 自测清单
+
+- 能把 Python `list` / `dict` / `set` 映射到 TS 数组 / `Map` / `Set`
+- 能用 `map` / `filter` / `reduce` 并说明它们返回新值
+- 能用 `Map` 的 `get` / `set` / `has`，说明与对象字面量的区别
+- 能用 `Set` 去重并解释去重发生在构造时
+- 能说出常用方法的 Python 对应物（`append` 与 `push`、`len` 与 `length`）
 
 ## 面试追问
 

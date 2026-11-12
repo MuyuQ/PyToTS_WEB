@@ -610,14 +610,14 @@ function log(target: object, key: string, descriptor: PropertyDescriptor): void 
 
 ## 自测清单
 
-- [ ] 能写出方法装饰器（计时/重试/缓存）并解释 descriptor 角色
-- [ ] 能写出装饰器工厂（带参数）并说明闭包层级
-- [ ] 能实现类装饰器（单例/只读）并说明返回新类的机制
-- [ ] 能用属性装饰器配合 `Object.defineProperty` 实现只读
-- [ ] 能配置 `tsconfig.json` 启用装饰器并说明两个选项作用
-- [ ] 能用 `reflect-metadata` 实现参数装饰器+方法装饰器协作验证
-- [ ] 能写出泛型装饰器并解释 `TypedPropertyDescriptor<T>` 与 `as T` 的作用
-- [ ] 能说出装饰器执行顺序（成员从上到下，类从下到上）
+- 能写出方法装饰器（计时/重试/缓存）并解释 descriptor 角色
+- 能写出装饰器工厂（带参数）并说明闭包层级
+- 能实现类装饰器（单例/只读）并说明返回新类的机制
+- 能用属性装饰器配合 `Object.defineProperty` 实现只读
+- 能配置 `tsconfig.json` 启用装饰器并说明两个选项作用
+- 能用 `reflect-metadata` 实现参数装饰器+方法装饰器协作验证
+- 能写出泛型装饰器并解释 `TypedPropertyDescriptor<T>` 与 `as T` 的作用
+- 能说出装饰器执行顺序（成员从上到下，类从下到上）
 
 ## 练习
 
@@ -696,6 +696,8 @@ class Calculator {
   }
 }
 ```
+
+**为什么这么写**：Python 装饰器是「接收函数、返回函数」，TypeScript 方法装饰器拿到的是 `(target, propertyKey, descriptor)`，缓存逻辑必须改写 `descriptor.value` 才生效。`maxSize` 放在装饰器工厂的外层函数，是因为装饰器表达式在类定义时就要被求值；包装函数里用 `apply` 透传 `this`，否则实例方法会丢上下文。
 
 </details>
 

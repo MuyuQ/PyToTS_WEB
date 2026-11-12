@@ -743,16 +743,18 @@ const result = mergeExact(defaults, overrides);
 // result.c: number
 ```
 
+**为什么这么写**：`T & U` 是交叉类型，同名属性会变成 `T[K] & U[K]`，常常直接是 `never`；`Omit<T, keyof U> & U` 先把被覆盖的键从 `T` 剔除，再拼上 `U`，才能表达「后者覆盖前者」。运行时 `{ ...defaults, ...overrides }` 本来就是后者覆盖，类型层面要手动对齐这个语义。
+
 </details>
 
 ## 自测清单
 
-- [ ] 能用 `Partial`、`Required`、`Readonly` 调整属性修饰，并说明 `Partial` 不递归
-- [ ] 能用 `Pick`、`Omit` 从已有类型裁剪字段，键用 `keyof` 的联合类型
-- [ ] 能用 `Record` 构造映射类型，并说明键类型只能是 `string | number | symbol`
-- [ ] 能用 `ReturnType`、`Parameters` 从函数类型中提取信息
-- [ ] 能组合工具类型实现 `DeepPartial` 一类的递归映射类型
-- [ ] 能对比 Python `TypedDict` / `NotRequired`，说明静态标注与运行时字典的差异
+- 能用 `Partial`、`Required`、`Readonly` 调整属性修饰，并说明 `Partial` 不递归
+- 能用 `Pick`、`Omit` 从已有类型裁剪字段，键用 `keyof` 的联合类型
+- 能用 `Record` 构造映射类型，并说明键类型只能是 `string | number | symbol`
+- 能用 `ReturnType`、`Parameters` 从函数类型中提取信息
+- 能组合工具类型实现 `DeepPartial` 一类的递归映射类型
+- 能对比 Python `TypedDict` / `NotRequired`，说明静态标注与运行时字典的差异
 
 ## 面试追问
 

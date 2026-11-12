@@ -338,15 +338,17 @@ function calculateAreaV2(shape: Circle | Rectangle | null): number | null {
 }
 ```
 
+**为什么这么写**：Python 靠 `isinstance` 在运行时分辨类型；TypeScript 编译后类型擦除，只能用 `instanceof` 这类运行时检查把联合类型**收窄**到具体分支，之后才能访问 `radius`、`width` 等独有字段。若判断逻辑要复用，写成返回 `shape is Circle` 的类型谓词，编译器才会认可这次收窄。
+
 </details>
 
 ## 自测清单
 
-- [ ] 能用 `typeof`、`instanceof`、`in` 把联合类型收窄到具体分支
-- [ ] 能写自定义类型谓词 `value is T`，并解释返回 `boolean` 为什么不够
-- [ ] 能用 `never` 做穷尽检查，新增联合成员时让编译器报错
-- [ ] 能处理 `null` / `undefined`，并解释 `typeof null === "object"` 带来的坑
-- [ ] 能说明 Python `isinstance` 与 TypeScript 类型守卫在「谁负责收窄」上的差异
+- 能用 `typeof`、`instanceof`、`in` 把联合类型收窄到具体分支
+- 能写自定义类型谓词 `value is T`，并解释返回 `boolean` 为什么不够
+- 能用 `never` 做穷尽检查，新增联合成员时让编译器报错
+- 能处理 `null` / `undefined`，并解释 `typeof null === "object"` 带来的坑
+- 能说明 Python `isinstance` 与 TypeScript 类型守卫在「谁负责收窄」上的差异
 
 ## 面试追问
 

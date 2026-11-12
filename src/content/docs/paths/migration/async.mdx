@@ -408,6 +408,14 @@ async function getAllUsers(): Promise<{ id: number; name: string }[]> {
 
 ---
 
+## 自测清单
+
+- 能说明 Promise 三种状态与 `await` 的作用
+- 能把 `asyncio.gather` 映射到 `Promise.all` / `allSettled` / `race`
+- 能解释「调用即执行」与 Python 协程「不 await 就不跑」的差异
+- 能用 `try/catch` 处理 rejection 并解释未处理拒绝的后果
+- 能推断微任务与宏任务混用时的输出顺序
+
 ## 面试追问
 
 ### 问题 1：Promise.all 和 Promise.allSettled 有什么区别？

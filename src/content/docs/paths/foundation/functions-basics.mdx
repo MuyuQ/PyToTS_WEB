@@ -409,7 +409,17 @@ const area1 = calculateArea("circle", { radius: 5 });
 const area2 = calculateArea("rectangle", { width: 4, height: 6 });
 ```
 
+**为什么这么写**：Python 里用 `**kwargs` 或一个 dict 就能装下不同形状的参数，TypeScript 必须先把形状写进类型系统。这里用两个 `interface` 加联合类型 `ShapeParams` 描述入参，再用 `in` 收窄到具体分支，编译器才允许访问 `radius` / `width`。`shape` 这个字符串参数与 `params` 的分支是两套判断，收窄条件里都写上才安全。
+
 </details>
+
+## 自测清单
+
+- 能写带参数类型与返回值类型的函数签名
+- 能使用可选参数、默认参数与剩余参数
+- 能用 `interface` 描述参数对象的形状
+- 能区分函数声明与箭头函数的写法和适用场景
+- 能说明 Python 默认参数与 TS 默认参数在「何时生效」上的差异
 
 ## 面试追问
 

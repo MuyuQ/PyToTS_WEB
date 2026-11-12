@@ -741,17 +741,19 @@ function getWorkdaysInMonthWithDateFns(year: number, month: number): Date[] {
 }
 ```
 
+**为什么这么写**：Python 的 `datetime(year, month, day)` 月份从 1 开始，JS 的 `new Date(year, month, day)` 从 0 开始，所以传参要 `month - 1`，照搬会整体偏一个月。另外 `Date` 是**可变**对象，`setDate` 会原地改；Python 的 `datetime + timedelta` 返回新对象，循环里推进日期时这个差异最容易出错。
+
 </details>
 
 ## 自测清单
 
-- [ ] 能用 `new Date()`、ISO 字符串、时间戳创建日期对象并说明月份 0 基索引
-- [ ] 能进行日期加减、差值计算、字段替换并注意可变性陷阱
-- [ ] 能用 `toISOString`、`toLocaleString` 格式化并区分 UTC 与本地时区
-- [ ] 能用 `Date.parse` 校验字符串并解释无时间部分按 UTC 解析的坑
-- [ ] 能用 `Intl.DateTimeFormat` 指定时区显示并说明存储用 ISO、展示用 Intl
-- [ ] 能说明 Python 秒级 vs JS 毫秒级时间戳互转乘除 1000
-- [ ] 能对比 date-fns / dayjs / luxon 的选型场景
+- 能用 `new Date()`、ISO 字符串、时间戳创建日期对象并说明月份 0 基索引
+- 能进行日期加减、差值计算、字段替换并注意可变性陷阱
+- 能用 `toISOString`、`toLocaleString` 格式化并区分 UTC 与本地时区
+- 能用 `Date.parse` 校验字符串并解释无时间部分按 UTC 解析的坑
+- 能用 `Intl.DateTimeFormat` 指定时区显示并说明存储用 ISO、展示用 Intl
+- 能说明 Python 秒级 vs JS 毫秒级时间戳互转乘除 1000
+- 能对比 date-fns / dayjs / luxon 的选型场景
 
 ## 面试追问
 

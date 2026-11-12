@@ -1498,18 +1498,20 @@ process.on("SIGINT", () => {
 });
 ```
 
+**为什么这么写**：异步读用 `fs/promises`，监听用 `fsSync.watch`，两者职责不同；`path.resolve` 先转绝对路径，避免工作目录变化时监控到别的文件。回调里要自己记录时间戳并 `await` 写入，连续变更才不会丢日志。`FSWatcher` 必须保留引用并在结束时 `close()`，否则进程不会退出。
+
 </details>
 
 ## 自测清单
 
-- [ ] 能用 `fs/promises` 读写文件、创建目录、遍历文件并用 try/catch 处理错误
-- [ ] 能用 `path.join`/`resolve` 跨平台拼接路径并区分 `__dirname` 与 `process.cwd()`
-- [ ] 能用 `Buffer.from`/`toString` 处理字符串↔二进制、Base64、十六进制转换
-- [ ] 能用 `createReadStream`/`createWriteStream`/`pipeline` 处理大文件不爆内存
-- [ ] 能读写 `process.env`、解析 `process.argv`、优雅处理 SIGINT/SIGTERM 退出
-- [ ] 能用 `crypto` 计算哈希、HMAC、生成 UUID、PBKDF2 存密码
-- [ ] 能避免同步/异步混用、Buffer 拼接用 join、process.exit 立即终止等常见坑
-- [ ] 能用 `util.promisify` 把回调 API 包装为 Promise
+- 能用 `fs/promises` 读写文件、创建目录、遍历文件并用 try/catch 处理错误
+- 能用 `path.join`/`resolve` 跨平台拼接路径并区分 `__dirname` 与 `process.cwd()`
+- 能用 `Buffer.from`/`toString` 处理字符串↔二进制、Base64、十六进制转换
+- 能用 `createReadStream`/`createWriteStream`/`pipeline` 处理大文件不爆内存
+- 能读写 `process.env`、解析 `process.argv`、优雅处理 SIGINT/SIGTERM 退出
+- 能用 `crypto` 计算哈希、HMAC、生成 UUID、PBKDF2 存密码
+- 能避免同步/异步混用、Buffer 拼接用 join、process.exit 立即终止等常见坑
+- 能用 `util.promisify` 把回调 API 包装为 Promise
 
 ## 面试追问
 
