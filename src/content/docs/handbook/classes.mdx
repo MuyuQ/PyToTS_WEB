@@ -1,0 +1,231 @@
+---
+title: 类与对象
+description: 从构造器到抽象类，详解 Python 与 TypeScript 类体系的行为差异
+kind: page
+python_tags: ["class", "dataclass", "property"]
+ts_tags: ["class", "interface", "private"]
+sidebar:
+  order: 6
+---
+
+import CodeCompare from "../../../components/CodeCompare.astro";
+
+[语法对照表](../cheat-sheet/#类与对象)给出了类定义的一对一映射。这页处理映射背后容易出错的部分：构造器的赋值简写、三种"私有"的真实强度、`super` 的调用时机，以及 Python 里没有对应物的 `implements`。
+
+## 核心对照
+
+| Python                           | TypeScript                             | 说明         |
+| -------------------------------- | -------------------------------------- | ------------ |
+| `def __init__(self, name):`      | `constructor(name: string)`            | 构造器       |
+| `self.name = name`               | `constructor(public name: string)`     | 参数属性简写 |
+| `_name` 约定 / `__name` 改名     | `private`（编译期）/ `#name`（运行时） | 私有成员     |
+| `@property`                      | `get` / `set`                          | 计算属性     |
+| `@classmethod` / `@staticmethod` | `static`                               | 静态成员     |
+| `class User(Account):`           | `class User extends Account`           | 继承         |
+| `typing.Protocol`（近似）        | `implements`                           | 接口实现     |
+| `abc.ABC` + `@abstractmethod`    | `abstract class`                       | 抽象类       |
+| `@dataclass`                     | 无内建等价                             | 数据载体类   |
+
+## 关键差异
+
+### 1. 构造器：字段赋值可以写进参数里
+
+TypeScript 的参数属性把"声明字段 + 接收参数 + 赋值"合并成一行，这是 Python `__init__` 里逐行 `self.x = x` 的缩写形式。
+
+<CodeCompare
+  py={`class User:
+    def __init__(self, name: str, id: int):
+        self.name = name
+        self.id = id
+`}
+  ts={`class User {
+  // 参数属性：声明 + 赋值一步完成
+  constructor(
+    public name: string,
+    readonly id: number,
+  ) {}
+}
+`}
+/>
+
+两个行为差异值得注意：
+
+- Python 的 `__init__` 是普通方法，漏赋值、赋错名都要等运行时才暴露；TypeScript 在编译期就检查字段是否初始化（`strictPropertyInitialization`）。
+- `readonly` 让字段只能初始化时赋值，Python 没有对应机制，`_` 前缀只是提示。
+
+:::caution
+参数属性是 TypeScript 专属语法，编译后生成普通字段与赋值语句。直接用 JavaScript 写类时没有这个简写。
+:::
+
+### 2. 三种"私有"，只有一种是真私有
+
+Python 和 TypeScript 各有两种"私有"，强度完全不同：
+
+<CodeCompare
+  py={`class Account:
+    def __init__(self):
+        self.balance = 0     # 公开
+        self._log = []       # 约定私有
+        self.__pin = "1234"  # name mangling
+`}
+  ts={`class Account {
+  balance = 0;      // public（默认）
+  private log = []; // 编译期私有，运行时存在
+  #pin = "1234";    // 运行时强制私有
+}
+`}
+/>
+
+- Python `_log`：纯约定，外部照样能访问。
+- Python `__pin`：name mangling 改名为 `_Account__pin`，防止子类意外覆盖，但改个名字仍然可以访问。
+- TypeScript `private`：只在编译期报错，编译产物里是普通属性，运行时完全公开。
+- TypeScript `#pin`：语言级私有，运行时强制，外部访问直接抛 `TypeError`。
+
+`#` 私有字段还有一个容易被忽略的副作用：它不属于对象的可枚举属性，`Object.keys`、展开运算符、`JSON.stringify` 都不会带上它。而 `private` 字段和普通属性一样会被序列化——需要隐藏字段时，两种写法都不能只靠编译期关键字。
+
+### 3. getter 与 setter 成对出现
+
+Python 的 `@property` 把方法伪装成属性，写入用单独的 `@x.setter`；TypeScript 用同名的 `get`/`set` 放在类体里。
+
+<CodeCompare
+  py={`class Rect:
+    def __init__(self, w: int, h: int):
+        self.w = w
+        self.h = h
+
+    @property
+    def area(self) -> int:
+        return self.w * self.h
+
+`}
+  ts={`class Rect {
+constructor(
+public w: number,
+public h: number,
+) {}
+
+get area(): number {
+return this.w \* this.h;
+}
+}
+`}
+/>
+
+给只读计算属性赋值时，两边都会报错，但错误类型不同：Python 抛 `AttributeError`，TypeScript 的类体默认运行在严格模式，抛 `TypeError`。可见性方面 TypeScript 4.3 起支持不对称组合，例如公开 `get` 搭配 `private set`，这与 Python 用 `@x.setter` 组合装饰器的做法等价。
+
+### 4. 静态成员与 classmethod
+
+TypeScript 用一个 `static` 关键字同时覆盖 `@staticmethod` 和 `@classmethod`。区别在于方法体内的 `this`：静态方法里的 `this` 指向调用时使用的类，因此通过子类调用时天然拿到子类，效果等同于 `@classmethod` 的 `cls`。
+
+<CodeCompare
+  py={`class Counter:
+    total = 0  # 类属性
+
+    @classmethod
+    def create(cls) -> "Counter":
+        return cls()
+
+    @staticmethod
+    def reset_all() -> None:
+        Counter.total = 0
+
+`}
+  ts={`class Counter {
+static total = 0; // 静态属性
+
+static create(): Counter {
+return new this(); // this 指向调用方类
+}
+
+static resetAll(): void {
+Counter.total = 0;
+}
+}
+`}
+/>
+
+:::note
+Python 的类属性 `total = 0` 写在类体里；TypeScript 写成 `static total = 0`。两者都挂在类上而非实例上。
+:::
+
+### 5. 继承：`super` 必须先于 `this`
+
+两边都要手动调用父类构造器，但强制程度不同。Python 里先用 `self` 再调 `super().__init__()` 不报错（只是父类字段还没建好）；TypeScript 里在 `super()` 之前访问 `this` 直接抛 `ReferenceError`，这是运行时强制规则。
+
+<CodeCompare
+  py={`class User(Account):
+    def __init__(self, name: str):
+        # 先用 self 不报错，但父类字段还没建
+        self.slug = name.lower()
+        super().__init__(name)
+`}
+  ts={`class User extends Account {
+  constructor(name: string) {
+    // 先访问 this 会抛 ReferenceError
+    super(name); // 必须先调用
+    this.slug = name.toLowerCase();
+  }
+}
+`}
+/>
+
+另外，TypeScript 子类的字段初始化器（`name = "x"` 这类写法）在 `super()` 返回之后才执行，Python 没有这个隐藏的执行顺序。
+
+### 6. `implements` 与抽象类
+
+`implements` 是 Python 没有的概念：它声明"这个类必须满足某个接口的结构"，纯粹是编译期检查，不生成任何代码。Python 最接近的对应是 `typing.Protocol`，靠结构化类型在静态检查时达到类似效果。
+
+```python
+from abc import ABC, abstractmethod
+
+
+class Shape(ABC):
+    @abstractmethod
+    def area(self) -> float: ...
+```
+
+```typescript
+interface Shape {
+  area(): number;
+}
+
+// 实现多个接口时用逗号分隔
+class Circle implements Shape {
+  constructor(private readonly r: number) {}
+
+  area(): number {
+    return Math.PI * this.r ** 2;
+  }
+}
+```
+
+抽象类的关系是反过来的：Python 的 `abc.ABC` 是运行时机制，实例化含抽象方法的类会抛 `TypeError: Can't instantiate abstract class`；TypeScript 的 `abstract` 只是编译期标记，编译产物是普通类，绕过编译器在运行时照样能 `new`。依赖抽象类阻止误用的 Python 代码，迁移后需要额外的运行时检查。
+
+### 7. `dataclass` 没有直接等价物
+
+`@dataclass` 自动生成 `__init__`、`__repr__` 和按字段比较的 `__eq__`。TypeScript 没有 decorator 驱动的等价物，最接近的写法是参数属性（见第 1 节），但相等性和打印需要自己实现。
+
+<CodeCompare
+  py={`from dataclasses import dataclass
+
+@dataclass
+class Point:
+x: int = 0
+y: int = 0
+`}
+  ts={`class Point {
+constructor(
+public x = 0,
+public y = 0,
+) {}
+}
+`}
+/>
+
+关键差别在相等性：`Point(1, 2) == Point(1, 2)` 在 Python 里是 `True`（按字段比较）；TypeScript 里两个实例用 `===` 比较结果是 `false`（按引用比较），深度比较要么手写 `equals` 方法，要么引入第三方库。习惯用 `__eq__` 做去重和测试断言的代码，迁移时要逐处检查。
+
+:::tip[延伸阅读]
+
+- 课程页：[类与对象基础](../../paths/foundation/classes-objects/)、[类型系统](../../paths/migration/types/)、[装饰器](../../paths/advanced/decorators/)、[设计模式](../../paths/advanced/design-patterns/)
+- 速查表：[错误处理速查](../cheat-sheet/#错误处理)（异常与 `instanceof` 收窄）、[类与对象速查](../cheat-sheet/#类与对象)
+  :::

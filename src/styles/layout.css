@@ -217,9 +217,7 @@
   }
 
   .sl-markdown-content td {
-    display: flex;
-    justify-content: space-between;
-    gap: var(--space-4);
+    display: block;
     padding: var(--space-2) 0;
     border-bottom: 1px solid var(--border-subtle);
   }
@@ -230,13 +228,13 @@
 
   .sl-markdown-content td::before {
     content: attr(data-label);
-    flex-shrink: 0;
+    display: block;
+    margin-bottom: 0.3rem;
     color: var(--text-faint);
     font-size: var(--text-xs);
     font-weight: var(--weight-semibold);
     text-transform: uppercase;
     letter-spacing: var(--tracking-wide);
-    padding-top: 0.15em;
   }
 }
 

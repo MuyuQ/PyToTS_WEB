@@ -32,6 +32,22 @@ const shouldRenderSearch =
   <VisitRecorder />
 </div>
 
+<script>
+  document.querySelectorAll(".sl-markdown-content table").forEach((table) => {
+    const headers = [...table.querySelectorAll("thead th")].map(
+      (th) => th.textContent?.trim() ?? ""
+    );
+    if (headers.length === 0) return;
+
+    table.querySelectorAll("tbody tr").forEach((row) => {
+      [...row.querySelectorAll("td")].forEach((cell, index) => {
+        const label = headers[index];
+        if (label) cell.dataset.label = label;
+      });
+    });
+  });
+</script>
+
 <style>
   /* 窄屏导航换到第二行，顶栏相应增高。
      行高固定（3.5rem + 2.75rem = 6.25rem），Starlight 的汉堡按钮

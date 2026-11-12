@@ -1,0 +1,173 @@
+---
+title: 模块导入
+description: ESM 与 Python 模块系统的绑定语义、类型擦除与路径解析差异
+kind: page
+python_tags: ["import", "module", "importlib"]
+ts_tags: ["import", "export", "import-type"]
+sidebar:
+  order: 8
+---
+
+[语法对照表](../cheat-sheet/#模块导入)用三行覆盖了最常用的导入写法。这页解释三种语言机制上的差异：默认导出、活绑定、类型擦除和路径解析——这些差异决定了代码怎么组织，而不只是换个关键字。
+
+## 核心对照
+
+| Python                         | TypeScript                       | 说明         |
+| ------------------------------ | -------------------------------- | ------------ |
+| `import os`                    | `import * as os from "os"`       | 命名空间导入 |
+| `from os import path`          | `import { path } from "os"`      | 具名导入     |
+| `from os import path as p`     | `import { path as p } from "os"` | 重命名       |
+| 无                             | `export default`                 | 默认导出     |
+| `importlib.import_module("m")` | `await import("./m.js")`         | 动态导入     |
+| `__init__.py` 汇总             | `index.ts` + `export ... from`   | 包入口       |
+| `if TYPE_CHECKING:`            | `import type`                    | 仅类型导入   |
+| `sys.path` 搜索                | 扩展名与 `exports` 字段          | 路径解析     |
+
+## 关键差异
+
+### 1. 默认导出：Python 没有这个概念
+
+Python 的模块把所有顶层名字平等地暴露出去，导入方按需挑选；ESM 的文件可以有一个 `export default` 加任意多个具名导出，两者导入语法不同。
+
+```typescript
+// user.ts
+export default class User {} // 每个文件至多一个
+export function greet(u: User): string {
+  return `hi, ${u}`;
+}
+```
+
+```typescript
+// main.ts
+import User from "./user.js"; // 默认导出，名字随意取
+import { greet } from "./user.js"; // 具名导入，名字必须对上
+```
+
+默认导出的名字由导入方决定，重命名 `User` 类时所有 `import User from` 都不会跟着变，IDE 的重构支持也比具名导入弱。社区惯例是工具函数、类型用具名导出，只有一个主体的文件才用默认导出。Python 侧没有对应概念，`from user import User` 永远是具名的。
+
+### 2. 具名导入是"活绑定"
+
+这是两边行为真正不同的一处：ESM 的具名导入始终反映导出模块的当前值；Python 的 `from ... import` 在导入那一刻绑定引用，之后模块内部重新赋值不会同步过来。
+
+```python
+# counter.py
+count = 0
+
+
+def inc():
+    global count
+    count += 1
+```
+
+```python
+# main.py
+from counter import count, inc
+
+inc()
+print(count)  # 0：绑定的是导入时的值
+```
+
+```typescript
+// counter.ts
+export let count = 0;
+
+export function inc() {
+  count += 1;
+}
+```
+
+```typescript
+// main.ts
+import { count, inc } from "./counter.js";
+
+inc();
+console.log(count); // 1：导入是活绑定
+```
+
+:::note
+`import * as os` 的命名空间对象同样反映模块当前值。它与 Python 的 `import os` 类似——都拿到"模块本身"，差别是 ESM 命名空间对象不可扩展，Python 模块对象是可变的命名空间。
+:::
+
+### 3. `import type` 与类型擦除
+
+TypeScript 编译后类型完全消失。`import type` 声明"这个导入只出现在类型位置"，编译产物里不会有这条 import 语句，因此不会产生运行时的模块依赖。
+
+```python
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from models import BigConfig
+
+
+def load(cfg: "BigConfig") -> None: ...
+```
+
+```typescript
+import type { BigConfig } from "./models.js";
+
+function load(cfg: BigConfig): void {}
+```
+
+Python 的 `TYPE_CHECKING` 哨兵解决同样的问题：类型注解只在静态检查时需要，运行时导入反而可能引发循环导入或拖慢启动。两者的差别在于默认行为：TypeScript 默认会自动擦除"只用作类型"的普通 import，但开启 `verbatimModuleSyntax` 后必须显式写 `import type` 才会擦除；Python 的 `if TYPE_CHECKING:` 块在运行时根本不执行。
+
+### 4. 桶文件：`__init__.py` 与 `index.ts`
+
+包的公开接口在两边都靠一个入口文件汇总。Python 在 `__init__.py` 里 import 并用 `__all__` 声明公开名字；TypeScript 在 `index.ts` 里用 `export ... from` 转发。
+
+```python
+# shapes/__init__.py
+from .circle import Circle
+from .square import Square
+
+__all__ = ["Circle", "Square"]
+```
+
+```typescript
+// shapes/index.ts
+export { Circle } from "./circle.js";
+export { Square } from "./square.js";
+// 全量转发：export * from "./circle.js";
+```
+
+语义差异有两点。其一，`export { Circle } from "./circle.js"` 是纯转发，当前模块不创建本地绑定；Python 的 `from .circle import Circle` 既转发又在本模块创建了名字。其二，`__all__` 只影响 `from shapes import *` 这种星号导入，显式导入不受它约束；ESM 没有 `export *` 的过滤机制（可以用 `export * from` 加上单独的 `export` 覆盖名，但用法少见）。
+
+包入口之外，循环导入在两边同样危险：Python 报 `ImportError`（模块尚未初始化完成）；ESM 中函数声明可用，而 `const`/`let` 导出处于暂时性死区，提前访问抛 `ReferenceError`。
+
+### 5. 动态导入：返回 Promise 还是模块对象
+
+```python
+import importlib
+
+mod = importlib.import_module("plugins.rss")
+mod.load()
+```
+
+```typescript
+const mod = await import("./plugins/rss.js");
+mod.load();
+```
+
+`importlib.import_module` 同步返回模块对象；`import()` 无论模块在本地还是远程，都返回 `Promise<模块命名空间>`，必须 `await`。这个设计让打包器能识别 `import()` 的参数并拆分代码块（懒加载），Python 没有打包拆分的对应概念，动态导入主要用于插件注册和可选依赖。
+
+### 6. 路径解析：扩展名与模块查找
+
+- Python：`import pkg.mod` 按 `sys.path` 搜索，相对导入用 `from . import x`，import 语句永远不写扩展名。
+- Node 原生 ESM：相对导入必须写扩展名（编译输出是 `.js` 时写 `.js`），浏览器同样要求完整路径。
+- 打包器环境（Vite、webpack，本项目 Astro 属于此类）：允许省略扩展名。
+- 包的公开入口由 `package.json` 的 `exports` 字段声明，效果类似"把包的内部路径封装起来，只暴露入口"——Python 没有对应的单点声明机制。
+
+```typescript
+// Node 原生 ESM：必须写扩展名
+import { parse } from "./utils/parse.js";
+
+// 打包器环境：扩展名可省略
+import { parse } from "./utils/parse";
+```
+
+写站内代码与写发布到 npm 的库时，选择不同：库要同时兼容 Node 原生 ESM 和打包器，通常补全扩展名并配置 `exports` 字段。
+
+:::tip[延伸阅读]
+
+- 课程页：[模块](../../paths/migration/modules/)、[类型系统](../../paths/migration/types/)、[声明与配置](../../paths/advanced/declarations-config/)
+- 速查表：[测试框架速查](../cheat-sheet/#测试框架)（测试文件的导入与命名）、[模块导入速查](../cheat-sheet/#模块导入)
+  :::

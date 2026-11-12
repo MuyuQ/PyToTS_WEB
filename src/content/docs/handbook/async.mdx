@@ -1,0 +1,195 @@
+---
+title: 异步编程
+description: Promise 状态机、事件循环与并发原语，异步语法的同形与不同底
+kind: page
+python_tags: ["asyncio", "async", "await"]
+ts_tags: ["Promise", "async", "await"]
+sidebar:
+  order: 7
+---
+
+import CodeCompare from "../../../components/CodeCompare.astro";
+
+Python 的 `async/await` 和 TypeScript 的 `async/await` 写法几乎一样，但底层模型差别很大：一个调用协程时"什么都不做"，另一个调用后立即开始执行。[语法对照表](../cheat-sheet/#异步编程)只列出了一行映射，这页解释行为差异集中在哪。
+
+## 核心对照
+
+| Python                                | TypeScript                      | 说明         |
+| ------------------------------------- | ------------------------------- | ------------ |
+| `async def f()`                       | `async function f()`            | 异步函数定义 |
+| `await coro`                          | `await promise`                 | 等待结果     |
+| `asyncio.run(main())`                 | 运行时自动驱动                  | 事件循环     |
+| `asyncio.gather(a, b)`                | `Promise.all([a, b])`           | 全部成功     |
+| `gather(..., return_exceptions=True)` | `Promise.allSettled([a, b])`    | 允许部分失败 |
+| `asyncio.wait(..., FIRST_COMPLETED)`  | `Promise.race([a, b])`          | 第一个完成   |
+| 无内建对应                            | `Promise.any([a, b])`           | 第一个成功   |
+| `asyncio.sleep(1)`                    | `new Promise` 包装 `setTimeout` | 定时等待     |
+| `async for x in it`                   | `for await (const x of it)`     | 异步迭代     |
+
+## 关键差异
+
+### 1. 调用即执行：最大的心智模型差异
+
+Python 调用协程函数只会创建协程对象，不 `await` 就什么都不发生；TypeScript 调用 `async` 函数后立即开始执行（同步部分先跑），同时返回一个 `Promise`。
+
+<CodeCompare
+  py={`async def fetch(url: str) -> str:
+    await some_io(url)  # 模拟 I/O
+    return url
+
+coro = fetch("a") # 只创建了协程，尚未运行
+`}
+  ts={`async function fetch(url: string) {
+await someIO(url); // 模拟 I/O
+return url;
+}
+
+const p = fetch("a"); // 已开始执行
+`}
+/>
+
+后果不对称：Python 里忘记 `await`，函数体完全不执行，垃圾回收时给出 `RuntimeWarning: coroutine was never awaited`；TypeScript 里忘记 `await`，函数体照常执行完，但结果被丢弃、异常变成未处理的 rejection（见第 4 节）。后者的代码仍会产生副作用，更难发现。
+
+### 2. 事件循环：自动驱动 vs 显式启动
+
+Python 需要 `asyncio.run(main())` 显式启动事件循环；JavaScript 运行时（浏览器或 Node）内建事件循环，顶层代码直接执行，模块顶层甚至可以直接写 `await`（Top-level await，ES2022）。
+
+Python 侧协程必须被 `await`、包装成 `Task`（`asyncio.create_task`）或交给 `gather` 才会调度；TypeScript 侧不存在"启动"步骤，只有"调度"：`Promise` 回调由事件循环按微任务/宏任务规则排队（见第 5 节）。
+
+```python
+import asyncio
+
+
+async def main() -> None:
+    # create_task 立即调度，不必 await 也能跑
+    task = asyncio.create_task(fetch("a"))
+    await task
+
+
+asyncio.run(main())
+```
+
+```typescript
+// 模块顶层直接 await（ES2022）
+const config = await loadConfig();
+
+// createTask 风格：拿到 Promise 继续做别的事
+const pending = fetchUser(1); // 已在运行
+const result = await pending;
+```
+
+### 3. 并发原语对照与失败语义
+
+| 场景                 | Python                                           | TypeScript            |
+| -------------------- | ------------------------------------------------ | --------------------- |
+| 全部成功才继续       | `asyncio.gather(a, b)`                           | `Promise.all([a, b])` |
+| 允许部分失败         | `gather(..., return_exceptions=True)`            | `Promise.allSettled`  |
+| 第一个完成（含失败） | `asyncio.wait(..., return_when=FIRST_COMPLETED)` | `Promise.race`        |
+| 第一个成功           | 无内建，需用 `as_completed` 自行实现             | `Promise.any`         |
+
+容易误解的一点：`Promise.all` 和 `asyncio.gather` 在失败时都只是"提前返回失败"，不会取消仍在运行的兄弟任务。`Promise.all` 遇到第一个 rejection 立刻整体 reject，其余 Promise 继续跑完；`gather` 默认把第一个异常抛给 `await` 方，其余协程同样继续执行。需要"一个失败就取消其余"时，Python 3.11+ 用 `asyncio.TaskGroup`，TypeScript 要配合 `AbortController` 手动取消。
+
+<CodeCompare
+  py={`results = await asyncio.gather(
+    fetch_user(1),
+    fetch_user(2),
+    return_exceptions=True,  # 失败也是结果
+)
+`}
+  ts={`const results = await Promise.allSettled([
+  fetchUser(1),
+  fetchUser(2),
+]); // 每项带 status: fulfilled/rejected
+`}
+/>
+
+:::note
+`asyncio.wait` 自 Python 3.11 起只接受 `Task`，直接传协程函数的调用结果会报 `TypeError`。对照 `Promise.race` 时注意这个前提。
+:::
+
+### 4. 错误传播与未处理拒绝
+
+`await` 一个失败的 Promise 等价于 `await` 一个抛异常的协程，`try/catch` 与 `try/except` 都能接住。差异出在"没接住"的时候：
+
+- Python：`Task` 的异常没人取回时，垃圾回收阶段打印 `Task exception was never retrieved` 日志，进程默认继续运行。
+- TypeScript：未处理的 rejection 触发全局 `unhandledrejection` 事件；Node 15+ 默认（`--unhandled-rejections=throw`）会让进程以非零码退出，浏览器只是打印日志。
+
+```typescript
+async function risky() {
+  throw new Error("boom");
+}
+
+// 写法一：try/catch 接住 rejection
+try {
+  await risky();
+} catch (error) {
+  console.error(error);
+}
+
+// 写法二：.catch() 链式处理
+risky().catch((error) => console.error(error));
+```
+
+两种写法处理的是同一个 rejection。区别在作用域：`try/catch` 覆盖一段逻辑，`.catch()` 只挂在单个 Promise 上，链接里任何一环抛错都会被最后一个 `.catch()` 接住。
+
+### 5. 定时与时序：`setTimeout`、sleep 与微任务
+
+`setTimeout` 是注册回调，不会暂停任何东西；要得到 Python `asyncio.sleep` 的效果，需要把它包装成 Promise。
+
+<CodeCompare
+  py={`import asyncio
+
+await asyncio.sleep(1) # 暂停当前协程
+`}
+  ts={`const sleep = (ms: number) =>
+new Promise((r) => setTimeout(r, ms));
+
+await sleep(1000); // 暂停当前函数
+`}
+/>
+
+时序上 JavaScript 分两层队列：同步代码执行完后，先清空全部微任务（Promise 回调、`queueMicrotask`），再取下一个宏任务（`setTimeout`、I/O 回调）。Python 的 asyncio 没有公开的"微任务/宏任务"两层模型，`await` 直接把协程交回事件循环，由就绪队列与定时器堆统一调度。
+
+```typescript
+setTimeout(() => console.log("macro"), 0);
+Promise.resolve().then(() => console.log("micro"));
+console.log("sync");
+
+// 输出顺序：sync → micro → macro
+```
+
+### 6. 异步迭代与异步生成器
+
+两边都有异步生成器和异步迭代协议，只是挂载点不同：Python 用 `__aiter__`/`__anext__`（结束信号是 `StopAsyncIteration`），TypeScript 用 `[Symbol.asyncIterator]()`。
+
+```python
+async def gen():
+    for i in range(3):
+        yield i
+
+
+async for x in gen():
+    print(x)
+```
+
+```typescript
+async function* gen() {
+  for (let i = 0; i < 3; i++) {
+    yield i;
+  }
+}
+
+for await (const x of gen()) {
+  console.log(x);
+}
+```
+
+:::note
+Python 的 `async with`（异步上下文管理器）在 TypeScript 里没有对应语法，等价写法是 `try/finally` 中手动释放资源。
+:::
+
+:::tip[延伸阅读]
+
+- 课程页：[异步](../../paths/migration/async/)、[Node 基础](../../paths/advanced/nodejs-basics/)、[错误处理](../../paths/migration/error-handling/)
+- 速查表：[错误处理速查](../cheat-sheet/#错误处理)（rejection 与 `catch` 的关系）、[异步编程速查](../cheat-sheet/#异步编程)
+  :::
