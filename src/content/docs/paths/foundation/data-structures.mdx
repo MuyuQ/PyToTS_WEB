@@ -112,8 +112,8 @@ interface UserWithPhone {
 const userWithPhone: UserWithPhone = { name: "Alice", age: 25, email: "alice@example.com" };
 userWithPhone.phone = "123-456-7890"; // ✅ 现在可以了
 
-// Map - 真正的万能储物柜，键可以是任意类型
-const userMap = new Map<string, any>();
+// Map - 万能储物柜：键类型写成联合，值用 unknown 而不是 any
+const userMap = new Map<string | number, unknown>();
 userMap.set("name", "Alice");
 userMap.set("age", 25);
 userMap.set(123, "numeric key"); // 数字也能当键
@@ -165,7 +165,7 @@ const person1: Person = { name: "Bob" };
 person1.age = 30; // ✅ 可以
 
 // ✅ 正确方式 2：用 Map 存动态数据
-const person2 = new Map<string, any>();
+const person2 = new Map<string, unknown>();
 person2.set("name", "Bob");
 person2.set("age", 30);
 person2.set("hobbies", ["reading"]);
@@ -250,7 +250,7 @@ const wrong: [number, number] = [3, "four"]; // ❌ 类型错误！
 
 🐍 **Python 开发者**："那我 Python 里的 `user["new_field"] = value` 怎么转？"
 
-🦀 **TS 开发者**："两个选择：要么提前在接口里定义 `new_field?: type`，要么用 `Map<string, any>`。Object 要先设计好结构，不能随便加字段。"
+🦀 **TS 开发者**："两个选择：要么提前在接口里定义 `new_field?: type`，要么用 `Map<string, unknown>`，取值时先收窄类型。Object 要先设计好结构，不能随便加字段。"
 
 🐍 **Python 开发者**："tuple 也有区别？不都是不可变吗？"
 
@@ -422,7 +422,7 @@ console.log(emails); // Set {2} {"alice@example.com", "bob@example.com"}
    - 答：`readonly number[]` 表示数组内容不可修改，类似 Python tuple 的不可变性。
 
 3. **如何让 Object 支持动态键？**
-   - 答：使用索引签名 `{ [key: string]: any }` 或 `Record<string, any>` 类型。
+   - 答：使用索引签名 `{ [key: string]: unknown }` 或 `Record<string, unknown>` 类型；取值前先收窄，别用 `any` 关掉检查。
 
 ---
 
