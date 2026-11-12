@@ -80,14 +80,11 @@ const steps = [
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-lg);
     background: var(--surface-raised);
-    transition:
-      border-color var(--duration-base) var(--ease-out-quart),
-      transform var(--duration-base) var(--ease-out-quart);
+    transition: border-color var(--duration-base) var(--ease-out-quart);
   }
 
   .howto__card:hover {
-    border-color: var(--accent-border);
-    transform: translateY(-2px);
+    border-color: var(--lang-ts);
   }
 
   .howto__num {
@@ -97,7 +94,7 @@ const steps = [
     font-weight: var(--weight-semibold);
     font-variant-numeric: tabular-nums;
     line-height: 1.4;
-    color: var(--accent);
+    color: var(--lang-py);
   }
 
   .howto__body {
@@ -131,12 +128,12 @@ const steps = [
     min-height: 2rem;
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
-    color: var(--accent);
+    color: var(--lang-ts);
     text-decoration: none;
   }
 
   .howto__link:hover {
-    color: var(--accent-hover);
+    color: var(--text-strong);
     text-decoration: none;
   }
 

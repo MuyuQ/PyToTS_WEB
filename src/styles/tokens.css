@@ -15,71 +15,60 @@
 /* ---------- 1. Primitives ---------- */
 
 :root {
-  /* 品牌色 · 靛蓝（hue 268） */
-  --brand-50: oklch(97.5% 0.012 268);
-  --brand-100: oklch(94% 0.028 268);
-  --brand-200: oklch(88% 0.055 268);
-  --brand-300: oklch(79% 0.09 268);
-  --brand-400: oklch(70% 0.125 268);
-  --brand-500: oklch(62% 0.15 268);
-  --brand-600: oklch(54% 0.158 270);
-  --brand-700: oklch(46% 0.145 271);
-  --brand-800: oklch(38% 0.12 272);
-  --brand-900: oklch(30% 0.09 273);
+  /* 品牌色 · 钴蓝（hue 255）：纸面手册里的唯一强调色 */
+  --brand-50: oklch(95% 0.025 255);
+  --brand-100: oklch(91% 0.04 255);
+  --brand-200: oklch(84% 0.07 255);
+  --brand-300: oklch(74% 0.1 255);
+  --brand-400: oklch(64% 0.13 255);
+  --brand-500: oklch(54% 0.15 255);
+  --brand-600: oklch(47% 0.14 255);
+  --brand-700: oklch(40% 0.12 255);
+  --brand-800: oklch(33% 0.1 255);
+  --brand-900: oklch(26% 0.075 255);
 
-  /* 中性（冷调，与品牌同色相） */
-  --neutral-0: oklch(100% 0 0);
-  --neutral-25: oklch(99% 0.003 268);
-  --neutral-50: oklch(97.5% 0.004 268);
-  --neutral-100: oklch(95% 0.005 268);
-  --neutral-200: oklch(91% 0.006 268);
-  --neutral-300: oklch(84% 0.007 268);
-  --neutral-400: oklch(68% 0.008 268);
-  --neutral-500: oklch(54% 0.009 268);
-  --neutral-600: oklch(44% 0.01 268);
-  --neutral-700: oklch(33% 0.012 268);
-  --neutral-800: oklch(23% 0.014 268);
-  --neutral-850: oklch(18% 0.014 268);
-  --neutral-900: oklch(14% 0.013 268);
-  --neutral-950: oklch(10% 0.01 268);
+  /* 中性：暖灰纸面 + 墨色，chroma 极低，避免"死灰" */
+  --neutral-0: oklch(98.4% 0.003 120);
+  --neutral-25: oklch(95.5% 0.003 120);
+  --neutral-50: oklch(92.3% 0.004 130);
+  --neutral-100: oklch(93.8% 0.004 120);
+  --neutral-200: oklch(88.6% 0.005 150);
+  --neutral-300: oklch(83.5% 0.006 150);
+  --neutral-400: oklch(78.5% 0.006 150);
+  --neutral-500: oklch(52.5% 0.01 230);
+  --neutral-600: oklch(50% 0.012 235);
+  --neutral-700: oklch(37.5% 0.012 240);
+  --neutral-800: oklch(29% 0.01 240);
+  --neutral-850: oklch(21.5% 0.007 240);
+  --neutral-900: oklch(20.5% 0.006 240);
+  --neutral-950: oklch(16% 0.005 240);
 
   /* 语言识别色 —— 双语对照是本站核心，两色必须一眼可分
-     Python 取品牌黄（暖），TypeScript 取官方蓝（冷），拉开色相而非仅明度 */
-  --py-hue: 82; /* 黄绿 */
-  --py-ink: oklch(58% 0.13 82);
-  --py-ink-soft: oklch(70% 0.12 82);
-  --py-wash: oklch(95% 0.045 82);
-  --ts-hue: 250; /* 蓝 */
-  --ts-ink: oklch(56% 0.16 250);
-  --ts-ink-soft: oklch(70% 0.13 250);
-  --ts-wash: oklch(95% 0.03 250);
+     Python 取暖金，TypeScript 取官方钴蓝，拉开色相而非仅明度 */
+  --py-hue: 78; /* 暖金 */
+  --py-ink: oklch(47% 0.105 78);
+  --py-ink-soft: oklch(78% 0.125 85);
+  --py-wash: oklch(92% 0.05 85);
+  --ts-hue: 255; /* 钴蓝 */
+  --ts-ink: oklch(47% 0.135 255);
+  --ts-ink-soft: oklch(76% 0.1 250);
+  --ts-wash: oklch(92.5% 0.028 250);
 
   /* 语义色 */
-  --success-ink: oklch(56% 0.14 155);
-  --success-wash: oklch(96% 0.035 155);
-  --warning-ink: oklch(66% 0.14 68);
-  --warning-wash: oklch(96% 0.045 68);
-  --danger-ink: oklch(54% 0.19 25);
-  --danger-wash: oklch(96% 0.03 25);
+  --success-ink: oklch(50% 0.095 155);
+  --success-wash: oklch(94% 0.03 155);
+  --warning-ink: oklch(47% 0.105 78);
+  --warning-wash: oklch(92% 0.05 85);
+  --danger-ink: oklch(48% 0.14 30);
+  --danger-wash: oklch(94% 0.03 30);
 
-  /* 渐变与光效：品牌靛蓝 → 紫罗兰 → 天青，只用于强调文字/主按钮/着陆页光晕，
-     不进正文排版——大面积渐变会破坏双语对照的信息优先级 */
-  --grad-brand: linear-gradient(
-    118deg,
-    oklch(58% 0.19 268) 0%,
-    oklch(55% 0.2 296) 52%,
-    oklch(62% 0.14 226) 100%
-  );
-  --grad-brand-soft: linear-gradient(
-    118deg,
-    oklch(95% 0.035 268),
-    oklch(94% 0.04 296),
-    oklch(95% 0.03 226)
-  );
-  --glow-a: oklch(72% 0.14 268);
-  --glow-b: oklch(74% 0.13 300);
-  --glow-c: oklch(80% 0.1 226);
-  --shadow-glow: 0 1px 2px oklch(54% 0.158 270 / 0.3), 0 8px 24px -10px oklch(54% 0.158 270 / 0.5);
+  /* 纸面方向：不使用渐变、光晕与投影 */
+  --grad-brand: none;
+  --grad-brand-soft: none;
+  --glow-a: transparent;
+  --glow-b: transparent;
+  --glow-c: transparent;
+  --shadow-glow: none;
 
   /* ---------- 字体 ---------- */
 
@@ -87,10 +76,10 @@
   --stack-cjk:
     "PingFang SC", "HarmonyOS Sans SC", "Hiragino Sans GB", "Microsoft YaHei", "Source Han Sans SC",
     "Noto Sans CJK SC", sans-serif;
-  --font-display: "Space Grotesk", var(--stack-cjk);
+  --font-display: "Archivo", var(--stack-cjk);
   --font-sans: "IBM Plex Sans", var(--stack-cjk);
   --font-mono:
-    "JetBrains Mono", ui-monospace, SFMono-Regular, "Cascadia Code", Menlo, Consolas, monospace;
+    "IBM Plex Mono", ui-monospace, SFMono-Regular, "Cascadia Code", Menlo, Consolas, monospace;
 
   /* 字号：固定 rem 阶梯（内容型站点，正文不参与流体缩放）
      标题用 clamp 做流体，正文保持可预测 */
@@ -136,19 +125,18 @@
   /* 区块级节奏（流体，随视口呼吸） */
   --section-gap: clamp(3rem, 2rem + 4vw, 5rem);
 
-  /* ---------- 圆角 · 偏锐利，工程感 ---------- */
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 10px;
-  --radius-xl: 14px;
-  --radius-pill: 999px;
+  /* ---------- 圆角 · 纸面直角 ---------- */
+  --radius-xs: 0;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --radius-pill: 0;
 
-  /* ---------- 阴影 · 极克制，仅用于真正浮起的层 ---------- */
-  --shadow-sm: 0 1px 2px oklch(20% 0.02 268 / 0.06);
-  --shadow-md: 0 4px 12px -2px oklch(20% 0.02 268 / 0.1), 0 2px 4px -2px oklch(20% 0.02 268 / 0.06);
-  --shadow-lg:
-    0 12px 32px -8px oklch(20% 0.03 268 / 0.16), 0 4px 8px -4px oklch(20% 0.02 268 / 0.08);
+  /* ---------- 阴影 · 纸面不用投影 ---------- */
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
 
   /* ---------- 动效 ---------- */
   --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
@@ -179,8 +167,8 @@
   --surface-page: var(--neutral-25);
   --surface-raised: var(--neutral-0);
   --surface-sunken: var(--neutral-50);
-  --surface-nav: oklch(100% 0.002 268 / 0.88);
-  --surface-code: var(--neutral-50);
+  --surface-nav: var(--neutral-25);
+  --surface-code: oklch(92.4% 0.004 130);
   --surface-hover: var(--neutral-100);
 
   --border-subtle: var(--neutral-200);
@@ -190,14 +178,14 @@
   --text-strong: var(--neutral-850);
   --text-default: var(--neutral-700);
   --text-muted: var(--neutral-600);
-  --text-faint: var(--neutral-500); /* 在 page 底色上 ≈ 5.4:1 */
+  --text-faint: var(--neutral-500); /* 在 page 底色上 ≈ 4.8:1 */
 
   --accent: var(--brand-600);
   --accent-hover: var(--brand-700);
   --accent-ink: var(--brand-800);
   --accent-quiet: var(--brand-50);
   --accent-border: var(--brand-200);
-  --accent-ring: oklch(54% 0.158 270 / 0.4);
+  --accent-ring: oklch(47% 0.14 255 / 0.35);
 
   --lang-py: var(--py-ink);
   --lang-py-wash: var(--py-wash);
@@ -211,7 +199,7 @@
   --danger: var(--danger-ink);
   --danger-quiet: var(--danger-wash);
 
-  --surface-glass: oklch(100% 0.002 268 / 0.68);
+  --surface-glass: var(--surface-raised);
 
   --weight-body: 400;
 }
@@ -222,61 +210,54 @@
   color-scheme: dark;
 
   --surface-page: var(--neutral-950);
-  --surface-raised: var(--neutral-900);
-  --surface-sunken: var(--neutral-850);
-  --surface-nav: oklch(13% 0.012 268 / 0.9);
-  --surface-code: oklch(16% 0.013 268);
-  --surface-hover: var(--neutral-850);
+  --surface-raised: oklch(20.5% 0.006 240);
+  --surface-sunken: oklch(24.5% 0.008 240);
+  --surface-nav: oklch(16% 0.005 240);
+  --surface-code: oklch(23.5% 0.007 240);
+  --surface-hover: oklch(24.5% 0.008 240);
 
-  --border-subtle: oklch(28% 0.014 268);
-  --border-default: oklch(34% 0.016 268);
-  --border-strong: oklch(44% 0.018 268);
+  --border-subtle: oklch(31% 0.008 240);
+  --border-default: oklch(36% 0.01 240);
+  --border-strong: oklch(44% 0.012 240);
 
-  /* 暗底上文字偏细，提高不透明度补偿感知字重 */
-  --text-strong: oklch(97% 0.004 268);
-  --text-default: oklch(88% 0.006 268);
-  --text-muted: oklch(76% 0.008 268);
-  --text-faint: oklch(66% 0.01 268); /* ≈ 6.2:1，用作元数据也达标 */
+  --text-strong: oklch(95.5% 0.004 200);
+  --text-default: oklch(83% 0.006 220);
+  --text-muted: oklch(73% 0.008 230);
+  --text-faint: oklch(65% 0.009 230);
 
   --accent: var(--brand-400);
   --accent-hover: var(--brand-300);
   --accent-ink: var(--brand-200);
-  --accent-quiet: oklch(30% 0.06 268);
-  --accent-border: oklch(40% 0.09 268);
-  --accent-ring: oklch(70% 0.125 268 / 0.5);
+  --accent-quiet: oklch(27% 0.05 255);
+  --accent-border: oklch(40% 0.08 255);
+  --accent-ring: oklch(70% 0.12 255 / 0.45);
 
   --lang-py: var(--py-ink-soft);
-  --lang-py-wash: oklch(28% 0.05 82);
+  --lang-py-wash: oklch(28% 0.045 80);
   --lang-ts: var(--ts-ink-soft);
-  --lang-ts-wash: oklch(28% 0.05 250);
+  --lang-ts-wash: oklch(27% 0.04 250);
 
-  --success: oklch(72% 0.14 155);
-  --success-quiet: oklch(28% 0.05 155);
-  --warning: oklch(78% 0.13 68);
-  --warning-quiet: oklch(30% 0.06 68);
-  --danger: oklch(72% 0.15 25);
-  --danger-quiet: oklch(30% 0.07 25);
+  --success: oklch(72% 0.11 155);
+  --success-quiet: oklch(28% 0.04 155);
+  --warning: oklch(78% 0.12 85);
+  --warning-quiet: oklch(30% 0.05 85);
+  --danger: oklch(72% 0.13 30);
+  --danger-quiet: oklch(30% 0.06 30);
 
-  --surface-glass: oklch(18% 0.014 268 / 0.62);
+  --surface-glass: var(--surface-raised);
 
-  /* 暗底渐变提亮一档，保证渐变文字在深色上有足够对比 */
-  --grad-brand: linear-gradient(
-    118deg,
-    oklch(70% 0.16 268) 0%,
-    oklch(68% 0.17 296) 52%,
-    oklch(76% 0.12 226) 100%
-  );
-  --glow-a: oklch(42% 0.13 268);
-  --glow-b: oklch(44% 0.13 300);
-  --glow-c: oklch(48% 0.1 226);
-  --shadow-glow: 0 1px 2px oklch(60% 0.15 270 / 0.25), 0 10px 32px -12px oklch(60% 0.15 270 / 0.45);
+  --weight-body: 400;
 
-  /* 暗底上正文适当减重，避免"发光"感 */
-  --weight-body: 350;
+  --grad-brand: none;
+  --grad-brand-soft: none;
+  --glow-a: transparent;
+  --glow-b: transparent;
+  --glow-c: transparent;
+  --shadow-glow: none;
 
-  --shadow-sm: 0 1px 2px oklch(5% 0.02 268 / 0.4);
-  --shadow-md: 0 4px 12px -2px oklch(5% 0.02 268 / 0.5);
-  --shadow-lg: 0 12px 32px -8px oklch(5% 0.02 268 / 0.6);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
 }
 
 /* ---------- 3. Starlight 桥接 ---------- */
@@ -310,14 +291,14 @@
   --sl-font: var(--font-sans);
   --sl-font-mono: var(--font-mono);
 
-  /* 语法高亮：亮色 */
+  /* 语法高亮：亮色 · 纸面双色 */
   --sl-color-syntax-comment: var(--text-faint);
-  --sl-color-syntax-keyword: oklch(52% 0.17 300);
-  --sl-color-syntax-string: oklch(52% 0.13 145);
-  --sl-color-syntax-number: oklch(55% 0.14 30);
-  --sl-color-syntax-function: oklch(50% 0.16 265);
-  --sl-color-syntax-constant: oklch(52% 0.14 315);
-  --sl-color-syntax-special: oklch(55% 0.17 15);
+  --sl-color-syntax-keyword: var(--ts-ink);
+  --sl-color-syntax-string: var(--success-ink);
+  --sl-color-syntax-number: var(--py-ink);
+  --sl-color-syntax-function: var(--text-strong);
+  --sl-color-syntax-constant: var(--danger-ink);
+  --sl-color-syntax-special: var(--py-ink);
 
   --sl-text-xs: var(--text-xs);
   --sl-text-sm: var(--text-sm);
@@ -332,11 +313,11 @@
 }
 
 [data-theme="dark"] {
-  --sl-color-syntax-comment: oklch(58% 0.01 268);
-  --sl-color-syntax-keyword: oklch(76% 0.12 300);
-  --sl-color-syntax-string: oklch(76% 0.11 145);
-  --sl-color-syntax-number: oklch(76% 0.11 30);
-  --sl-color-syntax-function: oklch(78% 0.11 265);
-  --sl-color-syntax-constant: oklch(76% 0.11 315);
-  --sl-color-syntax-special: oklch(78% 0.12 15);
+  --sl-color-syntax-comment: var(--text-faint);
+  --sl-color-syntax-keyword: var(--ts-ink-soft);
+  --sl-color-syntax-string: oklch(78% 0.1 155);
+  --sl-color-syntax-number: var(--py-ink-soft);
+  --sl-color-syntax-function: var(--text-strong);
+  --sl-color-syntax-constant: oklch(74% 0.12 30);
+  --sl-color-syntax-special: var(--py-ink-soft);
 }

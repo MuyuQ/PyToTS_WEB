@@ -109,7 +109,7 @@ const total = rows.reduce((sum, row) => sum + row.lessons, 0);
     display: flex;
     flex-direction: column;
     margin: var(--space-6) 0;
-    border-top: 1px solid var(--border-subtle);
+    border-top: 1px solid var(--text-strong);
   }
 
   .path-row {
@@ -128,7 +128,8 @@ const total = rows.reduce((sum, row) => sum + row.lessons, 0);
   }
 
   .path-row:hover {
-    background: var(--surface-hover);
+    background: var(--surface-raised);
+    box-shadow: inset 2px 0 0 var(--lang-ts);
     text-decoration: none;
   }
 

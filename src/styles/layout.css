@@ -29,14 +29,16 @@
   font-size: var(--text-3xl);
   margin-top: var(--space-12);
   margin-bottom: var(--space-4);
+  text-wrap: balance;
 }
 
 .sl-markdown-content h2 {
   font-size: var(--text-2xl);
   margin-top: var(--space-12);
   margin-bottom: var(--space-4);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border-subtle);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--text-strong);
+  text-wrap: balance;
 }
 
 .sl-markdown-content h3 {
@@ -44,6 +46,7 @@
   margin-top: var(--space-8);
   margin-bottom: var(--space-3);
   color: var(--text-strong);
+  text-wrap: balance;
 }
 
 .sl-markdown-content h4 {
@@ -107,15 +110,17 @@
 }
 
 .sl-markdown-content a {
-  color: var(--accent);
+  color: var(--text-strong);
   text-decoration: none;
-  border-bottom: 1px solid var(--accent-border);
-  transition: border-color var(--duration-fast) var(--ease-out-quart);
+  border-bottom: 1px solid var(--border-strong);
+  transition:
+    color var(--duration-fast) var(--ease-out-quart),
+    border-color var(--duration-fast) var(--ease-out-quart);
 }
 
 .sl-markdown-content a:hover {
-  color: var(--accent-hover);
-  border-bottom-color: var(--accent);
+  color: var(--lang-ts);
+  border-bottom-color: var(--lang-ts);
 }
 
 /* 外链加一个不打扰的标记 */
@@ -158,12 +163,13 @@
 .sl-markdown-content th {
   text-align: start;
   padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--text-strong);
   border-bottom: 1px solid var(--border-default);
-  color: var(--text-strong);
-  font-family: var(--font-display);
-  font-weight: var(--weight-semibold);
-  font-size: var(--text-xs);
-  letter-spacing: var(--tracking-wide);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-weight: var(--weight-medium);
+  font-size: 0.625rem;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -262,8 +268,8 @@
 }
 
 .sidebar-content a {
-  border-radius: var(--radius-sm);
-  padding-block: var(--space-1);
+  position: relative;
+  padding-block: 0.4rem;
   font-size: var(--text-sm);
   line-height: 1.5;
   color: var(--text-muted);
@@ -273,16 +279,15 @@
 }
 
 .sidebar-content a:hover {
-  background: var(--surface-hover);
+  background: var(--surface-raised);
   color: var(--text-strong);
 }
 
-/* 当前页：用左侧细竖线而不是整块填色，层级更轻 */
+/* 当前页：左侧钴蓝导轨 + 加粗，不整块填色 */
 .sidebar-content a[aria-current="page"] {
-  position: relative;
-  color: var(--accent-ink);
+  color: var(--text-strong);
   font-weight: var(--weight-semibold);
-  background: var(--accent-quiet);
+  background: transparent;
 }
 
 .sidebar-content a[aria-current="page"]::before {
@@ -291,12 +296,11 @@
   inset-block: 0.15rem;
   inset-inline-start: 0;
   width: 2px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
+  background: var(--lang-ts);
 }
 
 [data-theme="dark"] .sidebar-content a[aria-current="page"] {
-  color: var(--accent-ink);
+  color: var(--text-strong);
 }
 
 /* 侧边栏进度：圆点替换为更克制的方块，避免"○●"字形在不同字体下错位 */
@@ -356,8 +360,8 @@ mobile-starlight-toc a[aria-current="true"] {
 .starlight-aside {
   margin: var(--space-6) 0;
   padding: var(--space-4) var(--space-5);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  border-inline-start: 3px solid var(--border-strong);
   background: var(--surface-raised);
   font-size: var(--text-sm);
   line-height: var(--leading-snug);
@@ -372,23 +376,19 @@ mobile-starlight-toc a[aria-current="true"] {
 }
 
 .starlight-aside--note {
-  border-color: var(--accent-border);
-  background: var(--accent-quiet);
+  border-inline-start-color: var(--lang-ts);
 }
 
 .starlight-aside--tip {
-  border-color: color-mix(in oklab, var(--success) 35%, transparent);
-  background: var(--success-quiet);
+  border-inline-start-color: var(--success);
 }
 
 .starlight-aside--caution {
-  border-color: color-mix(in oklab, var(--warning) 38%, transparent);
-  background: var(--warning-quiet);
+  border-inline-start-color: var(--warning);
 }
 
 .starlight-aside--danger {
-  border-color: color-mix(in oklab, var(--danger) 35%, transparent);
-  background: var(--danger-quiet);
+  border-inline-start-color: var(--danger);
 }
 
 /* ---------- 页脚分页区留白 ---------- */
@@ -419,20 +419,52 @@ mobile-starlight-toc a[aria-current="true"] {
     margin-top: var(--space-10);
   }
 
+  /* Starlight 把标题设为 inline 以便锚点图标跟在文末；inline 元素无法参与
+     text-wrap 平衡，长中文标题会留下单字孤行。窄屏改为 inline-block，
+     限制测量宽度后由 balance 均分两行。 */
   .sl-markdown-content h3 {
+    display: inline-block;
+    max-width: 13em;
     font-size: var(--text-lg);
+    vertical-align: top;
   }
 }
 
-/* ---------- Starlight 汉堡按钮（窄屏侧边栏抽屉入口） ---------- */
+/* 窄屏「本页内容」抽屉按钮：纸面版一律直角 */
+.toggle {
+  border-radius: 0;
+}
 
-/* Starlight 按 --sl-nav-height 把按钮整体垂直居中；窄屏顶栏改为两行网格后
-   （行1 3.5rem + 行2 2.75rem = 6.25rem，见 Header.astro），
-   按钮需钉在第二行右侧：3.5rem + (2.75rem - 2rem) / 2 = 3.875rem。
-   注意：starlight-menu-button 是包裹用的自定义元素，真正的按钮在它内部，
-   两个类型选择器（0,0,2）足以压过 Starlight 组件 scoped 样式的 button（0,0,1）。 */
-@media (max-width: 61.99rem) {
-  starlight-menu-button > button {
-    top: 3.875rem;
-  }
+/* ---------- Starlight 侧栏入口按钮（窄屏） ---------- */
+
+/* Starlight 0.42 的按钮是 .sl-menu-button（不再是 starlight-menu-button 包裹元素）。
+   纸面化：方形、实色顶栏底、细墨线、无阴影。 */
+.sl-menu-button {
+  border: 1px solid var(--border-strong);
+  border-radius: 0;
+  background: var(--surface-nav);
+  color: var(--text-strong);
+  box-shadow: none;
+}
+
+.sl-menu-button:hover {
+  border-color: var(--text-strong);
+}
+
+/* 全局 svg { display: block } 会盖过 Starlight 分层样式里的图标切换，
+   这里显式接管打开/关闭两个图标的可见性。 */
+.sl-menu-button .open-menu {
+  display: block;
+}
+
+.sl-menu-button .close-menu {
+  display: none;
+}
+
+.sl-menu-button:has(~ #starlight__sidebar:popover-open) .open-menu {
+  display: none;
+}
+
+.sl-menu-button:has(~ #starlight__sidebar:popover-open) .close-menu {
+  display: block;
 }

@@ -17,6 +17,7 @@ const shouldRenderSearch =
 <div class="header sl-flex">
   <div class="title-wrapper sl-flex">
     <SiteTitle />
+    <span class="header-edition" aria-hidden="true">双语手册</span>
   </div>
   <SiteNav />
   <div class="sl-flex right-group">
@@ -62,13 +63,27 @@ const shouldRenderSearch =
     height: 100%;
     padding: 0 var(--space-4);
     background: var(--surface-nav);
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--text-strong);
   }
 
   .title-wrapper {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
     overflow: hidden;
     flex-shrink: 0;
     min-width: 0;
+  }
+
+  .header-edition {
+    padding-left: 0.6rem;
+    border-left: 1px solid var(--border-strong);
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
   }
 
   .title-wrapper :global(.site-title) {
@@ -112,10 +127,20 @@ const shouldRenderSearch =
     display: none;
   }
 
+  @media (max-width: 40rem) {
+    .header-edition {
+      display: none;
+    }
+  }
+
   @media (max-width: 30rem) {
     .header {
       padding: 0 var(--space-3);
       gap: var(--space-2);
+    }
+
+    .social-icons {
+      display: none;
     }
 
     .title-wrapper :global(.site-title) {

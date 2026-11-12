@@ -42,8 +42,7 @@
   --sl-card-bg: transparent;
   transition:
     border-color var(--duration-base) var(--ease-out-quart),
-    background-color var(--duration-base) var(--ease-out-quart),
-    transform var(--duration-base) var(--ease-out-quart);
+    background-color var(--duration-base) var(--ease-out-quart);
 }
 
 .sl-markdown-content .card:nth-child(4n + 1),
@@ -61,9 +60,8 @@
 /* hover 靠边框与位移表达，不用通用投影 */
 .sl-markdown-content .card:hover,
 .card:hover {
-  border-color: var(--accent-border);
+  border-color: var(--lang-ts);
   background: var(--surface-raised);
-  transform: translateY(-2px);
 }
 
 .card .title,
@@ -179,15 +177,14 @@
 }
 
 .btn--primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--neutral-0);
-  box-shadow: var(--shadow-glow);
+  background: var(--text-strong);
+  border-color: var(--text-strong);
+  color: var(--surface-page);
 }
 
 .btn--primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--lang-ts);
+  border-color: var(--lang-ts);
   color: var(--neutral-0);
 }
 
@@ -220,24 +217,26 @@
 
 .sl-markdown-content .btn--primary,
 .sl-markdown-content .btn--primary:hover {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: var(--neutral-0);
+  background: var(--text-strong);
+  border-color: var(--text-strong);
+  color: var(--surface-page);
 }
 
 .sl-markdown-content .btn--primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--lang-ts);
+  border-color: var(--lang-ts);
+  color: var(--neutral-0);
 }
 
 [data-theme="dark"] .sl-markdown-content .btn--primary,
 [data-theme="dark"] .sl-markdown-content .btn--primary:hover {
-  background: var(--accent);
-  color: var(--neutral-950);
+  background: var(--text-strong);
+  color: var(--surface-page);
 }
 
 [data-theme="dark"] .sl-markdown-content .btn--primary:hover {
-  background: var(--accent-hover);
+  background: var(--lang-ts);
+  color: var(--neutral-0);
 }
 
 .btn--ghost {
@@ -302,9 +301,8 @@
 
 .empty-state {
   padding: var(--space-8) var(--space-4);
-  border: 1px dashed var(--border-default);
-  border-radius: var(--radius-md);
-  background: var(--surface-sunken);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-raised);
   color: var(--text-muted);
   font-size: var(--text-sm);
   text-align: center;

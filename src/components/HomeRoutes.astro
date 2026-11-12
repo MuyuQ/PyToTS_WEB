@@ -101,14 +101,11 @@ const total = algorithms.length;
     background: var(--surface-raised);
     text-decoration: none;
     color: inherit;
-    transition:
-      border-color var(--duration-base) var(--ease-out-quart),
-      transform var(--duration-base) var(--ease-out-quart);
+    transition: border-color var(--duration-base) var(--ease-out-quart);
   }
 
   .route:hover {
-    border-color: var(--accent-border);
-    transform: translateY(-2px);
+    border-color: var(--lang-ts);
     text-decoration: none;
   }
 
@@ -149,7 +146,7 @@ const total = algorithms.length;
     min-height: 2.75rem;
     font-size: var(--text-sm);
     font-weight: var(--weight-semibold);
-    color: var(--accent);
+    color: var(--lang-ts);
   }
 
   .route__arrow {

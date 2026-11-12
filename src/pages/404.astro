@@ -127,12 +127,12 @@ const exits = [
         text-align: center;
         padding: var(--space-12, 3rem) var(--space-8, 2rem);
         border: 1px solid var(--border);
-        border-radius: 14px;
+        border-top: 2px solid var(--ink);
         background: var(--card);
       }
       .code {
         display: block;
-        font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-family: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
         font-size: 0.8125rem;
         font-weight: 600;
         letter-spacing: 0.12em;
@@ -153,16 +153,16 @@ const exits = [
       .cta {
         display: inline-block;
         padding: 0.625rem 1.25rem;
-        border-radius: 8px;
-        background: var(--accent);
-        color: var(--card);
+        background: var(--ink);
+        color: var(--bg);
         font-size: 0.875rem;
         font-weight: 600;
         text-decoration: none;
         transition: background-color 150ms cubic-bezier(0.25, 1, 0.5, 1);
       }
       .cta:hover {
-        background: var(--accent-hover);
+        background: var(--accent);
+        color: var(--bg);
       }
       /* 404 是流失点，给具体出口而不是只让用户回首页 */
       .exits {
@@ -182,10 +182,9 @@ const exits = [
         list-style: none;
       }
       .exits a {
-        color: var(--accent-ink);
-        background: var(--accent-quiet);
+        color: var(--ink);
+        border-bottom: 1px solid var(--border);
         padding: 0.125rem 0.5rem;
-        border-radius: 4px;
         text-decoration: none;
       }
       .exits a:hover {

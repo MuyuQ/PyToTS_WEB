@@ -3,8 +3,7 @@
   padding: var(--space-6);
   background: var(--surface-raised);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 /* quizId 与题库不匹配时的占位提示（QuizContainer 空题守卫） */
@@ -98,8 +97,7 @@
 .quiz-option .option-indicator {
   width: 24px;
   height: 24px;
-  border: 2px solid var(--border-subtle);
-  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-strong);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,14 +192,15 @@
 }
 
 .quiz-action-btn.primary {
-  background: var(--accent);
+  background: var(--text-strong);
   color: var(--surface-page);
-  border-color: var(--accent);
+  border-color: var(--text-strong);
 }
 
 .quiz-action-btn.primary:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--lang-ts);
+  border-color: var(--lang-ts);
+  color: var(--neutral-0);
 }
 
 .quiz-results {

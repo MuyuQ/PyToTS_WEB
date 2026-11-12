@@ -1,12 +1,9 @@
 /* ==========================================================================
-   首页（splash）· 2026-09-20 现代化重设计
-   Hero 版式自带于 overrides/Hero.astro；这里负责：
-   放宽 splash 容器、渐变强调文字、章节节奏与内容排版收口。
+   首页（splash）· V2 纸面手册
+   章节编号、标题节奏与内容排版收口；Hero 版式自带于 overrides/Hero.astro。
    ========================================================================== */
 
-/* splash 内容容器放宽到站点容器宽度：hero 两栏与组件网格需要展开空间。
-   ContentPanel 的 .sl-container 用 --sl-content-width 做上限（scoped 样式
-   照样读祖先变量），改这一个变量即可，无需 hack 定位。 */
+/* splash 内容容器放宽到站点容器宽度：hero 两栏与组件网格需要展开空间。 */
 :root[data-has-hero] .main-frame {
   --sl-content-width: min(var(--container-max), 100%);
 }
@@ -16,26 +13,42 @@
   display: none;
 }
 
-/* hero 标题里的渐变强调文字。
-   frontmatter 的 hero.title 经 set:html 注入，拿不到 scoped 属性，只能全局定义 */
+/* hero 标题里的强调文字：纸面版用暖金，不再做渐变裁切 */
 .hero-grad {
   font-style: normal;
-  background: var(--grad-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--lang-py);
+  background: none;
+  -webkit-text-fill-color: currentColor;
 }
 
-/* ---------- 章节节奏 ---------- */
+/* ---------- 章节节奏：编号 + 墨线，像手册的章节页 ---------- */
 
-[data-has-hero] .sl-markdown-content > h2 {
+[data-has-hero] .sl-markdown-content {
+  counter-reset: home-section;
+}
+
+[data-has-hero] .sl-markdown-content h2 {
+  counter-increment: home-section;
   margin-top: var(--section-gap);
   margin-bottom: var(--space-4);
-  padding-bottom: var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--text-strong);
   font-size: var(--text-2xl);
 }
 
-[data-has-hero] .sl-markdown-content > h2:first-of-type {
+[data-has-hero] .sl-markdown-content h2::before {
+  content: counter(home-section, decimal-leading-zero);
+  display: inline-block;
+  margin-inline-end: 0.85rem;
+  color: var(--lang-py);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.08em;
+  vertical-align: 0.28em;
+}
+
+[data-has-hero] .sl-markdown-content h2:first-of-type {
   margin-top: var(--section-gap);
 }
 
@@ -47,7 +60,11 @@
 /* ---------- 窄屏微调 ---------- */
 
 @media (max-width: 40rem) {
-  [data-has-hero] .sl-markdown-content > h2 {
+  [data-has-hero] .sl-markdown-content h2 {
     font-size: var(--text-xl);
+  }
+
+  [data-has-hero] .sl-markdown-content h2::before {
+    margin-inline-end: 0.6rem;
   }
 }

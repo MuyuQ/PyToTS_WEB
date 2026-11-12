@@ -53,7 +53,7 @@ export default defineConfig({
           tag: "link",
           attrs: {
             rel: "stylesheet",
-            href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap",
+            href: "https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap",
             media: "print",
             onload: "this.media='all'",
           },
@@ -66,8 +66,8 @@ export default defineConfig({
           attrs: { "is:inline": true },
           content: `
             (function () {
-              var DARK = '#08090b';
-              var LIGHT = '#fdfdfe';
+              var DARK = '#0c0e10';
+              var LIGHT = '#f2f3f1';
               function apply() {
                 try {
                   var theme = localStorage.getItem('starlight-theme');
