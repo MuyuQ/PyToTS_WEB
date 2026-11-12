@@ -87,4 +87,29 @@ describe("curriculum 与内容目录一致性", () => {
     }
     expect(dangling, `prerequisites 引用了不存在的课程：${dangling.join("; ")}`).toEqual([]);
   });
+
+  it("prerequisites 只引用教学顺序里排在前面的课", () => {
+    const order = new Map<string, number>();
+    let position = 0;
+    for (const track of TRACK_ORDER) {
+      for (const slug of CURRICULUM[track]) {
+        if (slug === "index") continue;
+        order.set(slug, position++);
+      }
+    }
+    const violations: string[] = [];
+    for (const track of TRACK_ORDER) {
+      for (const slug of CURRICULUM[track]) {
+        if (slug === "index") continue;
+        const current = order.get(slug)!;
+        for (const prerequisite of prerequisitesOf(track, slug)) {
+          const before = order.get(prerequisite);
+          if (before === undefined || before >= current) {
+            violations.push(`${track}/${slug} -> ${prerequisite}`);
+          }
+        }
+      }
+    }
+    expect(violations, `先修课排在了后面：${violations.join("; ")}`).toEqual([]);
+  });
 });

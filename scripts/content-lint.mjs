@@ -23,6 +23,51 @@ const REQUIRED_BY_KIND = {
   algorithm: ["difficulty", "tags"],
 };
 
+/** 课程必备的教学闭环元素（新增课程时别把出口和自检弄丢） */
+const LESSON_ELEMENTS = [
+  { label: "练一练出口", re: /\*\*练一练：\*\*/ },
+  { label: "自测清单", re: /^## 自测清单$/m },
+];
+
+/** 题解九段加厚模板，见 docs/algorithms-AGENTS.md */
+const ALGORITHM_SECTIONS = [
+  "问题描述",
+  "暴力解与瓶颈",
+  "思路分析",
+  "复杂度分析",
+  "双语实现",
+  "差异点评",
+  "常见错误分析",
+  "面试变体",
+  "面试追问",
+];
+
+/**
+ * 按分类守护教学模板。只在真实内容路径上生效，合成路径（单测）不触发，
+ * 这样 lintLines 仍是纯函数，也不会误伤 handbook/索引页等 kind: page 的内容。
+ */
+function lintTeachingElements(rel, kind, text, issues) {
+  const path = rel.split(sep).join("/");
+  // 路径/分组入口页不参与教学序列，即便 frontmatter 标了 lesson 也不要求闭环元素
+  const name = path.split("/").pop() ?? "";
+  if (name === "index.mdx" || name === "index.md") return;
+  if (path.includes("/paths/") && kind === "lesson") {
+    for (const { label, re } of LESSON_ELEMENTS) {
+      if (!re.test(text)) issues.push(`${rel}:1 课程缺少教学元素: ${label}`);
+    }
+  }
+  if (path.includes("/algorithms/") && kind === "algorithm") {
+    for (const section of ALGORITHM_SECTIONS) {
+      if (!new RegExp(`^## .*${section}`, "m").test(text)) {
+        issues.push(`${rel}:1 题解缺少必备小节: ${section}`);
+      }
+    }
+    if (!/<details>/.test(text)) {
+      issues.push(`${rel}:1 题解追问未折叠，学员没有先想再看的空隙`);
+    }
+  }
+}
+
 function parseFrontmatter(text) {
   if (!text.startsWith("---")) return {};
   const end = text.indexOf("\n---", 3);
@@ -120,6 +165,7 @@ export function lintLines(rel, text) {
     }
   }
   lintCodeCompare(rel, text, issues);
+  lintTeachingElements(rel, frontmatter.kind, text, issues);
   return issues;
 }
 

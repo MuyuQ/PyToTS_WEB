@@ -47,4 +47,38 @@ describe("content-lint", () => {
     );
     expect(issues).toEqual([]);
   });
+
+  it("课程缺练一练或自测清单应报错（真实路径）", () => {
+    const issues = lintLines(
+      "src/content/docs/paths/foundation/x.mdx",
+      "---\ntitle: t\nkind: lesson\nlevel: foundation\ntopic: x\ndifficulty: easy\nprerequisites: []\npython_tags: []\nts_tags: []\n---\n## 标题\n"
+    );
+    expect(issues.some((m) => m.includes("练一练出口"))).toBe(true);
+    expect(issues.some((m) => m.includes("自测清单"))).toBe(true);
+  });
+
+  it("题解缺九段模板或追问未折叠应报错", () => {
+    const issues = lintLines(
+      "src/content/docs/algorithms/x.mdx",
+      "---\ntitle: t\nkind: algorithm\ndifficulty: easy\ntags: [a]\n---\n## 问题描述\n"
+    );
+    expect(issues.some((m) => m.includes("必备小节"))).toBe(true);
+    expect(issues.some((m) => m.includes("追问未折叠"))).toBe(true);
+  });
+
+  it("路径入口页不要求闭环元素", () => {
+    const issues = lintLines(
+      "src/content/docs/paths/preparation/index.mdx",
+      "---\ntitle: t\nkind: lesson\nlevel: preparation\ntopic: x\ndifficulty: easy\nprerequisites: []\npython_tags: []\nts_tags: []\n---\n## TypeScript 是什么\n"
+    );
+    expect(issues).toEqual([]);
+  });
+
+  it("kind: page 的内容不校验教学模板", () => {
+    const issues = lintLines(
+      "src/content/docs/handbook/cheat-sheet.mdx",
+      "---\ntitle: t\nkind: page\n---\n## 变量声明\n"
+    );
+    expect(issues).toEqual([]);
+  });
 });

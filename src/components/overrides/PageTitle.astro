@@ -4,12 +4,14 @@
  * 数据全部来自内容集合 schema，页面无需改动 Markdown 正文。
  * Starlight 0.32+：覆盖组件从 Astro.locals.starlightRoute 取路由数据（props 已废弃）。
  */
+import { getCollection } from "astro:content";
 import type { StarlightRouteData } from "@astrojs/starlight/route-data";
 import PageTitleComponent from "@astrojs/starlight/components/PageTitle.astro";
 import DifficultyBadge from "../DifficultyBadge.astro";
 import BookmarkToggle from "../BookmarkToggle.astro";
 import { docSlug } from "../../lib/doc-id";
 
+const BASE = import.meta.env.BASE_URL.replace(/\/+$/, "");
 const { entry } = Astro.locals.starlightRoute as StarlightRouteData;
 // 非文档页可能没有 entry，兜底空对象避免构建/渲染抛错；
 // 本组件只消费这些标量元数据字段，显式收窄避免 data 的宽联合类型渗出
@@ -20,9 +22,38 @@ type DocMeta = {
   tags?: string[];
   time_complexity?: string;
   space_complexity?: string;
+  prerequisites?: string[];
+  python_tags?: string[];
+  ts_tags?: string[];
 };
-const { kind, level, difficulty, tags, time_complexity, space_complexity } =
-  (entry?.data as DocMeta | undefined) ?? {};
+const {
+  kind,
+  level,
+  difficulty,
+  tags,
+  time_complexity,
+  space_complexity,
+  prerequisites,
+  python_tags,
+  ts_tags,
+} = (entry?.data as DocMeta | undefined) ?? {};
+
+// 先修课程 slug -> 标题与路由，构建期从内容集合派生，不维护手写映射表。
+// 只在课题页查询，普通页面不承担这次集合扫描。
+const lessons =
+  kind === "lesson" ? await getCollection("docs", (item) => item.data.kind === "lesson") : [];
+const lessonBySlug = new Map<string, { title: string; href: string }>();
+for (const lesson of lessons) {
+  const slug = docSlug(lesson.id).split("/").pop() ?? "";
+  if (!slug) continue;
+  lessonBySlug.set(slug, {
+    title: lesson.data.title,
+    href: `${BASE}/${docSlug(lesson.id)}/`,
+  });
+}
+const prereqLinks = (prerequisites ?? [])
+  .map((slug) => lessonBySlug.get(slug))
+  .filter((item): item is { title: string; href: string } => Boolean(item));
 
 // entry.id 形如 paths/migration/types：归一为与 progress-store 一致的原始路径
 const rawId = typeof entry?.id === "string" ? entry.id : "";
@@ -55,6 +86,33 @@ const showMeta = kind === "algorithm" || kind === "lesson";
           <span class="meta-chip">{tag}</span>
         ))}
         {pagePath && <BookmarkToggle path={pagePath} />}
+      </div>
+    )
+  }
+  {
+    kind === "lesson" && (prereqLinks.length > 0 || (ts_tags?.length ?? 0) > 0) && (
+      <div class="learning-meta">
+        {prereqLinks.length > 0 && (
+          <div class="learning-meta__row">
+            <span class="learning-meta__label">学这课前</span>
+            {prereqLinks.map((link) => (
+              <a class="meta-chip meta-chip--link" href={link.href}>
+                {link.title}
+              </a>
+            ))}
+          </div>
+        )}
+        {(ts_tags?.length ?? 0) > 0 && (
+          <div class="learning-meta__row">
+            <span class="learning-meta__label">本课知识点</span>
+            {ts_tags?.map((tag) => (
+              <span class="meta-chip">{tag}</span>
+            ))}
+            {(python_tags?.length ?? 0) > 0 && (
+              <span class="learning-meta__python">对应 Python：{python_tags?.join("、")}</span>
+            )}
+          </div>
+        )}
       </div>
     )
   }
@@ -93,5 +151,44 @@ const showMeta = kind === "algorithm" || kind === "lesson";
 
   .meta-chip--mono {
     font-family: var(--font-mono);
+  }
+
+  .learning-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin-top: -0.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .learning-meta__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  .learning-meta__label {
+    margin-right: 0.125rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .meta-chip--link {
+    color: var(--accent);
+    border-color: var(--accent-quiet);
+    background: var(--accent-quiet);
+    text-decoration: none;
+  }
+
+  .meta-chip--link:hover {
+    text-decoration: underline;
+  }
+
+  .learning-meta__python {
+    margin-left: 0.25rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
   }
 </style>
