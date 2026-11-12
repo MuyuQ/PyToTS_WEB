@@ -11,6 +11,7 @@
 import { getCollection, type CollectionEntry } from "astro:content";
 import { neighbourLesson, parseLessonRoute, DIFFICULTY_ORDER, type TrackId } from "./curriculum";
 import { docRoute } from "./doc-id";
+import { rankByTagOverlap } from "./algorithm-similarity";
 
 export interface Neighbour {
   href: string;
@@ -84,6 +85,7 @@ interface AlgorithmEntry {
   route: string;
   title: string;
   difficulty: string;
+  tags: string[];
 }
 
 let algorithmEntriesCache: Promise<AlgorithmEntry[]> | null = null;
@@ -107,6 +109,7 @@ function algorithmEntries(): Promise<AlgorithmEntry[]> {
         route: routeFromId(entry.id),
         title: entry.data.title,
         difficulty: entry.data.difficulty ?? "",
+        tags: entry.data.tags ?? [],
       }));
   });
   return algorithmEntriesCache;
@@ -119,10 +122,10 @@ async function algorithmSequence(): Promise<string[]> {
 }
 
 /**
- * 与指定题目同难度的其他题（不含自己）
+ * 与指定题目知识点相近的其他题（按 tags 重合度降序，不含自己）
  *
- * 「下一题」是顺着难度序列往前走，但刷题的人常想在同一档里多练几道再升级。
- * 这里给的是同档内的横向选择，两者互补。
+ * 「下一题」顺着难度序列往前走，这里是同一类问题上的横向选择，
+ * 让学员能在某个知识点上多练几道再升级。标签全部来自 frontmatter，零编造。
  *
  * @param route 站内路由，形如 /algorithms/two-sum/
  * @param limit 返回条数
@@ -130,12 +133,12 @@ async function algorithmSequence(): Promise<string[]> {
 export async function getSimilarAlgorithms(route: string, limit = 4): Promise<Neighbour[]> {
   const entries = await algorithmEntries();
   const current = entries.find((entry) => entry.route === route);
-  if (!current?.difficulty) return [];
+  if (!current) return [];
 
-  return entries
-    .filter((entry) => entry.route !== route && entry.difficulty === current.difficulty)
-    .slice(0, limit)
-    .map((entry) => ({ href: withBase(entry.route), label: entry.title }));
+  return rankByTagOverlap(entries, current, limit).map((entry) => ({
+    href: withBase(entry.route),
+    label: entry.title,
+  }));
 }
 
 /**
