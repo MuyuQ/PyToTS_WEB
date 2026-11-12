@@ -9,6 +9,7 @@
 import EditLink from "virtual:starlight/components/EditLink";
 import LastUpdated from "virtual:starlight/components/LastUpdated";
 import Pagination from "virtual:starlight/components/Pagination";
+import PracticeCheck from "../PracticeCheck.astro";
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, "");
 const year = new Date().getFullYear();
@@ -94,6 +95,7 @@ const groups = [
     </p>
     <p class="site-footer__edition">VOL. 02 · 2026 · PY → TS</p>
   </div>
+  <PracticeCheck />
 </footer>
 
 <style>

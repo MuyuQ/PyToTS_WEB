@@ -74,6 +74,10 @@ quizTitles.prediction = "预测输出";
 
   <p>累计作答 <span data-quiz-attempt-count>0</span> 次。平均正确率按各组最近一次成绩计算。</p>
 
+  <p>
+    主动练习已掌握 <span data-practice-count>0</span> 题。只记会不会，不计分；在题目下方可以撤销。
+  </p>
+
   <details>
     <summary>查看作答记录</summary>
     <p>保留每次完成的成绩，以下显示最近 50 次。旧版数据仅保留了各组最近一次成绩。</p>
@@ -157,6 +161,7 @@ quizTitles.prediction = "预测输出";
     parseProgressBlob,
     normPath,
   } from "../lib/progress-store";
+  import { getChecks, totalCorrect } from "../lib/practice-check";
 
   /**
    * 课程与算法路由在构建时写入 data-*，脚本只从 DOM 读取：
@@ -207,6 +212,9 @@ quizTitles.prediction = "预测输出";
     set("algorithms", String(algorithmsDone));
     set("quizzes", String(quizzes));
     set("score", avg === null ? "—" : avg + "%");
+
+    const practiceCount = panel?.querySelector("[data-practice-count]");
+    if (practiceCount) practiceCount.textContent = String(totalCorrect(getChecks()));
   }
 
   function paintQuizHistory(): void {
@@ -383,6 +391,7 @@ quizTitles.prediction = "预测输出";
 
   schedule();
   window.addEventListener("progress-updated", schedule);
+  window.addEventListener("practice-check-updated", schedule);
   // Starlight 0.28 是 MPA 全页加载，astro:page-load 当前不会触发；保留监听以便未来升级视图过渡
   document.addEventListener("astro:page-load", schedule);
 </script>

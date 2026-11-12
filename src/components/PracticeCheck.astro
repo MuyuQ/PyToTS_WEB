@@ -1,0 +1,153 @@
+---
+/**
+ * 主动练习自检（不改任何 MDX）
+ *
+ * 运行时识别「预测输出 / 找错误」的折叠答案，注入自评控件与页面小结。
+ * 题解的「答案要点」、代码翻译的「答案」不在此列——那两类不是主动回忆题。
+ * 只记录「我答对了」，点「再看一遍」即撤销；本地存储，不计分、不排名。
+ *
+ * 动态创建的元素拿不到 Astro scoped 属性，样式用 is:global 并统一加 practice- 前缀。
+ */
+---
+
+<script>
+  import { getChecks, setCheck } from "../lib/practice-check";
+
+  // 与站内练习答案的 summary 文案一致
+  const PRACTICE_LABELS = new Set([
+    "点击查看答案",
+    "点击查看参考答案",
+    "答案与原因",
+    "点击查看问题所在",
+    "点击查看问题",
+    "点击查看思路",
+    "点击查看 TypeScript 答案",
+  ]);
+
+  function paint(): void {
+    const checks = getChecks();
+    const boxes = [...document.querySelectorAll<HTMLElement>(".practice-check[data-id]")];
+    const done = boxes.filter((box) => checks[box.dataset.id ?? ""] === "correct").length;
+    const bar = document.querySelector<HTMLElement>(".practice-summary");
+    if (bar) {
+      bar.textContent = `本课主动练习：已掌握 ${done} / ${boxes.length} 题。只在这台设备记录，随时可以重做。`;
+    }
+    for (const box of boxes) {
+      const yes = box.querySelector<HTMLButtonElement>("button[data-value='correct']");
+      yes?.setAttribute("aria-pressed", String(checks[box.dataset.id ?? ""] === "correct"));
+    }
+  }
+
+  function initPracticeChecks(): void {
+    const pageKey = window.location.pathname.replace(/\/$/, "");
+    const practices = [...document.querySelectorAll<HTMLDetailsElement>("details")].filter(
+      (item) => {
+        const label = item.querySelector("summary")?.textContent?.trim() ?? "";
+        return PRACTICE_LABELS.has(label) && !item.querySelector(".practice-check");
+      }
+    );
+    if (!practices.length) return;
+
+    if (!document.querySelector(".practice-summary")) {
+      const bar = document.createElement("p");
+      bar.className = "practice-summary";
+      bar.setAttribute("role", "status");
+      // 尽量插在练习区标题之前，别夹在题目代码和答案之间
+      let cursor = practices[0].previousElementSibling;
+      while (cursor && !/^H[23]$/.test(cursor.tagName)) {
+        cursor = cursor.previousElementSibling;
+      }
+      (cursor ?? practices[0]).before(bar);
+    }
+
+    practices.forEach((item, index) => {
+      const id = `${pageKey}#${index}`;
+      const box = document.createElement("div");
+      box.className = "practice-check";
+      box.dataset.id = id;
+
+      const label = document.createElement("span");
+      label.className = "practice-check__label";
+      label.textContent = "想好了再展开答案，这题你做对了吗？";
+
+      const yes = document.createElement("button");
+      yes.type = "button";
+      yes.className = "practice-check__btn";
+      yes.dataset.value = "correct";
+      yes.setAttribute("aria-pressed", "false");
+      yes.textContent = "我答对了";
+
+      const again = document.createElement("button");
+      again.type = "button";
+      again.className = "practice-check__btn practice-check__btn--quiet";
+      again.dataset.value = "review";
+      again.textContent = "再看一遍";
+
+      box.append(label, yes, again);
+      item.append(box);
+      box.addEventListener("click", (event) => {
+        const target = (event.target as HTMLElement).closest<HTMLButtonElement>(
+          "button[data-value]"
+        );
+        if (!target) return;
+        setCheck(id, target.dataset.value === "correct" ? "correct" : null);
+        paint();
+      });
+    });
+
+    paint();
+  }
+
+  initPracticeChecks();
+  document.addEventListener("astro:page-load", initPracticeChecks);
+</script>
+
+<style is:global>
+  .practice-summary {
+    margin: 1rem 0;
+    padding: 0.5rem 0.75rem;
+    border-left: 2px solid var(--accent, #185fa5);
+    background: var(--surface-sunken, #f1efe8);
+    color: var(--text-muted, #5f5e5a);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+
+  .practice-check {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-subtle, #d3d1c7);
+  }
+
+  .practice-check__label {
+    margin-right: auto;
+    color: var(--text-muted, #5f5e5a);
+    font-size: 0.8125rem;
+  }
+
+  .practice-check__btn {
+    font: inherit;
+    font-size: 0.75rem;
+    padding: 0.125rem 0.625rem;
+    border: 1px solid var(--border-subtle, #d3d1c7);
+    border-radius: 999px;
+    background: var(--surface-raised, #fff);
+    color: var(--text-strong, #2c2c2a);
+    cursor: pointer;
+  }
+
+  .practice-check__btn[aria-pressed="true"] {
+    border-color: var(--accent, #185fa5);
+    background: var(--accent-quiet, #e6f1fb);
+    color: var(--accent, #185fa5);
+  }
+
+  .practice-check__btn:focus-visible {
+    outline: 2px solid var(--accent, #185fa5);
+    outline-offset: 2px;
+  }
+</style>
