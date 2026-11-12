@@ -641,6 +641,67 @@ const methods: CounterMethods = {
 };
 ```
 
+## 试试看
+
+### 预测输出
+
+下面两个类型别名分别等价于什么？`const a` 那一行能通过吗？
+
+```typescript
+interface User {
+  id: number;
+  name: string;
+  profile: { city: string; age: number };
+}
+
+type A = Partial<User>;
+type B = Pick<User, "id" | "name">;
+
+const a: A = { profile: { city: "Wuhan" } };
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+`A` 等价于 `{ id?: number; name?: string; profile?: { city: string; age: number } }`——`Partial` 只把**第一层**属性变可选，不递归进 `profile`。`B` 等价于 `{ id: number; name: string }`，`Pick` 的键必须来自 `keyof User` 的联合类型。
+
+所以 `const a` **会报错**：`profile` 这一层虽然可选了，但一旦提供，`age` 仍是必需的。补齐 `age`，或改用本页「常见陷阱」里的 `DeepPartial<T>`。
+
+**Python 里会怎样、为什么会想错**：`TypedDict` 的 `NotRequired` 也只能标顶层键，没有内建的 `Pick`/`Omit`；更关键的是这些标注只服务于静态检查，运行时字典少几个键不会报错。TypeScript 会逐层校验对象字面量，把「外层可选」误当成「整棵子树可选」是迁移期最常见的误判。
+
+</details>
+
+### 找错误
+
+下面代码有一个错误，能找到吗？
+
+```typescript
+type Scores = Record<boolean, number>;
+
+const table: Scores = { true: 1, false: 0 };
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+错误在 `Record<boolean, number>`：`Record` 的键类型只能是 `string | number | symbol` 或它们的字面量联合，`boolean` 不满足约束，编译报 `Type 'boolean' does not satisfy the constraint 'string | number | symbol'`。
+
+按用途改：
+
+```typescript
+type Scores = Record<"win" | "lose", number>;
+const table: Scores = { win: 1, lose: 0 };
+
+// 或者只是想把任意字符串映射到分数
+type LooseScores = Record<string, number>;
+```
+
+对象字面量的键最终都是字符串或 symbol，`{ true: 1 }` 里的 `true` 只是字符串键 `"true"`，不会真变成布尔键。
+
+**Python 里会怎样、为什么会想错**：Python 的 `dict[bool, int]` 完全合法，`True`/`False` 是可哈希的键，字典键类型不受限制。把「任意可哈希对象都能当键」带进 TypeScript 就会写出 `Record<boolean, ...>`；这里约束的是类型层面的键集合，不是运行时字典能放什么。
+
+</details>
+
 ## 练习
 
 实现一个类型安全的对象合并函数，要求：
@@ -683,6 +744,15 @@ const result = mergeExact(defaults, overrides);
 ```
 
 </details>
+
+## 自测清单
+
+- [ ] 能用 `Partial`、`Required`、`Readonly` 调整属性修饰，并说明 `Partial` 不递归
+- [ ] 能用 `Pick`、`Omit` 从已有类型裁剪字段，键用 `keyof` 的联合类型
+- [ ] 能用 `Record` 构造映射类型，并说明键类型只能是 `string | number | symbol`
+- [ ] 能用 `ReturnType`、`Parameters` 从函数类型中提取信息
+- [ ] 能组合工具类型实现 `DeepPartial` 一类的递归映射类型
+- [ ] 能对比 Python `TypedDict` / `NotRequired`，说明静态标注与运行时字典的差异
 
 ## 面试追问
 

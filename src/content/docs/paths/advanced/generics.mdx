@@ -157,6 +157,68 @@ type D = UnwrapPromise<string>; // string
 | 条件类型 | 不支持                    | 支持       |
 | 类型推断 | 有限                      | 强大       |
 
+## 试试看
+
+### 预测输出
+
+下面代码会输出什么？先想想泛型参数 `T` 在运行时还在不在，再看答案。
+
+```typescript
+function identify<T>(value: T): T {
+  return value;
+}
+
+console.log(typeof identify(42), typeof identify("ts"));
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+输出：`number string`。
+
+`T` 由实参推断：传 `42` 时是 `number`，传 `"ts"` 时是 `string`，编译器据此检查返回值；但编译成 JavaScript 后泛型信息被擦除，`identify` 只是原样返回参数的函数。`typeof` 看到的是运行时真正的值，不是 `T` 这个类型变量。
+
+**Python 里会怎样、为什么会想错**：Python 的 `TypeVar` 同样只服务于静态检查，运行时 `type(x)` 拿到的也是真实类型；但 `T` 写得像个变量，容易误以为能在运行时判断它、或对它调用方法。泛型是写给编译器的约束，不是运行时对象。
+
+</details>
+
+### 找错误
+
+下面代码有一个错误，能找到吗？
+
+```typescript
+function shout<T>(value: T): string {
+  return value.upper(); // 想调用 Python 熟悉的字符串方法
+}
+
+console.log(shout("hello"));
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+错误在 `value.upper()`：对未约束的 `T`，编译器只知道「某种类型」，不知道它有 `upper` 方法，会报 `Property 'upper' does not exist on type 'T'`。即便调用时只传字符串也一样——声明要对**所有**可能的 `T` 成立。
+
+两种改法：
+
+```typescript
+// 1. 用 extends 明确约束 T 必须具备该方法
+function shout<T extends { upper(): string }>(value: T): string {
+  return value.upper();
+}
+
+// 2. 本来只处理字符串，就别用泛型
+function shout(value: string): string {
+  return value.toUpperCase();
+}
+```
+
+顺带一个差异：TypeScript 的字符串方法叫 `toUpperCase()`，不是 Python 的 `upper()`。
+
+**Python 里会怎样、为什么会想错**：Python 靠鸭子类型，函数体里 `value.upper()` 想写就写，传进来的对象有没有这个方法要等运行才知道；TypeScript 要求在声明时就把「允许调用什么」写进约束。本课的 `extends { length: number }` 就是同一招。
+
+</details>
+
 ## 练习
 
 将以下 Python 代码转换为 TypeScript：
@@ -214,6 +276,15 @@ console.log(cache.get("score")); // 100
 ```
 
 </details>
+
+## 自测清单
+
+- [ ] 能写出泛型函数与泛型类，并说明 `T` 如何由实参推断
+- [ ] 能用 `extends` 给类型参数加约束，并解释未约束的 `T` 为什么不能访问属性
+- [ ] 能区分泛型约束与运行时类型检查，说明编译后 `T` 去了哪里
+- [ ] 能写条件类型并用 `infer` 提取 `Promise` 的返回值类型
+- [ ] 能对比 Python `TypeVar`/`Generic` 与 TypeScript 泛型，指出「编译期擦除」的含义
+- [ ] 能判断什么时候不该用泛型（只处理一种类型时属于多余抽象）
 
 ## 面试追问
 

@@ -606,6 +606,74 @@ class GoodAdapter implements Printer {
 | 抽象类     | ABC            | abstract class     |
 | 实现灵活性 | 高（鸭子类型） | 中等（需实现接口） |
 
+## 试试看
+
+### 预测输出
+
+沿用本页观察者模式里的 `EventEmitter`，下面代码会输出什么？
+
+```typescript
+const emitter = new EventEmitter<string>();
+const unsubscribe = emitter.subscribe((data) => console.log(`收到: ${data}`));
+
+emitter.emit("A");
+unsubscribe();
+emitter.emit("B");
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+只输出 `收到: A`。
+
+`subscribe` 把回调放进 `listeners` 数组并返回一个**取消订阅函数**；`emit("A")` 时数组里有一个回调，打印一次。调用 `unsubscribe()` 会用 `indexOf` + `splice` 把回调从数组里移除，之后 `emit("B")` 遍历的是空数组，什么都不打印。
+
+**Python 里会怎样、为什么会想错**：Python 里常见的 `subscribe` 返回订阅 ID 或订阅对象，取消时要显式 `remove_listener(id)`；也容易以为「回调是局部变量、不用了会被回收」。这里 `EventEmitter` 持有一份强引用，不主动取消就会一直被调用——这正是本页自测清单里「返回取消订阅函数防止内存泄漏」要防的情况。
+
+</details>
+
+### 找错误
+
+下面代码有一个错误，能找到吗？
+
+```typescript
+interface Payment {
+  pay(amount: number): void;
+}
+
+class CardPayment implements Payment {
+  pay(amount: number): void {
+    console.log(`card ${amount}`);
+  }
+}
+
+function isPayment(value: unknown): boolean {
+  return value instanceof Payment; // 想按接口判断类型
+}
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+错误在 `value instanceof Payment`：`interface` 只存在于编译期，编译后不留任何痕迹，`instanceof` 的右操作数必须是运行时真实存在的构造函数。编译器会报 `'Payment' only refers to a type, but is being used as a value here`。
+
+按实际需要改：要判断具体类就用 `value instanceof CardPayment`；要判断「形状符合契约」就写类型谓词，检查运行时确实存在的属性：
+
+```typescript
+function isPayment(value: unknown): value is Payment {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "pay" in value &&
+    typeof (value as { pay: unknown }).pay === "function"
+  );
+}
+```
+
+**Python 里会怎样、为什么会想错**：`ABC` 和 `@runtime_checkable` 的 `Protocol` 在运行时都是真实对象，`isinstance(x, Payment)` 可以工作。TypeScript 的 `interface` 编译期擦除，运行时根本没有这个值——本页「差异与优势」表格里「类型检查：运行时 vs 编译时」说的就是这条分界线。
+
+</details>
+
 ## 自测清单
 
 - [ ] 能用 `interface` 定义策略/观察者/工厂契约并实现多态

@@ -198,6 +198,70 @@ function getNameLength(user: User | null): number {
 | 可选链     | Python 3.10+ | 原生支持               |
 | 空值合并   | `or`         | `??`                   |
 
+## 试试看
+
+### 预测输出
+
+下面代码会输出什么？先按 Python 里判断 `None` 的直觉猜，再看答案。
+
+```typescript
+function show(value: unknown): string {
+  if (typeof value === "object" && value !== null) {
+    return "object";
+  }
+  return typeof value === "string" ? value.toUpperCase() : "other";
+}
+
+console.log(show(null), show("ts"), show([]));
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+输出：`other TS object`。
+
+关键在 `typeof null === "object"`：这是 JavaScript 早期遗留行为，所以判断「是不是对象」必须补 `value !== null`。`show([])` 走对象分支（数组也是对象）；`show("ts")` 走字符串分支，被收窄成 `string` 后才能安全调用 `toUpperCase()`。
+
+**Python 里会怎样、为什么会想错**：Python 判断空值用 `x is None`，`None` 是独立的 `NoneType`，不会和「是不是对象」混在一起。照搬这个直觉、只写 `typeof value === "object"` 而不排除 `null`，就会把空值误判成对象。
+
+</details>
+
+### 找错误
+
+下面代码有一个错误，能找到吗？
+
+```typescript
+function isString(value: unknown): boolean {
+  return typeof value === "string";
+}
+
+function upper(value: unknown): string {
+  if (isString(value)) {
+    return value.toUpperCase(); // 编译报错
+  }
+  return "";
+}
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+错误在 `isString` 的返回类型写了 `boolean`：`if` 分支里编译器只知道「这个函数返回真或假」，拿不到「`value` 是 string」这个信息，于是 `value.toUpperCase()` 仍报错。
+
+改成类型谓词，把信息交给编译器：
+
+```typescript
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+```
+
+运行时还是同一个 `typeof` 判断，但 TypeScript 会在 `if` 成立的分支里把 `value` 收窄成 `string`。
+
+**Python 里会怎样、为什么会想错**：Python 里 `isinstance(value, str)` 之后直接用 `value.upper()` 天经地义，因为类型是运行时的、检查完就「知道」了。TypeScript 的类型在编译期擦除，`typeof` 的判断结果不会自动流进类型系统，必须显式声明谓词编译器才认。
+
+</details>
+
 ## 练习
 
 将以下 Python 代码转换为 TypeScript：
@@ -275,6 +339,14 @@ function calculateAreaV2(shape: Circle | Rectangle | null): number | null {
 ```
 
 </details>
+
+## 自测清单
+
+- [ ] 能用 `typeof`、`instanceof`、`in` 把联合类型收窄到具体分支
+- [ ] 能写自定义类型谓词 `value is T`，并解释返回 `boolean` 为什么不够
+- [ ] 能用 `never` 做穷尽检查，新增联合成员时让编译器报错
+- [ ] 能处理 `null` / `undefined`，并解释 `typeof null === "object"` 带来的坑
+- [ ] 能说明 Python `isinstance` 与 TypeScript 类型守卫在「谁负责收窄」上的差异
 
 ## 面试追问
 

@@ -627,6 +627,53 @@ document.getElementById("app"); // 错误：找不到 document
 | 路径映射 | `paths`            | `mypy_path`               |
 | 类型存根 | `.d.ts`            | `.pyi`                    |
 
+## 试试看
+
+### 预测输出
+
+下面代码编译能通过，运行时会输出什么？先想想 `declare` 到底生成了什么。
+
+```typescript
+declare const VERSION: string;
+console.log(VERSION);
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+编译期不报错（`declare` 告诉编译器「运行时会有一个 string 类型的 VERSION」），运行时抛 `ReferenceError: VERSION is not defined`。
+
+`declare` 只写类型、不产生任何 JavaScript 代码，它是一张环境说明，不是变量定义。要真正有值，得由别处提供：外部脚本注入的全局变量、宿主环境 API，或自己补一行 `const VERSION = "1.0.0";`。本页的 `.d.ts`、`declare module`、`环境声明` 都是这个性质。
+
+**Python 里会怎样、为什么会想错**：`.pyi` 存根同样只给类型检查器看；但 `x: str` 这类注解容易让人把 `declare` 误当成「带类型的声明 + 初始化」。看编译产物最直接——里面根本没有 `VERSION` 这一行。
+
+</details>
+
+### 找错误
+
+下面配置加代码有一个问题，能找到吗？
+
+```json
+// tsconfig.json
+{ "compilerOptions": { "baseUrl": ".", "paths": { "@/*": ["src/*"] } } }
+```
+
+```typescript
+import { helper } from "@/lib/helper";
+console.log(helper());
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+问题不在编译，在**运行时**：`tsc` 认得 `@/lib/helper`、类型检查通过，但产出的 JavaScript 里这行 `import` 原样保留，Node.js 不认识 `@` 别名，运行时报 `ERR_MODULE_NOT_FOUND`。
+
+`paths` 只影响编译期模块解析，不改写输出路径。要让运行时也能解析，得让打包器或运行器读同一份别名（Vite、tsx、tsconfig-paths、Node 的 `imports` 字段），或改用相对路径。本页「路径别名运行时错误」讲的就是这个坑。
+
+**Python 里会怎样、为什么会想错**：`mypy_path`、`PYTHONPATH` 是解释器运行时真的会去查的搜索路径，改了配置导入就通。TypeScript 把「编译期解析」和「运行时解析」拆给了两个工具，改 `tsconfig` 只解决前半段。
+
+</details>
+
 ## 练习
 
 为一个假设的 JavaScript 库 `string-utils` 编写类型声明文件：

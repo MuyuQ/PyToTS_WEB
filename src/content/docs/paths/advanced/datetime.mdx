@@ -601,6 +601,72 @@ DateTime.fromFormat("2024/03/15", "yyyy/MM/dd");
 | 国际化       | 需导入 locale | 需导入 locale | 内置     |
 | 学习曲线     | 低            | 低            | 中       |
 
+## 试试看
+
+### 预测输出
+
+下面代码会输出什么？先按你写 Python 时的直觉猜，再看答案。
+
+```typescript
+const d = new Date(2024, 2, 15); // 想表示 2024 年 3 月 15 日
+console.log(d.getMonth(), d.getDate());
+
+const copy = new Date(d.getTime()); // 复制一份
+copy.setDate(copy.getDate() + 1); // 往后挪一天
+console.log(d.getDate(), copy.getDate());
+console.log(d.getTime() === copy.getTime());
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+依次输出：
+
+```text
+2 15
+15 16
+false
+```
+
+- `getMonth()` 返回 0 基索引：想表示 3 月，传参写 `2`，读出来也是 `2` 而不是 `3`；`getDate()` 读的是「日」，仍是 `15`。
+- `setDate()` 属于 `set*` 方法，会**原地修改** `copy`，所以 `copy` 变成 16 号，`d` 没被碰过仍是 15 号。两个 `getTime()` 因此不等，最后一行是 `false`。
+- 想保留原值，必须用 `new Date(d.getTime())` 显式复制一份再改。
+
+**Python 里会怎样、为什么会想错**：Python 的 `date(2024, 3, 15).month` 返回 `3`，月份是 1 基的，第一反应会猜 `3 15`。而 Python 的 `datetime` 是**不可变**的，`dt.replace(day=16)`、`dt + timedelta(days=1)` 都返回新对象、原对象不变；JS 的 `Date` 恰好相反，`set*` 原地改。把 Python 的「改日期自动得到新对象」套过来，会误以为 `d` 也被改了，或以为复制那步可以省掉。
+
+另外，本题读的 `getMonth/getDate/getTime` 都是本地字段，结果不受运行时区影响；若换成 `toISOString()`，拿到的是 UTC 时间，在东八区这类有偏移的时区可能与本地日期差一天。
+
+</details>
+
+### 找错误
+
+下面代码有一个错误，能找到吗？
+
+```typescript
+// Python 后端用 time.time() 存下来的秒级时间戳
+const createdAtSec = 1710497400;
+const created = new Date(createdAtSec);
+console.log(created.toISOString()); // 期望打印 2024-03-15
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+错误在 `new Date(createdAtSec)`：把**秒级**时间戳当成**毫秒级**直接喂给了 `Date`。
+
+Python 的 `time.time()`、`datetime.fromtimestamp()` 用秒，`1710497400` 在 Python 里正是 2024-03-15；JS 的 `Date` 构造函数和 `Date.now()` 都用毫秒，差了 1000 倍。`1710497400` 毫秒只有约 19.8 天，落在 1970 年 1 月，于是 `toISOString()` 打印 1970 年而不是 2024（`toISOString()` 本身没错，它总是返回 UTC）。
+
+修复：
+
+```typescript
+const created = new Date(createdAtSec * 1000); // 秒 -> 毫秒
+console.log(created.toISOString()); // 2024-03-15...
+```
+
+**Python 里会怎样、为什么会想错**：Python 开发者带着「时间戳就是秒」的直觉，把同一个数字原样传给 `new Date()`，不会意识到单位已经变了。更稳的做法是跨语言别传裸数字，统一传 ISO 字符串（JS 用 `toISOString()`、Python 用 `isoformat()`），单位歧义就不存在了。
+
+</details>
+
 ## 练习
 
 将以下 Python 日期处理代码转换为 TypeScript：

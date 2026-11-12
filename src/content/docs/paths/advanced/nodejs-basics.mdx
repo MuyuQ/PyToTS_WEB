@@ -1350,6 +1350,65 @@ await logger.flush();
 // 事件循环空了进程自动按 exitCode 退出
 ```
 
+## 试试看
+
+### 预测输出
+
+下面四行会按什么顺序打印？先按你写 Python 时的直觉猜，再看答案。
+
+```typescript
+console.log("1: start");
+process.nextTick(() => console.log("2: nextTick"));
+setImmediate(() => console.log("3: setImmediate"));
+console.log("4: end");
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+输出顺序：
+
+```text
+1: start
+4: end
+2: nextTick
+3: setImmediate
+```
+
+同步代码先全部跑完，所以 `1`、`4` 最先打印，注册回调不会打断当前这段同步逻辑。之后 `process.nextTick` 的回调在当前操作结束、事件循环继续之前执行，优先级最高；`setImmediate` 排在下一个事件循环迭代的 check 阶段。顺序因此是 `1 → 4 → 2 → 3`，和本页「面试追问」里讲的一致：`nextTick` 优先级更高，`setImmediate` 在下一轮。
+
+**Python 里会怎样、为什么会想错**：Python 默认一行行同步执行，`process.nextTick(fn)` 看上去像「注册并立刻调用一个函数」，容易猜成 `1 → 2 → 3 → 4`。Node 不会就地执行回调，而是排队到同步代码之后、按事件循环阶段运行。想在 Python 里做到类似效果，得显式用 asyncio 任务或线程，不会自动发生。
+
+</details>
+
+### 找错误
+
+下面代码有一个错误，能找到吗？
+
+```typescript
+// 从文件读出来的内容（不传 encoding 时是 Buffer），想按字符串处理
+const raw = Buffer.from("café", "utf-8");
+console.log(raw.toUpperCase()); // 期望打印 "CAFÉ"
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+错误在 `raw.toUpperCase()`：`raw` 是 `Buffer`，没有字符串方法，运行会抛 `TypeError: raw.toUpperCase is not a function`。
+
+Python 文本模式 `open("f.txt", "r", encoding="utf-8").read()` 返回 `str`，可以直接 `.upper()`；Node 的 `fs.readFileSync(path)` 不传 encoding 返回 `Buffer`，对应 Python 的 `bytes`（要用 `"rb"` 读才类比），必须先解码成字符串才能用字符串方法。Python 开发者默认「读文本 = 得到字符串」，于是把 `str` 的方法套到了 Buffer 上。
+
+修复：先把 Buffer 解码成字符串。
+
+```typescript
+const raw = Buffer.from("café", "utf-8");
+console.log(raw.toString("utf-8").toUpperCase()); // "CAFÉ"
+```
+
+更省事的做法是从源头就别拿 Buffer：读文件时传 `"utf-8"`，`readFileSync` 会直接返回字符串。反过来，图片、压缩包这类二进制文件必须保留 Buffer，不能这样转字符串，否则数据会损坏——这正是本页「编码问题」讲的。
+
+</details>
+
 ## 练习
 
 实现一个简单的文件监控工具，监控指定文件的变更并记录日志。

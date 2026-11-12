@@ -530,6 +530,84 @@ function goodMemoize<T extends (...args: any[]) => any>(
 | 模式       | 函数或类转换      | 新版与旧版实验性模式 |
 | 性能       | 取决于包装逻辑    | 取决于生成的包装逻辑 |
 
+## 试试看
+
+### 预测输出
+
+下面日志会按什么顺序打印？先判断装饰器在**哪一刻**执行，再看答案。
+
+```typescript
+function logged(target: object, key: string): void {
+  console.log(`装饰: ${key}`);
+}
+
+class Demo {
+  @logged
+  greet(): void {
+    console.log("调用 greet");
+  }
+}
+
+console.log("类已定义");
+new Demo().greet();
+new Demo().greet();
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+```text
+装饰: greet
+类已定义
+调用 greet
+调用 greet
+```
+
+装饰器在**类定义时**执行一次；调用 `greet()` 一万次也不会再打印 `装饰: greet`。本页「装饰器执行顺序」讲的「先装饰内部成员，最后包装整个类」描述的正是这个阶段，不是调用阶段。
+
+**Python 里会怎样、为什么会想错**：Python 的 `@decorator` 同样在函数定义时执行一次并替换函数对象，之后每次调用跑的是包装器里的逻辑。容易想错的是把「注册了装饰器」等同于「给方法装了每次调用的钩子」——要记录调用，必须在返回的包装函数里写日志。
+
+</details>
+
+### 找错误
+
+下面代码想照搬 Python 装饰器的写法，哪里不对？
+
+```typescript
+function log(fn: () => string): () => string {
+  return () => {
+    console.log("call");
+    return fn();
+  };
+}
+
+class Service {
+  @log
+  fetch(): string {
+    return "ok";
+  }
+}
+```
+
+<details>
+<summary>点击查看答案</summary>
+
+错误在签名：TypeScript 的方法装饰器不接收「一个函数」、也不靠返回一个新函数来替换方法。它接收 `(target, propertyKey, descriptor)` 三个参数，要改写行为就修改 `descriptor.value`：
+
+```typescript
+function log(target: object, key: string, descriptor: PropertyDescriptor): void {
+  const original = descriptor.value as (...args: unknown[]) => unknown;
+  descriptor.value = function (...args: unknown[]) {
+    console.log(`调用: ${key}`, args);
+    return original.apply(this, args);
+  };
+}
+```
+
+**Python 里会怎样、为什么会想错**：Python 的装饰器就是「接收函数、返回函数」，`@log` 直接等价于 `fetch = log(fetch)`，所以这个签名在 Python 里完全正确。TypeScript 的装饰器拿到的是类的原型、方法名和属性描述符，包装的是**描述符上的方法**，不是被装饰的函数本身。
+
+</details>
+
 ## 自测清单
 
 - [ ] 能写出方法装饰器（计时/重试/缓存）并解释 descriptor 角色

@@ -191,6 +191,39 @@ my-ts-project/
 | `pip freeze > requirements.txt`   | `npm init`    | 手动维护依赖              |
 | `__init__.py`                     | `index.ts`    | 模块入口                  |
 
+## 自检：装对了没有
+
+装完不要直接往下学，先花两分钟确认编译链路是通的。新建一个 `index.ts`：
+
+```typescript
+const greet = (name: string): string => `Hello, ${name}`;
+console.log(greet("Python"));
+```
+
+在文件所在目录运行：
+
+```bash
+tsc --noEmit index.ts
+```
+
+预期结果：**没有任何输出，退出码为 0**。`--noEmit` 只做类型检查、不生成 JS 文件，是迁移期最常用的一条命令。
+
+接着把第二行改成 `greet(42);` 再跑一次，预期看到：
+
+```text
+error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+```
+
+这一步比装好环境本身更重要：Python 里把错误类型传给函数，往往要等运行到那一行才报错；TypeScript 在编译时就拦住了。后面整条迁移路径讲的就是这类差异。
+
+如果第一步就没过，对照下表：
+
+| 现象                                  | 原因                    | 处理                                          |
+| ------------------------------------- | ----------------------- | --------------------------------------------- |
+| `tsc: command not found`              | 全局 TypeScript 没装上  | 回到「安装 TypeScript」重跑，或改用 `npx tsc` |
+| `error TS18003: No inputs were found` | 当前目录没有 `.ts` 文件 | 确认 `index.ts` 就在运行命令的目录里          |
+| `Cannot find name 'console'`          | 缺 Node 类型声明        | `npm install -D @types/node`                  |
+
 ## 常见问题
 
 ### Q: 找不到模块？
